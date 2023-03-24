@@ -1,0 +1,13 @@
+__pycache__
+*.egg-info
+.DS_Store
+.coverage
+.idea
+.vscode
+venv
+.*venv
+coverage.xml
+tmp/
+build/
+dist/
+.mypy_cache
