@@ -1,10 +1,11 @@
 import sys
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication
+
+from mir_commander.main_window import MainWindow
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    label = QLabel("Hello World", alignment=Qt.AlignCenter)
-    label.show()
-    sys.exit(app.exec_())
+    app = QApplication([])
+    mainWindow = MainWindow()
+    mainWindow.show()
+    sys.exit(app.exec())
