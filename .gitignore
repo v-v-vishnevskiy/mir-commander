@@ -11,3 +11,5 @@ tmp/
 build/
 dist/
 .mypy_cache
+build/
+logs/
