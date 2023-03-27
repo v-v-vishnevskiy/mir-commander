@@ -14,6 +14,8 @@ As a prerequisite you have to create a virtual environment and install the requi
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pre-commit install
 ```
 
 The development version of Mir Commander can now be started in the virtual environment as
@@ -27,4 +29,3 @@ deactivate
 ```
 
 In the following the `dev_run.sh` script can be used for fast starting of Mir Commander.
-
