@@ -1,4 +1,6 @@
-from PySide6.QtCore import QSettings, Slot
+import os
+
+from PySide6.QtCore import QDir, QSettings, Slot
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QApplication, QMainWindow
 
@@ -10,7 +12,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle("Mir Commander")
 
-        self.settings = QSettings("VishnevskiyGroup", "MirCommander")
+        self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
 
         # Menu Bar
         self.menubar = self.menuBar()
@@ -46,21 +48,15 @@ class MainWindow(QMainWindow):
         return action
 
     def _save_settings(self):
-        self.settings.setValue("mainwindow/geometry", self.saveGeometry())
+        self.settings.setValue("main_window/pos", [self.pos().x(), self.pos().y()])
+        self.settings.setValue("main_window/size", [self.size().width(), self.size().height()])
 
     def _restore_settings(self):
         # Window dimensions
-        geometry = self.settings.value("mainwindow/geometry")
-        if geometry:
-            self.restoreGeometry(geometry)
-        else:
-            geometry = self.screen().availableGeometry()
-            self.setGeometry(
-                geometry.width() * 0.25,
-                geometry.height() * 0.25,
-                geometry.width() * 0.5,
-                geometry.height() * 0.5,
-            )
+        geometry = self.screen().availableGeometry()
+        pos = self.settings.value("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
+        size = self.settings.value("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
+        self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
     @Slot()
     def quit_app(self, *args, **kwargs):
