@@ -9,6 +9,7 @@ Currently we are focused on the very basic functionality, allowing visualizing m
 
 ## Development
 
+### Linux
 As a prerequisite you have to create a virtual environment and install the required packages (in the command line):
 ```
 python3 -m venv .venv
@@ -29,3 +30,27 @@ deactivate
 ```
 
 In the following the `dev_run.sh` script can be used for fast starting of Mir Commander.
+
+### Windows
+In Windows you may need first to install Python3 and Git.
+Then in a similar manner as for Linux, it is best to work in a virtual environment.
+So the first steps are (run in `cmd` from the top level directory of the repository)
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pre-commit install
+```
+
+Mir Commander can now be started from the `cmd` command line in the virtual environment as
+```
+cmd /V /C "set "PYTHONPATH=." && python mir_commander"
+```
+
+To exit from the virtual environment run
+```
+.venv\Scripts\deactivate
+```
+
+When all the required packages are installed it is possible to start Mir Commander by running the batch script `dev_run.cmd`.
