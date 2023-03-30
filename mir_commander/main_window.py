@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtCore import QDir, QSettings, Slot
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import QApplication, QMainWindow
 
 from mir_commander.widgets import About
@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle("Mir Commander")
+        self.setWindowIcon(QIcon("resources/appicon.svg"))
 
         self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
 
