@@ -1,0 +1,4 @@
+@echo off
+call .venv\Scripts\activate
+pyside6-lupdate -recursive mir_commander\*.py mir_commander\widgets\*.py -ts resources\i18n\app_ru.ts
+call .venv\Scripts\deactivate
