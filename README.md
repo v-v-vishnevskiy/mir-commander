@@ -57,5 +57,5 @@ When all the required packages are installed it is possible to start Mir Command
 
 ### Translation
 
-For generation of translation ts-file(s) run `generate_translations.sh` (in Linux/macOS) or `generate_translations.cmd` (in Windows).
+For generation of translation ts-file(s) run `generate_i18n.sh` (in Linux/macOS).
 If at least one of ts-files was updated, you need to generate binary translation qm-files using `ts_to_qm.sh` (in Linux/macOS) or `ts_to_qm.cmd` (in Windows).
