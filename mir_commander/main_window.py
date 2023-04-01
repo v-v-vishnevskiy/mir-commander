@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtCore import QDir, QSettings, Slot
+from PySide6.QtCore import QDir, QLocale, QSettings, QTranslator, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import QApplication, QMainWindow
 
@@ -8,12 +8,16 @@ from mir_commander.widgets import About
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        QMainWindow.__init__(self, parent)
+    def __init__(self, app: QApplication):
+        QMainWindow.__init__(self, None)
+        self.app = app
+
         self.setWindowTitle("Mir Commander")
         self.setWindowIcon(QIcon("resources/appicon.svg"))
 
         self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
+        self._restore_settings()
+        self._load_translation()
 
         # Menu Bar
         self.menubar = self.menuBar()
@@ -24,8 +28,6 @@ class MainWindow(QMainWindow):
         # Status Bar
         self.status = self.statusBar()
         self.status.showMessage(self.tr("Ready"))
-
-        self._restore_settings()
 
     def setup_menubar(self):
         self._setup_menubar_file()
@@ -39,18 +41,29 @@ class MainWindow(QMainWindow):
 
     def _quit_action(self) -> QAction:
         action = QAction(self.tr("Quit"), self)
+        action.setMenuRole(QAction.QuitRole)
         action.setShortcut(QKeySequence.Quit)
         action.triggered.connect(self.quit_app)
         return action
 
     def _about_action(self) -> QAction:
         action = QAction(self.tr("About"), self)
+        action.setMenuRole(QAction.AboutRole)
         action.triggered.connect(About(self).show)
         return action
 
     def _save_settings(self):
         self.settings.setValue("main_window/pos", [self.pos().x(), self.pos().y()])
         self.settings.setValue("main_window/size", [self.size().width(), self.size().height()])
+
+    def _load_translation(self):
+        language = self.settings.value("language", "system")
+        if language == "system":
+            language = QLocale.languageToCode(QLocale.system().language())
+
+        translator = QTranslator(self.app)
+        if translator.load(f"../resources/i18n/app_{language}", os.path.dirname(__file__)):
+            self.app.installTranslator(translator)
 
     def _restore_settings(self):
         # Window dimensions

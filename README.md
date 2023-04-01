@@ -9,7 +9,7 @@ Currently we are focused on the very basic functionality, allowing visualizing m
 
 ## Development
 
-### Linux
+### Linux/Mac
 As a prerequisite you have to create a virtual environment and install the required packages (in the command line):
 ```
 python3 -m venv .venv
@@ -54,3 +54,8 @@ To exit from the virtual environment run
 ```
 
 When all the required packages are installed it is possible to start Mir Commander by running the batch script `dev_run.cmd`.
+
+### Translation
+
+For generation of translation ts-file(s) run `generate_translations.sh` (in Linux/macOS) or `generate_translations.cmd` (in Windows).
+If at least one of ts-files was updated, you need to generate binary translation qm-files using `ts_to_qm.sh` (in Linux/macOS) or `ts_to_qm.cmd` (in Windows).

@@ -6,6 +6,6 @@ from mir_commander.main_window import MainWindow
 
 if __name__ == "__main__":
     app = QApplication([])
-    mainWindow = MainWindow()
+    mainWindow = MainWindow(app)
     mainWindow.show()
     sys.exit(app.exec())
