@@ -62,7 +62,7 @@ class MainWindow(QMainWindow):
             language = QLocale.languageToCode(QLocale.system().language())
 
         translator = QTranslator(self.app)
-        if translator.load(f"../resources/translations/app_{language}", os.path.dirname(__file__)):
+        if translator.load(f"../resources/i18n/app_{language}", os.path.dirname(__file__)):
             self.app.installTranslator(translator)
 
     def _restore_settings(self):

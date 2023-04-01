@@ -13,4 +13,4 @@ dist/
 .mypy_cache
 build/
 logs/
-resources/translations/*.qm
+resources/i18n/*.qm
