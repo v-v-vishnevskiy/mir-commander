@@ -9,7 +9,7 @@ Currently we are focused on the very basic functionality, allowing visualizing m
 
 ## Development
 
-### Linux
+### Linux/Mac
 As a prerequisite you have to create a virtual environment and install the required packages (in the command line):
 ```
 python3 -m venv .venv

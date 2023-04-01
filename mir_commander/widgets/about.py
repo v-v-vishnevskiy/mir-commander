@@ -9,7 +9,7 @@ class About(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("About Mir Commander")
+        self.setWindowTitle(self.tr("About Mir Commander"))
 
         layout = QVBoxLayout()
         label = QLabel(self)
