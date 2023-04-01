@@ -6,7 +6,7 @@
     <message>
         <location filename="../../mir_commander/widgets/about.py" line="12"/>
         <source>About Mir Commander</source>
-        <translation type="unfinished">О Mir Commander</translation>
+        <translation>О Mir Commander</translation>
     </message>
 </context>
 <context>
@@ -14,27 +14,27 @@
     <message>
         <location filename="../../mir_commander/main_window.py" line="24"/>
         <source>File</source>
-        <translation type="unfinished">Файл</translation>
+        <translation>Файл</translation>
     </message>
     <message>
         <location filename="../../mir_commander/main_window.py" line="25"/>
         <source>Help</source>
-        <translation type="unfinished">Помощь</translation>
+        <translation>Помощь</translation>
     </message>
     <message>
         <location filename="../../mir_commander/main_window.py" line="30"/>
         <source>Ready</source>
-        <translation type="unfinished">Готово</translation>
+        <translation>Готово</translation>
     </message>
     <message>
         <location filename="../../mir_commander/main_window.py" line="43"/>
         <source>Quit</source>
-        <translation type="unfinished">Выход</translation>
+        <translation>Выход</translation>
     </message>
     <message>
         <location filename="../../mir_commander/main_window.py" line="50"/>
         <source>About</source>
-        <translation type="unfinished">О Mir Commander</translation>
+        <translation>О Mir Commander</translation>
     </message>
 </context>
 </TS>
