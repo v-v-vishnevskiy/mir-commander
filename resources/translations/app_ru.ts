@@ -32,7 +32,7 @@
         <translation type="unfinished">Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="49"/>
+        <location filename="../../mir_commander/main_window.py" line="50"/>
         <source>About</source>
         <translation type="unfinished">О Mir Commander</translation>
     </message>
