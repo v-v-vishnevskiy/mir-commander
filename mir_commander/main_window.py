@@ -1,8 +1,8 @@
 import os
 
-from PySide6.QtCore import QDir, QLocale, QSettings, QTranslator, Slot
+from PySide6.QtCore import QDir, QLocale, QSettings, Qt, QTranslator, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea
 
 from mir_commander.widgets import About
 
@@ -14,6 +14,11 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Mir Commander")
         self.setWindowIcon(QIcon("resources/appicon.svg"))
+
+        self.mdi_area = QMdiArea()
+        self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setCentralWidget(self.mdi_area)
 
         self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
         self._restore_settings()
