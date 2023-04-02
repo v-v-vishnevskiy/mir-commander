@@ -1,0 +1,2 @@
+See https://code.qt.io/cgit/pyside/pyside-setup.git/
+for examples on how QtSide6 may be used for different purposes.
