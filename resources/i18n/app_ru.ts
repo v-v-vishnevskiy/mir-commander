@@ -10,6 +10,19 @@
     </message>
 </context>
 <context>
+    <name>General</name>
+    <message>
+        <location filename="../../mir_commander/widgets/preferences.py" line="29"/>
+        <source>System</source>
+        <translation>Системный</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/preferences.py" line="44"/>
+        <source>Language:</source>
+        <translation>Язык:</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../../mir_commander/main_window.py" line="24"/>
@@ -27,14 +40,32 @@
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="43"/>
+        <location filename="../../mir_commander/main_window.py" line="44"/>
+        <source>Preferences...</source>
+        <translation>Свойства...</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="50"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="50"/>
+        <location filename="../../mir_commander/main_window.py" line="57"/>
         <source>About</source>
         <translation>О Mir Commander</translation>
+    </message>
+</context>
+<context>
+    <name>Preferences</name>
+    <message>
+        <location filename="../../mir_commander/widgets/preferences.py" line="70"/>
+        <source>Preferences</source>
+        <translation>Свойства</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/preferences.py" line="122"/>
+        <source>General</source>
+        <translation>Основные</translation>
     </message>
 </context>
 </TS>
