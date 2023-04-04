@@ -14,3 +14,4 @@ dist/
 build/
 logs/
 resources/i18n/*.qm
+*.pyproject*
