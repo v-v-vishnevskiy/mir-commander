@@ -13,7 +13,7 @@ class About(QDialog):
 
         layout = QVBoxLayout()
         label = QLabel(self)
-        pixmap = QPixmap("resources/appicon.svg")
+        pixmap = QPixmap(":/icons/general/app.svg")
         label.setPixmap(pixmap.scaledToWidth(150, mode=Qt.SmoothTransformation))
         layout.addWidget(label, 100, Qt.AlignCenter)
         layout.addWidget(QLabel(f"Mir Commander {__version__}"), 100, Qt.AlignCenter)

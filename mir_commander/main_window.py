@@ -1,10 +1,10 @@
 import os
 
-from PySide6.QtCore import QDir, QLocale, QSettings, Qt, QTranslator, Slot
+from PySide6.QtCore import QDir, QLocale, QResource, QSettings, Qt, QTranslator, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea
 
-from mir_commander.widgets import About, Preferences
+from mir_commander.widgets import About, Settings
 
 
 class MainWindow(QMainWindow):
@@ -12,8 +12,10 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, None)
         self.app = app
 
+        QResource.registerResource("../resources/icons/general.rcc", os.path.dirname(__file__))
+
         self.setWindowTitle("Mir Commander")
-        self.setWindowIcon(QIcon("resources/appicon.svg"))
+        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
         self.mdi_area = QMdiArea()
         self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
@@ -39,16 +41,16 @@ class MainWindow(QMainWindow):
         self._setup_menubar_help()
 
     def _setup_menubar_file(self):
-        self.file_menu.addAction(self._preferences_action())
+        self.file_menu.addAction(self._settings_action())
         self.file_menu.addAction(self._quit_action())
 
     def _setup_menubar_help(self):
         self.help_menu.addAction(self._about_action())
 
-    def _preferences_action(self) -> QAction:
-        action = QAction(self.tr("Preferences..."), self)
+    def _settings_action(self) -> QAction:
+        action = QAction(self.tr("Settings..."), self)
         action.setMenuRole(QAction.PreferencesRole)
-        action.triggered.connect(Preferences(self, self.settings).show)
+        action.triggered.connect(Settings(self, self.settings).show)
         return action
 
     def _quit_action(self) -> QAction:

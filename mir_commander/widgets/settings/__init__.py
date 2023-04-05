@@ -1,56 +1,15 @@
 from typing import List
 
-from PySide6.QtCore import QModelIndex, QSettings, Qt, Slot
-from PySide6.QtGui import QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QComboBox, QDialog, QHBoxLayout, QLabel, QStackedLayout, QTreeView, QVBoxLayout, QWidget
+from PySide6.QtCore import QModelIndex, QSettings, Slot
+from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QStackedLayout, QTreeView
 
-
-class Section(QWidget):
-    def __init__(self, parent, settings: QSettings):
-        super().__init__(parent)
-        self.settings = settings
-        self.setLayout(self._layout())
-
-    def _layout(self):
-        raise NotImplementedError()
-
-
-class General(Section):
-    def _layout(self):
-        layout = QVBoxLayout()
-        layout.addLayout(self._language_row)
-        layout.addStretch(1)
-
-        return layout
-
-    @property
-    def _language_row(self) -> QHBoxLayout:
-        self._languages = [(self.tr("System"), "system"), ("English", "en"), ("Русский", "ru")]
-        language = self.settings.value("language", "system")
-        layout = QHBoxLayout()
-        combobox = QComboBox()
-        current_index = 0
-        for i, item in enumerate(self._languages):
-            combobox.addItem(*item)
-            if item[1] == language:
-                current_index = i
-        combobox.setCurrentIndex(current_index)
-        combobox.currentIndexChanged.connect(self._new_language)
-
-        layout.addWidget(QLabel(self.tr("Language:")), 0, Qt.AlignLeft)
-        layout.addWidget(combobox, 1, Qt.AlignLeft)
-        return layout
-
-    @Slot()
-    def _new_language(self, index: int):
-        self.settings.setValue("language", self._languages[index][1])
-        # TODO: Show message about restart program
-
+from mir_commander.widgets.settings.general import General
 
 SECTIONS = [{"title": "General", "widget": General}]
 
 
-class Preferences(QDialog):
+class Settings(QDialog):
     MIN_WIDTH = 800
     MIN_HEIGHT = 600
 
@@ -58,7 +17,8 @@ class Preferences(QDialog):
         super().__init__(parent)
         self.settings = settings
 
-        self.setWindowTitle(self.tr("Preferences"))
+        self.setWindowTitle(self.tr("Settings"))
+        self.setWindowIcon(QIcon(":/icons/general/settings.png"))
 
         layout = QHBoxLayout(self)
 
