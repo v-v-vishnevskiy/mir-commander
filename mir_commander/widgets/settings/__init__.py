@@ -1,95 +1,102 @@
-from typing import List
-
 from PySide6.QtCore import QModelIndex, QSettings, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QStackedLayout, QTreeView
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QListView, QStackedLayout, QTabWidget
 
 from mir_commander.widgets.settings.general import General
-
-SECTIONS = [{"title": "General", "widget": General}]
 
 
 class Settings(QDialog):
     MIN_WIDTH = 800
     MIN_HEIGHT = 600
+    SETTINGS_GROUP = "SettingsWindow"
 
     def __init__(self, parent, settings: QSettings):
         super().__init__(parent)
         self.settings = settings
 
+        self.setup_ui()
+        self.setup_data()
+        self.setup_connections()
+
+        self._restore_settings()
+
+    def setup_ui(self):
         self.setWindowTitle(self.tr("Settings"))
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
+        self.setMinimumWidth(self.MIN_WIDTH)
+        self.setMinimumHeight(self.MIN_HEIGHT)
 
         layout = QHBoxLayout(self)
 
-        self.area = QStackedLayout()
-        self.tree = self.sections()
+        self.categories = QListView(self)
+        self.categories.setFixedWidth(150)
+        self.categories.setModel(QStandardItemModel(self))
 
-        layout.addWidget(self.tree)
+        self.area = QStackedLayout(self)
+
+        layout.addWidget(self.categories)
         layout.addLayout(self.area)
 
         self.setLayout(layout)
 
-        self.setMinimumWidth(self.MIN_WIDTH)
-        self.setMinimumHeight(self.MIN_HEIGHT)
+    def setup_data(self):
+        self.category_items = [
+            {"title": self.tr("General"), "tabs": [(General, self.tr(""))]},
+            {"title": self.tr("Test"), "tabs": [(General, self.tr("123")), (General, self.tr("456"))]},
+        ]
 
-        self._restore_settings()
+        root = self.categories.model().invisibleRootItem()
+        for i, section in enumerate(self.category_items):
+            # Setup self.current_category
+            item = QStandardItem(section["title"])
+            item.setEditable(False)
+            item.position = i
+            root.appendRow(item)
 
-    @Slot()
-    def show_section(self, index: QModelIndex):
-        item = self.tree.model().itemFromIndex(index)
-        self.area.setCurrentIndex(item.widget_index)
-        self.settings.setValue("PreferencesWindow/section", [str(i) for i in item.section_path])
+            # setup self.area
+            tabwidget = QTabWidget()
+            tabwidget.setTabBarAutoHide(True)
+            for tab in section["tabs"]:
+                tabwidget.addTab(tab[0](self, self.settings), tab[1])
+            self.area.addWidget(tabwidget)
 
-    def sections(self) -> QTreeView:
-        tree = QTreeView(self)
-        tree.setFixedWidth(200)
-        tree.setHeaderHidden(True)
-        model = QStandardItemModel(self)
-        tree.setModel(model)
-
-        root = model.invisibleRootItem()
-        self._fill_tree(root, SECTIONS, [])
-
-        tree.setCurrentIndex(root.child(0).index())
+        self.categories.setCurrentIndex(root.child(0).index())
         self.area.setCurrentIndex(0)
 
-        tree.clicked.connect(self.show_section)
+    def setup_connections(self):
+        self.categories.clicked.connect(self.category_changed)
+        for i in range(self.area.count()):
+            self.area.widget(i).currentChanged.connect(self.tab_changed)
 
-        return tree
+    @Slot()
+    def category_changed(self, index: QModelIndex):
+        item = self.categories.model().itemFromIndex(index)
+        self.area.setCurrentIndex(item.position)
+        self.settings.setValue(f"{self.SETTINGS_GROUP}/current_category", item.position)
+        self.settings.setValue(f"{self.SETTINGS_GROUP}/current_tab", self.area.currentWidget().currentIndex())
 
-    def _fill_tree(self, root: QStandardItem, sections: list, parent: List[int]):
-        for i, section in enumerate(sections):
-            item = QStandardItem(self.tr(section["title"]))
-            index = self.area.addWidget(section["widget"](self, self.settings))
-            item.widget_index = index
-            item.section_path = parent + [i]
-            root.appendRow(item)
-            self._fill_tree(item, section.get("children", []), parent + [i])
+    @Slot()
+    def tab_changed(self, index: int):
+        self.settings.setValue(f"{self.SETTINGS_GROUP}/current_tab", index)
 
     def _restore_settings(self):
-        pos = self.settings.value("PreferencesWindow/pos")
-        size = self.settings.value("PreferencesWindow/size")
+        pos = self.settings.value(f"{self.SETTINGS_GROUP}/pos")
+        size = self.settings.value(f"{self.SETTINGS_GROUP}/size")
         if pos and size:
             self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
-        section = [int(item) for item in self.settings.value("PreferencesWindow/section", [])]
-        if section:
-            item = self._item(self.tree.model().invisibleRootItem(), section)
-            if item:
-                self.tree.setCurrentIndex(item.index())
-                self.area.setCurrentIndex(item.widget_index)
+        current_category = int(self.settings.value(f"{self.SETTINGS_GROUP}/current_category", 0))
+        if current_category:
+            index = self.categories.model().invisibleRootItem().child(current_category).index()
+            self.categories.setCurrentIndex(index)
+            self.area.setCurrentIndex(current_category)
 
-    def _item(self, item: QStandardItem, path: List[int]) -> QStandardItem:
-        if path:
-            nested = item.child(path[0])
-            if nested:
-                return self._item(nested, path[1:])
-        else:
-            return item
+            current_tab = int(self.settings.value(f"{self.SETTINGS_GROUP}/current_tab", 0)) or 1
+            if current_tab:
+                self.area.currentWidget().setCurrentIndex(current_tab)
 
     def moveEvent(self, event: QMoveEvent):
-        self.settings.setValue("PreferencesWindow/pos", [event.pos().x(), event.pos().y()])
+        self.settings.setValue(f"{self.SETTINGS_GROUP}/pos", [event.pos().x(), event.pos().y()])
 
     def resizeEvent(self, event: QResizeEvent):
-        self.settings.setValue("PreferencesWindow/size", [event.size().width(), event.size().height()])
+        self.settings.setValue(f"{self.SETTINGS_GROUP}/size", [event.size().width(), event.size().height()])
