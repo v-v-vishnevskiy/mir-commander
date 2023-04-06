@@ -23,6 +23,7 @@ class Application(QApplication):
             language = QLocale.languageToCode(QLocale.system().language())
 
         self.removeTranslator(self.translator)
-        if not self.translator.load(f"../resources/i18n/app_{language}", os.path.dirname(__file__)):
-            self.translator.load("../resources/i18n/app_en", os.path.dirname(__file__))
+        i18n_path = os.path.join(os.path.dirname(__file__), "..", "resources", "i18n")
+        if not self.translator.load(os.path.join(i18n_path, f"app_{language}")):
+            self.translator.load(os.path.join(i18n_path, "app_en"))
         self.installTranslator(self.translator)
