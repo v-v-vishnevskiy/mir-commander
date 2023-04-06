@@ -16,7 +16,6 @@ class General(Category):
         self._setup_language_data()
 
     def restore_settings(self):
-        print("General", self.settings["language"])
         index = self.cb_language.findData(self.settings["language"])
         self.cb_language.setCurrentIndex(index)
 

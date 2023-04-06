@@ -26,11 +26,11 @@ class Settings(Translator, QDialog):
         self.settings = settings
 
         self.setup_ui()
-        self.setup_data()
-        self.retranslate_ui()
-        self.setup_connections()
-
-        self._load_settings()
+        # self.setup_data()
+        # self.retranslate_ui()
+        # self.setup_connections()
+        #
+        # self._load_settings()
 
     def setup_ui(self):
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
@@ -39,12 +39,12 @@ class Settings(Translator, QDialog):
 
         main_layout = QVBoxLayout(self)
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
         self.categories = QListView(self)
         self.categories.setFixedWidth(150)
         self.categories.setModel(QStandardItemModel(self))
 
-        self.area = QStackedLayout(self)
+        self.area = QStackedLayout()
 
         layout.addWidget(self.categories)
         layout.addLayout(self.area)
