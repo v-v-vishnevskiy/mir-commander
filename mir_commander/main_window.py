@@ -4,7 +4,8 @@ from PySide6.QtCore import QDir, QLocale, QSettings, Qt, QTranslator, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import QApplication, QDockWidget, QMainWindow, QMdiArea
 
-from mir_commander.widgets import About, Preferences
+from mir_commander import __version__
+from mir_commander.widgets import About, Console, Preferences
 
 
 class MainWindow(QMainWindow):
@@ -37,22 +38,24 @@ class MainWindow(QMainWindow):
         self.status = self.statusBar()
         self.status.showMessage(self.tr("Ready"))
 
-        # Docks.
-        # Must be created after creation of widgets, which are inserted into docks.
+        # Project dock
         dock = QDockWidget(self.tr("Project"), self)
         # ToDo: dock.setWidget(self.project_tree)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
         self.view_menu.addAction(dock.toggleViewAction())
 
-        self.object_dock = QDockWidget(self.tr("Object"), self)
-        # This dock is empty by default.
+        # Object dock. Empty by default.
         # Its widget is set dynamically in runtime
         # depending on the currently selected object in the project tree.
+        self.object_dock = QDockWidget(self.tr("Object"), self)
         self.addDockWidget(Qt.RightDockWidgetArea, self.object_dock)
         self.view_menu.addAction(self.object_dock.toggleViewAction())
 
-        dock = QDockWidget(self.tr("Terminal"), self)
-        # ToDo: dock.setWidget(self.terminal_widget)
+        # Console output dock and respective its widget
+        dock = QDockWidget(self.tr("Console output"), self)
+        self.consoleout = Console()
+        self.consoleout.appendPlainText(f"Started Mir Commander {__version__}")
+        dock.setWidget(self.consoleout)
         self.addDockWidget(Qt.BottomDockWidgetArea, dock)
         self.view_menu.addAction(dock.toggleViewAction())
 
