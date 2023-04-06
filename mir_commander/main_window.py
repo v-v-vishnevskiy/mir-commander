@@ -2,7 +2,7 @@ import os
 
 from PySide6.QtCore import QDir, QLocale, QResource, QSettings, Qt, QTranslator, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
-from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea
+from PySide6.QtWidgets import QApplication, QDockWidget, QMainWindow, QMdiArea
 
 from mir_commander.widgets import About, Settings
 
@@ -17,11 +17,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Mir Commander")
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
+        # Mdi area as a central widget
         self.mdi_area = QMdiArea()
         self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self.mdi_area)
 
+        # Settings
         self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
         self._restore_settings()
         self._load_translation()
@@ -29,12 +31,32 @@ class MainWindow(QMainWindow):
         # Menu Bar
         self.menubar = self.menuBar()
         self.file_menu = self.menubar.addMenu(self.tr("File"))
+        self.view_menu = self.menubar.addMenu(self.tr("View"))
         self.help_menu = self.menubar.addMenu(self.tr("Help"))
         self.setup_menubar()
 
         # Status Bar
         self.status = self.statusBar()
         self.status.showMessage(self.tr("Ready"))
+
+        # Docks.
+        # Must be created after creation of widgets, which are inserted into docks.
+        dock = QDockWidget(self.tr("Project"), self)
+        # ToDo: dock.setWidget(self.project_tree)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+        self.view_menu.addAction(dock.toggleViewAction())
+
+        self.object_dock = QDockWidget(self.tr("Object"), self)
+        # This dock is empty by default.
+        # Its widget is set dynamically in runtime
+        # depending on the currently selected object in the project tree.
+        self.addDockWidget(Qt.RightDockWidgetArea, self.object_dock)
+        self.view_menu.addAction(self.object_dock.toggleViewAction())
+
+        dock = QDockWidget(self.tr("Terminal"), self)
+        # ToDo: dock.setWidget(self.terminal_widget)
+        self.addDockWidget(Qt.BottomDockWidgetArea, dock)
+        self.view_menu.addAction(dock.toggleViewAction())
 
     def setup_menubar(self):
         self._setup_menubar_file()
