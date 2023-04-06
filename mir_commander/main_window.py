@@ -1,20 +1,25 @@
 import os
 
-from PySide6.QtCore import QDir, QLocale, QSettings, Qt, QTranslator, Slot
+from PySide6.QtCore import QResource, Qt, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
-from PySide6.QtWidgets import QApplication, QDockWidget, QMainWindow, QMdiArea
+from PySide6.QtWidgets import QDockWidget, QMainWindow, QMdiArea
 
 from mir_commander import __version__
-from mir_commander.widgets import About, Console, Preferences
+from mir_commander.application import Application
+from mir_commander.utils.widget import Translator
+from mir_commander.widgets import About, Console, Settings
 
 
-class MainWindow(QMainWindow):
-    def __init__(self, app: QApplication):
+class MainWindow(Translator, QMainWindow):
+    def __init__(self, app: Application):
         QMainWindow.__init__(self, None)
         self.app = app
+        self.settings = app.settings
+
+        QResource.registerResource("../resources/icons/general.rcc", os.path.dirname(__file__))
 
         self.setWindowTitle("Mir Commander")
-        self.setWindowIcon(QIcon("resources/appicon.svg"))
+        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
         # Mdi area as a central widget
         self.mdi_area = QMdiArea()
@@ -23,9 +28,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.mdi_area)
 
         # Settings
-        self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
         self._restore_settings()
-        self._load_translation()
 
         # Menu Bar
         self.menubar = self.menuBar()
@@ -64,16 +67,16 @@ class MainWindow(QMainWindow):
         self._setup_menubar_help()
 
     def _setup_menubar_file(self):
-        self.file_menu.addAction(self._preferences_action())
+        self.file_menu.addAction(self._settings_action())
         self.file_menu.addAction(self._quit_action())
 
     def _setup_menubar_help(self):
         self.help_menu.addAction(self._about_action())
 
-    def _preferences_action(self) -> QAction:
-        action = QAction(self.tr("Preferences..."), self)
+    def _settings_action(self) -> QAction:
+        action = QAction(self.tr("Settings..."), self)
         action.setMenuRole(QAction.PreferencesRole)
-        action.triggered.connect(Preferences(self, self.settings).show)
+        action.triggered.connect(Settings(self, self.settings).show)
         return action
 
     def _quit_action(self) -> QAction:
@@ -90,29 +93,20 @@ class MainWindow(QMainWindow):
         return action
 
     def _save_settings(self):
-        self.settings.setValue("main_window/pos", [self.pos().x(), self.pos().y()])
-        self.settings.setValue("main_window/size", [self.size().width(), self.size().height()])
-
-    def _load_translation(self):
-        language = self.settings.value("language", "system")
-        if language == "system":
-            language = QLocale.languageToCode(QLocale.system().language())
-
-        translator = QTranslator(self.app)
-        if translator.load(f"../resources/i18n/app_{language}", os.path.dirname(__file__)):
-            self.app.installTranslator(translator)
+        self.settings.set("main_window/pos", [self.pos().x(), self.pos().y()])
+        self.settings.set("main_window/size", [self.size().width(), self.size().height()])
 
     def _restore_settings(self):
         # Window dimensions
         geometry = self.screen().availableGeometry()
-        pos = self.settings.value("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
-        size = self.settings.value("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
+        pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
+        size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
         self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
     @Slot()
     def quit_app(self, *args, **kwargs):
         self._save_settings()
-        QApplication.quit()
+        self.app.quit()
 
     def closeEvent(self, *args, **kwargs):
         self._save_settings()
