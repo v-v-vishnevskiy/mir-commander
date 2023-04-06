@@ -16,7 +16,7 @@ class MainWindow(Translator, QMainWindow):
         self.app = app
         self.settings = app.settings
 
-        QResource.registerResource("../resources/icons/general.rcc", os.path.dirname(__file__))
+        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
 
         self.setWindowTitle("Mir Commander")
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))

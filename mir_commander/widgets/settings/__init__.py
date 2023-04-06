@@ -26,11 +26,11 @@ class Settings(Translator, QDialog):
         self.settings = settings
 
         self.setup_ui()
-        # self.setup_data()
-        # self.retranslate_ui()
-        # self.setup_connections()
-        #
-        # self._load_settings()
+        self.setup_data()
+        self.retranslate_ui()
+        self.setup_connections()
+
+        self._load_settings()
 
     def setup_ui(self):
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
