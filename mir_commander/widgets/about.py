@@ -3,13 +3,12 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout
 
 from mir_commander import __version__
+from mir_commander.utils.widget import Translator
 
 
-class About(QDialog):
+class About(Translator, QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.setWindowTitle(self.tr("About Mir Commander"))
 
         layout = QVBoxLayout()
         label = QLabel(self)
@@ -22,3 +21,8 @@ class About(QDialog):
 
         self.setLayout(layout)
         self.setFixedSize(400, 300)
+
+        self.retranslate_ui()
+
+    def retranslate_ui(self):
+        self.setWindowTitle(self.tr("About Mir Commander"))

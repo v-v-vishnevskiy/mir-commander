@@ -1,16 +1,20 @@
 import os
 
-from PySide6.QtCore import QDir, QLocale, QResource, QSettings, Qt, QTranslator, Slot
+from PySide6.QtCore import QResource, Qt, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
-from PySide6.QtWidgets import QApplication, QDockWidget, QMainWindow, QMdiArea
+from PySide6.QtWidgets import QDockWidget, QMainWindow, QMdiArea
 
-from mir_commander.widgets import About, Settings
+from mir_commander import __version__
+from mir_commander.application import Application
+from mir_commander.utils.widget import Translator
+from mir_commander.widgets import About, Console, Settings
 
 
-class MainWindow(QMainWindow):
-    def __init__(self, app: QApplication):
+class MainWindow(Translator, QMainWindow):
+    def __init__(self, app: Application):
         QMainWindow.__init__(self, None)
         self.app = app
+        self.settings = app.settings
 
         QResource.registerResource("../resources/icons/general.rcc", os.path.dirname(__file__))
 
@@ -24,9 +28,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.mdi_area)
 
         # Settings
-        self.settings = QSettings(os.path.join(QDir.homePath(), ".mircmd", "config"), QSettings.Format.IniFormat)
         self._restore_settings()
-        self._load_translation()
 
         # Menu Bar
         self.menubar = self.menuBar()
@@ -39,22 +41,24 @@ class MainWindow(QMainWindow):
         self.status = self.statusBar()
         self.status.showMessage(self.tr("Ready"))
 
-        # Docks.
-        # Must be created after creation of widgets, which are inserted into docks.
+        # Project dock
         dock = QDockWidget(self.tr("Project"), self)
         # ToDo: dock.setWidget(self.project_tree)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
         self.view_menu.addAction(dock.toggleViewAction())
 
-        self.object_dock = QDockWidget(self.tr("Object"), self)
-        # This dock is empty by default.
+        # Object dock. Empty by default.
         # Its widget is set dynamically in runtime
         # depending on the currently selected object in the project tree.
+        self.object_dock = QDockWidget(self.tr("Object"), self)
         self.addDockWidget(Qt.RightDockWidgetArea, self.object_dock)
         self.view_menu.addAction(self.object_dock.toggleViewAction())
 
-        dock = QDockWidget(self.tr("Terminal"), self)
-        # ToDo: dock.setWidget(self.terminal_widget)
+        # Console output dock and respective its widget
+        dock = QDockWidget(self.tr("Console output"), self)
+        self.consoleout = Console()
+        self.consoleout.appendPlainText(f"Started Mir Commander {__version__}")
+        dock.setWidget(self.consoleout)
         self.addDockWidget(Qt.BottomDockWidgetArea, dock)
         self.view_menu.addAction(dock.toggleViewAction())
 
@@ -89,29 +93,20 @@ class MainWindow(QMainWindow):
         return action
 
     def _save_settings(self):
-        self.settings.setValue("main_window/pos", [self.pos().x(), self.pos().y()])
-        self.settings.setValue("main_window/size", [self.size().width(), self.size().height()])
-
-    def _load_translation(self):
-        language = self.settings.value("language", "system")
-        if language == "system":
-            language = QLocale.languageToCode(QLocale.system().language())
-
-        translator = QTranslator(self.app)
-        if translator.load(f"../resources/i18n/app_{language}", os.path.dirname(__file__)):
-            self.app.installTranslator(translator)
+        self.settings.set("main_window/pos", [self.pos().x(), self.pos().y()])
+        self.settings.set("main_window/size", [self.size().width(), self.size().height()])
 
     def _restore_settings(self):
         # Window dimensions
         geometry = self.screen().availableGeometry()
-        pos = self.settings.value("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
-        size = self.settings.value("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
+        pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
+        size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
         self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
     @Slot()
     def quit_app(self, *args, **kwargs):
         self._save_settings()
-        QApplication.quit()
+        self.app.quit()
 
     def closeEvent(self, *args, **kwargs):
         self._save_settings()
