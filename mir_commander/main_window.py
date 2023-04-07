@@ -42,6 +42,7 @@ class MainWindow(Translator, QMainWindow):
         self.status.showMessage(self.tr("Ready"))
 
         # Project dock
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
         dock = QDockWidget(self.tr("Project"), self)
         # ToDo: dock.setWidget(self.project_tree)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
