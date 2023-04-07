@@ -16,8 +16,10 @@ class About(Translator, QDialog):
         label.setPixmap(pixmap.scaledToWidth(150, mode=Qt.SmoothTransformation))
         layout.addWidget(label, 100, Qt.AlignCenter)
         layout.addWidget(QLabel(f"Mir Commander {__version__}"), 100, Qt.AlignCenter)
-        layout.addWidget(QLabel("Yury V. Vishnevskiy"), 0, Qt.AlignCenter)
-        layout.addWidget(QLabel("Valery V. Vishnevskiy"), 0, Qt.AlignCenter)
+        self.authorlabel1 = QLabel(self)
+        self.authorlabel2 = QLabel(self)
+        layout.addWidget(self.authorlabel1, 0, Qt.AlignCenter)
+        layout.addWidget(self.authorlabel2, 0, Qt.AlignCenter)
 
         self.setLayout(layout)
         self.setFixedSize(400, 300)
@@ -26,3 +28,5 @@ class About(Translator, QDialog):
 
     def retranslate_ui(self):
         self.setWindowTitle(self.tr("About Mir Commander"))
+        self.authorlabel1.setText(self.tr("Yury V. Vishnevskiy"))
+        self.authorlabel2.setText(self.tr("Valery V. Vishnevskiy"))

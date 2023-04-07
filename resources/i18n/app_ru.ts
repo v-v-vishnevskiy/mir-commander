@@ -4,20 +4,30 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../../mir_commander/widgets/about.py" line="12"/>
+        <location filename="../../mir_commander/widgets/about.py" line="30"/>
         <source>About Mir Commander</source>
         <translation>О Mir Commander</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/about.py" line="31"/>
+        <source>Yury V. Vishnevskiy</source>
+        <translation>Юрий В. Вишневский</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/about.py" line="32"/>
+        <source>Valery V. Vishnevskiy</source>
+        <translation>Валерий В. Вишневский</translation>
     </message>
 </context>
 <context>
     <name>General</name>
     <message>
-        <location filename="../../mir_commander/widgets/settings/general.py" line="24"/>
+        <location filename="../../mir_commander/widgets/settings/general.py" line="27"/>
         <source>System</source>
         <translation>Системный</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/widgets/settings/general.py" line="30"/>
+        <location filename="../../mir_commander/widgets/settings/general.py" line="26"/>
         <source>Language:</source>
         <translation>Язык:</translation>
     </message>
@@ -25,32 +35,52 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="29"/>
+        <location filename="../../mir_commander/main_window.py" line="35"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="30"/>
+        <location filename="../../mir_commander/main_window.py" line="36"/>
+        <source>View</source>
+        <translation>Вид</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="37"/>
         <source>Help</source>
         <translation>Помощь</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="35"/>
+        <location filename="../../mir_commander/main_window.py" line="42"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="49"/>
+        <location filename="../../mir_commander/main_window.py" line="46"/>
+        <source>Project</source>
+        <translation>Проект</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="54"/>
+        <source>Object</source>
+        <translation>Объект</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="59"/>
+        <source>Console output</source>
+        <translation>Консоль вывода</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="78"/>
         <source>Settings...</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="55"/>
+        <location filename="../../mir_commander/main_window.py" line="84"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="62"/>
+        <location filename="../../mir_commander/main_window.py" line="91"/>
         <source>About</source>
         <translation>О Mir Commander</translation>
     </message>
@@ -58,14 +88,13 @@
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../mir_commander/widgets/__init__.py" line="21"/>
+        <location filename="../../mir_commander/widgets/settings/__init__.py" line="151"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/widgets/__init__.py" line="63"/>
         <source>General</source>
-        <translation>Основные</translation>
+        <translation type="vanished">Основные</translation>
     </message>
 </context>
 </TS>
