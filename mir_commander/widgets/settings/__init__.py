@@ -17,6 +17,12 @@ from mir_commander.widgets.settings.general import General
 
 
 class Settings(Translator, QDialog):
+    """Main dialog of the setting window.
+
+    Inherits Translator, since we have here UI elements,
+    which may be translated on the fly.
+    """
+
     MIN_WIDTH = 800
     MIN_HEIGHT = 600
     SETTINGS_GROUP = "SettingsWindow"

@@ -4,6 +4,15 @@ from PySide6.QtCore import QSettings
 
 
 class Settings:
+    """The class of Settings.
+
+    Base on usage of QSettings.
+    Additionally implements functions for in-memory
+    getting, setting and setting to default values,
+    without touching the actual ini file.
+    Also provides methods for massive applying and restoring of settings.
+    """
+
     def __init__(self, path: str):
         self._settings = QSettings(path, QSettings.Format.IniFormat)
         self._changes: Dict[str, Any] = {}

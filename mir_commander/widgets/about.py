@@ -7,6 +7,8 @@ from mir_commander.utils.widget import Translator
 
 
 class About(Translator, QDialog):
+    """Dialog with information about the program."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
