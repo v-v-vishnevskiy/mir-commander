@@ -11,6 +11,13 @@ from mir_commander.widgets import About, Console, Settings
 
 
 class MainWindow(Translator, QMainWindow):
+    """The class of the main window.
+
+    It must inherit Translator since in the main window we have
+    UI elements, which may transtaled on the fly.
+    For this, a retranslate_ui method must be implemented!
+    """
+
     def __init__(self, app: Application):
         QMainWindow.__init__(self, None)
         self.app = app
@@ -77,7 +84,7 @@ class MainWindow(Translator, QMainWindow):
     def _settings_action(self) -> QAction:
         action = QAction(self.tr("Settings..."), self)
         action.setMenuRole(QAction.PreferencesRole)
-        action.triggered.connect(Settings(self, self.settings).show)
+        action.triggered.connect(Settings(self, self.settings).show)  # Setting dialog is actually created here.
         return action
 
     def _quit_action(self) -> QAction:
@@ -94,11 +101,12 @@ class MainWindow(Translator, QMainWindow):
         return action
 
     def _save_settings(self):
+        """Save parameters of main window to settings."""
         self.settings.set("main_window/pos", [self.pos().x(), self.pos().y()])
         self.settings.set("main_window/size", [self.size().width(), self.size().height()])
 
     def _restore_settings(self):
-        # Window dimensions
+        """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
         pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
         size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])

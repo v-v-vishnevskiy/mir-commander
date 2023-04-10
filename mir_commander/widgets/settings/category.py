@@ -5,6 +5,12 @@ from mir_commander.utils.widget import Translator
 
 
 class Category(Translator, QWidget):
+    """Basic class for each page in the settings dialog.
+
+    The main purpose of this class is to implement the common
+    initialization method, see the code below.
+    """
+
     def __init__(self, parent, settings: Settings):
         super().__init__(parent)
         self.settings = settings

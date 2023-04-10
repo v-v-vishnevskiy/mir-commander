@@ -7,6 +7,8 @@ from mir_commander.settings import Settings
 
 
 class Application(QApplication):
+    """Application class. In fact, only one instance is created thereof."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -18,6 +20,8 @@ class Application(QApplication):
         self.settings.add_apply_callback("language", self.set_translation)
 
     def set_translation(self):
+        """The callback called by the Settings when a setting is applied or set."""
+
         language = self.settings["language"]
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())

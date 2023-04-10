@@ -5,6 +5,12 @@ from mir_commander.widgets.settings.category import Category
 
 
 class General(Category):
+    """The page with the general settings.
+
+    At this point only implements choosing language.
+    The particular UI elements may migrate to other pages.
+    """
+
     def setup_ui(self):
         layout = QVBoxLayout()
         layout.addLayout(self._language_ui)
