@@ -53,17 +53,17 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="119"/>
+        <location filename="../../mir_commander/main_window.py" line="120"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="120"/>
+        <location filename="../../mir_commander/main_window.py" line="121"/>
         <source>View</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="121"/>
+        <location filename="../../mir_commander/main_window.py" line="122"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
@@ -73,17 +73,22 @@
         <translation>Ready</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="123"/>
+        <location filename="../../mir_commander/main_window.py" line="70"/>
+        <source>Started</source>
+        <translation>Started</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/main_window.py" line="124"/>
         <source>Settings...</source>
         <translation>Settings...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="122"/>
+        <location filename="../../mir_commander/main_window.py" line="123"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="124"/>
+        <location filename="../../mir_commander/main_window.py" line="125"/>
         <source>About</source>
         <translation>About</translation>
     </message>

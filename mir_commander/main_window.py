@@ -66,7 +66,7 @@ class MainWindow(Translator, QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.console)
         self.view_menu.addAction(self.console.toggleViewAction())
 
-        self.console.append(f"Started Mir Commander {__version__}")
+        self.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
         self.retranslate_ui()
 
