@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
-from mir_commander import __version__
 from mir_commander.widgets.dock_widget.base import DockWidget
 
 
@@ -19,5 +18,7 @@ class Console(DockWidget):
     def __init__(self, parent: QWidget):
         super().__init__("Console output", parent)
         self.text = Text(self)
-        self.text.appendPlainText(f"Started Mir Commander {__version__}")
         self.setWidget(self.text)
+
+    def append(self, text: str):
+        self.text.appendPlainText(text)

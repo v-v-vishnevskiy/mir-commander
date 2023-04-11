@@ -4,6 +4,7 @@ from PySide6.QtCore import QResource, Qt, Slot
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QMdiArea
 
+from mir_commander import __version__
 from mir_commander.application import Application
 from mir_commander.utils.widget import Translator
 from mir_commander.widgets import About, Settings, dock_widget
@@ -61,9 +62,11 @@ class MainWindow(Translator, QMainWindow):
         self.view_menu.addAction(self.object_dock.toggleViewAction())
 
         # Console output dock and respective its widget
-        dock = dock_widget.Console(self)
-        self.addDockWidget(Qt.BottomDockWidgetArea, dock)
-        self.view_menu.addAction(dock.toggleViewAction())
+        self.console = dock_widget.Console(self)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.console)
+        self.view_menu.addAction(self.console.toggleViewAction())
+
+        self.console.append(f"Started Mir Commander {__version__}")
 
     def setup_menubar(self):
         self._setup_menubar_file()
