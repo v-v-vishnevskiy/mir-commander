@@ -4,6 +4,12 @@ from mir_commander.utils.widget import Translator
 
 
 class DockWidget(Translator, QDockWidget):
+    """The basic class for dockable widgets.
+
+    Has been created as a wrapper of QDockWidget
+    for simple handling of translation.
+    """
+
     def __init__(self, title: str, parent: QWidget):
         super().__init__(parent)
         self._title = title

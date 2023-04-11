@@ -14,7 +14,7 @@ class MainWindow(Translator, QMainWindow):
     """The class of the main window.
 
     It must inherit Translator since in the main window we have
-    UI elements, which may transtaled on the fly.
+    UI elements, which may be transtaled on the fly.
     For this, a retranslate_ui method must be implemented!
     """
 

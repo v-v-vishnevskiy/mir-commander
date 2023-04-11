@@ -39,6 +39,8 @@ class Settings(Translator, QDialog):
         self._load_settings()
 
     def setup_ui(self):
+        """Creation of UI elements of the main Setting dialog."""
+
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
         self.setMinimumWidth(self.MIN_WIDTH)
         self.setMinimumHeight(self.MIN_HEIGHT)
@@ -69,6 +71,8 @@ class Settings(Translator, QDialog):
         self.setLayout(main_layout)
 
     def setup_data(self):
+        """Generation of particular pages (as tab widgets) with controls for settings."""
+
         self.category_items = [{"title": "General", "tabs": [(General, "")]}]
 
         root = self.categories.model().invisibleRootItem()
@@ -90,6 +94,8 @@ class Settings(Translator, QDialog):
         self.area.setCurrentIndex(0)
 
     def setup_connections(self):
+        """Establish connections for the Ok, Cancel,... etc. buttons."""
+
         self.categories.clicked.connect(self.category_changed)
         for i in range(self.area.count()):
             self.area.widget(i).currentChanged.connect(self.tab_changed)

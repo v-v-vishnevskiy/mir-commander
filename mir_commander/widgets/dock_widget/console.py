@@ -15,6 +15,11 @@ class Text(QPlainTextEdit):
 
 
 class Console(DockWidget):
+    """The console dockable widget.
+
+    Contains an instance of the Text widget for showing text information.
+    """
+
     def __init__(self, parent: QWidget):
         super().__init__("Console output", parent)
         self.text = Text(self)
