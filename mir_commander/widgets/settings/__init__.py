@@ -73,7 +73,7 @@ class Settings(Translator, QDialog):
     def setup_data(self):
         """Generation of particular pages (as tab widgets) with controls for settings."""
 
-        self.category_items = [{"title": "General", "tabs": [(General, "")]}]
+        self.category_items = [{"title": self.tr("General"), "tabs": [(General, "")]}]
 
         root = self.categories.model().invisibleRootItem()
         for i, section in enumerate(self.category_items):

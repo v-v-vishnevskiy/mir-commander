@@ -39,9 +39,9 @@ class MainWindow(Translator, QMainWindow):
 
         # Menu Bar
         self.menubar = self.menuBar()
-        self.file_menu = self.menubar.addMenu(self.tr("File"))
-        self.view_menu = self.menubar.addMenu(self.tr("View"))
-        self.help_menu = self.menubar.addMenu(self.tr("Help"))
+        self.file_menu = self.menubar.addMenu("File")
+        self.view_menu = self.menubar.addMenu("View")
+        self.help_menu = self.menubar.addMenu("Help")
         self.setup_menubar()
 
         # Status Bar
@@ -68,6 +68,8 @@ class MainWindow(Translator, QMainWindow):
 
         self.console.append(f"Started Mir Commander {__version__}")
 
+        self.retranslate_ui()
+
     def setup_menubar(self):
         self._setup_menubar_file()
         self._setup_menubar_help()
@@ -80,22 +82,25 @@ class MainWindow(Translator, QMainWindow):
         self.help_menu.addAction(self._about_action())
 
     def _settings_action(self) -> QAction:
-        action = QAction(self.tr("Settings..."), self)
+        action = QAction("Settings", self)
         action.setMenuRole(QAction.PreferencesRole)
-        action.triggered.connect(Settings(self, self.settings).show)  # Setting dialog is actually created here.
+        action.triggered.connect(Settings(self, self.settings).show)  # Settings dialog is actually created here.
+        self.settings_action = action
         return action
 
     def _quit_action(self) -> QAction:
-        action = QAction(self.tr("Quit"), self)
+        action = QAction("Quit", self)
         action.setMenuRole(QAction.QuitRole)
         action.setShortcut(QKeySequence.Quit)
         action.triggered.connect(self.quit_app)
+        self.quit_action = action
         return action
 
     def _about_action(self) -> QAction:
-        action = QAction(self.tr("About"), self)
+        action = QAction("About", self)
         action.setMenuRole(QAction.AboutRole)
         action.triggered.connect(About(self).show)
+        self.about_action = action
         return action
 
     def _save_settings(self):
@@ -109,6 +114,14 @@ class MainWindow(Translator, QMainWindow):
         pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
         size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
         self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
+
+    def retranslate_ui(self):
+        self.file_menu.setTitle(self.tr("File"))
+        self.view_menu.setTitle(self.tr("View"))
+        self.help_menu.setTitle(self.tr("Help"))
+        self.quit_action.setText(self.tr("Quit"))
+        self.settings_action.setText(self.tr("Settings..."))
+        self.about_action.setText(self.tr("About"))
 
     @Slot()
     def quit_app(self, *args, **kwargs):

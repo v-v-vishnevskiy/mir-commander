@@ -1,3 +1,4 @@
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.widgets.dock_widget.base import DockWidget
@@ -11,5 +12,5 @@ class Project(DockWidget):
     """
 
     def __init__(self, parent: QWidget):
-        super().__init__("Project", parent)
+        super().__init__(QT_TRANSLATE_NOOP("DockNames", "Project"), parent)
         # ToDo: self.setWidget(self.project_tree)

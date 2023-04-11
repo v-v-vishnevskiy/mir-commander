@@ -20,6 +20,24 @@
     </message>
 </context>
 <context>
+    <name>DockNames</name>
+    <message>
+        <location filename="../../mir_commander/widgets/dock_widget/object.py" line="15"/>
+        <source>Object</source>
+        <translation>Объект</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/dock_widget/console.py" line="25"/>
+        <source>Console output</source>
+        <translation>Консоль вывода</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/widgets/dock_widget/project.py" line="15"/>
+        <source>Project</source>
+        <translation>Проект</translation>
+    </message>
+</context>
+<context>
     <name>General</name>
     <message>
         <location filename="../../mir_commander/widgets/settings/general.py" line="33"/>
@@ -35,37 +53,37 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="43"/>
+        <location filename="../../mir_commander/main_window.py" line="119"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="44"/>
+        <location filename="../../mir_commander/main_window.py" line="120"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="45"/>
+        <location filename="../../mir_commander/main_window.py" line="121"/>
         <source>Help</source>
         <translation>Помощь</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="50"/>
+        <location filename="../../mir_commander/main_window.py" line="49"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="86"/>
+        <location filename="../../mir_commander/main_window.py" line="123"/>
         <source>Settings...</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="92"/>
+        <location filename="../../mir_commander/main_window.py" line="122"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="99"/>
+        <location filename="../../mir_commander/main_window.py" line="124"/>
         <source>About</source>
         <translation>О Mir Commander</translation>
     </message>
@@ -73,32 +91,14 @@
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../mir_commander/widgets/settings/__init__.py" line="157"/>
-        <source>Settings</source>
-        <translation>Настройки</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/settings/__init__.py" line="160"/>
+        <location filename="../../mir_commander/widgets/settings/__init__.py" line="76"/>
         <source>General</source>
         <translation>Основные</translation>
     </message>
-</context>
-<context>
-    <name>DockWidget</name>
     <message>
-        <location filename="../../mir_commander/widgets/dock_widget/base.py" line="13"/>
-        <source>Project</source>
-        <translation>Проект</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/dock_widget/base.py" line="13"/>
-        <source>Object</source>
-        <translation>Объект</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/dock_widget/base.py" line="13"/>
-        <source>Console output</source>
-        <translation>Консоль вывода</translation>
+        <location filename="../../mir_commander/widgets/settings/__init__.py" line="163"/>
+        <source>Settings</source>
+        <translation>Настройки</translation>
     </message>
 </context>
 </TS>
