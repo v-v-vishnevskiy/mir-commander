@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QMainWindow, QMdiArea
 
 from mir_commander import __version__
 from mir_commander.application import Application
+from mir_commander.utils.data.molecule import Molecule
 from mir_commander.utils.widget import Translator
 from mir_commander.widgets import About, Settings, dock_widget
 
@@ -67,6 +68,9 @@ class MainWindow(Translator, QMainWindow):
         self.view_menu.addAction(self.console.toggleViewAction())
 
         self.console.append(self.tr("Started") + f" Mir Commander {__version__}")
+
+        mol = Molecule([9, 9], [0.0, 0.0], [0.0, 0.0], [-1.0, 1.0])
+        self.console.append(str(mol))
 
         self.retranslate_ui()
 
