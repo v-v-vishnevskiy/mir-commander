@@ -9,8 +9,8 @@ class Molecule:
     Contains: list of atoms, list of child molecules-isotopolgues.
     """
 
-    atnum: List[int]  # Atomic numbers
-    atcoordx: List[float]  # Cartesian coordinates X [A]
-    atcoordy: List[float]  # Cartesian coordinates Y [A]
-    atcoordz: List[float]  # Cartesian coordinates Z [A]
-    isotopmol: List["Molecule"] = field(default_factory=list)  # List of isotopologues
+    atomic_num: List[int]  # Atomic numbers
+    atom_cx: List[float]  # Cartesian coordinates X [A]
+    atom_cy: List[float]  # Cartesian coordinates Y [A]
+    atom_cz: List[float]  # Cartesian coordinates Z [A]
+    isotop_mol: List["Molecule"] = field(default_factory=list)  # List of isotopologues
