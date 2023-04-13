@@ -3,7 +3,10 @@ import os
 from PySide6.QtCore import QDir, QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
+from mir_commander.recent_projects import RecentProjects
 from mir_commander.settings import Settings
+
+CONFIG_DIR = os.path.join(QDir.homePath(), ".mircmd")
 
 
 class Application(QApplication):
@@ -13,7 +16,8 @@ class Application(QApplication):
         super().__init__(*args, **kwargs)
 
         self.translator = QTranslator(self)
-        self.settings = Settings(os.path.join(QDir.homePath(), ".mircmd", "config"))
+        self.settings = Settings(os.path.join(CONFIG_DIR, "config"))
+        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.json"))
         self.set_translation()
 
         self.settings.set_default("language", "system")
