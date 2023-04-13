@@ -1,2 +1,8 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class DataStructure:
-    pass
+    """The basic class for all data structures."""
+
+    title: str
