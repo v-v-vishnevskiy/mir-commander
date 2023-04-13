@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from typing import List
 
+from mir_commander.data_structures.base import DataStructure
+
 
 @dataclass
-class Molecule:
+class Molecule(DataStructure):
     """Class of molecules.
 
     Contains: list of atoms, list of child molecules-isotopolgues.
