@@ -1,35 +1,41 @@
-import os
+from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QResource, Qt, Slot
-from PySide6.QtGui import QAction, QIcon, QKeySequence
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QMdiArea
 
 from mir_commander import __version__
-from mir_commander.application import Application
+from mir_commander.projects.base import Project
 from mir_commander.utils.widget import Translator
-from mir_commander.widgets import About, Settings, dock_widget
+from mir_commander.widgets import About
+from mir_commander.widgets import Settings as WidgetSettings
+from mir_commander.widgets import dock_widget
+
+if TYPE_CHECKING:
+    from mir_commander.application import Application
 
 
 class MainWindow(Translator, QMainWindow):
     """The class of the main window.
 
     It must inherit Translator since in the main window we have
-    UI elements, which may be transtaled on the fly.
+    UI elements, which may be translated on the fly.
     For this, a retranslate_ui method must be implemented!
     """
 
-    def __init__(self, app: Application):
-        QMainWindow.__init__(self, None)
+    def __init__(self, project: Project, app: "Application"):
+        super().__init__(None)
+        self._is_quit = False
+        self.project = project
         self.app = app
-        self.settings = app.settings
+        self.settings = project.settings
+        self.global_settings = app.settings
 
-        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
-
-        self.setWindowTitle("Mir Commander")
+        self.setWindowTitle(f"Mir Commander – {project.title}")
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
         # Mdi area as a central widget
-        self.mdi_area = QMdiArea()
+        self.mdi_area = QMdiArea(self)
         self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self.mdi_area)
@@ -75,16 +81,24 @@ class MainWindow(Translator, QMainWindow):
         self._setup_menubar_help()
 
     def _setup_menubar_file(self):
+        self.file_menu.addAction(self._close_project_action())
         self.file_menu.addAction(self._settings_action())
         self.file_menu.addAction(self._quit_action())
 
     def _setup_menubar_help(self):
         self.help_menu.addAction(self._about_action())
 
+    def _close_project_action(self, checked: bool = False):
+        action = QAction("Close Project", self)
+        action.triggered.connect(self.close)
+        self.close_project_action = action
+        return action
+
     def _settings_action(self) -> QAction:
         action = QAction("Settings", self)
         action.setMenuRole(QAction.PreferencesRole)
-        action.triggered.connect(Settings(self, self.settings).show)  # Settings dialog is actually created here.
+        # Settings dialog is actually created here.
+        action.triggered.connect(WidgetSettings(self, self.global_settings).show)
         self.settings_action = action
         return action
 
@@ -92,7 +106,7 @@ class MainWindow(Translator, QMainWindow):
         action = QAction("Quit", self)
         action.setMenuRole(QAction.QuitRole)
         action.setShortcut(QKeySequence.Quit)
-        action.triggered.connect(self.quit_app)
+        action.triggered.connect(self.app.quit)
         self.quit_action = action
         return action
 
@@ -105,28 +119,29 @@ class MainWindow(Translator, QMainWindow):
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
-        self.settings.set("main_window/pos", [self.pos().x(), self.pos().y()])
-        self.settings.set("main_window/size", [self.size().width(), self.size().height()])
+        self.settings.set("MainWindow/pos", [self.pos().x(), self.pos().y()])
+        self.settings.set("MainWindow/size", [self.size().width(), self.size().height()])
 
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
-        size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
+        pos = self.settings.get("MainWindow/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
+        size = self.settings.get("MainWindow/size", [geometry.width() * 0.75, geometry.height() * 0.75])
         self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
     def retranslate_ui(self):
+        # menubar
         self.file_menu.setTitle(self.tr("File"))
         self.view_menu.setTitle(self.tr("View"))
         self.help_menu.setTitle(self.tr("Help"))
+
+        # actions
+        self.close_project_action.setText(self.tr("Close Project"))
         self.quit_action.setText(self.tr("Quit"))
         self.settings_action.setText(self.tr("Settings..."))
         self.about_action.setText(self.tr("About"))
 
-    @Slot()
-    def quit_app(self, *args, **kwargs):
+    def closeEvent(self, event: QCloseEvent):
         self._save_settings()
-        self.app.quit()
-
-    def closeEvent(self, *args, **kwargs):
-        self._save_settings()
+        self.app.close_project(self)
+        event.accept()

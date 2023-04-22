@@ -1,10 +1,12 @@
+import argparse
 import sys
 
 from mir_commander.application import Application
-from mir_commander.main_window import MainWindow
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="Mir Commander")
+    parser.add_argument("--project", default="", help="Path to project directory")
+    args = parser.parse_args()
+
     app = Application([])
-    mainWindow = MainWindow(app)
-    mainWindow.show()
-    sys.exit(app.exec())
+    sys.exit(app.run(args.project))

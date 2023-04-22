@@ -1,10 +1,15 @@
 import os
+from typing import Dict
 
-from PySide6.QtCore import QDir, QLocale, QTranslator
+from PySide6.QtCore import QDir, QLocale, QResource, QTranslator
 from PySide6.QtWidgets import QApplication
 
+from mir_commander import exceptions
+from mir_commander.main_window import MainWindow
+from mir_commander.projects import load_project
 from mir_commander.recent_projects import RecentProjects
 from mir_commander.settings import Settings
+from mir_commander.widgets.recent_projects import RecentProjects as RecentProjectsWidget
 
 CONFIG_DIR = os.path.join(QDir.homePath(), ".mircmd")
 
@@ -14,24 +19,73 @@ class Application(QApplication):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._quitting = False
 
-        self.translator = QTranslator(self)
+        self._projects: Dict[int, MainWindow] = {}
+        self._recent_projects_widget = RecentProjectsWidget(self)
+
+        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
+
+        self._translator = QTranslator(self)
         self.settings = Settings(os.path.join(CONFIG_DIR, "config"))
-        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.json"))
-        self.set_translation()
+        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.yaml"))
+        self._set_translation()
 
         self.settings.set_default("language", "system")
-        self.settings.add_apply_callback("language", self.set_translation)
+        self.settings.add_apply_callback("language", self._set_translation)
 
-    def set_translation(self):
+    def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
 
         language = self.settings["language"]
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
-        self.removeTranslator(self.translator)
+        self.removeTranslator(self._translator)
         i18n_path = os.path.join(os.path.dirname(__file__), "..", "resources", "i18n")
-        if not self.translator.load(os.path.join(i18n_path, f"app_{language}")):
-            self.translator.load(os.path.join(i18n_path, "app_en"))
-        self.installTranslator(self.translator)
+        if not self._translator.load(os.path.join(i18n_path, f"app_{language}")):
+            self._translator.load(os.path.join(i18n_path, "app_en"))
+        self.installTranslator(self._translator)
+
+    def open_project(self, path: str) -> bool:
+        try:
+            project = load_project(path)
+        except exceptions.LoadProject:
+            # TODO: Show message from the exception
+            return False
+
+        if project:
+            main_window = MainWindow(project, self)
+            self._projects[id(main_window)] = main_window
+            self.recent_projects.add_opened(project.title, project.path)
+            self.recent_projects.add_recent(project.title, project.path)
+            main_window.show()
+            return True
+        return False
+
+    def close_project(self, main_window: MainWindow):
+        del self._projects[id(main_window)]
+
+        self.recent_projects.add_recent(main_window.project.title, main_window.project.path)
+        if not self._quitting:
+            self.recent_projects.remove_opened(main_window.project.path)
+
+        if not self._projects:
+            self._recent_projects_widget.show()
+
+    def quit(self):
+        self._quitting = True
+        for value in list(self._projects.values()):
+            value.close()
+        super().quit()
+
+    def run(self, project: str) -> int:
+        if project:
+            self.open_project(project)
+        else:
+            if self.recent_projects.opened:
+                for item in self.recent_projects.opened:
+                    self.open_project(item.path)
+            else:
+                self._recent_projects_widget.show()
+        return self.exec()

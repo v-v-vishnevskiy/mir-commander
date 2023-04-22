@@ -1,35 +1,30 @@
-import json
 import logging
 import os
 from dataclasses import asdict, dataclass, field
-from typing import List, Union
+from typing import List
 
 import fastjsonschema
+import yaml
 
 logger = logging.getLogger(__name__)
 
 
+LIST_PROJECTS = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {"title": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}},
+        "required": ["title", "path"],
+    },
+    "minItems": 0,
+}
+
+
 CONFIG_SCHEMA = {
     "type": "object",
-    "additionalProperties": True,
-    "properties": {
-        "last_opened": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {"title": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}},
-            "required": ["title", "path"],
-        },
-        "recent": {
-            "type": "array",
-            "item": {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {"title": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}},
-                "required": ["title", "path"],
-            },
-            "minItems": 0,
-        },
-    },
+    "additionalProperties": False,
+    "properties": {"opened": LIST_PROJECTS, "recent": LIST_PROJECTS},
 }
 
 
@@ -41,7 +36,7 @@ class Project:
 
 @dataclass
 class Config:
-    last_opened: Union[None, Project] = None
+    opened: List[Project] = field(default_factory=list)
     recent: List[Project] = field(default_factory=list)
 
 
@@ -58,9 +53,9 @@ class RecentProjects:
                 data = f.read()
 
             try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                logger.error(f"Invalid JSON format for {self._config_path}")
+                data = yaml.load(data, Loader=yaml.CLoader)
+            except yaml.YAMLError:
+                logger.error(f"Invalid YAML format for {self._config_path}")
                 return
 
             try:
@@ -69,34 +64,46 @@ class RecentProjects:
                 logger.error(f"Invalid structure for {self._config_path}")
                 return
 
-            if "last_opened" in data:
-                self._config.last_opened = Project(**data["last_opened"])
+            for project in data.get("opened", []):
+                self._config.opened.append(Project(**project))
 
             for project in data.get("recent", []):
                 self._config.recent.append(Project(**project))
 
     def dump(self):
         with open(self._config_path, "w") as f:
-            f.write(json.dumps(asdict(self._config), indent=4))
+            f.write(yaml.dump(asdict(self._config), Dumper=yaml.CDumper))
 
-    def last_opened(self) -> Union[None, Project]:
-        return self._config.last_opened
+    @property
+    def opened(self) -> List[Project]:
+        return self._config.opened
 
+    @property
     def recent(self) -> List[Project]:
         return self._config.recent
 
-    def set_last_opened(self, project: Project):
-        self._config.last_opened = project
+    def add_opened(self, title: str, path: str):
+        self.remove_opened(path, dump=False)
+        self._config.opened.insert(0, Project(title, path))
+        self.dump()
 
-    def add_recent(self, project: Project):
-        for i, recent in enumerate(self._config.recent):
-            if recent.path == project.path:
+    def add_recent(self, title: str, path: str):
+        self.remove_recent(path, dump=False)
+        self._config.recent.insert(0, Project(title, path))
+        self.dump()
+
+    def remove_opened(self, path: str, dump: bool = True):
+        for i, item in enumerate(self._config.opened):
+            if item.path == path:
+                self._config.opened.pop(i)
+                break
+        if dump:
+            self.dump()
+
+    def remove_recent(self, path: str, dump: bool = True):
+        for i, item in enumerate(self._config.recent):
+            if item.path == path:
                 self._config.recent.pop(i)
                 break
-        self._config.recent.insert(0, project)
-
-    def unset_last_opened(self):
-        self._config.last_opened = None
-
-    def pop_recent(self, index: int) -> Project:
-        return self._config.recent.pop(index)
+        if dump:
+            self.dump()
