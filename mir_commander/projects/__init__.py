@@ -15,8 +15,8 @@ def load_project(path: str) -> Project:
     config_path = os.path.join(path, ".mircmd", "config")
 
     if not os.path.exists(config_path):
-        msg = "Project config file is not exist"
-        logger.error(f"{msg} for {path}")
+        msg = "Path to config file does not exist"
+        logger.error(f"{msg}: {path}")
         raise exceptions.LoadProject(msg)
 
     settings = QSettings(config_path, QSettings.Format.IniFormat)
