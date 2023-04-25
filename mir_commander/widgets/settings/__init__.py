@@ -25,7 +25,7 @@ class Settings(Translator, QDialog):
 
     MIN_WIDTH = 800
     MIN_HEIGHT = 600
-    SETTINGS_GROUP = "SettingsWindow"
+    SETTINGS_GROUP = "settings_window"
 
     def __init__(self, parent, settings: BaseSettings):
         super().__init__(parent)
@@ -112,12 +112,12 @@ class Settings(Translator, QDialog):
     def category_changed(self, index: QModelIndex):
         item = self.categories.model().itemFromIndex(index)
         self.area.setCurrentIndex(item.position)
-        self.settings.set(f"{self.SETTINGS_GROUP}/current_category", item.position)
-        self.settings.set(f"{self.SETTINGS_GROUP}/current_tab", self.area.currentWidget().currentIndex())
+        self.settings[f"{self.SETTINGS_GROUP}.current_category"] = item.position
+        self.settings[f"{self.SETTINGS_GROUP}.current_tab"] = self.area.currentWidget().currentIndex()
 
     @Slot()
     def tab_changed(self, index: int):
-        self.settings.set(f"{self.SETTINGS_GROUP}/current_tab", index)
+        self.settings[f"{self.SETTINGS_GROUP}.current_tab"] = index
 
     @Slot()
     def restore_defaults_clicked(self, button: QAbstractButton):
@@ -142,8 +142,8 @@ class Settings(Translator, QDialog):
         self.accept()
 
     def _load_settings(self):
-        pos = self.settings[f"{self.SETTINGS_GROUP}/pos"]
-        size = self.settings[f"{self.SETTINGS_GROUP}/size"]
+        pos = self.settings[f"{self.SETTINGS_GROUP}.pos"]
+        size = self.settings[f"{self.SETTINGS_GROUP}.size"]
         if pos and size:
             self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
 
@@ -171,10 +171,10 @@ class Settings(Translator, QDialog):
         self.buttons.button(QDialogButtonBox.StandardButton.Apply).setEnabled(self.settings.has_changes)
 
     def moveEvent(self, event: QMoveEvent):
-        self.settings.set(f"{self.SETTINGS_GROUP}/pos", [event.pos().x(), event.pos().y()])
+        self.settings[f"{self.SETTINGS_GROUP}.pos"] = [event.pos().x(), event.pos().y()]
 
     def resizeEvent(self, event: QResizeEvent):
-        self.settings.set(f"{self.SETTINGS_GROUP}/size", [event.size().width(), event.size().height()])
+        self.settings[f"{self.SETTINGS_GROUP}.size"] = [event.size().width(), event.size().height()]
 
     def closeEvent(self, *args, **kwargs):
         self.settings.clear()
