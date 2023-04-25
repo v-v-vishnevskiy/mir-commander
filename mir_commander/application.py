@@ -47,12 +47,16 @@ class Application(QApplication):
             self._translator.load(os.path.join(i18n_path, "app_en"))
         self.installTranslator(self._translator)
 
-    def open_project(self, path: str) -> bool:
+    def open_project(self, path: str, raise_exc: bool = False) -> bool:
         try:
-            project = load_project(path)
+            project = load_project(path, CONFIG_DIR)
         except exceptions.LoadProject:
+            if raise_exc:
+                raise
             # TODO: Show message from the exception
             return False
+
+        print(456)
 
         if project:
             main_window = MainWindow(project, self)

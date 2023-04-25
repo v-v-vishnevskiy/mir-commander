@@ -2,8 +2,9 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
 from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QMessageBox, QPushButton, QVBoxLayout
 
+from mir_commander import exceptions
 from mir_commander.utils.widget import Translator
 
 if TYPE_CHECKING:
@@ -15,13 +16,8 @@ class ListView(QListView):
         index = self.indexAt(event.pos())
         item = self.model().itemFromIndex(index)
         if item:
-            item = self.model().itemFromIndex(index)
-            if item.isEnabled():
-                self.setCurrentIndex(index)
-                self.setCursor(Qt.CursorShape.PointingHandCursor)
-            else:
-                self.clearSelection()
-                self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.clearSelection()
+            self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             self.clearSelection()
             self.setCursor(Qt.CursorShape.ArrowCursor)
@@ -38,6 +34,9 @@ class RecentProjects(Translator, QDialog):
         self.setup_connections()
 
     def setup_ui(self):
+        self.error = QMessageBox(self)
+        self.error.setIcon(QMessageBox.Icon.Critical)
+
         layout = QVBoxLayout()
 
         self.setLayout(layout)
@@ -75,8 +74,6 @@ class RecentProjects(Translator, QDialog):
                 msg = " (unavailable)"
             item = QStandardItem(f"{project.title}{msg}\n{project.path}")
             item.project_path = project.path
-            if not project.exists:
-                item.setEnabled(False)
             item.setEditable(False)
             root.appendRow(item)
 
@@ -93,18 +90,25 @@ class RecentProjects(Translator, QDialog):
     def recent_open(self, index: QModelIndex):
         item = self.recent.model().itemFromIndex(index)
         if item.isEnabled():
-            if self.app.open_project(item.project_path):
-                self.hide()
+            self._open_project(item.project_path)
 
     @Slot()
     def pb_open_clicked(self, *args, **kwargs):
         dialog = QFileDialog(self, self.tr("Open Project"), QDir.homePath())
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
-            if self.app.open_project(dialog.selectedFiles()[0]):
-                self.hide()
+            self._open_project(dialog.selectedFiles()[0])
 
     def retranslate_ui(self):
         self.setWindowTitle(self.tr("Recent Projects"))
         self.pb_open_project.setText(self.tr("Open"))
         self.pb_cancel.setText(self.tr("Cancel"))
+
+    def _open_project(self, path: str):
+        try:
+            self.app.open_project(path, raise_exc=True)
+            self.hide()
+        except exceptions.LoadProject as e:
+            self.error.setText(str(e))
+            self.error.setInformativeText(e.details)
+            self.error.show()
