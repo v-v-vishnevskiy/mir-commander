@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from mir_commander.data_structures.base import DataStructure
@@ -19,10 +19,4 @@ class Geometry(DataStructure):
 
 @dataclass
 class Molecule(DataStructure):
-    """Class of molecules.
-
-    Contains: list of atoms, list of child molecules-isotopolgues.
-    """
-
-    geometries: List["Geometry"] = field(default_factory=list)  # List of geometries
-    isotop_mols: List["Molecule"] = field(default_factory=list)  # List of isotopologues
+    """Class of molecules."""
