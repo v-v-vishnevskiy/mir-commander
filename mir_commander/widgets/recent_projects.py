@@ -16,8 +16,8 @@ class ListView(QListView):
         index = self.indexAt(event.pos())
         item = self.model().itemFromIndex(index)
         if item:
-            self.clearSelection()
-            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.setCurrentIndex(index)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
         else:
             self.clearSelection()
             self.setCursor(Qt.CursorShape.ArrowCursor)
