@@ -6,6 +6,3 @@ class Molecule(Project):
 
     Instances of this class are for collecting of molecules.
     """
-
-    def __init__(self, title: str):
-        super().__init__(title)

@@ -1,8 +1,8 @@
-from mir_commander.utils.items_model import ItemsModel
+from mir_commander.utils.item import Item
 
 
 class Project:
     """The most basic class of projects."""
 
-    def __init__(self, title: str):
-        self.items = ItemsModel(title)
+    def __init__(self):
+        self.root_item = Item("root")
