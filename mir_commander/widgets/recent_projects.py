@@ -1,13 +1,25 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QDir, QModelIndex, Slot
-from PySide6.QtGui import QStandardItem, QStandardItemModel
+from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
+from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QPushButton, QVBoxLayout
 
 from mir_commander.utils.widget import Translator
 
 if TYPE_CHECKING:
     from mir_commander.application import Application
+
+
+class ListView(QListView):
+    def mouseMoveEvent(self, event: QMoveEvent) -> None:
+        index = self.indexAt(event.pos())
+        item = self.model().itemFromIndex(index)
+        if item:
+            self.setCurrentIndex(index)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+        else:
+            self.clearSelection()
+            self.setCursor(Qt.CursorShape.ArrowCursor)
 
 
 class RecentProjects(Translator, QDialog):
@@ -27,7 +39,8 @@ class RecentProjects(Translator, QDialog):
         self.setMinimumWidth(600)
         self.setMinimumHeight(450)
 
-        self.recent = QListView(self)
+        self.recent = ListView(self)
+        self.recent.setMouseTracking(True)
         self.recent.setModel(QStandardItemModel(self))
 
         self.pb_open_project = QPushButton()
@@ -62,7 +75,7 @@ class RecentProjects(Translator, QDialog):
         root.removeRows(0, root.rowCount())
 
     def setup_connections(self):
-        self.recent.doubleClicked.connect(self.recent_open)
+        self.recent.clicked.connect(self.recent_open)
         self.pb_open_project.clicked.connect(self.pb_open_clicked)
         self.pb_cancel.clicked.connect(self.reject)
 
