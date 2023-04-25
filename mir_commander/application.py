@@ -56,8 +56,6 @@ class Application(QApplication):
             # TODO: Show message from the exception
             return False
 
-        print(456)
-
         if project:
             main_window = MainWindow(project, self)
             self._projects[id(main_window)] = main_window
