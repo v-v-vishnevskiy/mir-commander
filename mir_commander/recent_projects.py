@@ -33,6 +33,10 @@ class Project:
     title: str
     path: str
 
+    @property
+    def exists(self) -> bool:
+        return os.path.exists(self.path)
+
 
 @dataclass
 class Config:
@@ -48,6 +52,8 @@ class RecentProjects:
         self.load()
 
     def load(self):
+        is_modified = False
+        self._config = Config()
         if os.path.exists(self._config_path):
             with open(self._config_path, "r") as f:
                 data = f.read()
@@ -65,10 +71,16 @@ class RecentProjects:
                 return
 
             for project in data.get("opened", []):
-                self._config.opened.append(Project(**project))
+                if os.path.exists(project["path"]):
+                    self._config.opened.append(Project(**project))
+                else:
+                    is_modified = True
 
             for project in data.get("recent", []):
                 self._config.recent.append(Project(**project))
+
+        if is_modified:
+            self.dump()
 
     def dump(self):
         with open(self._config_path, "w") as f:

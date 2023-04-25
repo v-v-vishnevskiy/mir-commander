@@ -16,7 +16,7 @@ def load_project(path: str) -> Project:
 
     if not os.path.exists(config_path):
         msg = "Path to config file does not exist"
-        logger.error(f"{msg}: {path}")
+        logger.error(f"{msg}: {config_path}")
         raise exceptions.LoadProject(msg)
 
     settings = QSettings(config_path, QSettings.Format.IniFormat)

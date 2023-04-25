@@ -71,6 +71,7 @@ class Application(QApplication):
             self.recent_projects.remove_opened(main_window.project.path)
 
         if not self._projects:
+            self.recent_projects.load()  # reload
             self._recent_projects_widget.show()
 
     def quit(self):

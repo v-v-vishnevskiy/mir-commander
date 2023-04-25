@@ -15,8 +15,13 @@ class ListView(QListView):
         index = self.indexAt(event.pos())
         item = self.model().itemFromIndex(index)
         if item:
-            self.setCurrentIndex(index)
-            self.setCursor(Qt.CursorShape.PointingHandCursor)
+            item = self.model().itemFromIndex(index)
+            if item.isEnabled():
+                self.setCurrentIndex(index)
+                self.setCursor(Qt.CursorShape.PointingHandCursor)
+            else:
+                self.clearSelection()
+                self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             self.clearSelection()
             self.setCursor(Qt.CursorShape.ArrowCursor)
@@ -65,8 +70,13 @@ class RecentProjects(Translator, QDialog):
         self.clear_data()
         root = self.recent.model().invisibleRootItem()
         for project in self.app.recent_projects.recent:
-            item = QStandardItem(f"{project.title}\n{project.path}")
+            msg = ""
+            if not project.exists:
+                msg = " (unavailable)"
+            item = QStandardItem(f"{project.title}{msg}\n{project.path}")
             item.project_path = project.path
+            if not project.exists:
+                item.setEnabled(False)
             item.setEditable(False)
             root.appendRow(item)
 
@@ -82,8 +92,9 @@ class RecentProjects(Translator, QDialog):
     @Slot()
     def recent_open(self, index: QModelIndex):
         item = self.recent.model().itemFromIndex(index)
-        if self.app.open_project(item.project_path):
-            self.hide()
+        if item.isEnabled():
+            if self.app.open_project(item.project_path):
+                self.hide()
 
     @Slot()
     def pb_open_clicked(self, *args, **kwargs):
