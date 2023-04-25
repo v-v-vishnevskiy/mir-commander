@@ -1,7 +1,7 @@
 import os
 
 from mir_commander.settings import Settings
-from mir_commander.utils.items_model import ItemsModel
+from mir_commander.utils.item import Item
 
 
 class Project:
@@ -10,7 +10,7 @@ class Project:
     def __init__(self, path: str):
         self.path = os.path.normpath(path)
         self.settings = Settings(os.path.join(self.path, ".mircmd", "config"))
-        self.items = ItemsModel("")
+        self.root_item = Item("root")
 
     @property
     def title(self) -> str:
