@@ -15,11 +15,8 @@ class Project(Category):
     def setup_data(self):
         self._setup_project_name_data()
 
-    def restore_settings(self):
-        self.le_project_name.setText(self.project_settings["name"])
-
     def post_init(self):
-        self.project_settings.add_restore_callback("name", self.restore_settings)
+        self.le_project_name.textChanged.connect(self._project_name_changed)
 
     def retranslate_ui(self):
         self.l_project_name.setText(self.tr("Project name:"))
@@ -38,7 +35,6 @@ class Project(Category):
 
     def _setup_project_name_data(self):
         self.le_project_name.setText(self.project_settings["name"])
-        self.le_project_name.textChanged.connect(self._project_name_changed)
 
     @Slot()
     def _project_name_changed(self, text: str):
