@@ -2,6 +2,10 @@ class Error(Exception):
     pass
 
 
+class Config(Error):
+    pass
+
+
 class LoadProject(Error):
     def __init__(self, msg: str, details: str = ""):
         super().__init__(msg)
