@@ -37,8 +37,7 @@ def load_project(path: str, app_config_dir: str) -> Project:
     # If this is a file, then it may be from some other program
     # and we can try to import its data and create a project on the fly.
     if os.path.isfile(path):
-        project = import_file(path)
-        return project
+        return import_file(path)
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):
         config_path = os.path.join(path, ".mircmd", "config.yaml")

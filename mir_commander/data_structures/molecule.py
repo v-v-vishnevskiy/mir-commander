@@ -27,7 +27,7 @@ class AtomicCoordinates(DataStructure):
 class Molecule(DataStructure):
     """Class of molecules."""
 
-    natoms: int = 0  # Number of atoms
+    n_atoms: int = 0  # Number of atoms
     atomic_num: np.ndarray = field(default_factory=lambda: np.empty(0, dtype="int16"))  # Atomic numbers
     charge: int = 0
     multiplicity: int = 1
