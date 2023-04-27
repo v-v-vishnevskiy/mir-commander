@@ -22,7 +22,7 @@ class Config:
                 self.set(key, {})
             self._data = self.get(key)
         else:
-            self._path = os.path.normpath(path)
+            self._path = os.path.normpath(path) if path else ""
             self._load()
             self._data = self._root_data
 
