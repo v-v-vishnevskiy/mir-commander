@@ -1,7 +1,11 @@
+from typing import TYPE_CHECKING
+
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.settings import Settings
 from mir_commander.utils.widget import Translator
+
+if TYPE_CHECKING:
+    from mir_commander.widgets.settings import Settings
 
 
 class Category(Translator, QWidget):
@@ -11,9 +15,11 @@ class Category(Translator, QWidget):
     initialization method, see the code below.
     """
 
-    def __init__(self, parent, settings: Settings):
+    def __init__(self, parent: "Settings"):
         super().__init__(parent)
-        self.settings = settings
+        self.global_settings = parent.global_settings  # type: ignore
+        self.project_settings = parent.project_settings  # type: ignore
+
         layout = self.setup_ui()
         self.setup_data()
         self.retranslate_ui()

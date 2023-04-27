@@ -9,6 +9,7 @@ from mir_commander.main_window import MainWindow
 from mir_commander.projects import load_project
 from mir_commander.recent_projects import RecentProjects
 from mir_commander.settings import Settings
+from mir_commander.utils.config import Config
 from mir_commander.widgets.recent_projects import RecentProjects as RecentProjectsWidget
 
 CONFIG_DIR = os.path.join(QDir.homePath(), ".mircmd")
@@ -21,14 +22,16 @@ class Application(QApplication):
         super().__init__(*args, **kwargs)
         self._quitting = False
 
+        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
+
+        self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
+        self.settings = Settings(self.config)
+        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.yaml"))
+
         self._projects: Dict[int, MainWindow] = {}
         self._recent_projects_widget = RecentProjectsWidget(self)
 
-        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
-
         self._translator = QTranslator(self)
-        self.settings = Settings(os.path.join(CONFIG_DIR, "config"))
-        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.yaml"))
         self._set_translation()
 
         self.settings.set_default("language", "system")
@@ -57,10 +60,10 @@ class Application(QApplication):
             return False
 
         if project:
-            main_window = MainWindow(project, self)
+            main_window = MainWindow(self, project)
             self._projects[id(main_window)] = main_window
-            self.recent_projects.add_opened(project.title, project.path)
-            self.recent_projects.add_recent(project.title, project.path)
+            self.recent_projects.add_opened(project.name, project.path)
+            self.recent_projects.add_recent(project.name, project.path)
             main_window.show()
             return True
         return False
@@ -68,7 +71,7 @@ class Application(QApplication):
     def close_project(self, main_window: MainWindow):
         del self._projects[id(main_window)]
 
-        self.recent_projects.add_recent(main_window.project.title, main_window.project.path)
+        self.recent_projects.add_recent(main_window.project.name, main_window.project.path)
         if not self._quitting:
             self.recent_projects.remove_opened(main_window.project.path)
 

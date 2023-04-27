@@ -8,7 +8,7 @@ from mir_commander import __version__
 from mir_commander.projects.base import Project
 from mir_commander.utils.widget import Translator
 from mir_commander.widgets import About
-from mir_commander.widgets import Settings as WidgetSettings
+from mir_commander.widgets import Settings as SettingsWidget
 from mir_commander.widgets import dock_widget
 
 if TYPE_CHECKING:
@@ -23,15 +23,15 @@ class MainWindow(Translator, QMainWindow):
     For this, a retranslate_ui method must be implemented!
     """
 
-    def __init__(self, project: Project, app: "Application"):
+    def __init__(self, app: "Application", project: Project):
         super().__init__(None)
-        self._is_quit = False
-        self.project = project
         self.app = app
-        self.settings = project.settings
-        self.global_settings = app.settings
+        self.project = project
 
-        self.setWindowTitle(f"Mir Commander – {project.title}")
+        self.project.settings.add_apply_callback("name", self._set_window_title)
+
+        self._config = self.project.config.nested("widgets.main_window")
+
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
         # Mdi area as a central widget
@@ -75,6 +75,10 @@ class MainWindow(Translator, QMainWindow):
         self.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
         self.retranslate_ui()
+        self._set_window_title()
+
+    def _set_window_title(self):
+        self.setWindowTitle(f"Mir Commander – {self.project.name}")
 
     def setup_menubar(self):
         self._setup_menubar_file()
@@ -98,7 +102,7 @@ class MainWindow(Translator, QMainWindow):
         action = QAction("Settings", self)
         action.setMenuRole(QAction.PreferencesRole)
         # Settings dialog is actually created here.
-        action.triggered.connect(WidgetSettings(self, self.global_settings).show)
+        action.triggered.connect(SettingsWidget(self).show)
         self.settings_action = action
         return action
 
@@ -119,15 +123,15 @@ class MainWindow(Translator, QMainWindow):
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
-        self.settings.set("main_window/pos", [self.pos().x(), self.pos().y()])
-        self.settings.set("main_window/size", [self.size().width(), self.size().height()])
+        self._config["pos"] = [self.pos().x(), self.pos().y()]
+        self._config["size"] = [self.size().width(), self.size().height()]
 
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self.settings.get("main_window/pos", [geometry.width() * 0.125, geometry.height() * 0.125])
-        size = self.settings.get("main_window/size", [geometry.width() * 0.75, geometry.height() * 0.75])
-        self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
+        pos = self._config["pos"] or [geometry.width() * 0.125, geometry.height() * 0.125]
+        size = self._config["size"] or [geometry.width() * 0.75, geometry.height() * 0.75]
+        self.setGeometry(pos[0], pos[1], size[0], size[1])
 
     def retranslate_ui(self):
         # menubar

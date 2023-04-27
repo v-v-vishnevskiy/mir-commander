@@ -22,11 +22,11 @@ class General(Category):
         self._setup_language_data()
 
     def restore_settings(self):
-        index = self.cb_language.findData(self.settings["language"])
+        index = self.cb_language.findData(self.global_settings["language"])
         self.cb_language.setCurrentIndex(index)
 
     def post_init(self):
-        self.settings.add_restore_callback("language", self.restore_settings)
+        self.global_settings.add_restore_callback("language", self.restore_settings)
 
     def retranslate_ui(self):
         self.l_language.setText(self.tr("Language:"))
@@ -46,7 +46,7 @@ class General(Category):
 
     def _setup_language_data(self):
         self._languages = [("System", "system"), ("English", "en"), ("Русский", "ru")]
-        language = self.settings["language"]
+        language = self.global_settings["language"]
         current_index = 0
         self.cb_language.addItem(self.tr(self._languages[0][0]), self._languages[0][1])
         for i, item in enumerate(self._languages[1:], 1):
@@ -58,4 +58,4 @@ class General(Category):
 
     @Slot()
     def _language_changed(self, index: int):
-        self.settings["language"] = self._languages[index][1]
+        self.global_settings["language"] = self._languages[index][1]
