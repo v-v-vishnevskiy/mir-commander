@@ -25,7 +25,7 @@ class Settings:
         return self.get(key)
 
     def __setitem__(self, key: str, value: Any):
-        self.set(key, value, False)
+        self.set(key, value)
 
     def get(self, key: str, default: Optional[Any] = None) -> Any:
         if key in self._changes:
@@ -35,27 +35,19 @@ class Settings:
         else:
             return self._defaults.get(key, default)
 
-    def set(self, key: str, value: Any, write: bool = True):
+    def set(self, key: str, value: Any):
         current_value = self._config[key]
-        if write:
-            if current_value != value:
-                self._config[key] = value
-                for fn in self._apply_callbacks.get(key, []):
-                    fn()
+        if current_value == value:
+            if not self._applied_changes:
                 if key in self._changes:
                     del self._changes[key]
-        else:
-            if current_value == value:
-                if not self._applied_changes:
-                    if key in self._changes:
-                        del self._changes[key]
-                elif key in self._applied_changes and self._applied_changes[key] == value:
-                    if key in self._changes:
-                        del self._changes[key]
-                else:
-                    self._changes[key] = value
+            elif key in self._applied_changes and self._applied_changes[key] == value:
+                if key in self._changes:
+                    del self._changes[key]
             else:
                 self._changes[key] = value
+        else:
+            self._changes[key] = value
         self._changed_callback()
 
     def set_default(self, key: str, value: Any):
