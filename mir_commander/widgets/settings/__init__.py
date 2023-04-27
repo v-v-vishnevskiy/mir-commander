@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -11,9 +13,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mir_commander.settings import Settings as BaseSettings
 from mir_commander.utils.widget import Translator
 from mir_commander.widgets.settings.general import General
+from mir_commander.widgets.settings.project import Project
+
+if TYPE_CHECKING:
+    from mir_commander.main_window import MainWindow
 
 
 class Settings(Translator, QDialog):
@@ -27,9 +32,12 @@ class Settings(Translator, QDialog):
     MIN_HEIGHT = 600
     SETTINGS_GROUP = "settings_window"
 
-    def __init__(self, parent, settings: BaseSettings):
+    def __init__(self, parent: "MainWindow"):
         super().__init__(parent)
-        self.settings = settings
+        self._config = parent.project.config.nested("widgets.settings_window")
+        self.global_settings = parent.app.settings
+        self.project_settings = parent.project.settings
+        self._settings = [self.global_settings, self.project_settings]
 
         self.setup_ui()
         self.setup_data()
@@ -73,7 +81,10 @@ class Settings(Translator, QDialog):
     def setup_data(self):
         """Generation of particular pages (as tab widgets) with controls for settings."""
 
-        self.category_items = [{"title": self.tr("General"), "tabs": [(General, "")]}]
+        self.category_items = [
+            {"title": self.tr("Project"), "tabs": [(Project, "")]},
+            {"title": self.tr("General"), "tabs": [(General, "")]},
+        ]
 
         root = self.categories.model().invisibleRootItem()
         for i, section in enumerate(self.category_items):
@@ -87,7 +98,7 @@ class Settings(Translator, QDialog):
             tabwidget = QTabWidget()
             tabwidget.setTabBarAutoHide(True)
             for tab in section["tabs"]:
-                tabwidget.addTab(tab[0](self, self.settings), "")
+                tabwidget.addTab(tab[0](self), "")
             self.area.addWidget(tabwidget)
 
         self.categories.setCurrentIndex(root.child(0).index())
@@ -106,48 +117,53 @@ class Settings(Translator, QDialog):
         self.buttons.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply_clicked)
         self.buttons.button(QDialogButtonBox.StandardButton.Cancel).clicked.connect(self.cancel_clicked)
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).clicked.connect(self.ok_clicked)
-        self.settings.set_changed_callback(self.changed_settings)
+        self.global_settings.set_changed_callback(self.changed_settings)
+        self.project_settings.set_changed_callback(self.changed_settings)
 
     @Slot()
     def category_changed(self, index: QModelIndex):
         item = self.categories.model().itemFromIndex(index)
         self.area.setCurrentIndex(item.position)
-        self.settings[f"{self.SETTINGS_GROUP}.current_category"] = item.position
-        self.settings[f"{self.SETTINGS_GROUP}.current_tab"] = self.area.currentWidget().currentIndex()
+        self._config["current_category"] = item.position
+        self._config["current_tab"] = self.area.currentWidget().currentIndex()
 
     @Slot()
     def tab_changed(self, index: int):
-        self.settings[f"{self.SETTINGS_GROUP}.current_tab"] = index
+        self._config["current_tab"] = index
 
     @Slot()
     def restore_defaults_clicked(self, button: QAbstractButton):
-        self.settings.load_defaults()
-        self.settings.restore()
+        for item in self._settings:
+            item.load_defaults()
+            item.restore()
 
     @Slot()
     def apply_clicked(self, button: QAbstractButton):
-        self.settings.apply()
+        for item in self._settings:
+            item.apply()
 
     @Slot()
     def cancel_clicked(self, button: QAbstractButton):
-        self.settings.clear()
-        self.settings.apply(all=True)
-        self.settings.restore(all=True)
+        for item in self._settings:
+            item.clear()
+            item.apply(all=True)
+            item.restore(all=True)
         self.reject()
 
     @Slot()
     def ok_clicked(self, button: QAbstractButton):
-        self.settings.write()
-        self.settings.apply()
+        for item in self._settings:
+            item.write()
+            item.apply()
         self.accept()
 
     def _load_settings(self):
-        pos = self.settings[f"{self.SETTINGS_GROUP}.pos"]
-        size = self.settings[f"{self.SETTINGS_GROUP}.size"]
+        pos = self._config["pos"]
+        size = self._config["size"]
         if pos and size:
-            self.setGeometry(int(pos[0]), int(pos[1]), int(size[0]), int(size[1]))
+            self.setGeometry(pos[0], pos[1], size[0], size[1])
 
-        current_category = int(self.settings.get(f"{self.SETTINGS_GROUP}/current_category", 0))
+        current_category = self._config["current_category"] or 0
         if current_category:
             item = self.categories.model().invisibleRootItem().child(current_category)
             if item:
@@ -155,7 +171,7 @@ class Settings(Translator, QDialog):
                 self.categories.setCurrentIndex(index)
                 self.area.setCurrentIndex(current_category)
 
-            current_tab = int(self.settings.get(f"{self.SETTINGS_GROUP}/current_tab", 0)) or 1
+            current_tab = self._config["current_tab"] or 0
             if current_tab:
                 self.area.currentWidget().setCurrentIndex(current_tab)
 
@@ -168,15 +184,17 @@ class Settings(Translator, QDialog):
                 self.area.widget(i).setTabText(j, self.tr(tab[1]))
 
     def changed_settings(self):
-        self.buttons.button(QDialogButtonBox.StandardButton.Apply).setEnabled(self.settings.has_changes)
+        value = any((item.has_changes for item in self._settings))
+        self.buttons.button(QDialogButtonBox.StandardButton.Apply).setEnabled(value)
 
     def moveEvent(self, event: QMoveEvent):
-        self.settings[f"{self.SETTINGS_GROUP}.pos"] = [event.pos().x(), event.pos().y()]
+        self._config["pos"] = [event.pos().x(), event.pos().y()]
 
     def resizeEvent(self, event: QResizeEvent):
-        self.settings[f"{self.SETTINGS_GROUP}.size"] = [event.size().width(), event.size().height()]
+        self._config["size"] = [event.size().width(), event.size().height()]
 
     def closeEvent(self, *args, **kwargs):
-        self.settings.clear()
-        self.settings.apply(all=True)
-        self.settings.restore(all=True)
+        for item in self._settings:
+            item.clear()
+            item.apply(all=True)
+            item.restore(all=True)

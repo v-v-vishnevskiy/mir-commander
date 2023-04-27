@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from mir_commander.utils.config import Config
 
@@ -12,12 +12,12 @@ class Settings:
     Also provides methods for massive applying and restoring of settings.
     """
 
-    def __init__(self, path: str):
-        self._config = Config(path)
+    def __init__(self, config: Config):
+        self._config = config
         self._changes: Dict[str, Any] = {}
         self._applied_changes: Dict[str, Any] = {}
         self._defaults: Dict[str, Any] = {}
-        self._apply_callbacks: Dict[str, Callable] = {}
+        self._apply_callbacks: Dict[str, List[Callable]] = {}
         self._restore_callbacks: Dict[str, Callable] = {}
         self._changed_callback: Callable = lambda: None
 
@@ -40,8 +40,7 @@ class Settings:
         if write:
             if current_value != value:
                 self._config[key] = value
-                fn = self._apply_callbacks.get(key)
-                if fn:
+                for fn in self._apply_callbacks.get(key, []):
                     fn()
                 if key in self._changes:
                     del self._changes[key]
@@ -77,19 +76,22 @@ class Settings:
         self._changed_callback = fn
 
     def add_apply_callback(self, key: str, fn: Callable):
-        self._apply_callbacks[key] = fn
+        if key not in self._apply_callbacks:
+            self._apply_callbacks[key] = []
+        self._apply_callbacks[key].append(fn)
 
     def add_restore_callback(self, key: str, fn: Callable):
         self._restore_callbacks[key] = fn
 
     def apply(self, all: bool = False):
         if all:
-            for fn in self._apply_callbacks.values():
-                fn()
+            for callbacks in self._apply_callbacks.values():
+                for fn in callbacks:
+                    fn()
         else:
             for key in self._changes.keys():
-                if key in self._apply_callbacks:
-                    self._apply_callbacks[key]()
+                for fn in self._apply_callbacks.get(key, []):
+                    fn()
         self._applied_changes = self._changes
         self.clear()
 

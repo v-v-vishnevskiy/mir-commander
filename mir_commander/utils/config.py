@@ -12,12 +12,15 @@ logger = logging.getLogger(__name__)
 class Config:
     def __init__(self, path: str, key: str = "", config: Optional["Config"] = None):
         self._root_data: Dict[str, Any] = {}
+        self._nested_key = key
 
         if config:
             self._path: str = config._path
             self._root_data = config._root_data
             self._data: Dict[str, Any] = config._data
-            self._data = self.get(key, {})
+            if not self.contains(key):
+                self.set(key, {})
+            self._data = self.get(key)
         else:
             self._path = os.path.normpath(path)
             self._load()
@@ -34,15 +37,15 @@ class Config:
             try:
                 self._root_data = yaml.load(data, Loader=yaml.CLoader)
             except yaml.YAMLError:
-                logger.error(f"Invalid YAML format for {self._path}")
+                logger.error(f"Invalid YAML format: {self._path}")
                 return
 
     def dump(self):
         with open(self._path, "w") as f:
             try:
-                f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, default_flow_style=None))
+                f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
             except yaml.YAMLError:
-                pass
+                raise
 
     def nested(self, key: str) -> "Config":
         return Config("", key, self)
@@ -106,3 +109,9 @@ class Config:
 
     def __setitem__(self, key: str, value: Any):
         self.set(key, value)
+
+    def __repr__(self) -> str:
+        if self._nested_key:
+            return f'{self.__class__.__name__}("{self._path}", "{self._nested_key}")'
+        else:
+            return f'{self.__class__.__name__}("{self._path}")'
