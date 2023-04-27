@@ -2,4 +2,4 @@
 
 source .venv/bin/activate
 
-PYTHONPATH=. python mir_commander
+PYTHONPATH=. python mir_commander "$@"

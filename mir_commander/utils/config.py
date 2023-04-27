@@ -15,19 +15,19 @@ class Config:
         self._nested_key = key
 
         if config:
-            self._path: str = config._path
+            self._path: str = path
             self._root_data = config._root_data
             self._data: Dict[str, Any] = config._data
             if not self.contains(key):
                 self.set(key, {})
             self._data = self.get(key)
         else:
-            self._path = os.path.normpath(path)
+            self._path = os.path.normpath(path) if path else ""
             self._load()
             self._data = self._root_data
 
     def _load(self):
-        if os.path.exists(self._path):
+        if self._path and os.path.exists(self._path):
             with open(self._path, "r") as f:
                 data = f.read()
 
@@ -41,14 +41,15 @@ class Config:
                 return
 
     def dump(self):
-        with open(self._path, "w") as f:
-            try:
-                f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
-            except yaml.YAMLError:
-                raise
+        if self._path:
+            with open(self._path, "w") as f:
+                try:
+                    f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
+                except yaml.YAMLError:
+                    raise
 
     def nested(self, key: str) -> "Config":
-        return Config("", key, self)
+        return Config(self._path, key, self)
 
     def _key(self, key: str) -> List[str]:
         if not isinstance(key, str):
