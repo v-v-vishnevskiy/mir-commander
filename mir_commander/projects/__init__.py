@@ -26,7 +26,7 @@ def load_project(path: str, app_config_dir: str) -> Project:
     config = Config(config_path)
     project_type = config["type"]
     if project_type == "Molecule":
-        return Molecule(path)
+        return Molecule(path, config)
     else:
         msg = "Undefined project type"
         logger.error(f"{msg}: {project_type}")

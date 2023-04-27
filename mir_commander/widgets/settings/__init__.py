@@ -28,10 +28,6 @@ class Settings(Translator, QDialog):
     which may be translated on the fly.
     """
 
-    MIN_WIDTH = 800
-    MIN_HEIGHT = 600
-    SETTINGS_GROUP = "settings_window"
-
     def __init__(self, parent: "MainWindow"):
         super().__init__(parent)
         self._config = parent.project.config.nested("widgets.settings_window")
@@ -50,8 +46,8 @@ class Settings(Translator, QDialog):
         """Creation of UI elements of the main Setting dialog."""
 
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
-        self.setMinimumWidth(self.MIN_WIDTH)
-        self.setMinimumHeight(self.MIN_HEIGHT)
+        self.setMinimumWidth(800)
+        self.setMinimumHeight(600)
 
         main_layout = QVBoxLayout(self)
 
