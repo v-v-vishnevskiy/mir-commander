@@ -84,7 +84,8 @@ class Application(QApplication):
 
     def run(self, projpath: str) -> int:
         if projpath:
-            self.open_project(projpath)
+            if not self.open_project(projpath):
+                return 1
         else:
             if self.recent_projects.opened:
                 for item in self.recent_projects.opened:
