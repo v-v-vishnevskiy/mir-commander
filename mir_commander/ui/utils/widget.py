@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PySide6.QtCore import QCoreApplication, QEvent
-from PySide6.QtWidgets import QDialog, QLabel, QWidget
+from PySide6.QtWidgets import QDialog, QLabel, QPushButton, QWidget
 
 
 class Translator:
@@ -40,6 +40,19 @@ class Dialog(Translator, QDialog):
 
 
 class Label(Translator, QLabel):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        self.__text = text
+        super().__init__(self._tr(text), parent)
+
+    def setText(self, value: str):
+        self.__text = value
+        super().setText(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setText(self.__text)
+
+
+class PushButton(Translator, QPushButton):
     def __init__(self, text: str, parent: Optional[QWidget] = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
