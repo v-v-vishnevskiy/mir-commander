@@ -1,12 +1,44 @@
-from PySide6.QtCore import QEvent
+from time import monotonic
+from typing import Any, List, Optional
+
+from PySide6.QtCore import QCoreApplication, QEvent
+from PySide6.QtGui import QAction, QStandardItem
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDockWidget,
+    QLabel,
+    QListView,
+    QMenu,
+    QPushButton,
+    QStatusBar,
+    QTabWidget,
+    QWidget,
+)
+
+
+class TrString(str):
+    pass
 
 
 class Translator:
     """Translator class.
 
-    A special class, which implements changeEvent handler.
     Classes implementing widgets with translatable elements
     must inherit this class.
+    """
+
+    @staticmethod
+    def tr(value: str) -> TrString:
+        return TrString(value)
+
+    def _tr(self, text: str) -> str:
+        return QCoreApplication.translate(self.__class__.__name__, text) if isinstance(text, TrString) else text
+
+
+class Widget(Translator):
+    """
+    A special class, which implements changeEvent handler.
     """
 
     def retranslate_ui(self):
@@ -18,3 +50,148 @@ class Translator:
         if event.type() == QEvent.LanguageChange:
             self.retranslate_ui()
         super().changeEvent(event)  # type: ignore
+
+
+class Dialog(Widget, QDialog):
+    def setWindowTitle(self, value: str):
+        self.__window_title = value
+        super().setWindowTitle(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setWindowTitle(self.__window_title)
+
+
+class DockWidget(Widget, QDockWidget):
+    def __init__(self, title: str, parent: Optional[QWidget] = None):
+        self.__title = title
+        super().__init__(self._tr(title), parent)
+
+    def setWindowTitle(self, value: str):
+        self.__title = value
+        super().setWindowTitle(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setWindowTitle(self.__title)
+
+
+class Label(Widget, QLabel):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        self.__text = text
+        super().__init__(self._tr(text), parent)
+
+    def setText(self, value: str):
+        self.__text = value
+        super().setText(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setText(self.__text)
+
+
+class PushButton(Widget, QPushButton):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        self.__text = text
+        super().__init__(self._tr(text), parent)
+
+    def setText(self, value: str):
+        self.__text = value
+        super().setText(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setText(self.__text)
+
+
+class ComboBox(Widget, QComboBox):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.__items: List[str] = []
+
+    def addItem(self, text: str, userData: Any = None):
+        self.__items.append(text)
+        super().addItem(self._tr(text), userData)
+
+    def removeItem(self, index: int):
+        self.__items.pop(index)
+        super().removeItem(index)
+
+    def retranslate_ui(self):
+        for i, text in enumerate(self.__items):
+            self.setItemText(i, self._tr(text))
+
+
+class ListView(Widget, QListView):
+    def retranslate_ui(self):
+        root = self.model().invisibleRootItem()
+        for i in range(root.rowCount()):
+            root.child(i).retranslate()
+
+
+class StandardItem(Translator, QStandardItem):
+    def __init__(self, text: str):
+        super().__init__(self._tr(text))
+        self.__text = text
+
+    def retranslate(self):
+        super().setText(self._tr(self.__text))
+
+    def setText(self, text: str):
+        self.__text = text
+        super().setText(self._tr(text))
+
+
+class TabWidget(Widget, QTabWidget):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.__labels: List[str] = []
+
+    def addTab(self, page: QWidget, label: str):
+        self.__labels.append(label)
+        super().addTab(page, self._tr(label))
+
+    def removeTab(self, index: int):
+        self.__labels.pop(index)
+        super().removeTab(index)
+
+    def retranslate_ui(self):
+        for i, label in enumerate(self.__labels):
+            self.setTabText(i, self._tr(label))
+
+
+class Action(Translator, QAction):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        super().__init__(self._tr(text), parent)
+        self.__text = text
+
+    def retranslate(self):
+        super().setText(self._tr(self.__text))
+
+    def setText(self, text: str):
+        self.__text = text
+        super().setText(self._tr(text))
+
+
+class Menu(Widget, QMenu):
+    def __init__(self, title: str, parent: Optional[QWidget] = None):
+        super().__init__(self._tr(title), parent)
+        self.__title = title
+
+    def setTitle(self, title: str):
+        self.__title = title
+        super().setTitle(self._tr(title))
+
+    def retranslate_ui(self):
+        for action in self.actions():
+            if isinstance(action, Action):
+                action.retranslate()
+        self.setTitle(self.__title)
+
+
+class StatusBar(Widget, QStatusBar):
+    def showMessage(self, message: str, timeout: int = 0):
+        self.__message = message
+        self.__timeout = timeout
+        self.__monotonic = monotonic()
+        super().showMessage(self._tr(message), timeout)
+
+    def retranslate_ui(self):
+        if self.currentMessage():
+            self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))

@@ -80,7 +80,7 @@ class Settings:
             for key in self._changes.keys():
                 for fn in self._apply_callbacks.get(key, []):
                     fn()
-        self._applied_changes = self._changes
+        self._applied_changes = self._changes or self._applied_changes
         self.clear()
 
     def clear(self):
@@ -93,3 +93,6 @@ class Settings:
             value = self._changes.get(key) or self._applied_changes.get(key)
             self._config.set(key, value, write=False)
         self._config.dump()
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({str(self._config)})"

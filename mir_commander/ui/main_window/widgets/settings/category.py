@@ -2,13 +2,11 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import Translator
-
 if TYPE_CHECKING:
     from mir_commander.ui.main_window.widgets.settings import Settings
 
 
-class Category(Translator, QWidget):
+class Category(QWidget):
     """Basic class for each page in the settings dialog.
 
     The main purpose of this class is to implement the common
@@ -22,7 +20,6 @@ class Category(Translator, QWidget):
 
         layout = self.setup_ui()
         self.setup_data()
-        self.retranslate_ui()
         self.post_init()
         self.setLayout(layout)
 
