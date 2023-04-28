@@ -24,7 +24,6 @@ class TrString(str):
 class Translator:
     """Translator class.
 
-    A special class, which implements changeEvent handler.
     Classes implementing widgets with translatable elements
     must inherit this class.
     """
@@ -38,6 +37,10 @@ class Translator:
 
 
 class Widget(Translator):
+    """
+    A special class, which implements changeEvent handler.
+    """
+
     def retranslate_ui(self):
         pass
 

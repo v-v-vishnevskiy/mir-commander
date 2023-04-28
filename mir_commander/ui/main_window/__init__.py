@@ -24,13 +24,6 @@ class DockWidgets:
 
 
 class MainWindow(QMainWindow):
-    """The class of the main window.
-
-    It must inherit Translator since in the main window we have
-    UI elements, which may be translated on the fly.
-    For this, a retranslate_ui method must be implemented!
-    """
-
     def __init__(self, app: "Application", project: Project):
         super().__init__(None)
         self.app = app
@@ -66,7 +59,6 @@ class MainWindow(QMainWindow):
 
     def setup_dock_widgets(self):
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        # Project dock
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
 
         # Object dock. Empty by default.
