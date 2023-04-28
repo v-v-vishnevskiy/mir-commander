@@ -12,22 +12,22 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="108"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="109"/>
         <source>Close Project</source>
         <translation type="unfinished">Закрыть проект</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="113"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="114"/>
         <source>Settings...</source>
         <translation type="unfinished">Настройки...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="120"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="121"/>
         <source>Quit</source>
         <translation type="unfinished">Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="127"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="128"/>
         <source>About</source>
         <translation type="unfinished">О Mir Commander</translation>
     </message>
@@ -74,12 +74,7 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="57"/>
-        <source>Ready</source>
-        <translation>Готово</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="64"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="65"/>
         <source>Started</source>
         <translation>Запущен</translation>
     </message>
@@ -87,17 +82,17 @@
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="89"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="90"/>
         <source>File</source>
         <translation type="unfinished">Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="96"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="97"/>
         <source>View</source>
         <translation type="unfinished">Вид</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="103"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="104"/>
         <source>Help</source>
         <translation type="unfinished">Помощь</translation>
     </message>
@@ -179,6 +174,14 @@
         <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="90"/>
         <source>General</source>
         <translation type="unfinished">Основные</translation>
+    </message>
+</context>
+<context>
+    <name>StatusBar</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="64"/>
+        <source>Ready</source>
+        <translation type="unfinished">Готово</translation>
     </message>
 </context>
 </TS>

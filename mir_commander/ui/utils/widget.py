@@ -1,3 +1,4 @@
+from time import monotonic
 from typing import Any, List, Optional
 
 from PySide6.QtCore import QCoreApplication, QEvent
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import (
     QListView,
     QMenu,
     QPushButton,
+    QStatusBar,
     QTabWidget,
     QWidget,
 )
@@ -178,3 +180,15 @@ class Menu(Widget, QMenu):
             if isinstance(action, Action):
                 action.retranslate()
         self.setTitle(self.__title)
+
+
+class StatusBar(Widget, QStatusBar):
+    def showMessage(self, message: str, timeout: int = 0):
+        self.__message = message
+        self.__timeout = timeout
+        self.__monotonic = monotonic()
+        super().showMessage(self._tr(message), timeout)
+
+    def retranslate_ui(self):
+        if self.currentMessage():
+            self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))

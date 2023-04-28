@@ -10,7 +10,7 @@ from mir_commander.projects.base import Project
 from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
-from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
@@ -53,14 +53,15 @@ class MainWindow(QMainWindow):
         self.setup_menubar()
 
         # Status Bar
-        self.status = self.statusBar()
-        self.status.showMessage(self.tr("Ready"))
+        self.status = StatusBar(self)
+        self.setStatusBar(self.status)
 
         self._set_window_title()
 
         # Settings
         self._restore_settings()
 
+        self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
     def setup_dock_widgets(self):
