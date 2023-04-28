@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from mir_commander.application import Application
+from mir_commander.ui.application import Application
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Mir Commander")

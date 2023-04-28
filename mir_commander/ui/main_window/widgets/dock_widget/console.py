@@ -1,7 +1,6 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
-from mir_commander.widgets.dock_widget.base import DockWidget
+from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 
 
 class Text(QPlainTextEdit):
@@ -22,7 +21,7 @@ class Console(DockWidget):
     """
 
     def __init__(self, parent: QWidget):
-        super().__init__(QT_TRANSLATE_NOOP("DockNames", "Console output"), parent)
+        super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
         self.setWidget(self.text)
 

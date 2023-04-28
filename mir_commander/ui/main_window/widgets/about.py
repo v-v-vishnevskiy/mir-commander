@@ -1,12 +1,12 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QVBoxLayout
 
 from mir_commander import __version__
-from mir_commander.utils.widget import Translator
+from mir_commander.ui.utils.widget import Dialog, Label
 
 
-class About(Translator, QDialog):
+class About(Dialog):
     """Dialog with information about the program."""
 
     def __init__(self, parent=None):
@@ -18,17 +18,10 @@ class About(Translator, QDialog):
         label.setPixmap(pixmap.scaledToWidth(150, mode=Qt.SmoothTransformation))
         layout.addWidget(label, 100, Qt.AlignCenter)
         layout.addWidget(QLabel(f"Mir Commander {__version__}"), 100, Qt.AlignCenter)
-        self.authorlabel1 = QLabel(self)
-        self.authorlabel2 = QLabel(self)
-        layout.addWidget(self.authorlabel1, 0, Qt.AlignCenter)
-        layout.addWidget(self.authorlabel2, 0, Qt.AlignCenter)
+        layout.addWidget(Label(Label.tr("Yury V. Vishnevskiy"), self), 0, Qt.AlignCenter)
+        layout.addWidget(Label(Label.tr("Valery V. Vishnevskiy"), self), 0, Qt.AlignCenter)
 
         self.setLayout(layout)
         self.setFixedSize(400, 300)
 
-        self.retranslate_ui()
-
-    def retranslate_ui(self):
         self.setWindowTitle(self.tr("About Mir Commander"))
-        self.authorlabel1.setText(self.tr("Yury V. Vishnevskiy"))
-        self.authorlabel2.setText(self.tr("Valery V. Vishnevskiy"))

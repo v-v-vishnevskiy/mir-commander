@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QVBoxLayout
 
-from mir_commander.widgets.settings.category import Category
+from mir_commander.ui.main_window.widgets.settings.category import Category
+from mir_commander.ui.utils.widget import Label
 
 
 class Project(Category):
@@ -15,20 +16,14 @@ class Project(Category):
     def setup_data(self):
         self._setup_project_name_data()
 
-    def restore_settings(self):
-        self.le_project_name.setText(self.project_settings["name"])
-
     def post_init(self):
-        self.project_settings.add_restore_callback("name", self.restore_settings)
-
-    def retranslate_ui(self):
-        self.l_project_name.setText(self.tr("Project name:"))
+        self.le_project_name.textChanged.connect(self._project_name_changed)
 
     @property
     def _project_name_ui(self) -> QHBoxLayout:
         layout = QHBoxLayout()
 
-        self.l_project_name = QLabel()
+        self.l_project_name = Label(Label.tr("Project name:"))
         self.le_project_name = QLineEdit()
 
         layout.addWidget(self.l_project_name, 0, Qt.AlignLeft)
@@ -38,7 +33,6 @@ class Project(Category):
 
     def _setup_project_name_data(self):
         self.le_project_name.setText(self.project_settings["name"])
-        self.le_project_name.textChanged.connect(self._project_name_changed)
 
     @Slot()
     def _project_name_changed(self, text: str):

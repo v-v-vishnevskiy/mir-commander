@@ -2,13 +2,13 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
 from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QMessageBox, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QMessageBox, QVBoxLayout
 
 from mir_commander import exceptions
-from mir_commander.utils.widget import Translator
+from mir_commander.ui.utils.widget import Dialog, PushButton
 
 if TYPE_CHECKING:
-    from mir_commander.application import Application
+    from mir_commander.ui.application import Application
 
 
 class ListView(QListView):
@@ -23,7 +23,7 @@ class ListView(QListView):
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
 
-class RecentProjects(Translator, QDialog):
+class RecentProjects(Dialog):
     """Dialog with information about the program."""
 
     def __init__(self, app: "Application"):
@@ -32,6 +32,8 @@ class RecentProjects(Translator, QDialog):
 
         self.setup_ui()
         self.setup_connections()
+
+        self.setWindowTitle(self.tr("Recent Projects"))
 
     def setup_ui(self):
         self.error = QMessageBox(self)
@@ -47,8 +49,8 @@ class RecentProjects(Translator, QDialog):
         self.recent.setMouseTracking(True)
         self.recent.setModel(QStandardItemModel(self))
 
-        self.pb_open_project = QPushButton()
-        self.pb_cancel = QPushButton()
+        self.pb_open_project = PushButton(PushButton.tr("Open"), self)
+        self.pb_cancel = PushButton(PushButton.tr("Cancel"), self)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)
@@ -58,8 +60,6 @@ class RecentProjects(Translator, QDialog):
         layout.addWidget(self.recent)
         layout.addLayout(buttons)
         self.setLayout(layout)
-
-        self.retranslate_ui()
 
     def show(self):
         self.load_data()
@@ -98,11 +98,6 @@ class RecentProjects(Translator, QDialog):
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
             self._open_project(dialog.selectedFiles()[0])
-
-    def retranslate_ui(self):
-        self.setWindowTitle(self.tr("Recent Projects"))
-        self.pb_open_project.setText(self.tr("Open"))
-        self.pb_cancel.setText(self.tr("Cancel"))
 
     def _open_project(self, path: str):
         try:

@@ -18,7 +18,6 @@ class Settings:
         self._applied_changes: Dict[str, Any] = {}
         self._defaults: Dict[str, Any] = {}
         self._apply_callbacks: Dict[str, List[Callable]] = {}
-        self._restore_callbacks: Dict[str, Callable] = {}
         self._changed_callback: Callable = lambda: None
 
     def __getitem__(self, key: str) -> Any:
@@ -72,9 +71,6 @@ class Settings:
             self._apply_callbacks[key] = []
         self._apply_callbacks[key].append(fn)
 
-    def add_restore_callback(self, key: str, fn: Callable):
-        self._restore_callbacks[key] = fn
-
     def apply(self, all: bool = False):
         if all:
             for callbacks in self._apply_callbacks.values():
@@ -84,17 +80,8 @@ class Settings:
             for key in self._changes.keys():
                 for fn in self._apply_callbacks.get(key, []):
                     fn()
-        self._applied_changes = self._changes
+        self._applied_changes = self._changes or self._applied_changes
         self.clear()
-
-    def restore(self, all: bool = False):
-        if all:
-            for fn in self._restore_callbacks.values():
-                fn()
-        else:
-            for key in self._changes.keys():
-                if key in self._restore_callbacks:
-                    self._restore_callbacks[key]()
 
     def clear(self):
         self._changes = {}
@@ -104,4 +91,8 @@ class Settings:
         keys = set(self._changes.keys()) | set(self._applied_changes.keys())
         for key in keys:
             value = self._changes.get(key) or self._applied_changes.get(key)
-            self._config[key] = value
+            self._config.set(key, value, write=False)
+        self._config.dump()
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({str(self._config)})"
