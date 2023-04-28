@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.utils.widget import Translator
+from mir_commander.ui.utils.widget import Translator
 
 if TYPE_CHECKING:
-    from mir_commander.widgets.settings import Settings
+    from mir_commander.ui.main_window.widgets.settings import Settings
 
 
 class Category(Translator, QWidget):

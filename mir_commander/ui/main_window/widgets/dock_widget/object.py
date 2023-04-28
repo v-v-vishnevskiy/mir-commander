@@ -1,7 +1,7 @@
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.widgets.dock_widget.base import DockWidget
+from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 
 
 class Object(DockWidget):

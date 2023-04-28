@@ -1,8 +1,8 @@
 import os
 
-from mir_commander.settings import Settings
 from mir_commander.utils.config import Config
 from mir_commander.utils.item import Item
+from mir_commander.utils.settings import Settings
 
 
 class Project:

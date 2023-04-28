@@ -1,7 +1,7 @@
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QDockWidget, QWidget
 
-from mir_commander.utils.widget import Translator
+from mir_commander.ui.utils.widget import Translator
 
 
 class DockWidget(Translator, QDockWidget):
