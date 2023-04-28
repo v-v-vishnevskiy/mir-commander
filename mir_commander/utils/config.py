@@ -89,7 +89,7 @@ class Config:
         except KeyError:
             return default
 
-    def set(self, key: str, value: Any):
+    def set(self, key: str, value: Any, write: bool = True):
         parts = self._key(key)
         data = self._data
 
@@ -103,7 +103,8 @@ class Config:
 
         data[parts[-1]] = value
 
-        self.dump()
+        if write:
+            self.dump()
 
     def __getitem__(self, key: str) -> Any:
         return self.get(key)

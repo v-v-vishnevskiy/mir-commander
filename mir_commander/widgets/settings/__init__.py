@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from mir_commander.utils.widget import Translator
+from mir_commander.widgets.settings.category import Category
 from mir_commander.widgets.settings.general import General
 from mir_commander.widgets.settings.project import Project
 
@@ -34,6 +35,7 @@ class Settings(Translator, QDialog):
         self.global_settings = parent.app.settings
         self.project_settings = parent.project.settings
         self._settings = [self.global_settings, self.project_settings]
+        self._categories: List[Category] = []
 
         self.setup_ui()
         self.setup_data()
@@ -41,6 +43,11 @@ class Settings(Translator, QDialog):
         self.setup_connections()
 
         self._load_settings()
+
+    def show(self):
+        for item in self._categories:
+            item.setup_data()
+        super().show()
 
     def setup_ui(self):
         """Creation of UI elements of the main Setting dialog."""
@@ -94,7 +101,9 @@ class Settings(Translator, QDialog):
             tabwidget = QTabWidget()
             tabwidget.setTabBarAutoHide(True)
             for tab in section["tabs"]:
-                tabwidget.addTab(tab[0](self), "")
+                category = tab[0](self)
+                self._categories.append(category)
+                tabwidget.addTab(category, "")
             self.area.addWidget(tabwidget)
 
         self.categories.setCurrentIndex(root.child(0).index())
@@ -131,7 +140,8 @@ class Settings(Translator, QDialog):
     def restore_defaults_clicked(self, button: QAbstractButton):
         for item in self._settings:
             item.load_defaults()
-            item.restore()
+        for category_item in self._categories:
+            category_item.setup_data()
 
     @Slot()
     def apply_clicked(self, button: QAbstractButton):
@@ -143,14 +153,13 @@ class Settings(Translator, QDialog):
         for item in self._settings:
             item.clear()
             item.apply(all=True)
-            item.restore(all=True)
         self.reject()
 
     @Slot()
     def ok_clicked(self, button: QAbstractButton):
         for item in self._settings:
-            item.write()
             item.apply()
+            item.write()
         self.accept()
 
     def _load_settings(self):
@@ -193,4 +202,3 @@ class Settings(Translator, QDialog):
         for item in self._settings:
             item.clear()
             item.apply(all=True)
-            item.restore(all=True)
