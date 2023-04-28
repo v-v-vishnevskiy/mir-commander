@@ -1,9 +1,11 @@
 import logging
 import os
 
+import numpy as np
 from cclib.io import ccread
 
 from mir_commander import exceptions
+from mir_commander.data_structures.molecule import AtomicCoordinates
 from mir_commander.data_structures.molecule import Molecule as MolData
 from mir_commander.projects.base import Project
 from mir_commander.projects.molecule import Molecule as MolProject
@@ -23,10 +25,19 @@ def import_file(path: str) -> Project:
 
     molproj = MolProject(path, Config(""))
     moldata = MolData(data.natom, data.atomnos)
+    if hasattr(data, "charge"):
+        moldata.charge = data.charge
+    if hasattr(data, "mult"):
+        moldata.multiplicity = data.mult
     molitem = Item("Molecule", "", moldata)
     molproj.root_item.appendRow(molitem)
 
-    # TODO: add atoms
+    # Adding sets of atomic coordinates to the molecule
+    cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
+    for i in range(0, cshape[0]):
+        atcoods_data = AtomicCoordinates(data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2])
+        atcoods_item = Item("XYZ", "", atcoods_data)
+        molitem.appendRow(atcoods_item)
 
     return molproj
 
