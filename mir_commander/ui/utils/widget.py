@@ -1,8 +1,18 @@
 from typing import Any, List, Optional
 
 from PySide6.QtCore import QCoreApplication, QEvent
-from PySide6.QtGui import QStandardItem
-from PySide6.QtWidgets import QComboBox, QDialog, QDockWidget, QLabel, QListView, QPushButton, QTabWidget, QWidget
+from PySide6.QtGui import QAction, QStandardItem
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDockWidget,
+    QLabel,
+    QListView,
+    QMenu,
+    QPushButton,
+    QTabWidget,
+    QWidget,
+)
 
 
 class TrString(str):
@@ -139,3 +149,32 @@ class TabWidget(Widget, QTabWidget):
     def retranslate_ui(self):
         for i, label in enumerate(self.__labels):
             self.setTabText(i, self._tr(label))
+
+
+class Action(Translator, QAction):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        super().__init__(self._tr(text), parent)
+        self.__text = text
+
+    def retranslate(self):
+        super().setText(self._tr(self.__text))
+
+    def setText(self, text: str):
+        self.__text = text
+        super().setText(self._tr(text))
+
+
+class Menu(Widget, QMenu):
+    def __init__(self, title: str, parent: Optional[QWidget] = None):
+        super().__init__(self._tr(title), parent)
+        self.__title = title
+
+    def setTitle(self, title: str):
+        self.__title = title
+        super().setTitle(self._tr(title))
+
+    def retranslate_ui(self):
+        for action in self.actions():
+            if isinstance(action, Action):
+                action.retranslate()
+        self.setTitle(self.__title)
