@@ -140,8 +140,8 @@ class Settings(Translator, QDialog):
     def restore_defaults_clicked(self, button: QAbstractButton):
         for item in self._settings:
             item.load_defaults()
-            for category_item in self._categories:
-                category_item.setup_data()
+        for category_item in self._categories:
+            category_item.setup_data()
 
     @Slot()
     def apply_clicked(self, button: QAbstractButton):
@@ -158,8 +158,8 @@ class Settings(Translator, QDialog):
     @Slot()
     def ok_clicked(self, button: QAbstractButton):
         for item in self._settings:
-            item.write()
             item.apply()
+            item.write()
         self.accept()
 
     def _load_settings(self):

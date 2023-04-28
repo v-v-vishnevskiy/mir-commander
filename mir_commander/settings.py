@@ -91,4 +91,5 @@ class Settings:
         keys = set(self._changes.keys()) | set(self._applied_changes.keys())
         for key in keys:
             value = self._changes.get(key) or self._applied_changes.get(key)
-            self._config[key] = value
+            self._config.set(key, value, write=False)
+        self._config.dump()
