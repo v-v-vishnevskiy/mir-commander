@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PySide6.QtCore import QCoreApplication, QEvent
-from PySide6.QtWidgets import QDialog, QLabel, QPushButton, QWidget
+from PySide6.QtWidgets import QDialog, QDockWidget, QLabel, QPushButton, QWidget
 
 
 class Translator:
@@ -37,6 +37,19 @@ class Dialog(Translator, QDialog):
 
     def retranslate_ui(self):
         self.setWindowTitle(self.__window_title)
+
+
+class DockWidget(Translator, QDockWidget):
+    def __init__(self, title: str, parent: Optional[QWidget] = None):
+        self.__title = title
+        super().__init__(self._tr(title), parent)
+
+    def setWindowTitle(self, value: str):
+        self.__title = value
+        super().setWindowTitle(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setWindowTitle(self.__title)
 
 
 class Label(Translator, QLabel):
