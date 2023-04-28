@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QVBoxLayout
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
 
 from mir_commander.ui.main_window.widgets.settings.category import Category
+from mir_commander.ui.utils.widget import ComboBox, Label
 
 
 class General(Category):
@@ -24,20 +25,16 @@ class General(Category):
     def post_init(self):
         self.cb_language.currentIndexChanged.connect(self._language_changed)
 
-    def retranslate_ui(self):
-        self.l_language.setText(self.tr("Language:"))
-        self.cb_language.setItemText(0, self.tr("System"))
-
     @property
     def _language_ui(self) -> QHBoxLayout:
         layout = QHBoxLayout()
 
-        self._languages = [("System", "system"), ("English", "en"), ("Русский", "ru")]
-        self.cb_language = QComboBox()
+        self._languages = [(ComboBox.tr("System"), "system"), ("English", "en"), ("Русский", "ru")]
+        self.cb_language = ComboBox()
         for item in self._languages:
             self.cb_language.addItem(*item)
 
-        self.l_language = QLabel()
+        self.l_language = Label(Label.tr("Language:"))
 
         layout.addWidget(self.l_language, 0, Qt.AlignLeft)
         layout.addWidget(self.cb_language, 1, Qt.AlignLeft)

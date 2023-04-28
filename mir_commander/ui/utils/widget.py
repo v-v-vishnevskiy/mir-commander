@@ -1,7 +1,12 @@
-from typing import Optional
+from typing import Any, List, Optional
 
 from PySide6.QtCore import QCoreApplication, QEvent
-from PySide6.QtWidgets import QDialog, QDockWidget, QLabel, QPushButton, QWidget
+from PySide6.QtGui import QStandardItem
+from PySide6.QtWidgets import QComboBox, QDialog, QDockWidget, QLabel, QListView, QPushButton, QTabWidget, QWidget
+
+
+class TrString(str):
+    pass
 
 
 class Translator:
@@ -13,12 +18,14 @@ class Translator:
     """
 
     @staticmethod
-    def tr(value: str):
-        return value
+    def tr(value: str) -> TrString:
+        return TrString(value)
 
-    def _tr(self, value: str) -> str:
-        return QCoreApplication.translate(self.__class__.__name__, value)
+    def _tr(self, text: str) -> str:
+        return QCoreApplication.translate(self.__class__.__name__, text) if isinstance(text, TrString) else text
 
+
+class Widget(Translator):
     def retranslate_ui(self):
         pass
 
@@ -30,7 +37,7 @@ class Translator:
         super().changeEvent(event)  # type: ignore
 
 
-class Dialog(Translator, QDialog):
+class Dialog(Widget, QDialog):
     def setWindowTitle(self, value: str):
         self.__window_title = value
         super().setWindowTitle(self._tr(value))
@@ -39,7 +46,7 @@ class Dialog(Translator, QDialog):
         self.setWindowTitle(self.__window_title)
 
 
-class DockWidget(Translator, QDockWidget):
+class DockWidget(Widget, QDockWidget):
     def __init__(self, title: str, parent: Optional[QWidget] = None):
         self.__title = title
         super().__init__(self._tr(title), parent)
@@ -52,7 +59,7 @@ class DockWidget(Translator, QDockWidget):
         self.setWindowTitle(self.__title)
 
 
-class Label(Translator, QLabel):
+class Label(Widget, QLabel):
     def __init__(self, text: str, parent: Optional[QWidget] = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
@@ -65,7 +72,7 @@ class Label(Translator, QLabel):
         self.setText(self.__text)
 
 
-class PushButton(Translator, QPushButton):
+class PushButton(Widget, QPushButton):
     def __init__(self, text: str, parent: Optional[QWidget] = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
@@ -76,3 +83,59 @@ class PushButton(Translator, QPushButton):
 
     def retranslate_ui(self):
         self.setText(self.__text)
+
+
+class ComboBox(Widget, QComboBox):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.__items: List[str] = []
+
+    def addItem(self, text: str, userData: Any = None):
+        self.__items.append(text)
+        super().addItem(self._tr(text), userData)
+
+    def removeItem(self, index: int):
+        self.__items.pop(index)
+        super().removeItem(index)
+
+    def retranslate_ui(self):
+        for i, text in enumerate(self.__items):
+            self.setItemText(i, self._tr(text))
+
+
+class ListView(Widget, QListView):
+    def retranslate_ui(self):
+        root = self.model().invisibleRootItem()
+        for i in range(root.rowCount()):
+            root.child(i).retranslate()
+
+
+class StandardItem(Translator, QStandardItem):
+    def __init__(self, text: str):
+        super().__init__(self._tr(text))
+        self.__text = text
+
+    def retranslate(self):
+        super().setText(self._tr(self.__text))
+
+    def setText(self, text: str):
+        self.__text = text
+        super().setText(self._tr(text))
+
+
+class TabWidget(Widget, QTabWidget):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.__labels: List[str] = []
+
+    def addTab(self, page: QWidget, label: str):
+        self.__labels.append(label)
+        super().addTab(page, self._tr(label))
+
+    def removeTab(self, index: int):
+        self.__labels.pop(index)
+        super().removeTab(index)
+
+    def retranslate_ui(self):
+        for i, label in enumerate(self.__labels):
+            self.setTabText(i, self._tr(label))
