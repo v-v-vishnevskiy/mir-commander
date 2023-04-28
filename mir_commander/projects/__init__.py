@@ -24,7 +24,11 @@ def import_file(path: str) -> Project:
         raise exceptions.LoadProject(msg, f"{msg}: {path}")
 
     molproj = MolProject(path, Config(""))
-    moldata = MolData(data.natom, data.atomnos, data.charge, data.mult)
+    moldata = MolData(data.natom, data.atomnos)
+    if hasattr(data, "charge"):
+        moldata.charge = data.charge
+    if hasattr(data, "mult"):
+        moldata.multiplicity = data.mult
     molitem = Item("Molecule", "", moldata)
     molproj.root_item.appendRow(molitem)
 
