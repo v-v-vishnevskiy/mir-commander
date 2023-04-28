@@ -5,10 +5,10 @@ from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QMessageBox, QPushButton, QVBoxLayout
 
 from mir_commander import exceptions
-from mir_commander.utils.widget import Translator
+from mir_commander.ui.utils.widget import Translator
 
 if TYPE_CHECKING:
-    from mir_commander.application import Application
+    from mir_commander.ui.application import Application
 
 
 class ListView(QListView):

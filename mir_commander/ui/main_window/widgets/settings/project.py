@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
-from mir_commander.widgets.settings.category import Category
+from mir_commander.ui.main_window.widgets.settings.category import Category
 
 
 class Project(Category):

@@ -5,12 +5,12 @@ from PySide6.QtCore import QDir, QLocale, QResource, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
-from mir_commander.main_window import MainWindow
 from mir_commander.projects import load_project
 from mir_commander.recent_projects import RecentProjects
-from mir_commander.settings import Settings
+from mir_commander.ui.main_window import MainWindow
+from mir_commander.ui.recent_projects import RecentProjects as RecentProjectsWidget
 from mir_commander.utils.config import Config
-from mir_commander.widgets.recent_projects import RecentProjects as RecentProjectsWidget
+from mir_commander.utils.settings import Settings
 
 CONFIG_DIR = os.path.join(QDir.homePath(), ".mircmd")
 
@@ -22,7 +22,9 @@ class Application(QApplication):
         super().__init__(*args, **kwargs)
         self._quitting = False
 
-        QResource.registerResource(os.path.join(os.path.dirname(__file__), "..", "resources", "icons", "general.rcc"))
+        QResource.registerResource(
+            os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "general.rcc")
+        )
 
         self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
         self.settings = Settings(self.config)
@@ -45,7 +47,7 @@ class Application(QApplication):
             language = QLocale.languageToCode(QLocale.system().language())
 
         self.removeTranslator(self._translator)
-        i18n_path = os.path.join(os.path.dirname(__file__), "..", "resources", "i18n")
+        i18n_path = os.path.join(os.path.dirname(__file__), "../..", "resources", "i18n")
         if not self._translator.load(os.path.join(i18n_path, f"app_{language}")):
             self._translator.load(os.path.join(i18n_path, "app_en"))
         self.installTranslator(self._translator)
