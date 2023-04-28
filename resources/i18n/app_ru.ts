@@ -4,106 +4,181 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../../mir_commander/widgets/about.py" line="32"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/about.py" line="27"/>
         <source>About Mir Commander</source>
         <translation>О Mir Commander</translation>
     </message>
+</context>
+<context>
+    <name>Action</name>
     <message>
-        <location filename="../../mir_commander/widgets/about.py" line="33"/>
-        <source>Yury V. Vishnevskiy</source>
-        <translation>Юрий В. Вишневский</translation>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="108"/>
+        <source>Close Project</source>
+        <translation type="unfinished">Закрыть проект</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/widgets/about.py" line="34"/>
-        <source>Valery V. Vishnevskiy</source>
-        <translation>Валерий В. Вишневский</translation>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="113"/>
+        <source>Settings...</source>
+        <translation type="unfinished">Настройки...</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="120"/>
+        <source>Quit</source>
+        <translation type="unfinished">Выход</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="127"/>
+        <source>About</source>
+        <translation type="unfinished">О Mir Commander</translation>
     </message>
 </context>
 <context>
-    <name>DockNames</name>
+    <name>ComboBox</name>
     <message>
-        <location filename="../../mir_commander/widgets/dock_widget/object.py" line="15"/>
-        <source>Object</source>
-        <translation>Объект</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/dock_widget/console.py" line="25"/>
-        <source>Console output</source>
-        <translation>Консоль вывода</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/dock_widget/project.py" line="15"/>
-        <source>Project</source>
-        <translation>Проект</translation>
-    </message>
-</context>
-<context>
-    <name>General</name>
-    <message>
-        <location filename="../../mir_commander/widgets/settings/general.py" line="33"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/general.py" line="32"/>
         <source>System</source>
-        <translation>Системный</translation>
+        <translation type="unfinished">Системный</translation>
+    </message>
+</context>
+<context>
+    <name>Console</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/console.py" line="24"/>
+        <source>Console output</source>
+        <translation type="unfinished">Консоль вывода</translation>
+    </message>
+</context>
+<context>
+    <name>Label</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/about.py" line="21"/>
+        <source>Yury V. Vishnevskiy</source>
+        <translation type="unfinished">Юрий В. Вишневский</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/widgets/settings/general.py" line="32"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/about.py" line="22"/>
+        <source>Valery V. Vishnevskiy</source>
+        <translation type="unfinished">Валерий В. Вишневский</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/project.py" line="26"/>
+        <source>Project name:</source>
+        <translation type="unfinished">Имя проекта:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/general.py" line="37"/>
         <source>Language:</source>
-        <translation>Язык:</translation>
+        <translation type="unfinished">Язык:</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="120"/>
-        <source>File</source>
-        <translation>Файл</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/main_window.py" line="121"/>
-        <source>View</source>
-        <translation>Вид</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/main_window.py" line="122"/>
-        <source>Help</source>
-        <translation>Помощь</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/main_window.py" line="49"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="57"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="70"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="64"/>
         <source>Started</source>
         <translation>Запущен</translation>
     </message>
+</context>
+<context>
+    <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="124"/>
-        <source>Settings...</source>
-        <translation>Настройки...</translation>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="89"/>
+        <source>File</source>
+        <translation type="unfinished">Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="123"/>
-        <source>Quit</source>
-        <translation>Выход</translation>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="96"/>
+        <source>View</source>
+        <translation type="unfinished">Вид</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/main_window.py" line="125"/>
-        <source>About</source>
-        <translation>О Mir Commander</translation>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="103"/>
+        <source>Help</source>
+        <translation type="unfinished">Помощь</translation>
+    </message>
+</context>
+<context>
+    <name>Object</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/object.py" line="14"/>
+        <source>Object</source>
+        <translation type="unfinished">Объект</translation>
+    </message>
+</context>
+<context>
+    <name>Project</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/project.py" line="14"/>
+        <source>Project</source>
+        <translation type="unfinished">Проект</translation>
+    </message>
+</context>
+<context>
+    <name>PushButton</name>
+    <message>
+        <location filename="../../mir_commander/ui/recent_projects.py" line="52"/>
+        <source>Open</source>
+        <translation type="unfinished">Открыть</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/recent_projects.py" line="53"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="68"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="63"/>
+        <source>Restore Defaults</source>
+        <translation type="unfinished">По умолчанию</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="65"/>
+        <source>Apply</source>
+        <translation type="unfinished">Применить</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="70"/>
+        <source>Ok</source>
+        <translation type="unfinished">Ок</translation>
+    </message>
+</context>
+<context>
+    <name>RecentProjects</name>
+    <message>
+        <location filename="../../mir_commander/ui/recent_projects.py" line="97"/>
+        <source>Open Project</source>
+        <translation type="unfinished">Открыть проект</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/recent_projects.py" line="36"/>
+        <source>Recent Projects</source>
+        <translation type="unfinished">Недавние проекты</translation>
     </message>
 </context>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../mir_commander/widgets/settings/__init__.py" line="76"/>
-        <source>General</source>
-        <translation>Основные</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/widgets/settings/__init__.py" line="163"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="32"/>
         <source>Settings</source>
         <translation>Настройки</translation>
+    </message>
+</context>
+<context>
+    <name>StandardItem</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="89"/>
+        <source>Project</source>
+        <translation type="unfinished">Проект</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="90"/>
+        <source>General</source>
+        <translation type="unfinished">Основные</translation>
     </message>
 </context>
 </TS>
