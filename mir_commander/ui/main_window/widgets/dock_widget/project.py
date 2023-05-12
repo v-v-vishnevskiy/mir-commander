@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QStandardItemModel
+from PySide6.QtWidgets import QTreeView, QWidget
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 
@@ -12,4 +13,11 @@ class Project(DockWidget):
 
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Project"), parent)
-        # ToDo: self.setWidget(self.project_tree)
+        self._tree = QTreeView(self)
+        self.setWidget(self._tree)
+
+        self._tree.setModel(QStandardItemModel(self))
+        self._tree.setHeaderHidden(True)
+
+    def set_model(self, model: QStandardItemModel):
+        self._tree.setModel(model)

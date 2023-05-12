@@ -58,6 +58,8 @@ class MainWindow(QMainWindow):
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
     def setup_dock_widgets(self):
+        self.docks.project.set_model(self.project.model)
+
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
 

@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>items/coordinates.png</file>
+    <file>items/molecule.png</file>
+  </qresource>
+</RCC>

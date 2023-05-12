@@ -1,3 +1,4 @@
+import glob
 import os
 from typing import Dict
 
@@ -22,9 +23,7 @@ class Application(QApplication):
         super().__init__(*args, **kwargs)
         self._quitting = False
 
-        QResource.registerResource(
-            os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "general.rcc")
-        )
+        self.register_resources()
 
         self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
         self.settings = Settings(self.config)
@@ -38,6 +37,10 @@ class Application(QApplication):
 
         self.settings.set_default("language", "system")
         self.settings.add_apply_callback("language", self._set_translation)
+
+    def register_resources(self):
+        for file in glob.glob(os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "*.rcc")):
+            QResource.registerResource(file)
 
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
