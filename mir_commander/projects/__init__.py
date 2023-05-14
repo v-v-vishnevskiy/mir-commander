@@ -30,6 +30,8 @@ def import_file(path: str) -> item.Item:
         moldata.multiplicity = data.mult
     molitem = item.Molecule(os.path.split(path)[1], moldata)
     molitem.file_path = path
+    acg_item = item.AtomicCoordinatesGroup()
+    molitem.appendRow(acg_item)
 
     # Adding sets of atomic coordinates to the molecule
     cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
@@ -37,7 +39,7 @@ def import_file(path: str) -> item.Item:
         atcoods_data = ds_molecule.AtomicCoordinates(
             data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
         )
-        molitem.appendRow(item.AtomicCoordinates("XYZ", atcoods_data))
+        acg_item.appendRow(item.AtomicCoordinates("XYZ", atcoods_data))
 
     return molitem
 

@@ -1,3 +1,4 @@
+from PySide6.QtCore import QSize
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView, QWidget
 
@@ -18,6 +19,7 @@ class Project(DockWidget):
 
         self._tree.setModel(QStandardItemModel(self))
         self._tree.setHeaderHidden(True)
+        self._tree.setIconSize(QSize(20, 20))
 
     def set_model(self, model: QStandardItemModel):
         self._tree.setModel(model)

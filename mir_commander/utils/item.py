@@ -17,8 +17,21 @@ class Item(QStandardItem):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
 
 
+class Group(Item):
+    def _set_icon(self):
+        self.setIcon(QIcon(":/icons/items/folder.png"))
+
+
 class Molecule(Item):
     pass
+
+
+class AtomicCoordinatesGroup(Group):
+    def __init__(self, title: str = "Atomic Coordinates", data: Optional[DataStructure] = None):
+        super().__init__(title, data)
+
+    def _set_icon(self):
+        self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
 
 
 class AtomicCoordinates(Item):
