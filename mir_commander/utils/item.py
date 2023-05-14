@@ -9,6 +9,7 @@ class Item(QStandardItem):
     def __init__(self, title: str, data: Optional[DataStructure] = None):
         super().__init__(title)
         self.setData(data)
+        self.setEditable(False)
         self._set_icon()
         self.file_path: str = ""
 
