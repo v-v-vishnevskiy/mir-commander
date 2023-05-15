@@ -22,3 +22,7 @@ class Project:
     @property
     def root_item(self) -> QStandardItem:
         return self.model.invisibleRootItem()
+
+    @property
+    def is_temporary(self) -> bool:
+        return False

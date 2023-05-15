@@ -9,4 +9,8 @@ class Temporary(Project):
 
     @property
     def name(self) -> str:
-        return self._name
+        return self.settings["name"] or self._name
+
+    @property
+    def is_temporary(self) -> bool:
+        return True
