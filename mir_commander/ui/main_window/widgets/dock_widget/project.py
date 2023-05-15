@@ -1,8 +1,9 @@
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView, QWidget
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
+from mir_commander.utils.config import Config
 
 
 class Project(DockWidget):
@@ -12,8 +13,10 @@ class Project(DockWidget):
     for showing a tree widget with objects of the project.
     """
 
-    def __init__(self, parent: QWidget):
-        super().__init__(self.tr("Project"), parent)
+    default_area = Qt.LeftDockWidgetArea
+
+    def __init__(self, parent: QWidget, config: Config):
+        super().__init__(self.tr("Project"), config, parent)
         self._tree = QTreeView(self)
         self.setWidget(self._tree)
 

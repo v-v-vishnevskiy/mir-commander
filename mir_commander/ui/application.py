@@ -77,6 +77,8 @@ class Application(QApplication):
     def close_project(self, main_window: MainWindow):
         del self._projects[id(main_window)]
 
+        main_window.project.config.dump()
+
         if not main_window.project.is_temporary:
             self.recent_projects.add_recent(main_window.project.name, main_window.project.path)
             if not self._quitting:

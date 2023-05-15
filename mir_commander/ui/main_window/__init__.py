@@ -41,7 +41,11 @@ class MainWindow(QMainWindow):
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks = DockWidgets(dock_widget.Project(self), dock_widget.Object(self), dock_widget.Console(self))
+        self.docks = DockWidgets(
+            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
+            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
+            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
+        )
         self.setup_dock_widgets()
         self.setup_menubar()
 
@@ -59,17 +63,7 @@ class MainWindow(QMainWindow):
 
     def setup_dock_widgets(self):
         self.docks.project.set_model(self.project.model)
-
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
-
-        # Object dock. Empty by default.
-        # Its widget is set dynamically in runtime
-        # depending on the currently selected object in the project tree.
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
-
-        # Console output dock and respective its widget
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
 
     def _set_window_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
