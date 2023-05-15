@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QMainWindow
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
@@ -14,5 +14,5 @@ class Object(DockWidget):
 
     default_area = Qt.RightDockWidgetArea
 
-    def __init__(self, parent: QWidget, config: Config):
+    def __init__(self, parent: QMainWindow, config: Config):
         super().__init__(self.tr("Object"), config, parent)

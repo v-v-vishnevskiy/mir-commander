@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
@@ -24,7 +24,7 @@ class Console(DockWidget):
 
     default_area = Qt.BottomDockWidgetArea
 
-    def __init__(self, parent: QWidget, config: Config):
+    def __init__(self, parent: QMainWindow, config: Config):
         super().__init__(self.tr("Console output"), config, parent)
         self.text = Text(self)
         self.setWidget(self.text)

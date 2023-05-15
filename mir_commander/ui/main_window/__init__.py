@@ -26,7 +26,7 @@ class DockWidgets:
 class MainWindow(QMainWindow):
     def __init__(self, app: "Application", project: Project):
         super().__init__(None)
-        self.app = app
+        self.app: "Application" = app
         self.project = project
 
         self.project.settings.add_apply_callback("name", self._set_window_title)
