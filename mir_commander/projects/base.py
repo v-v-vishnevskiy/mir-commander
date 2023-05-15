@@ -1,7 +1,8 @@
 import os
 
+from PySide6.QtGui import QStandardItem, QStandardItemModel
+
 from mir_commander.utils.config import Config
-from mir_commander.utils.item import Item
 from mir_commander.utils.settings import Settings
 
 
@@ -12,8 +13,16 @@ class Project:
         self.path = os.path.normpath(path)
         self.config = config
         self.settings = Settings(config)
-        self.root_item = Item("root")
+        self.model = QStandardItemModel()
 
     @property
     def name(self) -> str:
         return self.settings["name"] or os.path.split(self.path)[1] or "/"
+
+    @property
+    def root_item(self) -> QStandardItem:
+        return self.model.invisibleRootItem()
+
+    @property
+    def is_temporary(self) -> bool:
+        return False

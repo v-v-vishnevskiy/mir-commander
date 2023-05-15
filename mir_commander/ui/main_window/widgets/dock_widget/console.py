@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QPlainTextEdit, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMainWindow, QPlainTextEdit, QWidget
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
+from mir_commander.utils.config import Config
 
 
 class Text(QPlainTextEdit):
@@ -20,8 +22,10 @@ class Console(DockWidget):
     Contains an instance of the Text widget for showing text information.
     """
 
-    def __init__(self, parent: QWidget):
-        super().__init__(self.tr("Console output"), parent)
+    default_area = Qt.BottomDockWidgetArea
+
+    def __init__(self, parent: QMainWindow, config: Config):
+        super().__init__(self.tr("Console output"), config, parent)
         self.text = Text(self)
         self.setWidget(self.text)
 

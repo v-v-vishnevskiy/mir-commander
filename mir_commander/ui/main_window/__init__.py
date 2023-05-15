@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QMdiArea
+from PySide6.QtWidgets import QMainWindow, QMdiArea, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.projects.base import Project
@@ -26,7 +26,7 @@ class DockWidgets:
 class MainWindow(QMainWindow):
     def __init__(self, app: "Application", project: Project):
         super().__init__(None)
-        self.app = app
+        self.app: "Application" = app
         self.project = project
 
         self.project.settings.add_apply_callback("name", self._set_window_title)
@@ -41,8 +41,7 @@ class MainWindow(QMainWindow):
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks = DockWidgets(dock_widget.Project(self), dock_widget.Object(self), dock_widget.Console(self))
-        self.setup_dock_widgets()
+        self.setup_docks()
         self.setup_menubar()
 
         # Status Bar
@@ -57,17 +56,18 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
-    def setup_dock_widgets(self):
+    def setup_docks(self):
+        self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
+        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
+        self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
 
-        # Object dock. Empty by default.
-        # Its widget is set dynamically in runtime
-        # depending on the currently selected object in the project tree.
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
-
-        # Console output dock and respective its widget
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
+        self.docks = DockWidgets(
+            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
+            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
+            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
+        )
+        self.docks.project.set_model(self.project.model)
 
     def _set_window_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")

@@ -13,6 +13,7 @@ class Config:
     def __init__(self, path: str, key: str = "", config: Optional["Config"] = None):
         self._root_data: Dict[str, Any] = {}
         self._nested_key = key
+        self._synced = True
 
         if config:
             self._path: str = path
@@ -40,6 +41,10 @@ class Config:
                 logger.error(f"Invalid YAML format: {self._path}")
                 return
 
+    @property
+    def synced(self) -> bool:
+        return self._synced
+
     def dump(self):
         if self._path:
             with open(self._path, "w") as f:
@@ -47,6 +52,7 @@ class Config:
                     f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
                 except yaml.YAMLError:
                     raise
+            self._synced = True
 
     def nested(self, key: str) -> "Config":
         return Config(self._path, key, self)
@@ -103,6 +109,9 @@ class Config:
 
         data[parts[-1]] = value
 
+        if self._path:
+            self._synced = False
+
         if write:
             self.dump()
 
@@ -110,7 +119,7 @@ class Config:
         return self.get(key)
 
     def __setitem__(self, key: str, value: Any):
-        self.set(key, value)
+        self.set(key, value, False)
 
     def __repr__(self) -> str:
         if self._nested_key:

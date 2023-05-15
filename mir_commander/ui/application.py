@@ -1,3 +1,4 @@
+import glob
 import os
 from typing import Dict
 
@@ -22,9 +23,7 @@ class Application(QApplication):
         super().__init__(*args, **kwargs)
         self._quitting = False
 
-        QResource.registerResource(
-            os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "general.rcc")
-        )
+        self.register_resources()
 
         self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
         self.settings = Settings(self.config)
@@ -38,6 +37,10 @@ class Application(QApplication):
 
         self.settings.set_default("language", "system")
         self.settings.add_apply_callback("language", self._set_translation)
+
+    def register_resources(self):
+        for file in glob.glob(os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "*.rcc")):
+            QResource.registerResource(file)
 
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
@@ -64,8 +67,9 @@ class Application(QApplication):
         if project:
             main_window = MainWindow(self, project)
             self._projects[id(main_window)] = main_window
-            self.recent_projects.add_opened(project.name, project.path)
-            self.recent_projects.add_recent(project.name, project.path)
+            if not main_window.project.is_temporary:
+                self.recent_projects.add_opened(project.name, project.path)
+                self.recent_projects.add_recent(project.name, project.path)
             main_window.show()
             return True
         return False
@@ -73,9 +77,12 @@ class Application(QApplication):
     def close_project(self, main_window: MainWindow):
         del self._projects[id(main_window)]
 
-        self.recent_projects.add_recent(main_window.project.name, main_window.project.path)
-        if not self._quitting:
-            self.recent_projects.remove_opened(main_window.project.path)
+        main_window.project.config.dump()
+
+        if not main_window.project.is_temporary:
+            self.recent_projects.add_recent(main_window.project.name, main_window.project.path)
+            if not self._quitting:
+                self.recent_projects.remove_opened(main_window.project.path)
 
         if not self._projects:
             self.recent_projects.load()  # reload

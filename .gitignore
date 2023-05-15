@@ -13,6 +13,7 @@ dist/
 .mypy_cache
 build/
 logs/
+/icons/
 resources/i18n/*.qm
 resources/icons/*.rcc
 *.pyproject*
