@@ -22,7 +22,7 @@ class Console(DockWidget):
     Contains an instance of the Text widget for showing text information.
     """
 
-    default_area = Qt.RightDockWidgetArea
+    default_area = Qt.BottomDockWidgetArea
 
     def __init__(self, parent: QWidget, config: Config):
         super().__init__(self.tr("Console output"), config, parent)

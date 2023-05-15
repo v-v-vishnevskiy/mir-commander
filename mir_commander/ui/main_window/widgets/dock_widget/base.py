@@ -19,9 +19,17 @@ class DockWidget(BaseDockWidget):
         super().__init__(title, parent)
         self.main_window = parent
         self.config = config
+
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea
+            | Qt.DockWidgetArea.BottomDockWidgetArea
+            | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+
         self._restore_settings()
 
         self.dockLocationChanged.connect(self._location_changed)
+        self.visibilityChanged.connect(self._visibility_changed)
 
     def moveEvent(self, event: QMoveEvent):
         self.config["pos"] = [event.pos().x(), event.pos().y()]
@@ -31,6 +39,9 @@ class DockWidget(BaseDockWidget):
 
     def _location_changed(self, area: Qt.DockWidgetArea):
         self.config["area"] = area.name
+
+    def _visibility_changed(self, visible: bool):
+        self.config["visible"] = visible
 
     def _restore_area(self):
         """
@@ -50,4 +61,15 @@ class DockWidget(BaseDockWidget):
             self.main_window.addDockWidget(self.default_area, self)
 
     def _restore_settings(self):
+        pos = self.config["pos"]
+        size = self.config["size"]
+        if pos and size:
+            self.setGeometry(pos[0], pos[1], size[0], size[1])
+
+        self.setVisible(self.config.get("visible", True))
+
         self._restore_area()
+
+        if size:
+            self.main_window.resizeDocks([self], [size[0]], Qt.Horizontal)
+            self.main_window.resizeDocks([self], [size[1]], Qt.Vertical)

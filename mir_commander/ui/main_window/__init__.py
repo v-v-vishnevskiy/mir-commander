@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QMdiArea
+from PySide6.QtWidgets import QMainWindow, QMdiArea, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.projects.base import Project
@@ -41,12 +41,7 @@ class MainWindow(QMainWindow):
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks = DockWidgets(
-            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
-            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
-            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
-        )
-        self.setup_dock_widgets()
+        self.setup_docks()
         self.setup_menubar()
 
         # Status Bar
@@ -61,9 +56,18 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
-    def setup_dock_widgets(self):
-        self.docks.project.set_model(self.project.model)
+    def setup_docks(self):
+        self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
+        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
+        self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+
+        self.docks = DockWidgets(
+            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
+            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
+            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
+        )
+        self.docks.project.set_model(self.project.model)
 
     def _set_window_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
