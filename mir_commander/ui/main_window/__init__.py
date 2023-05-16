@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QTabWidget
 
@@ -67,6 +67,9 @@ class MainWindow(QMainWindow):
             dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
             dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
         )
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
         self.docks.project.set_model(self.project.model)
 
     def _set_window_title(self):
@@ -124,6 +127,7 @@ class MainWindow(QMainWindow):
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
+        self._config["state"] = self.saveState().toBase64().toStdString().encode()
         self._config["pos"] = [self.pos().x(), self.pos().y()]
         self._config["size"] = [self.size().width(), self.size().height()]
 
@@ -133,6 +137,8 @@ class MainWindow(QMainWindow):
         pos = self._config["pos"] or [geometry.width() * 0.125, geometry.height() * 0.125]
         size = self._config["size"] or [geometry.width() * 0.75, geometry.height() * 0.75]
         self.setGeometry(pos[0], pos[1], size[0], size[1])
+        if state := self._config["state"]:
+            self.restoreState(QByteArray.fromBase64(state))
 
     def closeEvent(self, event: QCloseEvent):
         self._save_settings()

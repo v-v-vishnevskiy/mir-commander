@@ -1,9 +1,14 @@
-from PySide6.QtCore import QSize, Qt
+from typing import TYPE_CHECKING
+
+from PySide6.QtCore import QSize
 from PySide6.QtGui import QStandardItemModel
-from PySide6.QtWidgets import QMainWindow, QTreeView
+from PySide6.QtWidgets import QTreeView
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
+
+if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
 
 
 class Project(DockWidget):
@@ -13,9 +18,7 @@ class Project(DockWidget):
     for showing a tree widget with objects of the project.
     """
 
-    default_area = Qt.LeftDockWidgetArea
-
-    def __init__(self, parent: QMainWindow, config: Config):
+    def __init__(self, parent: "MainWindow", config: Config):
         super().__init__(self.tr("Project"), config, parent)
         self._tree = QTreeView(self)
         self.setWidget(self._tree)
@@ -28,7 +31,7 @@ class Project(DockWidget):
         self._tree.setModel(model)
 
     def _icon_size(self) -> QSize:
-        value = self.main_window.app.config.get("widgets.docks.project.icon_size", 20)
+        value = self.global_config.get("widgets.docks.project.icon_size", 20)
         if value > 32 or value < 16:
             value = 20
         return QSize(value, value)
