@@ -31,8 +31,7 @@ class Settings(Dialog):
 
         self.setWindowTitle(self.tr("Settings"))
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
-        self.setMinimumWidth(800)
-        self.setMinimumHeight(600)
+        self.setMinimumSize(800, 600)
 
         self.setup_ui()
         self.setup_data()

@@ -57,6 +57,8 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
+        self.view_opened_items()
+
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
@@ -125,6 +127,10 @@ class MainWindow(QMainWindow):
         action.setMenuRole(Action.AboutRole)
         action.triggered.connect(About(self).show)
         return action
+
+    def view_opened_items(self):
+        for item in self.project.opened_items:
+            self.mdi_area.addSubWindow(item.viewer())
 
     def _save_settings(self):
         """Save parameters of main window to settings."""

@@ -1,11 +1,15 @@
-from typing import Optional
+from typing import Optional, Union
 
 from PySide6.QtGui import QIcon, QStandardItem
+from PySide6.QtWidgets import QWidget
 
 from mir_commander.data_structures.base import DataStructure
+from mir_commander.ui.main_window.widgets import viewers
 
 
 class Item(QStandardItem):
+    _viewer = None
+
     def __init__(self, title: str, data: Optional[DataStructure] = None):
         super().__init__(title)
         self.setData(data)
@@ -16,6 +20,21 @@ class Item(QStandardItem):
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
 
+    def viewer(self) -> Union[None, QWidget]:
+        """
+        Returns appropriate viewer instance for this item
+        """
+        return self._viewer(None, self) if self._viewer else None  # type: ignore
+
+    @property
+    def path(self) -> str:
+        part = self.text().replace("~", "~0").replace("/", "~1")
+        parent = self.parent()
+        if isinstance(parent, Item):
+            return f"{parent.path}/{part}"
+        else:
+            return part
+
 
 class Group(Item):
     def _set_icon(self):
@@ -23,7 +42,7 @@ class Group(Item):
 
 
 class Molecule(Item):
-    pass
+    _viewer = viewers.Molecule  # type: ignore
 
 
 class AtomicCoordinatesGroup(Group):
