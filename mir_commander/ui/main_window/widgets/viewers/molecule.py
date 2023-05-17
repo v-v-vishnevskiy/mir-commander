@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 AT_RAD = CONFIG["widgets"]["viewers"]["molecule"]["atoms"]["radius"]  # type: ignore
 COLOR = CONFIG["widgets"]["viewers"]["molecule"]["atoms"]["color"]  # type: ignore
+AT_SBCOVRAD = CONFIG["atom_single_bond_covalent_radius"]  # type: ignore
 
 
 @dataclass
@@ -63,6 +64,17 @@ class Molecule(gl.GLViewWidget):
             d = ds.x[i] ** 2 + ds.y[i] ** 2 + ds.z[i] ** 2
             if d > distance:
                 distance = d
+
+        bonds = []
+        geom_bond_tol = 0.15
+        for i in range(len(ds.atomic_num)):
+            crad_i = AT_SBCOVRAD[ds.atomic_num[i]]
+            for j in range(i):
+                crad_j = AT_SBCOVRAD[ds.atomic_num[j]]
+                crad_sum = crad_i + crad_j
+                dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
+                if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
+                    bonds.append((i, j))
 
         pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
 
