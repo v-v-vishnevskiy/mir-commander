@@ -1,10 +1,12 @@
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
 import pyqtgraph.opengl as gl
 from pyqtgraph import Vector
+from PySide6.QtCore import QKeyCombination, Qt
+from PySide6.QtGui import QKeyEvent
 
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.default_config import CONFIG
@@ -29,7 +31,7 @@ class Molecule(gl.GLViewWidget):
         super().__init__(None)
         self.item = item
         self.__molecule_index = 0
-        self._molecule: Union[None, MoleculeStruct] = None
+        self._molecule: Optional[MoleculeStruct] = None
 
         self.setMinimumSize(175, 131)
         self.setWindowTitle(item.text())
@@ -66,7 +68,7 @@ class Molecule(gl.GLViewWidget):
         if self._molecule:
             for atom in self._molecule.atoms:
                 self.addItem(atom)
-            self.setCameraPosition(pos=self._molecule.center, distance=self._molecule.radius * 3.5)
+            self.setCameraPosition(pos=self._molecule.center, distance=self._molecule.radius * 3)
 
     def hex_to_float(self, value: int) -> Tuple[float, float, float, float]:
         return (((value & 0xFF0000) >> 15) / 256, ((value & 0xFF00) >> 7) / 256, (value & 0xFF) / 256, 1.0)
@@ -85,3 +87,21 @@ class Molecule(gl.GLViewWidget):
             elif parent.child(i).hasChildren():
                 return self.__atomic_coordinates(index, parent.child(i), counter)
         return counter, last_ac_data
+
+    def _key_press_handler(self, event: QKeyEvent) -> bool:
+        if event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left):
+            if self.__molecule_index > 0:
+                self.__molecule_index -= 1
+                self._build_molecules()
+                self.draw()
+        elif event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right):
+            self.__molecule_index += 1
+            self._build_molecules()
+            self.draw()
+        else:
+            return False
+        return True
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if not self._key_press_handler(event):
+            super().keyPressEvent(event)
