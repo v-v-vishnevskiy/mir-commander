@@ -1,4 +1,5 @@
 import base64
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,9 @@ from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
+
+
+logger = logging.getLogger()
 
 
 @dataclass
@@ -130,7 +134,10 @@ class MainWindow(QMainWindow):
 
     def view_opened_items(self):
         for item in self.project.opened_items:
-            self.mdi_area.addSubWindow(item.viewer())
+            if viewer := item.viewer():
+                self.mdi_area.addSubWindow(viewer)
+            else:
+                logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
         """Save parameters of main window to settings."""

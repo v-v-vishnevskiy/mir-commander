@@ -24,14 +24,14 @@ class Item(QStandardItem):
         """
         Returns appropriate viewer instance for this item
         """
-        return self._viewer(None, self) if self._viewer else None  # type: ignore
+        return self._viewer(self) if self._viewer else None  # type: ignore
 
     @property
     def path(self) -> str:
-        part = self.text().replace("~", "~0").replace("/", "~1")
+        part = str(self.row())
         parent = self.parent()
         if isinstance(parent, Item):
-            return f"{parent.path}/{part}"
+            return f"{parent.path}.{part}"
         else:
             return part
 
@@ -54,5 +54,7 @@ class AtomicCoordinatesGroup(Group):
 
 
 class AtomicCoordinates(Item):
+    _viewer = viewers.AtomicCoordinates  # type: ignore
+
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates.png"))

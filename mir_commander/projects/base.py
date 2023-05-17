@@ -38,7 +38,7 @@ class Project:
         """
         result = []
         for item in self.config["opened"] or []:
-            if item := self._item(item.split("/"), self.root_item):
+            if item := self._item(item.split("."), self.root_item):
                 result.append(item)
         return result
 
@@ -50,12 +50,16 @@ class Project:
         self.config["opened"] = opened
 
     def _item(self, path: List[str], parent: QStandardItem) -> Union[None, QStandardItem]:
-        part = path.pop(0).replace("~1", "/").replace("~0", "~")
-        for i in range(parent.rowCount()):
-            item = parent.child(i)
-            if item.text() == part:
-                if path:
-                    return self._item(path, item)
-                else:
-                    return item
-        return None
+        try:
+            row = int(path.pop(0))
+        except ValueError:
+            return None
+
+        if row < 0 or row >= parent.rowCount():
+            return None
+
+        item = parent.child(row)
+        if path:
+            return self._item(path, item)
+        else:
+            return item

@@ -37,7 +37,7 @@ def import_file(path: str) -> item.Item:
     cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
     for i in range(0, cshape[0]):
         atcoods_data = ds_molecule.AtomicCoordinates(
-            data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+            moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
         )
         acg_item.appendRow(item.AtomicCoordinates("XYZ", atcoods_data))
 

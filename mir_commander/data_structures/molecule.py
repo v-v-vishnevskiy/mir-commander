@@ -18,6 +18,7 @@ class AtomicCoordinates(DataStructure):
     Note, in a similar manner we may design a class for Z-matrices, etc.
     """
 
+    atomic_num: np.ndarray
     x: np.ndarray = field(default_factory=lambda: np.empty(0, dtype="float64"))  # Cartesian coordinates X [A]
     y: np.ndarray = field(default_factory=lambda: np.empty(0, dtype="float64"))  # Cartesian coordinates Y [A]
     z: np.ndarray = field(default_factory=lambda: np.empty(0, dtype="float64"))  # Cartesian coordinates Z [A]
