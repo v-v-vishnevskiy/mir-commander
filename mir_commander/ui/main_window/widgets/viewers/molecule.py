@@ -30,21 +30,26 @@ class Molecule(gl.GLViewWidget):
     def __init__(self, item: "Item"):
         super().__init__(None)
         self.item = item
+        self._draw_item = None
         self.__molecule_index = 0
-        self._molecule: Optional[MoleculeStruct] = None
 
         self.setMinimumSize(175, 131)
         self.setWindowTitle(item.text())
         self.setWindowIcon(item.icon())
-        self._build_molecules()
+        self._set_draw_item()
         self.draw()
 
-    def _build_molecules(self):
-        self.__molecule_index, ds = self.__atomic_coordinates(self.__molecule_index, self.item)
-        if ds:
-            self._build_molecule(ds)
+    def _set_draw_item(self):
+        self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
 
-    def _build_molecule(self, ds: AtomicCoordinatesDS):
+    def _build_molecule(self) -> Optional[MoleculeStruct]:
+        """
+        Builds molecule graphics object from `AtomicCoordinates` data structure
+        """
+        if not self._draw_item:
+            return None
+
+        ds: AtomicCoordinatesDS = self._draw_item.data()
         distance = 0
         atoms = []
         for i, atomic_num in enumerate(ds.atomic_num):
@@ -61,35 +66,40 @@ class Molecule(gl.GLViewWidget):
 
         pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
 
-        self._molecule = MoleculeStruct(atoms, pos, math.sqrt(distance))
+        return MoleculeStruct(atoms, pos, math.sqrt(distance))
 
     def draw(self):
+        """
+        Sets graphics objects to draw and camera position
+        """
         self.clear()
-        if self._molecule:
-            for atom in self._molecule.atoms:
+        if molecule := self._build_molecule():
+            for atom in molecule.atoms:
                 self.addItem(atom)
-            self.setCameraPosition(pos=self._molecule.center, distance=self._molecule.radius * 3)
+            self.setCameraPosition(pos=molecule.center, distance=molecule.radius * 3)
 
     def normalize_color(self, value: int) -> Tuple[float, float, float, float]:
         """
         Converts 24 bit integer to tuple, where each component represented from 0.0 to 1.0
         """
-        return (((value & 0xFF0000) >> 15) / 256, ((value & 0xFF00) >> 7) / 256, (value & 0xFF) / 256, 1.0)
+        return ((value >> 16) / 255, ((value & 0xFF00) >> 8) / 255, (value & 0xFF) / 255, 1.0)
 
-    def __atomic_coordinates(
-        self, index: int, parent: "Item", counter: int = -1
-    ) -> Tuple[int, Optional[AtomicCoordinatesDS]]:
-        last_ac_data = None
+    def __atomic_coordinates_item(self, index: int, parent: "Item", counter: int = -1) -> Tuple[int, Optional["Item"]]:
+        """
+        Finds item with `AtomicCoordinates` data structure
+        """
+        index = max(0, index)
+        last_item = None
         for i in range(parent.rowCount()):
-            data = parent.child(i).data()
-            if isinstance(data, AtomicCoordinatesDS):
-                last_ac_data = data
+            item = parent.child(i)
+            if isinstance(item.data(), AtomicCoordinatesDS):
+                last_item = item
                 counter += 1
                 if index == counter:
-                    return counter, data
-            elif parent.child(i).hasChildren():
-                return self.__atomic_coordinates(index, parent.child(i), counter)
-        return counter, last_ac_data
+                    return counter, item
+            elif item.hasChildren():
+                return self.__atomic_coordinates_item(index, item, counter)
+        return counter, last_item
 
     def _key_press_handler(self, event: QKeyEvent) -> bool:
         """
@@ -99,13 +109,15 @@ class Molecule(gl.GLViewWidget):
             # Ctrl + Left
             if self.__molecule_index > 0:
                 self.__molecule_index -= 1
-                self._build_molecules()
+                self._set_draw_item()
                 self.draw()
         elif event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right):
             # Ctrl + Right
             self.__molecule_index += 1
-            self._build_molecules()
-            self.draw()
+            item = self._draw_item
+            self._set_draw_item()
+            if id(item) != id(self._draw_item):
+                self.draw()
         else:
             # No match
             return False  # not processed

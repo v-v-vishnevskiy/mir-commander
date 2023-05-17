@@ -6,6 +6,7 @@ CONFIG = {
             "molecule": {
                 "atoms": {
                     "radius": [
+                        0.1,
                         0.15,
                         0.17,
                         0.20,
@@ -126,6 +127,7 @@ CONFIG = {
                         0.87,
                     ],
                     "color": [
+                        0x00FBFF,
                         0xFFFFFF,
                         0xD9FFFF,
                         0xCC80FF,
