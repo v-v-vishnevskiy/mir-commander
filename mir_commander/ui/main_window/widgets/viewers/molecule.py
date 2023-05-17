@@ -33,8 +33,12 @@ class Molecule(gl.GLViewWidget):
         self.item = item
         self._draw_item = None
         self.__molecule_index = 0
+        self.__camera_set = False
 
-        self.setMinimumSize(175, 131)
+        self.__sphere_mesh_data = gl.MeshData.sphere(20, 20, 1)
+
+        # self.setMinimumSize(175, 131)
+        self.setMinimumSize(800, 600)
         self.setWindowTitle(item.text())
         self.setWindowIcon(item.icon())
         self._set_draw_item()
@@ -55,10 +59,13 @@ class Molecule(gl.GLViewWidget):
         atoms = []
         pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
         for i, atomic_num in enumerate(ds.atomic_num):
-            mesh_data = gl.MeshData.sphere(20, 20, AT_RAD[atomic_num])
             mesh_item = gl.GLMeshItem(
-                meshdata=mesh_data, smooth=True, shader="shaded", color=self.normalize_color(COLOR[atomic_num])
+                meshdata=self.__sphere_mesh_data,
+                smooth=True,
+                shader="shaded",
+                color=self.normalize_color(COLOR[atomic_num]),
             )
+            mesh_item.scale(AT_RAD[atomic_num], AT_RAD[atomic_num], AT_RAD[atomic_num])
             mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
             atoms.append(mesh_item)
 
@@ -80,7 +87,7 @@ class Molecule(gl.GLViewWidget):
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
                     bonds.append((i, j))
 
-        return MoleculeStruct(atoms, pos, distance * 2.7)
+        return MoleculeStruct(atoms, pos, distance * 2.6)
 
     def draw(self):
         """
@@ -90,7 +97,9 @@ class Molecule(gl.GLViewWidget):
         if molecule := self._build_molecule():
             for atom in molecule.atoms:
                 self.addItem(atom)
-            self.setCameraPosition(pos=molecule.center, distance=molecule.radius)
+            if not self.__camera_set:
+                self.setCameraPosition(pos=molecule.center, distance=molecule.radius)
+                self.__camera_set = True
 
     def normalize_color(self, value: int) -> Tuple[float, float, float, float]:
         """
