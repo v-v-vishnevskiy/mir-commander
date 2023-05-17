@@ -29,7 +29,7 @@ class MoleculeStruct:
 
 class Molecule(gl.GLViewWidget):
     def __init__(self, item: "Item"):
-        super().__init__(None)
+        super().__init__(None, rotationMethod="quaternion")
         self.item = item
         self._draw_item = None
         self.__molecule_index = 0
@@ -53,6 +53,7 @@ class Molecule(gl.GLViewWidget):
         ds: AtomicCoordinatesDS = self._draw_item.data()
         distance = 0
         atoms = []
+        pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
         for i, atomic_num in enumerate(ds.atomic_num):
             mesh_data = gl.MeshData.sphere(20, 20, AT_RAD[atomic_num])
             mesh_item = gl.GLMeshItem(
@@ -61,7 +62,10 @@ class Molecule(gl.GLViewWidget):
             mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
             atoms.append(mesh_item)
 
-            d = ds.x[i] ** 2 + ds.y[i] ** 2 + ds.z[i] ** 2
+            d = (
+                math.sqrt(((ds.x[i] - pos.x()) ** 2 + (ds.y[i] - pos.y()) ** 2 + (ds.z[i] - pos.z()) ** 2))
+                + AT_RAD[atomic_num]
+            )
             if d > distance:
                 distance = d
 
@@ -76,9 +80,7 @@ class Molecule(gl.GLViewWidget):
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
                     bonds.append((i, j))
 
-        pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
-
-        return MoleculeStruct(atoms, pos, math.sqrt(distance))
+        return MoleculeStruct(atoms, pos, distance * 2.7)
 
     def draw(self):
         """
@@ -88,7 +90,7 @@ class Molecule(gl.GLViewWidget):
         if molecule := self._build_molecule():
             for atom in molecule.atoms:
                 self.addItem(atom)
-            self.setCameraPosition(pos=molecule.center, distance=molecule.radius * 3)
+            self.setCameraPosition(pos=molecule.center, distance=molecule.radius)
 
     def normalize_color(self, value: int) -> Tuple[float, float, float, float]:
         """
