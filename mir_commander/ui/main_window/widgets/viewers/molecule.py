@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
 import pyqtgraph.opengl as gl
-from pyqtgraph import Vector
+from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QKeyCombination, Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QQuaternion
 
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.default_config import CONFIG
@@ -23,6 +23,7 @@ AT_SBCOVRAD = CONFIG["atom_single_bond_covalent_radius"]  # type: ignore
 @dataclass
 class MoleculeStruct:
     atoms: List[gl.GLMeshItem]
+    bonds: List[gl.GLMeshItem]
     center: Vector
     radius: float
 
@@ -35,10 +36,10 @@ class Molecule(gl.GLViewWidget):
         self.__molecule_index = 0
         self.__camera_set = False
 
-        self.__sphere_mesh_data = gl.MeshData.sphere(20, 20, 1)
+        self.__atom_mesh_data = gl.MeshData.sphere(20, 20, 1)
+        self.__bond_mesh_data = gl.MeshData.cylinder(20, 20, [0.07, 0.07], length=1)
 
-        # self.setMinimumSize(175, 131)
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(175, 131)
         self.setWindowTitle(item.text())
         self.setWindowIcon(item.icon())
         self._set_draw_item()
@@ -60,7 +61,7 @@ class Molecule(gl.GLViewWidget):
         pos = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
         for i, atomic_num in enumerate(ds.atomic_num):
             mesh_item = gl.GLMeshItem(
-                meshdata=self.__sphere_mesh_data,
+                meshdata=self.__atom_mesh_data,
                 smooth=True,
                 shader="shaded",
                 color=self.normalize_color(COLOR[atomic_num]),
@@ -85,9 +86,25 @@ class Molecule(gl.GLViewWidget):
                 crad_sum = crad_i + crad_j
                 dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
-                    bonds.append((i, j))
+                    mesh_item = gl.GLMeshItem(
+                        meshdata=self.__bond_mesh_data,
+                        smooth=True,
+                        shader="shaded",
+                        color=self.normalize_color(0x888888),
+                    )
+                    tr = Transform3D()
+                    tr.translate((ds.x[i] + ds.x[j]) / 2, (ds.y[i] + ds.y[j]) / 2, (ds.z[i] + ds.z[j]) / 2)
+                    q = QQuaternion.rotationTo(
+                        Vector(0, 0, 1), Vector(ds.x[i] - ds.x[j], ds.y[i] - ds.y[j], ds.z[i] - ds.z[j])
+                    )
+                    tr.rotate(q)
+                    tr.scale(1, 1, dist_ij)
+                    tr.translate(0, 0, -0.5)
 
-        return MoleculeStruct(atoms, pos, distance * 2.6)
+                    mesh_item.applyTransform(tr, False)
+                    bonds.append(mesh_item)
+
+        return MoleculeStruct(atoms, bonds, pos, distance * 2.6)
 
     def draw(self):
         """
@@ -95,8 +112,10 @@ class Molecule(gl.GLViewWidget):
         """
         self.clear()
         if molecule := self._build_molecule():
-            for atom in molecule.atoms:
+            for atom in molecule.atoms + molecule.bonds:
                 self.addItem(atom)
+            for bond in molecule.bonds:
+                self.addItem(bond)
             if not self.__camera_set:
                 self.setCameraPosition(pos=molecule.center, distance=molecule.radius)
                 self.__camera_set = True
