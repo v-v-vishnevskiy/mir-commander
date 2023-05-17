@@ -105,13 +105,21 @@ class Molecule(gl.GLViewWidget):
         """
         :return: Has the event been processed
         """
-        if event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left):
+        ctrl_left = {
+            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left),
+            QKeyCombination(Qt.ControlModifier, Qt.Key_Left),
+        }
+        ctrl_right = {
+            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right),
+            QKeyCombination(Qt.ControlModifier, Qt.Key_Right),
+        }
+        if event.keyCombination() in ctrl_left:
             # Ctrl + Left
             if self.__molecule_index > 0:
                 self.__molecule_index -= 1
                 self._set_draw_item()
                 self.draw()
-        elif event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right):
+        elif event.keyCombination() in ctrl_right:
             # Ctrl + Right
             self.__molecule_index += 1
             item = self._draw_item
