@@ -50,7 +50,7 @@ class Molecule(gl.GLViewWidget):
         for i, atomic_num in enumerate(ds.atomic_num):
             mesh_data = gl.MeshData.sphere(20, 20, AT_RAD[atomic_num])
             mesh_item = gl.GLMeshItem(
-                meshdata=mesh_data, smooth=True, shader="shaded", color=self.hex_to_float(COLOR[atomic_num])
+                meshdata=mesh_data, smooth=True, shader="shaded", color=self.normalize_color(COLOR[atomic_num])
             )
             mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
             atoms.append(mesh_item)
@@ -70,7 +70,10 @@ class Molecule(gl.GLViewWidget):
                 self.addItem(atom)
             self.setCameraPosition(pos=self._molecule.center, distance=self._molecule.radius * 3)
 
-    def hex_to_float(self, value: int) -> Tuple[float, float, float, float]:
+    def normalize_color(self, value: int) -> Tuple[float, float, float, float]:
+        """
+        Converts 24 bit integer to tuple, where each component represented from 0.0 to 1.0
+        """
         return (((value & 0xFF0000) >> 15) / 256, ((value & 0xFF00) >> 7) / 256, (value & 0xFF) / 256, 1.0)
 
     def __atomic_coordinates(
@@ -89,18 +92,24 @@ class Molecule(gl.GLViewWidget):
         return counter, last_ac_data
 
     def _key_press_handler(self, event: QKeyEvent) -> bool:
+        """
+        :return: Has the event been processed
+        """
         if event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left):
+            # Ctrl + Left
             if self.__molecule_index > 0:
                 self.__molecule_index -= 1
                 self._build_molecules()
                 self.draw()
         elif event.keyCombination() == QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right):
+            # Ctrl + Right
             self.__molecule_index += 1
             self._build_molecules()
             self.draw()
         else:
-            return False
-        return True
+            # No match
+            return False  # not processed
+        return True  # processed
 
     def keyPressEvent(self, event: QKeyEvent):
         if not self._key_press_handler(event):
