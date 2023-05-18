@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 import numpy as np
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
-from PySide6.QtCore import QKeyCombination, Qt
-from PySide6.QtGui import QKeyEvent, QQuaternion
+from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion
 
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.default_config import CONFIG
@@ -32,14 +32,20 @@ class Molecule(gl.GLViewWidget):
     def __init__(self, item: "Item"):
         super().__init__(None, rotationMethod="quaternion")
         self.item = item
+        self._config = QCoreApplication.instance().config.nested("widgets.viewers.molecule")
         self._draw_item = None
         self.__molecule_index = 0
         self.__camera_set = False
+        self.__mouse_pos = None
 
-        self.__atom_mesh_data = gl.MeshData.sphere(20, 20, 1)
-        self.__bond_mesh_data = gl.MeshData.cylinder(20, 20, [0.07, 0.07], length=1)
+        mesh_quality = self._config.get("quality.mesh", 0.5)
+        mesh_quality = max(min(mesh_quality, 1), 0.1)
+        mesh_quality = int(mesh_quality * 40)
+        bond_radius = self._config.get("bond.radius", 0.07)
+        self.__atom_mesh_data = gl.MeshData.sphere(mesh_quality, mesh_quality, radius=1)
+        self.__bond_mesh_data = gl.MeshData.cylinder(1, mesh_quality, [bond_radius, bond_radius], length=1)
 
-        self.setMinimumSize(175, 131)
+        self.setMinimumSize(200, 150)
         self.setWindowTitle(item.text())
         self.setWindowIcon(item.icon())
         self._set_draw_item()
@@ -62,7 +68,7 @@ class Molecule(gl.GLViewWidget):
         for i, atomic_num in enumerate(ds.atomic_num):
             mesh_item = gl.GLMeshItem(
                 meshdata=self.__atom_mesh_data,
-                smooth=True,
+                smooth=self._config.get("quality.smooth", True),
                 shader="shaded",
                 color=self.normalize_color(COLOR[atomic_num]),
             )
@@ -88,9 +94,9 @@ class Molecule(gl.GLViewWidget):
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
                     mesh_item = gl.GLMeshItem(
                         meshdata=self.__bond_mesh_data,
-                        smooth=True,
+                        smooth=self._config.get("quality.smooth", True),
                         shader="shaded",
-                        color=self.normalize_color(0x888888),
+                        color=self.normalize_color(self._config.get("bond.color", 0x888888)),
                     )
                     tr = Transform3D()
                     tr.translate((ds.x[i] + ds.x[j]) / 2, (ds.y[i] + ds.y[j]) / 2, (ds.z[i] + ds.z[j]) / 2)
@@ -176,3 +182,13 @@ class Molecule(gl.GLViewWidget):
     def keyPressEvent(self, event: QKeyEvent):
         if not self._key_press_handler(event):
             super().keyPressEvent(event)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.__mouse_pos = event.position()
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            diff = event.position() - self.__mouse_pos
+            self.__mouse_pos = event.position()
+            self.orbit(-diff.x(), diff.y())
