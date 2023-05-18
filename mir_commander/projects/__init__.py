@@ -37,7 +37,7 @@ def import_file(path: str) -> item.Item:
     cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
     for i in range(0, cshape[0]):
         atcoods_data = ds_molecule.AtomicCoordinates(
-            data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+            moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
         )
         acg_item.appendRow(item.AtomicCoordinates("XYZ", atcoods_data))
 
@@ -53,6 +53,7 @@ def load_project(path: str, app_config_dir: str) -> Project:
         project = Temporary(os.path.split(path)[1])
         project_item = import_file(path)
         project.root_item.appendRow(project_item)
+        project.mark_item_as_opened(project_item)
         return project
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):

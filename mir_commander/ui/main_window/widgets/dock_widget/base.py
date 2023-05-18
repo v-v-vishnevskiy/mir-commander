@@ -18,6 +18,7 @@ class DockWidget(BaseDockWidget):
 
     def __init__(self, title: str, config: Config, parent: "MainWindow"):
         super().__init__(title, parent)
+        self.mdi_area = parent.mdi_area
         self.global_config = parent.app.config
         self.config = config
 

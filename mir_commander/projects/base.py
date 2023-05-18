@@ -1,9 +1,13 @@
 import os
+from typing import TYPE_CHECKING, List, Union
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from mir_commander.utils.config import Config
 from mir_commander.utils.settings import Settings
+
+if TYPE_CHECKING:
+    from mir_commander.utils.item import Item
 
 
 class Project:
@@ -26,3 +30,36 @@ class Project:
     @property
     def is_temporary(self) -> bool:
         return False
+
+    @property
+    def opened_items(self) -> List["Item"]:
+        """
+        Returns list of items marked as opened
+        """
+        result = []
+        for item in self.config["opened"] or []:
+            if item := self._item(item.split("."), self.root_item):
+                result.append(item)
+        return result
+
+    def mark_item_as_opened(self, item: "Item"):
+        opened = self.config["opened"] or []
+        path = item.path
+        if path not in opened:
+            opened.append(path)
+        self.config["opened"] = opened
+
+    def _item(self, path: List[str], parent: QStandardItem) -> Union[None, QStandardItem]:
+        try:
+            row = int(path.pop(0))
+        except ValueError:
+            return None
+
+        if row < 0 or row >= parent.rowCount():
+            return None
+
+        item = parent.child(row)
+        if path:
+            return self._item(path, item)
+        else:
+            return item
