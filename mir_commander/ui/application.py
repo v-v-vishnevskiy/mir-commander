@@ -26,6 +26,7 @@ class Application(QApplication):
         self.register_resources()
 
         self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
+        self.config.set_defaults(Config(os.path.join(os.path.dirname(__file__), "..", "..", "default_config.yaml")))
         self.settings = Settings(self.config)
         self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.yaml"))
 
@@ -39,7 +40,7 @@ class Application(QApplication):
         self.settings.add_apply_callback("language", self._set_translation)
 
     def register_resources(self):
-        for file in glob.glob(os.path.join(os.path.dirname(__file__), "../..", "resources", "icons", "*.rcc")):
+        for file in glob.glob(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "icons", "*.rcc")):
             QResource.registerResource(file)
 
     def _set_translation(self):
@@ -50,7 +51,7 @@ class Application(QApplication):
             language = QLocale.languageToCode(QLocale.system().language())
 
         self.removeTranslator(self._translator)
-        i18n_path = os.path.join(os.path.dirname(__file__), "../..", "resources", "i18n")
+        i18n_path = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "i18n")
         if not self._translator.load(os.path.join(i18n_path, f"app_{language}")):
             self._translator.load(os.path.join(i18n_path, "app_en"))
         self.installTranslator(self._translator)
