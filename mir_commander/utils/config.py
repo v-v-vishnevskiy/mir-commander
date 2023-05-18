@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
@@ -14,6 +15,7 @@ class Config:
         self._root_data: Dict[str, Any] = {}
         self._nested_key = key
         self._synced = True
+        self._defaults: Optional["Config"] = None
 
         if config:
             self._path: str = path
@@ -45,8 +47,13 @@ class Config:
     def synced(self) -> bool:
         return self._synced
 
+    def set_defaults(self, config: "Config"):
+        self._defaults = config
+
     def dump(self):
         if self._path:
+            if not os.path.exists(self._path):
+                Path(os.path.split(self._path)[0]).mkdir(parents=True, exist_ok=True)
             with open(self._path, "w") as f:
                 try:
                     f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
@@ -55,7 +62,10 @@ class Config:
             self._synced = True
 
     def nested(self, key: str) -> "Config":
-        return Config(self._path, key, self)
+        config = Config(self._path, key, self)
+        if self._defaults:
+            config.set_defaults(self._defaults.nested(key))
+        return config
 
     def _key(self, key: str) -> List[str]:
         if not isinstance(key, str):
@@ -93,7 +103,10 @@ class Config:
                 data = data[part]
             return data
         except KeyError:
-            return default
+            if self._defaults:
+                return self._defaults.get(key, default)
+            else:
+                return default
 
     def set(self, key: str, value: Any, write: bool = True):
         parts = self._key(key)

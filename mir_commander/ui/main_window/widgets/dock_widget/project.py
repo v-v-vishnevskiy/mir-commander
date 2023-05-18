@@ -22,7 +22,7 @@ class TreeView(QTreeView):
         self.doubleClicked.connect(self._tree_item_double_clicked)
 
     def _icon_size(self) -> QSize:
-        value = self._config.get("icon_size", 20)
+        value = self._config["icon_size"]
         if value > 32 or value < 16:
             value = 20
         return QSize(value, value)
