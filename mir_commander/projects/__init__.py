@@ -53,11 +53,13 @@ def import_file(path: str) -> item.Item:
             else:
                 # Take simply the last structure in the list but note that it is not (fully) optimized
                 xyz_idx = cshape[0] - 1
-                xyz_title = "Unoptimized last XYZ"
+                xyz_title = "Unoptimized final XYZ"
         else:
-            # This is likely a single point calculation, take the last (most probably it is also the first) structure
+            # This may be a single point calculation
+            # or a kind of trajectory (multi-xyz file) without any other infos.
+            # Take the last structure
             xyz_idx = cshape[0] - 1
-            xyz_title = "Coordinates"
+            xyz_title = "Final coordinates"
 
         # Add a set of representative Cartesian coordinates directly to the molecule
         atcoods_data = ds_molecule.AtomicCoordinates(
@@ -68,23 +70,36 @@ def import_file(path: str) -> item.Item:
         )
         molitem.appendRow(item.AtomicCoordinates(xyz_title, atcoods_data))
 
-        # If we have an optimization trajectory
-        if cshape[0] > 1 and hasattr(data, "optstatus"):
-            optcg_item = item.AtomicCoordinatesGroup("Optimization")
-            molitem.appendRow(optcg_item)
-            # Adding sets of atomic coordinates to the group
-            for i in range(0, cshape[0]):
-                atcoods_data = ds_molecule.AtomicCoordinates(
-                    moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
-                )
-                csname = "Step {}".format(i + 1)
-                if data.optstatus[i] & data.OPT_NEW:
-                    csname += ", new"
-                if data.optstatus[i] & data.OPT_DONE:
-                    csname += ", done"
-                if data.optstatus[i] & data.OPT_UNCONVERGED:
-                    csname += ", unconverged"
-                optcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+        # If we have multiple sets of coordinates
+        if cshape[0] > 1:
+            # If this was an optimization
+            if hasattr(data, "optstatus"):
+                optcg_item = item.AtomicCoordinatesGroup("Optimization")
+                molitem.appendRow(optcg_item)
+                # Adding sets of atomic coordinates to the group
+                for i in range(0, cshape[0]):
+                    atcoods_data = ds_molecule.AtomicCoordinates(
+                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                    )
+                    csname = "Step {}".format(i + 1)
+                    if data.optstatus[i] & data.OPT_NEW:
+                        csname += ", new"
+                    if data.optstatus[i] & data.OPT_DONE:
+                        csname += ", done"
+                    if data.optstatus[i] & data.OPT_UNCONVERGED:
+                        csname += ", unconverged"
+                    optcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+            # Otherwise this is an undefined set of coordinates
+            else:
+                molcg_item = item.AtomicCoordinatesGroup("Coordinates")
+                molitem.appendRow(molcg_item)
+                # Adding sets of atomic coordinates to the group
+                for i in range(0, cshape[0]):
+                    atcoods_data = ds_molecule.AtomicCoordinates(
+                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                    )
+                    csname = "Set {}".format(i + 1)
+                    molcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
     # If there was an energy scan along some geometrical parameter(s)
     if hasattr(data, "scancoords"):
