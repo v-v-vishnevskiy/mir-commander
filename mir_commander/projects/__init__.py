@@ -17,7 +17,14 @@ logger = logging.getLogger(__name__)
 
 def import_file(path: str) -> item.Item:
     # Use here cclib for parsing files
-    data = ccread(path)
+    # Note, we do not handle multijob files explicitly!
+    # cclib is currently on the way to implement this possibility by returning
+    # lists of data from ccread.
+    # So currently we just fill in our project tree as is, but in the future
+    # we will split project to independent jobs.
+    kwargs = {}
+    kwargs["future"] = True
+    data = ccread(path, **kwargs)
     if data is None:
         msg = "cclib cannot determine the format of file"
         logger.error(f"{msg}: {path}")
@@ -30,16 +37,83 @@ def import_file(path: str) -> item.Item:
         moldata.multiplicity = data.mult
     molitem = item.Molecule(os.path.split(path)[1], moldata)
     molitem.file_path = path
-    acg_item = item.AtomicCoordinatesGroup()
-    molitem.appendRow(acg_item)
 
-    # Adding sets of atomic coordinates to the molecule
-    cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
-    for i in range(0, cshape[0]):
+    # If we have coordinates of atoms.
+    # This is actually expected to be always true
+    if hasattr(data, "atomcoords"):
+        cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
+
+        if hasattr(data, "optdone"):
+            if (
+                len(data.optdone) > 0
+            ):  # optdone is here a list due to the experimental feature in cclib turned on by the future option above
+                # Take here the first converged structure
+                xyz_idx = data.optdone[0]
+                xyz_title = "Optimized XYZ"
+            else:
+                # Take simply the last structure in the list but note that it is not (fully) optimized
+                xyz_idx = cshape[0] - 1
+                xyz_title = "Unoptimized final XYZ"
+        else:
+            # This may be a single point calculation
+            # or a kind of trajectory (multi-xyz file) without any other infos.
+            # Take the last structure
+            xyz_idx = cshape[0] - 1
+            xyz_title = "Final coordinates"
+
+        # Add a set of representative Cartesian coordinates directly to the molecule
         atcoods_data = ds_molecule.AtomicCoordinates(
-            moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+            moldata.atomic_num,
+            data.atomcoords[xyz_idx][:, 0],
+            data.atomcoords[xyz_idx][:, 1],
+            data.atomcoords[xyz_idx][:, 2],
         )
-        acg_item.appendRow(item.AtomicCoordinates("XYZ", atcoods_data))
+        molitem.appendRow(item.AtomicCoordinates(xyz_title, atcoods_data))
+
+        # If we have multiple sets of coordinates
+        if cshape[0] > 1:
+            # If this was an optimization
+            if hasattr(data, "optstatus"):
+                optcg_item = item.AtomicCoordinatesGroup("Optimization")
+                molitem.appendRow(optcg_item)
+                # Adding sets of atomic coordinates to the group
+                for i in range(0, cshape[0]):
+                    atcoods_data = ds_molecule.AtomicCoordinates(
+                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                    )
+                    csname = "Step {}".format(i + 1)
+                    if data.optstatus[i] & data.OPT_NEW:
+                        csname += ", new"
+                    if data.optstatus[i] & data.OPT_DONE:
+                        csname += ", done"
+                    if data.optstatus[i] & data.OPT_UNCONVERGED:
+                        csname += ", unconverged"
+                    optcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+            # Otherwise this is an undefined set of coordinates
+            else:
+                molcg_item = item.AtomicCoordinatesGroup("Coordinates")
+                molitem.appendRow(molcg_item)
+                # Adding sets of atomic coordinates to the group
+                for i in range(0, cshape[0]):
+                    atcoods_data = ds_molecule.AtomicCoordinates(
+                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                    )
+                    csname = "Set {}".format(i + 1)
+                    molcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+
+    # If there was an energy scan along some geometrical parameter(s)
+    if hasattr(data, "scancoords"):
+        cshape = np.shape(data.scancoords)  # Number of structure sets is in cshape[0]
+        if cshape[0] > 0:
+            scancg_item = item.AtomicCoordinatesGroup("Scan")
+            molitem.appendRow(scancg_item)
+            # Adding sets of atomic coordinates to the group
+            for i in range(0, cshape[0]):
+                atcoods_data = ds_molecule.AtomicCoordinates(
+                    moldata.atomic_num, data.scancoords[i][:, 0], data.scancoords[i][:, 1], data.scancoords[i][:, 2]
+                )
+                csname = "Step {}".format(i + 1)
+                scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
     return molitem
 
