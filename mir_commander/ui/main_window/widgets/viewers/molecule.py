@@ -1,3 +1,4 @@
+import logging
 import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional, Tuple
@@ -14,6 +15,9 @@ from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
     from mir_commander.utils.item import Item
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -139,6 +143,7 @@ class Molecule(gl.GLViewWidget):
                 result.append(self.__build_cylinder(length / 2, atom1, (atom1 + atom2) / 2, self.__at_color[a_num1]))
                 result.append(self.__build_cylinder(length / 2, (atom1 + atom2) / 2, atom2, self.__at_color[a_num2]))
         else:
+            logger.warning("Parameter `bond.color` is not set. Use default color #888888")
             result.append(self.__build_cylinder(length, atom1, atom2, "#888888"))
         return result
 
