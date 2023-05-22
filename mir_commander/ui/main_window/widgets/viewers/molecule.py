@@ -104,7 +104,10 @@ class Molecule(gl.GLViewWidget):
                 shader="shaded",
                 color=self.normalize_color(self.__at_color[atomic_num]),
             )
-            radius = self.__style["atoms.scale_factor"] * self.__at_rad[atomic_num]
+            if self.__style["atoms.enabled"]:
+                radius = self.__style["atoms.scale_factor"] * self.__at_rad[atomic_num]
+            else:
+                radius = self.__style["bond.radius"]
             mesh_item.scale(radius, radius, radius)
             mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
             result.append(mesh_item)
@@ -140,8 +143,22 @@ class Molecule(gl.GLViewWidget):
             if a_num1 == a_num2:
                 result.append(self.__build_cylinder(length, atom1, atom2, self.__at_color[a_num1]))
             else:
-                result.append(self.__build_cylinder(length / 2, atom1, (atom1 + atom2) / 2, self.__at_color[a_num1]))
-                result.append(self.__build_cylinder(length / 2, (atom1 + atom2) / 2, atom2, self.__at_color[a_num2]))
+                if self.__style["atoms.enabled"]:
+                    rad1 = self.__at_rad[a_num1] * self.__style["atoms.scale_factor"]
+                    rad2 = self.__at_rad[a_num2] * self.__style["atoms.scale_factor"]
+                    mid_length = length - rad1 - rad2
+                    if mid_length > 0:
+                        length1 = rad1 + mid_length / 2
+                        length2 = rad2 + mid_length / 2
+                        mid = atom2 - atom1
+                        mid.normalize()
+                        mid = (mid * length1) + atom1
+                        result.append(self.__build_cylinder(length1, atom1, mid, self.__at_color[a_num1]))
+                        result.append(self.__build_cylinder(length2, mid, atom2, self.__at_color[a_num2]))
+                else:
+                    mid = (atom1 + atom2) / 2
+                    result.append(self.__build_cylinder(length / 2, atom1, mid, self.__at_color[a_num1]))
+                    result.append(self.__build_cylinder(length / 2, mid, atom2, self.__at_color[a_num2]))
         else:
             logger.warning("Parameter `bond.color` is not set. Use default color #888888")
             result.append(self.__build_cylinder(length, atom1, atom2, "#888888"))
