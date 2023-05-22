@@ -47,6 +47,9 @@ class Config:
     def synced(self) -> bool:
         return self._synced
 
+    def set_data(self, data: dict):
+        self._data = data
+
     def set_defaults(self, config: "Config"):
         self._defaults = config
 
