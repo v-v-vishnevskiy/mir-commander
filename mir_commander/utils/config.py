@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(self, path: str, key: str = "", config: Optional["Config"] = None):
+    def __init__(self, path: Union[str, Path], key: str = "", config: Optional["Config"] = None):
         self._root_data: Dict[str, Any] = {}
         self._nested_key = key
         self._synced = True
         self._defaults: Optional["Config"] = None
 
         if config:
-            self._path: str = path
+            self._path: Union[str, Path] = path
             self._root_data = config._root_data
             self._data: Dict[str, Any] = config._data
             if not self.contains(key):

@@ -9,7 +9,7 @@ from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
 
-from mir_commander.const import ATOM_SINGLE_BOND_COVALENT_RADIUS
+from mir_commander.const import ATOM_SINGLE_BOND_COVALENT_RADIUS, CONFIG_DIR, DEFAULT_CONFIG_FILE
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.utils.config import Config
 
@@ -26,7 +26,20 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
+def load_styles() -> List[Config]:
+    default_style = Config(CONFIG_DIR / "config.yaml").nested("widgets.viewers.molecule.style.default")
+    default_style.set_defaults(Config(DEFAULT_CONFIG_FILE).nested("widgets.viewers.molecule.style.default"))
+    result = [default_style]
+    for file in (CONFIG_DIR / "styles" / "viewers" / "molecule").glob("*.yaml"):
+        style = Config(file)
+        style.set_defaults(default_style)
+        result.append(style)
+    return sorted(result, key=lambda x: x["name"])
+
+
 class Molecule(gl.GLViewWidget):
+    styles: List[Config] = load_styles()
+
     def __init__(self, item: "Item"):
         super().__init__(None, rotationMethod="quaternion")
         self.item = item
@@ -34,8 +47,8 @@ class Molecule(gl.GLViewWidget):
         self._config = self._global_config.nested("widgets.viewers.molecule")
         self._draw_item = None
         self.__molecule_index = 0
-        self.__style_name = self._config["styles.current"]
-        self.__style = Config("")
+        self.__default_style = self._config.nested("style.default")
+        self.__style = self.styles[0]
         self.__camera_set = False
         self.__mouse_pos = None
         self.__atom_mesh_data = None
@@ -43,7 +56,7 @@ class Molecule(gl.GLViewWidget):
         self.__at_rad: List[int] = []
         self.__at_color: List[str] = []
 
-        self._set_style(self.__style_name)
+        self._set_style(self._config["style.current"])
         self.__apply_style()
 
         if self._config["antialiasing"]:
@@ -61,15 +74,12 @@ class Molecule(gl.GLViewWidget):
         self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
 
     def _set_style(self, name: str):
-        for style in self._config["styles.builtin"] + self._config["styles.custom"]:
+        for style in self.styles:
             if style["name"] == name:
-                style = style
-                self.__style_name = name
+                self.__style = style
                 break
         else:
-            style = self._config["styles.builtin"][0]
-            self.__style_name = style["name"]
-        self.__style.set_data(style)
+            self.__style = self.__default_style
 
     def __apply_style(self):
         mesh_quality = self.__style["quality.mesh"]
@@ -278,26 +288,25 @@ class Molecule(gl.GLViewWidget):
             self.draw()
 
     def _set_prev_style(self):
-        current_style = self.__style_name
-        prev_style = self._config["styles.builtin"][0]
-        for style in self._config["styles.builtin"] + self._config["styles.custom"]:
-            if style["name"] == self.__style_name:
-                self._set_style(prev_style["name"])
+        current_style = self.__style
+        prev_style = self.styles[0]
+        for style in self.styles[1:]:
+            if style["name"] == self.__style["name"]:
+                self.__style = prev_style
                 break
             else:
                 prev_style = style
-        if current_style != self.__style_name:
+        if current_style["name"] != self.__style["name"]:
             self.__apply_style()
             self.draw()
 
     def _set_next_style(self):
-        current_style = self.__style_name
-        styles = self._config["styles.builtin"] + self._config["styles.custom"]
-        for i, style in enumerate(styles):
-            if style["name"] == self.__style_name:
-                self._set_style(styles[min(i + 1, len(styles) - 1)]["name"])
+        current_style = self.__style
+        for i, style in enumerate(self.styles):
+            if style["name"] == self.__style["name"]:
+                self.__style = self.styles[min(i + 1, len(self.styles) - 1)]
                 break
-        if current_style != self.__style_name:
+        if current_style["name"] != self.__style["name"]:
             self.__apply_style()
             self.draw()
 
