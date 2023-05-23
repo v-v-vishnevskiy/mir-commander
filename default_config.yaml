@@ -17,7 +17,7 @@ widgets:
             mesh: 0.5
             smooth: true
           bond:
-            radius: 0.07
+            radius: 0.1
             color: atoms
           atoms:
             enabled: true
