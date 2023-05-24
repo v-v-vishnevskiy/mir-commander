@@ -1,3 +1,15 @@
+from pathlib import Path
+
+
+class DIR:
+    APP = Path(__file__).parent.parent
+    CONFIG = Path.home() / ".mircmd"
+    DEFAULT_CONFIGS = APP / "default_configs"
+    RESOURCES = APP / "resources"
+    ICONS = RESOURCES / "icons"
+    TRANSLATIONS = RESOURCES / "i18n"
+
+
 ATOM_SINGLE_BOND_COVALENT_RADIUS = [
     0.50,
     0.32,

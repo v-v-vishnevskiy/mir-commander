@@ -1,19 +1,16 @@
-import glob
-import os
 from typing import Dict
 
-from PySide6.QtCore import QDir, QLocale, QResource, QTranslator
+from PySide6.QtCore import QLocale, QResource, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
+from mir_commander.consts import DIR
 from mir_commander.projects import load_project
 from mir_commander.recent_projects import RecentProjects
 from mir_commander.ui.main_window import MainWindow
 from mir_commander.ui.recent_projects import RecentProjects as RecentProjectsWidget
 from mir_commander.utils.config import Config
 from mir_commander.utils.settings import Settings
-
-CONFIG_DIR = os.path.join(QDir.homePath(), ".mircmd")
 
 
 class Application(QApplication):
@@ -25,10 +22,9 @@ class Application(QApplication):
 
         self.register_resources()
 
-        self.config = Config(os.path.join(CONFIG_DIR, "config.yaml"))
-        self.config.set_defaults(Config(os.path.join(os.path.dirname(__file__), "..", "..", "default_config.yaml")))
+        self.config = Config(DIR.CONFIG / "config.yaml")
         self.settings = Settings(self.config)
-        self.recent_projects = RecentProjects(os.path.join(CONFIG_DIR, "recent.yaml"))
+        self.recent_projects = RecentProjects(DIR.CONFIG / "recent.yaml")
 
         self._projects: Dict[int, MainWindow] = {}
         self._recent_projects_widget = RecentProjectsWidget(self)
@@ -40,8 +36,8 @@ class Application(QApplication):
         self.settings.add_apply_callback("language", self._set_translation)
 
     def register_resources(self):
-        for file in glob.glob(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "icons", "*.rcc")):
-            QResource.registerResource(file)
+        for file in DIR.ICONS.glob("*.rcc"):
+            QResource.registerResource(str(file))
 
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
@@ -51,14 +47,13 @@ class Application(QApplication):
             language = QLocale.languageToCode(QLocale.system().language())
 
         self.removeTranslator(self._translator)
-        i18n_path = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "i18n")
-        if not self._translator.load(os.path.join(i18n_path, f"app_{language}")):
-            self._translator.load(os.path.join(i18n_path, "app_en"))
+        if not self._translator.load(str(DIR.TRANSLATIONS / f"app_{language}")):
+            self._translator.load(str(DIR.TRANSLATIONS / "app_en"))
         self.installTranslator(self._translator)
 
     def open_project(self, path: str, raise_exc: bool = False) -> bool:
         try:
-            project = load_project(path, CONFIG_DIR)
+            project = load_project(path)
         except exceptions.LoadProject:
             if raise_exc:
                 raise
