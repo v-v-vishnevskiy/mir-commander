@@ -4,7 +4,7 @@ import os
 import numpy as np
 from cclib.io import ccread
 
-from mir_commander import exceptions
+from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
 from mir_commander.projects.base import Project
 from mir_commander.projects.molecule import Molecule
@@ -44,7 +44,7 @@ def import_file(path: str) -> item.Item:
     return molitem
 
 
-def load_project(path: str, app_config_dir: str) -> Project:
+def load_project(path: str) -> Project:
     path = os.path.normpath(path)
 
     # If this is a file, then it may be from some other program
@@ -64,7 +64,7 @@ def load_project(path: str, app_config_dir: str) -> Project:
             logger.error(f"{msg}: {config_path}")
             raise exceptions.LoadProject(msg, f"{msg}: {config_path}")
         # or if we are trying to open user config dir
-        elif config_path == os.path.join(app_config_dir, "config.yaml"):
+        elif config_path == consts.DIR.CONFIG / "config.yaml":
             msg = "Mir Commander user configuration directory cannot contain project file(s)"
             logger.error(msg)
             raise exceptions.LoadProject(msg)
@@ -83,4 +83,4 @@ def load_project(path: str, app_config_dir: str) -> Project:
         raise exceptions.LoadProject(msg, f"{msg}: {path}")
 
 
-__all__ = ["load_project"]
+__all__ = ["import_file", "load_project"]

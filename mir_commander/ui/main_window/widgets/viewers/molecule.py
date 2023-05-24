@@ -9,7 +9,7 @@ from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
 
-from mir_commander.const import ATOM_SINGLE_BOND_COVALENT_RADIUS, CONFIG_DIR, DEFAULT_CONFIG_FILE
+from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.utils.config import Config
 
@@ -26,19 +26,8 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
-def load_styles() -> List[Config]:
-    default_style = Config(CONFIG_DIR / "config.yaml").nested("widgets.viewers.molecule.style.default")
-    default_style.set_defaults(Config(DEFAULT_CONFIG_FILE).nested("widgets.viewers.molecule.style.default"))
-    result = [default_style]
-    for file in (CONFIG_DIR / "styles" / "viewers" / "molecule").glob("*.yaml"):
-        style = Config(file)
-        style.set_defaults(default_style)
-        result.append(style)
-    return sorted(result, key=lambda x: x["name"])
-
-
 class Molecule(gl.GLViewWidget):
-    styles: List[Config] = load_styles()
+    styles: List[Config] = []
 
     def __init__(self, item: "Item"):
         super().__init__(None, rotationMethod="quaternion")
@@ -48,7 +37,6 @@ class Molecule(gl.GLViewWidget):
         self._draw_item = None
         self.__molecule_index = 0
         self.__default_style = self._config.nested("style.default")
-        self.__style = self.styles[0]
         self.__camera_set = False
         self.__mouse_pos = None
         self.__atom_mesh_data = None
@@ -56,6 +44,10 @@ class Molecule(gl.GLViewWidget):
         self.__at_rad: List[int] = []
         self.__at_color: List[str] = []
 
+        if not self.styles:
+            self._load_styles()
+
+        self.__style = self.styles[0]
         self._set_style(self._config["style.current"])
         self.__apply_style()
 
@@ -69,6 +61,14 @@ class Molecule(gl.GLViewWidget):
         self.setWindowIcon(item.icon())
         self._set_draw_item()
         self.draw()
+
+    def _load_styles(self):
+        styles = [self.__default_style]
+        for file in (DIR.CONFIG / "styles" / "viewers" / "molecule").glob("*.yaml"):
+            style = Config(file)
+            style.set_defaults(self.__default_style)
+            styles.append(style)
+        self.__class__.styles = sorted(styles, key=lambda x: x["name"])
 
     def _set_draw_item(self):
         self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
