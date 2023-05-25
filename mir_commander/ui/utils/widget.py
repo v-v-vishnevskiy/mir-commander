@@ -157,8 +157,8 @@ class TabWidget(Widget, QTabWidget):
 
 
 class Action(Translator, QAction):
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
-        super().__init__(self._tr(text), parent)
+    def __init__(self, text: str, parent: Optional[QWidget] = None, *args, **kwargs):
+        super().__init__(self._tr(text), parent, *args, **kwargs)
         self.__text = text
 
     def retranslate(self):
