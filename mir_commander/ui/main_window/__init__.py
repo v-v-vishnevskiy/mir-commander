@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         # Settings
         self._restore_settings()
 
-        self.update_menus()
+        self.update_menus(None)
 
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
@@ -216,15 +216,9 @@ class MainWindow(QMainWindow):
         self.app.close_project(self)
         event.accept()
 
-    def active_mdi_child(self):
-        active_sub_window = self.mdi_area.activeSubWindow()
-        if active_sub_window:
-            return active_sub_window.widget()
-        return None
-
     @Slot()
-    def update_menus(self):
-        has_mdi_child = self.active_mdi_child() is not None
+    def update_menus(self, window: QMdiSubWindow):
+        has_mdi_child = window is not None
         self._win_close_act.setEnabled(has_mdi_child)
         self._win_close_all_act.setEnabled(has_mdi_child)
         self._win_tile_act.setEnabled(has_mdi_child)
@@ -251,11 +245,10 @@ class MainWindow(QMainWindow):
         self._window_menu.addAction(self._win_separator_act)
 
         windows = self.mdi_area.subWindowList()
+        active_sub_window = self.mdi_area.activeSubWindow()
         self._win_separator_act.setVisible(len(windows) != 0)
 
         for i, window in enumerate(windows):
-            child = window.widget()
-
             f = window.windowTitle()
             text = f"{i + 1} {f}"
             if i < 9:
@@ -263,6 +256,6 @@ class MainWindow(QMainWindow):
 
             action = self._window_menu.addAction(text)
             action.setCheckable(True)
-            action.setChecked(child is self.active_mdi_child())
+            action.setChecked(window is active_sub_window)
             slot_func = partial(self.set_active_sub_window, window=window)
             action.triggered.connect(slot_func)
