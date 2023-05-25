@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QMdiArea, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.projects.base import Project
@@ -59,6 +59,8 @@ class MainWindow(QMainWindow):
 
         # Settings
         self._restore_settings()
+
+        self.update_menus()
 
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
@@ -231,7 +233,7 @@ class MainWindow(QMainWindow):
         self._win_previous_act.setEnabled(has_mdi_child)
         self._win_separator_act.setVisible(has_mdi_child)
 
-    def set_active_sub_window(self, window):
+    def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
             self.mdi_area.setActiveSubWindow(window)
 
