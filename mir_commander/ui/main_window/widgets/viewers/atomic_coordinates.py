@@ -5,5 +5,8 @@ class AtomicCoordinates(Molecule):
     def _set_draw_item(self):
         self._draw_item = self.item
 
-    def _key_press_handler(self, *args, **kwargs) -> bool:
-        return False
+    def _draw_next_item(self):
+        pass
+
+    def _draw_prev_item(self):
+        pass
