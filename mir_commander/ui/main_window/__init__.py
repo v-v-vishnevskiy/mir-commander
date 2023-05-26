@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
             triggered=self.mdi_area.activatePreviousSubWindow,
         )
 
-        self._win_separator_act = Action(self)
+        self._win_separator_act = Action("", self)
         self._win_separator_act.setSeparator(True)
 
     def view_opened_items(self):
