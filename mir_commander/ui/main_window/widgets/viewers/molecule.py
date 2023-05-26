@@ -57,9 +57,9 @@ class Molecule(gl.GLViewWidget):
             self.setFormat(sf)
 
         self.setMinimumSize(200, 150)
-        self.setWindowTitle(item.text())
         self.setWindowIcon(item.icon())
         self._set_draw_item()
+        self.update_window_title()
         self.draw()
 
     def _load_styles(self):
@@ -278,6 +278,7 @@ class Molecule(gl.GLViewWidget):
         if self.__molecule_index > 0:
             self.__molecule_index -= 1
             self._set_draw_item()
+            self.update_window_title()
             self.draw()
 
     def _draw_next_item(self):
@@ -285,6 +286,7 @@ class Molecule(gl.GLViewWidget):
         item = self._draw_item
         self._set_draw_item()
         if id(item) != id(self._draw_item):
+            self.update_window_title()
             self.draw()
 
     def _set_prev_style(self):
@@ -323,3 +325,11 @@ class Molecule(gl.GLViewWidget):
             diff = event.position() - self.__mouse_pos
             self.__mouse_pos = event.position()
             self.orbit(-diff.x(), diff.y())
+
+    def update_window_title(self):
+        title = self._draw_item.text()
+        parent_item = self._draw_item.parent()
+        while parent_item:
+            title = parent_item.text() + "/" + title
+            parent_item = parent_item.parent()
+        self.setWindowTitle(title)
