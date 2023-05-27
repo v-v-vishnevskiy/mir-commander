@@ -36,7 +36,8 @@ class TreeView(QTreeView):
                 break
         else:
             if viewer := item.viewer():
-                mdi_area.addSubWindow(viewer)
+                sub_window = mdi_area.addSubWindow(viewer)
+                viewer.setParent(sub_window)
                 viewer.show()
             else:
                 self.setExpanded(index, not self.isExpanded(index))

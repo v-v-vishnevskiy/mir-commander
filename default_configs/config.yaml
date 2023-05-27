@@ -7,6 +7,7 @@ widgets:
   viewers:
     molecule:
       antialiasing: true
+      size: [500, 500]
       style:
         current: Colored Bonds
         default:
