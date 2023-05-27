@@ -2,7 +2,7 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
@@ -192,7 +192,8 @@ class MainWindow(QMainWindow):
     def view_opened_items(self):
         for item in self.project.opened_items:
             if viewer := item.viewer():
-                self.mdi_area.addSubWindow(viewer)
+                sub_window = self.mdi_area.addSubWindow(viewer)
+                viewer.setParent(sub_window)
             else:
                 logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
@@ -217,7 +218,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
     @Slot()
-    def update_menus(self, window: QMdiSubWindow):
+    def update_menus(self, window: Union[None, QMdiSubWindow]):
         has_mdi_child = window is not None
         self._win_close_act.setEnabled(has_mdi_child)
         self._win_close_all_act.setEnabled(has_mdi_child)

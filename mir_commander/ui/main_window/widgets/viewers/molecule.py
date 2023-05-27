@@ -8,6 +8,7 @@ import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
+from PySide6.QtWidgets import QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
@@ -56,11 +57,17 @@ class Molecule(gl.GLViewWidget):
             sf.setSamples(16)
             self.setFormat(sf)
 
-        self.setMinimumSize(200, 150)
-        self.setWindowIcon(item.icon())
+        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
         self._set_draw_item()
         self.update_window_title()
         self.draw()
+
+    def setParent(self, widget: QWidget):
+        pos = widget.pos()
+        size = self._config["size"]
+        widget.setGeometry(pos.x(), pos.y(), size[0], size[1])
+        widget.setWindowIcon(self.item.icon())
+        super().setParent(widget)
 
     def _load_styles(self):
         styles = [self.__default_style]
