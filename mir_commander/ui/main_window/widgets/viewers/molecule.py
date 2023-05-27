@@ -57,7 +57,7 @@ class Molecule(gl.GLViewWidget):
             sf.setSamples(16)
             self.setFormat(sf)
 
-        self.setMinimumSize(150, 150)
+        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
         self._set_draw_item()
         self.update_window_title()
         self.draw()

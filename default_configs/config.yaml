@@ -8,6 +8,7 @@ widgets:
     molecule:
       antialiasing: true
       size: [500, 500]
+      min_size: [150, 150]
       style:
         current: Colored Bonds
         default:
