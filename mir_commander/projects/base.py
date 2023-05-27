@@ -32,22 +32,22 @@ class Project:
         return False
 
     @property
-    def opened_items(self) -> List["Item"]:
+    def items_marked_to_view(self) -> List["Item"]:
         """
         Returns list of items marked as opened
         """
         result = []
-        for item in self.config["opened"] or []:
+        for item in self.config["items.marked_to_view"] or []:
             if item := self._item(item.split("."), self.root_item):
                 result.append(item)
         return result
 
-    def mark_item_as_opened(self, item: "Item"):
-        opened = self.config["opened"] or []
+    def mark_item_to_view(self, item: "Item"):
+        opened = self.config["items.marked_to_view"] or []
         path = item.path
         if path not in opened:
             opened.append(path)
-        self.config["opened"] = opened
+        self.config["items.marked_to_view"] = opened
 
     def _item(self, path: List[str], parent: QStandardItem) -> Union[None, QStandardItem]:
         try:

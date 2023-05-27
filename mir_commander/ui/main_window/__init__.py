@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
-        self.view_opened_items()
+        self.view_items_marked_to_view()
 
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -189,8 +189,8 @@ class MainWindow(QMainWindow):
         self._win_separator_act = Action("", self)
         self._win_separator_act.setSeparator(True)
 
-    def view_opened_items(self):
-        for item in self.project.opened_items:
+    def view_items_marked_to_view(self):
+        for item in self.project.items_marked_to_view:
             if viewer := item.viewer():
                 sub_window = self.mdi_area.addSubWindow(viewer)
                 viewer.setParent(sub_window)

@@ -127,7 +127,7 @@ def load_project(path: str) -> Project:
         project = Temporary(os.path.split(path)[1])
         project_item = import_file(path)
         project.root_item.appendRow(project_item)
-        project.mark_item_as_opened(project_item)
+        project.mark_item_to_view(project_item)
         return project
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):
