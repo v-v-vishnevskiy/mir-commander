@@ -39,10 +39,10 @@ class Item(QStandardItem):
 
         view_structures_menu = Menu(Menu.tr("View Structures"), result)
         view_structures_menu.addAction(
-            Action(Action.tr("All"), view_structures_menu, triggered=self._view_structures_all)
+            Action(Action.tr("VS_All"), view_structures_menu, triggered=self._view_structures_all)
         )
         view_structures_menu.addAction(
-            Action(Action.tr("Child"), view_structures_menu, triggered=self._view_structures_child)
+            Action(Action.tr("VS_Child"), view_structures_menu, triggered=self._view_structures_child)
         )
         view_structures_menu.addSeparator()
 
