@@ -27,12 +27,13 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
-class Molecule(gl.GLViewWidget):
+class MoleculeStructure(gl.GLViewWidget):
     styles: List[Config] = []
 
-    def __init__(self, item: "Item"):
+    def __init__(self, item: "Item", all: bool = False):
         super().__init__(None, rotationMethod="quaternion")
         self.item = item
+        self.all = all
         self._global_config = QCoreApplication.instance().config
         self._config = self._global_config.nested("widgets.viewers.molecule")
         self._draw_item = None
@@ -237,16 +238,20 @@ class Molecule(gl.GLViewWidget):
         """
         index = max(0, index)
         last_item = None
-        for i in range(parent.rowCount()):
-            item = parent.child(i)
-            if isinstance(item.data(), AtomicCoordinatesDS):
-                last_item = item
-                counter += 1
-                if index == counter:
-                    return counter, item
-            elif item.hasChildren():
-                return self.__atomic_coordinates_item(index, item, counter)
-        return counter, last_item
+
+        if not parent.hasChildren() and isinstance(parent.data(), AtomicCoordinatesDS):
+            return 0, parent
+        else:
+            for i in range(parent.rowCount()):
+                item = parent.child(i)
+                if isinstance(item.data(), AtomicCoordinatesDS):
+                    last_item = item
+                    counter += 1
+                    if index == counter:
+                        return counter, item
+                elif self.all and item.hasChildren():
+                    return self.__atomic_coordinates_item(index, item, counter)
+            return counter, last_item
 
     def _key_press_handler(self, event: QKeyEvent) -> bool:
         """

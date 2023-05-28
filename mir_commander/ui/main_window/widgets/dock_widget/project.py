@@ -32,7 +32,8 @@ class TreeView(QTreeView):
     def _showContextMenu(self, pos: QPoint):
         item = self.model().itemFromIndex(self.indexAt(pos))
         if item:
-            if menu := item.context_menu():
+            menu = item.context_menu()
+            if not menu.isEmpty():
                 menu.exec(self.mapToGlobal(pos))
 
     def _item_double_clicked(self, index: QModelIndex):
