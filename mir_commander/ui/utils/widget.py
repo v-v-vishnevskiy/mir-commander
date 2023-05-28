@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QListView,
     QMenu,
+    QMessageBox,
     QPushButton,
     QSpinBox,
     QStatusBar,
@@ -238,3 +239,33 @@ class StatusBar(Widget, QStatusBar):
     def retranslate_ui(self):
         if self.currentMessage():
             self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))
+
+
+class MessageBox(Dialog, QMessageBox):
+    def __init__(
+        self,
+        icon: QMessageBox.Icon,
+        title: str,
+        text: str,
+        buttons: QMessageBox.standardButtons = QMessageBox.StandardButton.NoButton,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(icon, title, self._tr(text), buttons, *args, **kwargs)
+        self.__text = text
+        self.setWindowTitle(title)
+
+    def setText(self, value: str):
+        self.__text = value
+        super().setText(self._tr(value))
+
+    def warning(
+        self,
+        parent: Optional[QWidget],
+        title: str,
+        text: str,
+        button0: QMessageBox.standardButtons = QMessageBox.StandardButton.Ok,
+        button1: QMessageBox.standardButtons = QMessageBox.StandardButton.NoButton,
+    ):
+        ret = QMessageBox.warning(parent, title, text, button0, button1)
+        return ret

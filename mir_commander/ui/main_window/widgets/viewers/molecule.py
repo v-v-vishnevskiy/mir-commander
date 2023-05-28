@@ -11,11 +11,30 @@ import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
 from PySide6.QtGui import QImageWriter, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QHBoxLayout,
+    QLineEdit,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
-from mir_commander.ui.utils.widget import Action, CheckBox, Dialog, GroupBox, Label, Menu, PushButton, SpinBox
+from mir_commander.ui.utils.widget import (
+    Action,
+    CheckBox,
+    Dialog,
+    GroupBox,
+    Label,
+    Menu,
+    PushButton,
+    SpinBox,
+    StatusBar,
+)
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
@@ -44,6 +63,7 @@ class SaveImageDialog(Dialog):
         self.img_width_init = imgwidth
         self.img_height_init = imgheight
         self.img_sratio_init = float(imgwidth) / float(imgheight)
+        self._main_window = self.parent().parent().mdiArea().parent()
 
         self.setWindowTitle(self.tr("Save image"))
 
@@ -81,7 +101,7 @@ class SaveImageDialog(Dialog):
         file_path_layout = QHBoxLayout()
         self.file_path_editbox = QLineEdit()
         # Molecule -> QMdiSubWindow -> QMdiArea -> MainWindow -> project.path
-        self.initial_file_path = self.parent().parent().mdiArea().parent().project.path
+        self.initial_file_path = self._main_window.project.path
         self.initial_file_path = os.path.join(self.initial_file_path, self.img_file_name_init + ".png")
         self.file_path_editbox.setText(self.initial_file_path)
         file_path_layout.addWidget(self.file_path_editbox)
@@ -151,6 +171,7 @@ class Molecule(gl.GLViewWidget):
 
     def __init__(self, item: "Item"):
         super().__init__(None, rotationMethod="quaternion")
+        self._main_window = None
         self.item = item
         self._global_config = QCoreApplication.instance().config
         self._config = self._global_config.nested("widgets.viewers.molecule")
@@ -198,8 +219,21 @@ class Molecule(gl.GLViewWidget):
     def save_img_action_handler(self):
         dlg = SaveImageDialog(self.width(), self.height(), self._draw_item.text(), self)
         if dlg.exec():
-            rendered_array = self.renderToArray((dlg.img_width, dlg.img_height))
-            pg.makeQImage(rendered_array).save(dlg.img_file_path)
+            save_flag = True
+            if os.path.exists(dlg.img_file_path):
+                ret = QMessageBox.warning(
+                    self,
+                    "Save image",
+                    "The file already exists:" + "\n" + dlg.img_file_path + "\n" + "Do you want to overwrite it?",
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if ret != QMessageBox.Yes:
+                    save_flag = False
+
+            if save_flag:
+                rendered_array = self.renderToArray((dlg.img_width, dlg.img_height), padding=1)
+                pg.makeQImage(rendered_array, transpose=False).save(dlg.img_file_path)
+                self._main_window.status.showMessage(StatusBar.tr("Saved") + " " + dlg.img_file_path, 10000)
 
     def setParent(self, widget: QWidget):
         pos = widget.pos()
@@ -207,6 +241,7 @@ class Molecule(gl.GLViewWidget):
         widget.setGeometry(pos.x(), pos.y(), size[0], size[1])
         widget.setWindowIcon(self.item.icon())
         super().setParent(widget)
+        self._main_window = widget.mdiArea().parent()
 
     def _load_styles(self):
         styles = [self.__default_style]
