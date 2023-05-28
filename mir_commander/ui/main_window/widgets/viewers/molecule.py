@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayou
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
-from mir_commander.ui.utils.widget import Action, CheckBox, GroupBox, Label, Menu, PushButton, SpinBox
+from mir_commander.ui.utils.widget import Action, CheckBox, Dialog, GroupBox, Label, Menu, PushButton, SpinBox
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
@@ -31,8 +31,8 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
-class SaveImageDialog(QDialog):
-    file_name_re = re.compile(r"[^\w\ \_\-]|(\s)(?=\1+)")
+class SaveImageDialog(Dialog):
+    file_name_sanitize_re = re.compile(r"[^\w\ \_\-]|(\s)(?=\1+)")
 
     def __init__(self, imgwidth: int, imgheight: int, filename: str, parent=None):
         super().__init__(parent)
@@ -40,12 +40,12 @@ class SaveImageDialog(QDialog):
         self.img_width = 0
         self.img_height = 0
         self.img_file_path = ""
-        self.img_file_name_init = self.sanitize_file_name("  " + filename + "  Haha\t \tGogog")
+        self.img_file_name_init = self.sanitize_file_name(filename)
         self.img_width_init = imgwidth
         self.img_height_init = imgheight
         self.img_sratio_init = float(imgwidth) / float(imgheight)
 
-        self.setWindowTitle("Save image")
+        self.setWindowTitle(self.tr("Save image"))
 
         options_group_box = GroupBox(GroupBox.tr("Options"), self)
         options_group_box_layout = QVBoxLayout(options_group_box)
@@ -100,7 +100,7 @@ class SaveImageDialog(QDialog):
         self.setLayout(self.main_layout)
 
     def sanitize_file_name(self, filename: str) -> str:
-        filename = re.sub(self.file_name_re, "", filename)
+        filename = re.sub(self.file_name_sanitize_re, "", filename)
         filename = filename.strip().replace(" ", "_")
         return filename
 
@@ -122,7 +122,7 @@ class SaveImageDialog(QDialog):
 
     @Slot()
     def file_path_button_handler(self):
-        fileDialog = QFileDialog(self, "Choose file", self.initial_file_path)
+        fileDialog = QFileDialog(self, self.tr("Choose file"), self.initial_file_path)
         fileDialog.setAcceptMode(QFileDialog.AcceptSave)
         fileDialog.setFileMode(QFileDialog.AnyFile)
         fileDialog.setDirectory(self.initial_file_path)
