@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
-from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
@@ -26,8 +25,10 @@ class Console(DockWidget):
     Contains an instance of the Text widget for showing text information.
     """
 
-    def __init__(self, parent: "MainWindow", config: Config):
-        super().__init__(self.tr("Console output"), config, parent)
+    config_key: str = "widgets.docks.console"
+
+    def __init__(self, parent: "MainWindow"):
+        super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
         self.setWidget(self.text)
 

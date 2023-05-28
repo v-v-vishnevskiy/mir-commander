@@ -73,11 +73,7 @@ class MainWindow(QMainWindow):
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = DockWidgets(
-            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
-            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
-            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
-        )
+        self.docks = DockWidgets(dock_widget.Project(self), dock_widget.Object(self), dock_widget.Console(self))
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)

@@ -50,9 +50,11 @@ class Project(DockWidget):
     for showing a tree widget with objects of the project.
     """
 
-    def __init__(self, parent: "MainWindow", config: Config):
-        super().__init__(self.tr("Project"), config, parent)
-        self._tree = TreeView(self, self.global_config.nested("widgets.docks.project.tree"))
+    config_key: str = "widgets.docks.project"
+
+    def __init__(self, parent: "MainWindow"):
+        super().__init__(self.tr("Project"), parent)
+        self._tree = TreeView(self, self.config.nested("tree"))
         self.setWidget(self._tree)
 
     def set_model(self, model: QStandardItemModel):
