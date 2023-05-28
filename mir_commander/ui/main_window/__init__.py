@@ -187,10 +187,7 @@ class MainWindow(QMainWindow):
 
     def view_items_marked_to_view(self):
         for item in self.project.items_marked_to_view:
-            if viewer := item.viewer():
-                sub_window = self.mdi_area.addSubWindow(viewer)
-                viewer.setParent(sub_window)
-            else:
+            if item.view() is None:
                 logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):

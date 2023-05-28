@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QModelIndex, QSize
+from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt
 from PySide6.QtGui import QStandardItemModel
-from PySide6.QtWidgets import QTreeView, QWidget
+from PySide6.QtWidgets import QTreeView
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
@@ -12,14 +12,16 @@ if TYPE_CHECKING:
 
 
 class TreeView(QTreeView):
-    def __init__(self, parent: QWidget, config: Config):
+    def __init__(self, parent: DockWidget, config: Config):
         super().__init__(parent)
         self._config = config
 
         self.setHeaderHidden(True)
         self.setExpandsOnDoubleClick(False)
         self.setIconSize(self._icon_size())
-        self.doubleClicked.connect(self._tree_item_double_clicked)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._showContextMenu)
+        self.doubleClicked.connect(self._item_double_clicked)
 
     def _icon_size(self) -> QSize:
         value = self._config["icon_size"]
@@ -27,20 +29,18 @@ class TreeView(QTreeView):
             value = 20
         return QSize(value, value)
 
-    def _tree_item_double_clicked(self, index: QModelIndex):
+    def _showContextMenu(self, pos: QPoint):
+        item = self.model().itemFromIndex(self.indexAt(pos))
+        if item:
+            if menu := item.context_menu():
+                menu.exec(self.mapToGlobal(pos))
+
+    def _item_double_clicked(self, index: QModelIndex):
         item = self.model().itemFromIndex(index)
-        mdi_area = self.parent().mdi_area
-        for sub_window in mdi_area.subWindowList():
-            if id(sub_window.widget().item) == id(item):
-                mdi_area.setActiveSubWindow(sub_window)
-                break
+        if viewer := item.view():
+            viewer.show()
         else:
-            if viewer := item.viewer():
-                sub_window = mdi_area.addSubWindow(viewer)
-                viewer.setParent(sub_window)
-                viewer.show()
-            else:
-                self.setExpanded(index, not self.isExpanded(index))
+            self.setExpanded(index, not self.isExpanded(index))
 
 
 class Project(DockWidget):
@@ -58,4 +58,5 @@ class Project(DockWidget):
         self.setWidget(self._tree)
 
     def set_model(self, model: QStandardItemModel):
+        model.setParent(self._tree)
         self._tree.setModel(model)
