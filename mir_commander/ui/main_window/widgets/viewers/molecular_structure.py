@@ -27,7 +27,7 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
-class MoleculeStructure(gl.GLViewWidget):
+class MolecularStructure(gl.GLViewWidget):
     styles: List[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
@@ -35,7 +35,7 @@ class MoleculeStructure(gl.GLViewWidget):
         self.item = item
         self.all = all
         self._global_config = QCoreApplication.instance().config
-        self._config = self._global_config.nested("widgets.viewers.molecule_structure")
+        self._config = self._global_config.nested("widgets.viewers.molecular_structure")
         self._draw_item = None
         self.__molecule_index = 0
         self.__default_style = self._config.nested("style.default")

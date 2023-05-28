@@ -50,10 +50,10 @@ class Item(QStandardItem):
         return result
 
     def _view_structures_all(self):
-        self._viewer(viewers.MoleculeStructure, all=True).show()
+        self._viewer(viewers.MolecularStructure, all=True).show()
 
     def _view_structures_child(self):
-        self._viewer(viewers.MoleculeStructure, all=False).show()
+        self._viewer(viewers.MolecularStructure, all=False).show()
 
     def _viewer(self, cls: Type[QWidget], *args, **kwargs) -> QWidget:
         viewer = cls(item=self, *args, **kwargs)
@@ -88,7 +88,7 @@ class Molecule(Item):
 
 
 class AtomicCoordinatesGroup(Group):
-    default_viewer = viewers.MoleculeStructure
+    default_viewer = viewers.MolecularStructure
 
     def __init__(self, title: str = "Atomic Coordinates", data: Optional[DataStructure] = None):
         super().__init__(title, data)
@@ -98,7 +98,7 @@ class AtomicCoordinatesGroup(Group):
 
 
 class AtomicCoordinates(Item):
-    default_viewer = viewers.MoleculeStructure
+    default_viewer = viewers.MolecularStructure
 
     def context_menu(self) -> Menu:
         return Menu()

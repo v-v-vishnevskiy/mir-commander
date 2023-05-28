@@ -1,3 +1,3 @@
-from mir_commander.ui.main_window.widgets.viewers.molecule_structure import MoleculeStructure
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure import MolecularStructure
 
-__all__ = ["MoleculeStructure"]
+__all__ = ["MolecularStructure"]

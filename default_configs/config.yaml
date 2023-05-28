@@ -5,7 +5,7 @@ widgets:
       tree:
         icon_size: 20
   viewers:
-    molecule_structure:
+    molecular_structure:
       antialiasing: true
       size: [500, 500]
       min_size: [150, 150]
