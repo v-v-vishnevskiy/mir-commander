@@ -62,17 +62,17 @@
         <translation>Предыдущее</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="207"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="78"/>
         <source>Save image...</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить изображение...</translation>
     </message>
 </context>
 <context>
     <name>CheckBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="73"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="44"/>
         <source>Proportional size</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропорциональный размер</translation>
     </message>
 </context>
 <context>
@@ -94,9 +94,9 @@
 <context>
     <name>GroupBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="71"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="42"/>
         <source>Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки</translation>
     </message>
 </context>
 <context>
@@ -122,19 +122,19 @@
         <translation>Язык:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="78"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="49"/>
         <source>Width:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ширина:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="86"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="57"/>
         <source>Height:</source>
-        <translation type="unfinished"></translation>
+        <translation>Высота:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="99"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="70"/>
         <source>Output file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл:</translation>
     </message>
 </context>
 <context>
@@ -201,17 +201,17 @@
 <context>
     <name>Molecule</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="227"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="98"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="228"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="100"/>
         <source>The file already exists:</source>
         <translation>Этот файл уже существует:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="228"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="103"/>
         <source>Do you want to overwrite it?</source>
         <translation>Вы хотите его перезаписать?</translation>
     </message>
@@ -261,9 +261,9 @@
         <translation>Ок</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="109"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="80"/>
         <source>Choose...</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать...</translation>
     </message>
 </context>
 <context>
@@ -282,14 +282,14 @@
 <context>
     <name>SaveImageDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="69"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="40"/>
         <source>Save image</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="146"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="117"/>
         <source>Choose file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор файла</translation>
     </message>
 </context>
 <context>
@@ -303,10 +303,10 @@
 <context>
     <name>SpinBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="80"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="88"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="51"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="59"/>
         <source> pixels</source>
-        <translation type="unfinished"></translation>
+        <translation> пикселя</translation>
     </message>
 </context>
 <context>
@@ -330,9 +330,9 @@
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="237"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="112"/>
         <source>Saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранён</translation>
     </message>
 </context>
 </TS>

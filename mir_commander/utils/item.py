@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget
 
 from mir_commander.data_structures.base import DataStructure
 from mir_commander.ui.main_window.widgets import viewers
+from mir_commander.ui.main_window.widgets.viewers import molecular_structure
 
 
 class Item(QStandardItem):
@@ -42,7 +43,7 @@ class Group(Item):
 
 
 class Molecule(Item):
-    _viewer = viewers.Molecule  # type: ignore
+    _viewer = molecular_structure.Molecule  # type: ignore
 
 
 class AtomicCoordinatesGroup(Group):

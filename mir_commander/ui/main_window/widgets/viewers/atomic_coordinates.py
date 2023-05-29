@@ -1,4 +1,4 @@
-from mir_commander.ui.main_window.widgets.viewers.molecule import Molecule
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure import Molecule
 
 
 class AtomicCoordinates(Molecule):
