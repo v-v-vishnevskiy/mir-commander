@@ -1,6 +1,6 @@
 from typing import Dict
 
-from PySide6.QtCore import QLocale, QResource, QTranslator
+from PySide6.QtCore import QLocale, QResource, Qt, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
@@ -17,6 +17,7 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
+        self.setAttribute(Qt.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
         self._quitting = False
 

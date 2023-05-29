@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Union
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
@@ -65,7 +66,21 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
+        self._fix_window_composition()
+
         self.view_items_marked_to_view()
+
+    def _fix_window_composition(self):
+        widget = QOpenGLWidget()
+        widget.item = None
+        self.__fix_sub_window = self.mdi_area.addSubWindow(widget)
+        self.__fix_sub_window.hide()
+
+    def show(self):
+        super().show()
+        if self.__fix_sub_window:
+            self.mdi_area.removeSubWindow(self.__fix_sub_window)
+            self.__fix_sub_window = None
 
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
