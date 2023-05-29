@@ -1,6 +1,7 @@
+import os
 from typing import Dict
 
-from PySide6.QtCore import QLocale, QResource, Qt, QTranslator
+from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
@@ -31,7 +32,8 @@ class Application(QApplication):
         self._projects: Dict[int, MainWindow] = {}
         self._recent_projects_widget = RecentProjectsWidget(self)
 
-        self._translator = QTranslator(self)
+        self._translator_app = QTranslator(self)
+        self._translator_qt = QTranslator(self)
         self._set_translation()
 
         self.settings.set_default("language", "system")
@@ -48,10 +50,18 @@ class Application(QApplication):
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
-        self.removeTranslator(self._translator)
-        if not self._translator.load(str(DIR.TRANSLATIONS / f"app_{language}")):
-            self._translator.load(str(DIR.TRANSLATIONS / "app_en"))
-        self.installTranslator(self._translator)
+        translator = QTranslator(self)
+        if translator.load(str(DIR.TRANSLATIONS / f"app_{language}")):
+            self.removeTranslator(self._translator_app)
+            self.installTranslator(translator)
+            self._translator_app = translator
+
+        translator = QTranslator(self)
+        path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+        if translator.load(os.path.join(path, f"qtbase_{language}")):
+            self.removeTranslator(self._translator_qt)
+            self.installTranslator(translator)
+            self._translator_qt = translator
 
     def open_project(self, path: str, raise_exc: bool = False) -> bool:
         try:

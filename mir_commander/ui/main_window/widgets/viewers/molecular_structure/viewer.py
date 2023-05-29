@@ -1,17 +1,21 @@
 import logging
 import math
+import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
+import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
-from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
+from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
@@ -32,8 +36,8 @@ class MolecularStructure(gl.GLViewWidget):
 
     def __init__(self, item: "Item", all: bool = False):
         super().__init__(None, rotationMethod="quaternion")
+        self._main_window = None
         self.item = item
-        self.all = all
         self._global_config = QCoreApplication.instance().config
         self._config = self._global_config.nested("widgets.viewers.molecular_structure")
         self._draw_item = None
@@ -61,7 +65,44 @@ class MolecularStructure(gl.GLViewWidget):
         self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
         self._set_draw_item()
         self.update_window_title()
+
+        # Menus, actions
+        self.context_menu = Menu("", self)
+        save_img_action = Action(Action.tr("Save image..."), self)
+        self.context_menu.addAction(save_img_action)
+
+        # Connect the actions to methods
+        save_img_action.triggered.connect(self.save_img_action_handler)
+
         self.draw()
+
+    def contextMenuEvent(self, event):
+        # Show the context menu
+        self.context_menu.exec(event.globalPos())
+
+    @Slot()
+    def save_img_action_handler(self):
+        dlg = SaveImageDialog(self.width(), self.height(), self._draw_item.text(), self)
+        if dlg.exec():
+            save_flag = True
+            if os.path.exists(dlg.img_file_path):
+                ret = QMessageBox.warning(
+                    self,
+                    self.tr("Save image"),
+                    self.tr("The file already exists:")
+                    + "\n"
+                    + dlg.img_file_path
+                    + "\n"
+                    + self.tr("Do you want to overwrite it?"),
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if ret != QMessageBox.Yes:
+                    save_flag = False
+
+            if save_flag:
+                rendered_array = self.renderToArray((dlg.img_width, dlg.img_height), padding=1)
+                pg.makeQImage(rendered_array, transpose=False).save(dlg.img_file_path)
+                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
 
     def setParent(self, widget: QWidget):
         pos = widget.pos()
@@ -69,6 +110,7 @@ class MolecularStructure(gl.GLViewWidget):
         widget.setGeometry(pos.x(), pos.y(), size[0], size[1])
         widget.setWindowIcon(self.item.icon())
         super().setParent(widget)
+        self._main_window = widget.mdiArea().parent()
 
     def _load_styles(self):
         styles = [self.__default_style]
@@ -240,7 +282,6 @@ class MolecularStructure(gl.GLViewWidget):
         """
         index = max(0, index)
         last_item = None
-
         if not parent.hasChildren() and isinstance(parent.data(), AtomicCoordinatesDS):
             return True, 0, parent
         else:

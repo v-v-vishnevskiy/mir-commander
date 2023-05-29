@@ -4,13 +4,16 @@ from typing import Any, List, Optional
 from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtGui import QAction, QStandardItem
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDockWidget,
+    QGroupBox,
     QLabel,
     QListView,
     QMenu,
     QPushButton,
+    QSpinBox,
     QStatusBar,
     QTabWidget,
     QWidget,
@@ -100,6 +103,46 @@ class PushButton(Widget, QPushButton):
 
     def retranslate_ui(self):
         self.setText(self.__text)
+
+
+class GroupBox(Widget, QGroupBox):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        self.__text = text
+        super().__init__(self._tr(text), parent)
+
+    def setTitle(self, value: str):
+        self.__text = value
+        super().setTitle(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setTitle(self.__text)
+
+
+class CheckBox(Widget, QCheckBox):
+    def __init__(self, text: str, parent: Optional[QWidget] = None):
+        self.__text = text
+        super().__init__(self._tr(text), parent)
+
+    def setText(self, value: str):
+        self.__text = value
+        super().setText(self._tr(value))
+
+    def retranslate_ui(self):
+        self.setText(self.__text)
+
+
+class SpinBox(Widget, QSpinBox):
+    def __init__(self, parent: Optional[QWidget] = None):
+        self.__suffix = ""
+        super().__init__(parent)
+
+    def setSuffix(self, value: str):
+        self.__suffix = value
+        super().setSuffix(self._tr(value))
+
+    def retranslate_ui(self):
+        if self.__suffix:
+            self.setSuffix(self.__suffix)
 
 
 class ComboBox(Widget, QComboBox):

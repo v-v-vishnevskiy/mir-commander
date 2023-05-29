@@ -12,64 +12,77 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="119"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="134"/>
         <source>Close Project</source>
         <translation>Close Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="124"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="139"/>
         <source>Settings...</source>
         <translation>Settings...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="131"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="146"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="138"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="153"/>
         <source>About</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="145"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="160"/>
         <source>Cl&amp;ose</source>
         <translation>Cl&amp;ose</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="152"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="167"/>
         <source>Close &amp;All</source>
         <translation>Close &amp;All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="159"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="174"/>
         <source>&amp;Tile</source>
         <translation>&amp;Tile</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="163"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="178"/>
         <source>&amp;Cascade</source>
         <translation>&amp;Cascade</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="170"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="185"/>
         <source>Ne&amp;xt</source>
         <translation>Ne&amp;xt</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="178"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="193"/>
         <source>Pre&amp;vious</source>
         <translation>Pre&amp;vious</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/utils/item.py" line="42"/>
+        <location filename="../../mir_commander/ui/utils/item.py" line="45"/>
         <source>VS_All</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/utils/item.py" line="45"/>
+        <location filename="../../mir_commander/ui/utils/item.py" line="42"/>
         <source>VS_Child</source>
         <translation>Child</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="71"/>
+        <source>Save image...</source>
+        <translation>Save image...</translation>
+    </message>
+</context>
+<context>
+    <name>CheckBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="30"/>
+        <source>Proportional size</source>
+        <translation>Proportional size</translation>
     </message>
 </context>
 <context>
@@ -86,6 +99,14 @@
         <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/console.py" line="31"/>
         <source>Console output</source>
         <translation>Console output</translation>
+    </message>
+</context>
+<context>
+    <name>GroupBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="28"/>
+        <source>Options</source>
+        <translation>Options</translation>
     </message>
 </context>
 <context>
@@ -110,41 +131,56 @@
         <source>Language:</source>
         <translation>Language:</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="35"/>
+        <source>Width:</source>
+        <translation>Width:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="43"/>
+        <source>Height:</source>
+        <translation>Height:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="56"/>
+        <source>Output file:</source>
+        <translation>Output file:</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="66"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="67"/>
         <source>Started</source>
         <translation>Started</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="147"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="162"/>
         <source>Close the active window</source>
         <translation>Close the active window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="154"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="169"/>
         <source>Close all the windows</source>
         <translation>Close all the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="159"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="174"/>
         <source>Tile the windows</source>
         <translation>Tile the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="165"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="180"/>
         <source>Cascade the windows</source>
         <translation>Cascade the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="173"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="188"/>
         <source>Move the focus to the next window</source>
         <translation>Move the focus to the next window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="181"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="196"/>
         <source>Move the focus to the previous window</source>
         <translation>Move the focus to the previous window</translation>
     </message>
@@ -152,29 +188,47 @@
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="93"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="108"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="100"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="115"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="108"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="123"/>
         <source>&amp;Window</source>
         <translation>&amp;Window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="114"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="129"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/utils/item.py" line="40"/>
+        <location filename="../../mir_commander/ui/utils/item.py" line="40"/>
         <source>View Structures</source>
         <translation>View Structures</translation>
+    </message>
+</context>
+<context>
+    <name>MolecularStructure</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="91"/>
+        <source>Save image</source>
+        <translation>Save image</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="93"/>
+        <source>The file already exists:</source>
+        <translation>The file already exists:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="96"/>
+        <source>Do you want to overwrite it?</source>
+        <translation>Do you want to overwrite it?</translation>
     </message>
 </context>
 <context>
@@ -221,6 +275,11 @@
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="66"/>
+        <source>Choose...</source>
+        <translation>Choose...</translation>
+    </message>
 </context>
 <context>
     <name>RecentProjects</name>
@@ -236,11 +295,33 @@
     </message>
 </context>
 <context>
+    <name>SaveImageDialog</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="26"/>
+        <source>Save image</source>
+        <translation>Save image</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="103"/>
+        <source>Choose file</source>
+        <translation>Choose file</translation>
+    </message>
+</context>
+<context>
     <name>Settings</name>
     <message>
         <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="32"/>
         <source>Settings</source>
         <translation>Settings</translation>
+    </message>
+</context>
+<context>
+    <name>SpinBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="37"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="45"/>
+        <source> pixels</source>
+        <translation> pixels</translation>
     </message>
 </context>
 <context>
@@ -259,9 +340,14 @@
 <context>
     <name>StatusBar</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="65"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="66"/>
         <source>Ready</source>
         <translation>Ready</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="105"/>
+        <source>Image saved</source>
+        <translation>Image saved</translation>
     </message>
 </context>
 </TS>

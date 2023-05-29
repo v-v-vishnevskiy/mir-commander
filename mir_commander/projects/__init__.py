@@ -124,7 +124,7 @@ def load_project(path: str) -> Project:
     # If this is a file, then it may be from some other program
     # and we can try to import its data and create a project on the fly.
     if os.path.isfile(path):
-        project = Temporary(os.path.split(path)[1])
+        project = Temporary(path)
         project_item = import_file(path)
         project.root_item.appendRow(project_item)
         project.mark_item_to_view(project_item)
