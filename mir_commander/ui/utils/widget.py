@@ -33,6 +33,8 @@ class Translator:
         return TrString(value)
 
     def _tr(self, text: str) -> str:
+        if not text:
+            return text
         return QCoreApplication.translate(self.__class__.__name__, text) if isinstance(text, TrString) else text
 
 
@@ -170,7 +172,7 @@ class Action(Translator, QAction):
 
 
 class Menu(Widget, QMenu):
-    def __init__(self, title: str, parent: Optional[QWidget] = None):
+    def __init__(self, title: str = "", parent: Optional[QWidget] = None):
         super().__init__(self._tr(title), parent)
         self.__title = title
 

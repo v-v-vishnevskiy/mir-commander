@@ -9,7 +9,7 @@ from mir_commander.data_structures import molecule as ds_molecule
 from mir_commander.projects.base import Project
 from mir_commander.projects.molecule import Molecule
 from mir_commander.projects.temporary import Temporary
-from mir_commander.utils import item
+from mir_commander.ui.utils import item
 from mir_commander.utils.config import Config
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def load_project(path: str) -> Project:
         project = Temporary(os.path.split(path)[1])
         project_item = import_file(path)
         project.root_item.appendRow(project_item)
-        project.mark_item_as_opened(project_item)
+        project.mark_item_to_view(project_item)
         return project
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):

@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
-from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
@@ -14,5 +13,7 @@ class Object(DockWidget):
     with settings for the currently chosen object in the project tree.
     """
 
-    def __init__(self, parent: "MainWindow", config: Config):
-        super().__init__(self.tr("Object"), config, parent)
+    config_key: str = "widgets.docks.object"
+
+    def __init__(self, parent: "MainWindow"):
+        super().__init__(self.tr("Object"), parent)

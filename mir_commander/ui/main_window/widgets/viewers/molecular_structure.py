@@ -15,7 +15,7 @@ from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCo
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
-    from mir_commander.utils.item import Item
+    from mir_commander.ui.utils.item import Item
 
 
 logger = logging.getLogger(__name__)
@@ -27,14 +27,15 @@ class MoleculeStruct:
     bonds: List[gl.GLMeshItem]
 
 
-class Molecule(gl.GLViewWidget):
+class MolecularStructure(gl.GLViewWidget):
     styles: List[Config] = []
 
-    def __init__(self, item: "Item"):
+    def __init__(self, item: "Item", all: bool = False):
         super().__init__(None, rotationMethod="quaternion")
         self.item = item
+        self.all = all
         self._global_config = QCoreApplication.instance().config
-        self._config = self._global_config.nested("widgets.viewers.molecule")
+        self._config = self._global_config.nested("widgets.viewers.molecular_structure")
         self._draw_item = None
         self.__molecule_index = 0
         self.__default_style = self._config.nested("style.default")
@@ -78,7 +79,7 @@ class Molecule(gl.GLViewWidget):
         self.__class__.styles = sorted(styles, key=lambda x: x["name"])
 
     def _set_draw_item(self):
-        self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
+        _, self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
 
     def _set_style(self, name: str):
         for style in self.styles:
@@ -231,22 +232,31 @@ class Molecule(gl.GLViewWidget):
         """
         return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
 
-    def __atomic_coordinates_item(self, index: int, parent: "Item", counter: int = -1) -> Tuple[int, Optional["Item"]]:
+    def __atomic_coordinates_item(
+        self, index: int, parent: "Item", counter: int = -1
+    ) -> Tuple[bool, int, Optional["Item"]]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
         index = max(0, index)
         last_item = None
-        for i in range(parent.rowCount()):
-            item = parent.child(i)
-            if isinstance(item.data(), AtomicCoordinatesDS):
-                last_item = item
-                counter += 1
-                if index == counter:
-                    return counter, item
-            elif item.hasChildren():
-                return self.__atomic_coordinates_item(index, item, counter)
-        return counter, last_item
+
+        if not parent.hasChildren() and isinstance(parent.data(), AtomicCoordinatesDS):
+            return True, 0, parent
+        else:
+            for i in range(parent.rowCount()):
+                item = parent.child(i)
+                if isinstance(item.data(), AtomicCoordinatesDS):
+                    last_item = item
+                    counter += 1
+                    if index == counter:
+                        return True, counter, item
+                elif self.all and item.hasChildren():
+                    found, counter, item = self.__atomic_coordinates_item(index, item, counter)
+                    last_item = item
+                    if found:
+                        return found, counter, item
+            return False, counter, last_item
 
     def _key_press_handler(self, event: QKeyEvent) -> bool:
         """

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Union
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
@@ -65,7 +66,21 @@ class MainWindow(QMainWindow):
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.docks.console.append(self.tr("Started") + f" Mir Commander {__version__}")
 
-        self.view_opened_items()
+        self._fix_window_composition()
+
+        self.view_items_marked_to_view()
+
+    def _fix_window_composition(self):
+        widget = QOpenGLWidget()
+        widget.item = None
+        self.__fix_sub_window = self.mdi_area.addSubWindow(widget)
+        self.__fix_sub_window.hide()
+
+    def show(self):
+        super().show()
+        if self.__fix_sub_window:
+            self.mdi_area.removeSubWindow(self.__fix_sub_window)
+            self.__fix_sub_window = None
 
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -73,11 +88,7 @@ class MainWindow(QMainWindow):
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = DockWidgets(
-            dock_widget.Project(self, self.project.config.nested("widgets.docks.project")),
-            dock_widget.Object(self, self.project.config.nested("widgets.docks.object")),
-            dock_widget.Console(self, self.project.config.nested("widgets.docks.console")),
-        )
+        self.docks = DockWidgets(dock_widget.Project(self), dock_widget.Object(self), dock_widget.Console(self))
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
@@ -189,12 +200,9 @@ class MainWindow(QMainWindow):
         self._win_separator_act = Action("", self)
         self._win_separator_act.setSeparator(True)
 
-    def view_opened_items(self):
-        for item in self.project.opened_items:
-            if viewer := item.viewer():
-                sub_window = self.mdi_area.addSubWindow(viewer)
-                viewer.setParent(sub_window)
-            else:
+    def view_items_marked_to_view(self):
+        for item in self.project.items_marked_to_view:
+            if item.view() is None:
                 logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
