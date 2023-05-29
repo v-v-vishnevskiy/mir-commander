@@ -11,11 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(self, path: Union[str, Path], key: str = "", config: Optional["Config"] = None):
+    def __init__(
+        self, path: Union[str, Path], key: str = "", config: Optional["Config"] = None, read_only: bool = False
+    ):
         self._root_data: Dict[str, Any] = {}
         self._nested_key = key
         self._synced = True
         self._defaults: Optional["Config"] = None
+        self._read_only = read_only
 
         if config:
             self._path: Union[str, Path] = path
@@ -55,17 +58,18 @@ class Config:
 
     def dump(self):
         if self._path:
-            if not os.path.exists(self._path):
-                Path(os.path.split(self._path)[0]).mkdir(parents=True, exist_ok=True)
-            with open(self._path, "w") as f:
-                try:
-                    f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
-                except yaml.YAMLError:
-                    raise
+            if self._read_only is False:
+                if not os.path.exists(self._path):
+                    Path(os.path.split(self._path)[0]).mkdir(parents=True, exist_ok=True)
+                with open(self._path, "w") as f:
+                    try:
+                        f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
+                    except yaml.YAMLError:
+                        raise
             self._synced = True
 
     def nested(self, key: str) -> "Config":
-        config = Config(self._path, key, self)
+        config = Config(self._path, key, self, read_only=self._read_only)
         if self._defaults:
             config.set_defaults(self._defaults.nested(key))
         return config

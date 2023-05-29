@@ -23,7 +23,7 @@ class Application(QApplication):
         self.register_resources()
 
         self.config = Config(DIR.CONFIG / "config.yaml")
-        self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml"))
+        self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml", read_only=True))
         self.settings = Settings(self.config)
         self.recent_projects = RecentProjects(DIR.CONFIG / "recent.yaml")
 
