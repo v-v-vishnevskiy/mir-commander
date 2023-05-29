@@ -15,7 +15,7 @@ from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCo
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
-    from mir_commander.utils.item import Item
+    from mir_commander.ui.utils.item import Item
 
 
 logger = logging.getLogger(__name__)

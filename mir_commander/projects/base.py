@@ -7,7 +7,7 @@ from mir_commander.utils.config import Config
 from mir_commander.utils.settings import Settings
 
 if TYPE_CHECKING:
-    from mir_commander.utils.item import Item
+    from mir_commander.ui.utils.item import Item
 
 
 class Project:
