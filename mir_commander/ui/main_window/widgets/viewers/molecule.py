@@ -202,7 +202,7 @@ class Molecule(gl.GLViewWidget):
         self.update_window_title()
 
         # Menus, actions
-        self.context_menu = Menu(self)
+        self.context_menu = Menu("", self)
         save_img_action = Action(Action.tr("Save image..."), self)
         self.context_menu.addAction(save_img_action)
 
@@ -223,8 +223,12 @@ class Molecule(gl.GLViewWidget):
             if os.path.exists(dlg.img_file_path):
                 ret = QMessageBox.warning(
                     self,
-                    "Save image",
-                    "The file already exists:" + "\n" + dlg.img_file_path + "\n" + "Do you want to overwrite it?",
+                    self.tr("Save image"),
+                    self.tr("The file already exists:")
+                    + "\n"
+                    + dlg.img_file_path
+                    + "\n"
+                    + self.tr("Do you want to overwrite it?"),
                     QMessageBox.Yes | QMessageBox.No,
                 )
                 if ret != QMessageBox.Yes:

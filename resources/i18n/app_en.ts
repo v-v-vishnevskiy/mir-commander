@@ -61,6 +61,19 @@
         <source>Pre&amp;vious</source>
         <translation>Pre&amp;vious</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="207"/>
+        <source>Save image...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CheckBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="73"/>
+        <source>Proportional size</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ComboBox</name>
@@ -76,6 +89,14 @@
         <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/console.py" line="30"/>
         <source>Console output</source>
         <translation>Console output</translation>
+    </message>
+</context>
+<context>
+    <name>GroupBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="71"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -99,6 +120,21 @@
         <location filename="../../mir_commander/ui/main_window/widgets/settings/general.py" line="37"/>
         <source>Language:</source>
         <translation>Language:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="78"/>
+        <source>Width:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="86"/>
+        <source>Height:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="99"/>
+        <source>Output file:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -163,6 +199,24 @@
     </message>
 </context>
 <context>
+    <name>Molecule</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="227"/>
+        <source>Save image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="228"/>
+        <source>The file already exists:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="228"/>
+        <source>Do you want to overwrite it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Object</name>
     <message>
         <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/object.py" line="18"/>
@@ -173,7 +227,7 @@
 <context>
     <name>Project</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/project.py" line="53"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/project.py" line="54"/>
         <source>Project</source>
         <translation>Project</translation>
     </message>
@@ -206,6 +260,11 @@
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="109"/>
+        <source>Choose...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>RecentProjects</name>
@@ -221,11 +280,33 @@
     </message>
 </context>
 <context>
+    <name>SaveImageDialog</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="69"/>
+        <source>Save image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="146"/>
+        <source>Choose file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Settings</name>
     <message>
         <location filename="../../mir_commander/ui/main_window/widgets/settings/__init__.py" line="32"/>
         <source>Settings</source>
         <translation>Settings</translation>
+    </message>
+</context>
+<context>
+    <name>SpinBox</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="80"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="88"/>
+        <source> pixels</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -247,6 +328,11 @@
         <location filename="../../mir_commander/ui/main_window/__init__.py" line="65"/>
         <source>Ready</source>
         <translation>Ready</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecule.py" line="237"/>
+        <source>Saved</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
