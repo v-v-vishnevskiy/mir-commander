@@ -3,24 +3,24 @@ import re
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QImageWriter
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
 
 from mir_commander.ui.utils.widget import CheckBox, Dialog, GroupBox, Label, PushButton, SpinBox
 
 
 class SaveImageDialog(Dialog):
-    file_name_sanitize_re = re.compile(r"[^\w\ \_\-]|(\s)(?=\1+)")
+    file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
 
-    def __init__(self, imgwidth: int, imgheight: int, filename: str, parent=None):
+    def __init__(self, img_width: int, img_height: int, filename: str, parent: QWidget):
         super().__init__(parent)
 
         self.img_width = 0
         self.img_height = 0
         self.img_file_path = ""
         self.img_file_name_init = self.sanitize_file_name(filename)
-        self.img_width_init = imgwidth
-        self.img_height_init = imgheight
-        self.img_sratio_init = float(imgwidth) / float(imgheight)
+        self.img_width_init = img_width
+        self.img_height_init = img_height
+        self.img_sratio_init = float(img_width) / float(img_height)
         self._main_window = self.parent().parent().mdiArea().parent()
 
         self.setWindowTitle(self.tr("Save image"))
