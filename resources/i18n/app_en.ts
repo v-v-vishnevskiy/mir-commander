@@ -62,17 +62,14 @@
         <translation>Pre&amp;vious</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="71"/>
-        <source>Save image...</source>
-        <translation>Save image...</translation>
+        <location filename="../../mir_commander/utils/item.py" line="42"/>
+        <source>VS_All</source>
+        <translation>All</translation>
     </message>
-</context>
-<context>
-    <name>CheckBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="30"/>
-        <source>Proportional size</source>
-        <translation>Proportional size</translation>
+        <location filename="../../mir_commander/utils/item.py" line="45"/>
+        <source>VS_Child</source>
+        <translation>Child</translation>
     </message>
 </context>
 <context>
@@ -145,27 +142,27 @@
         <translation>Started</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="151"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="147"/>
         <source>Close the active window</source>
         <translation>Close the active window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="158"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="154"/>
         <source>Close all the windows</source>
         <translation>Close all the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="163"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="159"/>
         <source>Tile the windows</source>
         <translation>Tile the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="169"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="165"/>
         <source>Cascade the windows</source>
         <translation>Cascade the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="177"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="173"/>
         <source>Move the focus to the next window</source>
         <translation>Move the focus to the next window</translation>
     </message>
@@ -197,23 +194,10 @@
         <source>Help</source>
         <translation>Help</translation>
     </message>
-</context>
-<context>
-    <name>Molecule</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="91"/>
-        <source>Save image</source>
-        <translation>Save image</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="93"/>
-        <source>The file already exists:</source>
-        <translation>The file already exists:</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="96"/>
-        <source>Do you want to overwrite it?</source>
-        <translation>Do you want to overwrite it?</translation>
+        <location filename="../../mir_commander/utils/item.py" line="40"/>
+        <source>View Structures</source>
+        <translation>View Structures</translation>
     </message>
 </context>
 <context>
@@ -227,7 +211,7 @@
 <context>
     <name>Project</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/project.py" line="54"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/dock_widget/project.py" line="57"/>
         <source>Project</source>
         <translation>Project</translation>
     </message>

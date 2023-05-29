@@ -1,3 +1,3 @@
-from mir_commander.ui.main_window.widgets.viewers.atomic_coordinates import AtomicCoordinates
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure import MolecularStructure
 
-__all__ = ["AtomicCoordinates"]
+__all__ = ["MolecularStructure"]

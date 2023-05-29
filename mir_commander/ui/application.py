@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QResource, QTranslator
+from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
@@ -18,13 +18,14 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
+        self.setAttribute(Qt.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
         self._quitting = False
 
         self.register_resources()
 
         self.config = Config(DIR.CONFIG / "config.yaml")
-        self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml"))
+        self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml", read_only=True))
         self.settings = Settings(self.config)
         self.recent_projects = RecentProjects(DIR.CONFIG / "recent.yaml")
 
