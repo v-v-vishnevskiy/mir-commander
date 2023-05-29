@@ -79,7 +79,7 @@ class MolecularStructure(gl.GLViewWidget):
         self.__class__.styles = sorted(styles, key=lambda x: x["name"])
 
     def _set_draw_item(self):
-        self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
+        _, self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
 
     def _set_style(self, name: str):
         for style in self.styles:
@@ -232,7 +232,9 @@ class MolecularStructure(gl.GLViewWidget):
         """
         return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
 
-    def __atomic_coordinates_item(self, index: int, parent: "Item", counter: int = -1) -> Tuple[int, Optional["Item"]]:
+    def __atomic_coordinates_item(
+        self, index: int, parent: "Item", counter: int = -1
+    ) -> Tuple[bool, int, Optional["Item"]]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
@@ -240,7 +242,7 @@ class MolecularStructure(gl.GLViewWidget):
         last_item = None
 
         if not parent.hasChildren() and isinstance(parent.data(), AtomicCoordinatesDS):
-            return 0, parent
+            return True, 0, parent
         else:
             for i in range(parent.rowCount()):
                 item = parent.child(i)
@@ -248,10 +250,13 @@ class MolecularStructure(gl.GLViewWidget):
                     last_item = item
                     counter += 1
                     if index == counter:
-                        return counter, item
+                        return True, counter, item
                 elif self.all and item.hasChildren():
-                    return self.__atomic_coordinates_item(index, item, counter)
-            return counter, last_item
+                    found, counter, item = self.__atomic_coordinates_item(index, item, counter)
+                    last_item = item
+                    if found:
+                        return found, counter, item
+            return False, counter, last_item
 
     def _key_press_handler(self, event: QKeyEvent) -> bool:
         """
