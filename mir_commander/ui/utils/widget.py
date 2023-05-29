@@ -36,6 +36,7 @@ class Translator:
         return TrString(value)
 
     def _tr(self, text: str) -> str:
+        # How to use here format()?
         return QCoreApplication.translate(self.__class__.__name__, text) if isinstance(text, TrString) else text
 
 

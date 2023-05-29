@@ -102,7 +102,7 @@ class Molecule(gl.GLViewWidget):
             if save_flag:
                 rendered_array = self.renderToArray((dlg.img_width, dlg.img_height), padding=1)
                 pg.makeQImage(rendered_array, transpose=False).save(dlg.img_file_path)
-                self._main_window.status.showMessage(StatusBar.tr("Saved") + " " + dlg.img_file_path, 10000)
+                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
 
     def setParent(self, widget: QWidget):
         pos = widget.pos()
