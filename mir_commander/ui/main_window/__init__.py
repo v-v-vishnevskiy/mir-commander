@@ -14,6 +14,7 @@ from mir_commander.projects.base import Project
 from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure as MolViewer
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
@@ -57,6 +58,10 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status)
 
         self._set_mainwindow_title()
+
+        # ToolBars
+        toolbar = MolViewer.create_toolbar(self)
+        self.addToolBar(toolbar)
 
         # Settings
         self._restore_settings()

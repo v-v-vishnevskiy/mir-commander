@@ -9,8 +9,8 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
-from PySide6.QtWidgets import QMessageBox, QWidget
+from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
+from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
@@ -32,6 +32,7 @@ class MoleculeStruct:
 
 
 class MolecularStructure(gl.GLViewWidget):
+    toolbar = None
     styles: List[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
@@ -75,6 +76,14 @@ class MolecularStructure(gl.GLViewWidget):
         save_img_action.triggered.connect(self.save_img_action_handler)
 
         self.draw()
+
+    @staticmethod
+    def create_toolbar(parent):
+        MolecularStructure.toolbar = QToolBar("MolViewer", parent)
+        save_img_action = Action(Action.tr("Save image..."), parent)
+        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        MolecularStructure.toolbar.addAction(save_img_action)
+        return MolecularStructure.toolbar
 
     def contextMenuEvent(self, event):
         # Show the context menu
