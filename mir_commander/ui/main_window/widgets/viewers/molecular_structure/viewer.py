@@ -32,7 +32,8 @@ class MoleculeStruct:
 
 
 class MolecularStructure(gl.GLViewWidget):
-    toolbar = None
+    main_toolbar = None
+    save_img_action = None
     styles: List[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
@@ -67,7 +68,7 @@ class MolecularStructure(gl.GLViewWidget):
         self._set_draw_item()
         self.update_window_title()
 
-        # Menus, actions
+        # Menus and actions for this particular widget
         self.context_menu = Menu("", self)
         save_img_action = Action(Action.tr("Save image..."), self)
         self.context_menu.addAction(save_img_action)
@@ -79,11 +80,26 @@ class MolecularStructure(gl.GLViewWidget):
 
     @staticmethod
     def create_toolbar(parent):
-        MolecularStructure.toolbar = QToolBar("MolViewer", parent)
-        save_img_action = Action(Action.tr("Save image..."), parent)
-        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        MolecularStructure.toolbar.addAction(save_img_action)
-        return MolecularStructure.toolbar
+        MolecularStructure.main_toolbar = QToolBar("MolViewer", parent)
+        MolecularStructure.main_toolbar.setObjectName("MolViewer")
+        MolecularStructure.save_img_action = Action(Action.tr("Save image..."), parent)
+        MolecularStructure.save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        MolecularStructure.save_img_action.setEnabled(False)
+        MolecularStructure.main_toolbar.addAction(MolecularStructure.save_img_action)
+        return MolecularStructure.main_toolbar
+
+    @staticmethod
+    def deactivate_toolbar():
+        try:
+            MolecularStructure.save_img_action.triggered.disconnect()
+        except RuntimeError:
+            pass
+
+        MolecularStructure.save_img_action.setEnabled(False)
+
+    def connect_toolbar(self):
+        MolecularStructure.save_img_action.triggered.connect(self.save_img_action_handler)
+        MolecularStructure.save_img_action.setEnabled(True)
 
     def contextMenuEvent(self, event):
         # Show the context menu

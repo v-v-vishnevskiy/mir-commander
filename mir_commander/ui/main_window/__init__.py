@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
+        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.setCentralWidget(self.mdi_area)
 
         self.setup_docks()
@@ -60,8 +61,11 @@ class MainWindow(QMainWindow):
         self._set_mainwindow_title()
 
         # ToolBars
-        toolbar = MolViewer.create_toolbar(self)
-        self.addToolBar(toolbar)
+        self.toolbar_providers = []
+        self.toolbar_providers.append(MolViewer)
+
+        for provider in self.toolbar_providers:
+            self.addToolBar(provider.create_toolbar(self))
 
         # Settings
         self._restore_settings()
@@ -240,6 +244,13 @@ class MainWindow(QMainWindow):
         self._win_next_act.setEnabled(has_mdi_child)
         self._win_previous_act.setEnabled(has_mdi_child)
         self._win_separator_act.setVisible(has_mdi_child)
+
+    @Slot()
+    def update_toolbars(self, window: Union[None, QMdiSubWindow]):
+        for provider in self.toolbar_providers:
+            provider.deactivate_toolbar()
+        if window and hasattr(window.widget(), "connect_toolbar") and callable(window.widget().connect_toolbar):
+            window.widget().connect_toolbar()
 
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
