@@ -61,6 +61,10 @@ class MainWindow(QMainWindow):
         self._set_mainwindow_title()
 
         # ToolBars
+        # Here we collect classes of widgets, which provide their own toolbars for the main window.
+        # Each widget must provide a function connect_toolbar and
+        # static functions create_toolbar and deactivate_toolbar
+        # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
         self.toolbar_providers = []
         self.toolbar_providers.append(MolViewer)
 

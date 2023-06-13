@@ -32,8 +32,10 @@ class MoleculeStruct:
 
 
 class MolecularStructure(gl.GLViewWidget):
-    main_toolbar = None
-    save_img_action = None
+    # Toolbar and actions common for all MolecularStructure widgest
+    main_toolbar: QToolBar
+    save_img_action: Action
+
     styles: List[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
