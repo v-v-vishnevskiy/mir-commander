@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QSpinBox,
     QStatusBar,
     QTabWidget,
+    QToolBar,
     QWidget,
 )
 
@@ -240,3 +241,16 @@ class StatusBar(Widget, QStatusBar):
     def retranslate_ui(self):
         if self.currentMessage():
             self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))
+
+
+class ToolBar(Widget, QToolBar):
+    def __init__(self, title: str = "", parent: Optional[QWidget] = None):
+        super().__init__(self._tr(title), parent)
+        self.__title = title
+
+    def setTitle(self, title: str):
+        self.__title = title
+        super().setWindowTitle(self._tr(title))
+
+    def retranslate_ui(self):
+        self.setTitle(self.__title)

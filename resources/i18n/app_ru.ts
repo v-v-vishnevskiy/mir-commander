@@ -351,4 +351,12 @@
         <translation>Изображение сохранено</translation>
     </message>
 </context>
+<context>
+    <name>ToolBar</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="85"/>
+        <source>Molecular Viewer</source>
+        <translation>Визуализатор молекул</translation>
+    </message>
+</context>
 </TS>

@@ -10,12 +10,12 @@ import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
-from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar, ToolBar
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class MoleculeStruct:
 
 class MolecularStructure(gl.GLViewWidget):
     # Toolbar and actions common for all MolecularStructure widgest
-    main_toolbar: QToolBar
+    main_toolbar: ToolBar
     save_img_action: Action
 
     styles: List[Config] = []
@@ -82,7 +82,7 @@ class MolecularStructure(gl.GLViewWidget):
 
     @staticmethod
     def create_toolbar(parent):
-        MolecularStructure.main_toolbar = QToolBar("MolViewer", parent)
+        MolecularStructure.main_toolbar = ToolBar(ToolBar.tr("Molecular Viewer"), parent)
         MolecularStructure.main_toolbar.setObjectName("MolViewer")
         MolecularStructure.save_img_action = Action(Action.tr("Save image..."), parent)
         MolecularStructure.save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
