@@ -51,16 +51,9 @@ class MainWindow(QMainWindow):
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.setCentralWidget(self.mdi_area)
 
-        self.setup_docks()
-        self.setup_menubar()
-
-        # Status Bar
-        self.status = StatusBar(self)
-        self.setStatusBar(self.status)
-
-        self._set_mainwindow_title()
-
         # ToolBars
+        self.toolbars = []  # All toolbars: created here or in providers
+
         # Here we collect classes of widgets, which provide their own toolbars for the main window.
         # Each widget must provide a function connect_toolbar and
         # static functions create_toolbar and deactivate_toolbar
@@ -69,7 +62,18 @@ class MainWindow(QMainWindow):
         self.toolbar_providers.append(MolViewer)
 
         for provider in self.toolbar_providers:
-            self.addToolBar(provider.create_toolbar(self))
+            toolbar = provider.create_toolbar(self)
+            self.addToolBar(toolbar)
+            self.toolbars.append(toolbar)
+
+        self.setup_docks()
+        self.setup_menubar()
+
+        # Status Bar
+        self.status = StatusBar(self)
+        self.setStatusBar(self.status)
+
+        self._set_mainwindow_title()
 
         # Settings
         self._restore_settings()
@@ -129,6 +133,9 @@ class MainWindow(QMainWindow):
         menu.addAction(self.docks.project.toggleViewAction())
         menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
+        menu.addSeparator()
+        for toolbar in self.toolbars:
+            menu.addAction(toolbar.toggleViewAction())
         return menu
 
     def _setup_menubar_window(self) -> Menu:

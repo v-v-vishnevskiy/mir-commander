@@ -82,7 +82,7 @@ class MolecularStructure(gl.GLViewWidget):
 
     @staticmethod
     def create_toolbar(parent):
-        MolecularStructure.main_toolbar = ToolBar(ToolBar.tr("Molecular Viewer"), parent)
+        MolecularStructure.main_toolbar = ToolBar(ToolBar.tr("Molecular viewer"), parent)
         MolecularStructure.main_toolbar.setObjectName("MolViewer")
         MolecularStructure.save_img_action = Action(Action.tr("Save image..."), parent)
         MolecularStructure.save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
