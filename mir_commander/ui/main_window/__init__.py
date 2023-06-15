@@ -2,12 +2,12 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Union
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget, QWidget
 
 from mir_commander import __version__
 from mir_commander.projects.base import Project
@@ -15,7 +15,7 @@ from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure as MolViewer
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar, ToolBar
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
@@ -36,6 +36,8 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
+        self.toolbars: List[ToolBar] = []  # All toolbars: created here or in providers
+        self.toolbar_providers: List[QWidget] = []  # Toolbar providers (i.e. other widgets)
 
         self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
 
@@ -51,23 +53,9 @@ class MainWindow(QMainWindow):
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.setCentralWidget(self.mdi_area)
 
-        # ToolBars
-        self.toolbars = []  # All toolbars: created here or in providers
-
-        # Here we collect classes of widgets, which provide their own toolbars for the main window.
-        # Each widget must provide a function connect_toolbar and
-        # static functions create_toolbar and deactivate_toolbar
-        # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.toolbar_providers = []
-        self.toolbar_providers.append(MolViewer)
-
-        for provider in self.toolbar_providers:
-            toolbar = provider.create_toolbar(self)
-            self.addToolBar(toolbar)
-            self.toolbars.append(toolbar)
-
-        self.setup_docks()
-        self.setup_menubar()
+        self.setup_toolbars()  # Note, we create toolbars before menus
+        self.setup_docks()  # Create docks before menus
+        self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
         self.status = StatusBar(self)
@@ -110,6 +98,20 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
         self.docks.project.set_model(self.project.model)
+
+    def setup_toolbars(self):
+        # N.B.: toolbar(s) of the main window will be also created in this function.
+
+        # Here we collect classes of widgets, which create their own toolbars for the main window.
+        # Each widget must provide a function connect_toolbar and
+        # static functions create_toolbar and deactivate_toolbar
+        # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
+        self.toolbar_providers.append(MolViewer)
+
+        for provider in self.toolbar_providers:
+            toolbar = provider.create_toolbar(self)
+            self.addToolBar(toolbar)
+            self.toolbars.append(toolbar)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")

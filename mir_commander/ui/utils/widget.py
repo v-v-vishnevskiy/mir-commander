@@ -253,4 +253,7 @@ class ToolBar(Widget, QToolBar):
         super().setWindowTitle(self._tr(title))
 
     def retranslate_ui(self):
+        for action in self.actions():
+            if isinstance(action, Action):
+                action.retranslate()
         self.setTitle(self.__title)

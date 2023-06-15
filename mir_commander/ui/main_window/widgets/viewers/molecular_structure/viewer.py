@@ -32,7 +32,7 @@ class MoleculeStruct:
 
 
 class MolecularStructure(gl.GLViewWidget):
-    # Toolbar and actions common for all MolecularStructure widgest
+    # Toolbar and actions common for all MolecularStructure widgets
     main_toolbar: ToolBar
     save_img_action: Action
 
@@ -70,7 +70,7 @@ class MolecularStructure(gl.GLViewWidget):
         self._set_draw_item()
         self.update_window_title()
 
-        # Menus and actions for this particular widget
+        # Menus and actions specific for this particular widget
         self.context_menu = Menu("", self)
         save_img_action = Action(Action.tr("Save image..."), self)
         self.context_menu.addAction(save_img_action)

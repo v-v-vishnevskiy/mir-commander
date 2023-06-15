@@ -12,52 +12,52 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="154"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="156"/>
         <source>Close Project</source>
         <translation>Close Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="159"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="161"/>
         <source>Settings...</source>
         <translation>Settings...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="166"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="168"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="173"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="175"/>
         <source>About</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="180"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="182"/>
         <source>Cl&amp;ose</source>
         <translation>Cl&amp;ose</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="187"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="189"/>
         <source>Close &amp;All</source>
         <translation>Close &amp;All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="194"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="196"/>
         <source>&amp;Tile</source>
         <translation>&amp;Tile</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="198"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="200"/>
         <source>&amp;Cascade</source>
         <translation>&amp;Cascade</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="205"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="207"/>
         <source>Ne&amp;xt</source>
         <translation>Ne&amp;xt</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="213"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="215"/>
         <source>Pre&amp;vious</source>
         <translation>Pre&amp;vious</translation>
     </message>
@@ -151,37 +151,37 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="84"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="72"/>
         <source>Started</source>
         <translation>Started</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="182"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="184"/>
         <source>Close the active window</source>
         <translation>Close the active window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="189"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="191"/>
         <source>Close all the windows</source>
         <translation>Close all the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="194"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="196"/>
         <source>Tile the windows</source>
         <translation>Tile the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="200"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="202"/>
         <source>Cascade the windows</source>
         <translation>Cascade the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="208"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="210"/>
         <source>Move the focus to the next window</source>
         <translation>Move the focus to the next window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="216"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="218"/>
         <source>Move the focus to the previous window</source>
         <translation>Move the focus to the previous window</translation>
     </message>
@@ -189,22 +189,22 @@
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="125"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="127"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="132"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="134"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="143"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="145"/>
         <source>&amp;Window</source>
         <translation>&amp;Window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="149"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="151"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
@@ -341,7 +341,7 @@
 <context>
     <name>StatusBar</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/__init__.py" line="83"/>
+        <location filename="../../mir_commander/ui/main_window/__init__.py" line="71"/>
         <source>Ready</source>
         <translation>Ready</translation>
     </message>
