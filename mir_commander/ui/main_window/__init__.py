@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, List, Union
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget, QWidget
@@ -100,6 +100,12 @@ class MainWindow(QMainWindow):
         self.docks.project.set_model(self.project.model)
 
     def setup_toolbars(self):
+        config = self.app.config.nested("widgets.toolbars")
+        # Do not check the validity of icon_size.
+        # If it is invalid, the respective config must be fixed,
+        # instead of hiding the problem by a workaround here!
+        icon_size = config["icon_size"]
+
         # N.B.: toolbar(s) of the main window will be also created in this function.
 
         # Here we collect classes of widgets, which create their own toolbars for the main window.
@@ -110,6 +116,7 @@ class MainWindow(QMainWindow):
 
         for provider in self.toolbar_providers:
             toolbar = provider.create_toolbar(self)
+            toolbar.setIconSize(QSize(icon_size, icon_size))
             self.addToolBar(toolbar)
             self.toolbars.append(toolbar)
 
