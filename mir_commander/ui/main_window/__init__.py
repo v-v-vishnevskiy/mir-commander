@@ -4,21 +4,22 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, List, Union
 
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget, QWidget
+from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.projects.base import Project
 from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure as MolViewer
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar, ToolBar
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import ToolBar as ToolBarMolViewer
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
+    from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
 
 
 logger = logging.getLogger()
@@ -36,8 +37,7 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
-        self.toolbars: List[ToolBar] = []  # All toolbars: created here or in providers
-        self.toolbar_providers: List[QWidget] = []  # Toolbar providers (i.e. other widgets)
+        self.sub_windows_toolbars: List[SubWindowToolBar] = []  # All SubWindow's toolbars
 
         self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
 
@@ -100,25 +100,14 @@ class MainWindow(QMainWindow):
         self.docks.project.set_model(self.project.model)
 
     def setup_toolbars(self):
-        config = self.app.config.nested("widgets.toolbars")
-        # Do not check the validity of icon_size.
-        # If it is invalid, the respective config must be fixed,
-        # instead of hiding the problem by a workaround here!
-        icon_size = config["icon_size"]
-
         # N.B.: toolbar(s) of the main window will be also created in this function.
 
         # Here we collect classes of widgets, which create their own toolbars for the main window.
-        # Each widget must provide a function connect_toolbar and
-        # static functions create_toolbar and deactivate_toolbar
         # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.toolbar_providers.append(MolViewer)
+        self.sub_windows_toolbars.append(ToolBarMolViewer(self))
 
-        for provider in self.toolbar_providers:
-            toolbar = provider.create_toolbar(self)
-            toolbar.setIconSize(QSize(icon_size, icon_size))
+        for toolbar in self.sub_windows_toolbars:
             self.addToolBar(toolbar)
-            self.toolbars.append(toolbar)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
@@ -143,7 +132,7 @@ class MainWindow(QMainWindow):
         menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
         menu.addSeparator()
-        for toolbar in self.toolbars:
+        for toolbar in self.sub_windows_toolbars:
             menu.addAction(toolbar.toggleViewAction())
         return menu
 
@@ -267,10 +256,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def update_toolbars(self, window: Union[None, QMdiSubWindow]):
-        for provider in self.toolbar_providers:
-            provider.deactivate_toolbar()
-        if window and hasattr(window.widget(), "connect_toolbar") and callable(window.widget().connect_toolbar):
-            window.widget().connect_toolbar()
+        for toolbar in self.sub_windows_toolbars:
+            toolbar.update_state(window)
 
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:

@@ -15,10 +15,12 @@ from PySide6.QtWidgets import QMessageBox, QWidget
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar, ToolBar
+from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.utils.item import Item
 
 
@@ -32,10 +34,6 @@ class MoleculeStruct:
 
 
 class MolecularStructure(gl.GLViewWidget):
-    # Toolbar and actions common for all MolecularStructure widgets
-    main_toolbar: ToolBar
-    save_img_action: Action
-
     styles: List[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
@@ -79,29 +77,6 @@ class MolecularStructure(gl.GLViewWidget):
         save_img_action.triggered.connect(self.save_img_action_handler)
 
         self.draw()
-
-    @staticmethod
-    def create_toolbar(parent):
-        MolecularStructure.main_toolbar = ToolBar(ToolBar.tr("Molecular viewer"), parent)
-        MolecularStructure.main_toolbar.setObjectName("MolViewer")
-        MolecularStructure.save_img_action = Action(Action.tr("Save image..."), parent)
-        MolecularStructure.save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        MolecularStructure.save_img_action.setEnabled(False)
-        MolecularStructure.main_toolbar.addAction(MolecularStructure.save_img_action)
-        return MolecularStructure.main_toolbar
-
-    @staticmethod
-    def deactivate_toolbar():
-        try:
-            MolecularStructure.save_img_action.triggered.disconnect()
-        except RuntimeError:
-            pass
-
-        MolecularStructure.save_img_action.setEnabled(False)
-
-    def connect_toolbar(self):
-        MolecularStructure.save_img_action.triggered.connect(self.save_img_action_handler)
-        MolecularStructure.save_img_action.setEnabled(True)
 
     def contextMenuEvent(self, event):
         # Show the context menu
@@ -418,3 +393,21 @@ class MolecularStructure(gl.GLViewWidget):
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
         self.setWindowTitle(title)
+
+
+class ToolBar(SubWindowToolBar):
+    widget: QWidget = MolecularStructure
+
+    def __init__(self, parent: "MainWindow"):
+        super().__init__(ToolBar.tr("Molecular viewer"), parent)
+        self.setObjectName("Molecular viewer")
+
+    def setup_actions(self):
+        save_img_action = Action(Action.tr("Save image..."), self.parent())
+        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        save_img_action.triggered.connect(self.save_img_action_handler)
+        self.addAction(save_img_action)
+
+    @Slot()
+    def save_img_action_handler(self):
+        self.mdi_area.activeSubWindow().widget().save_img_action_handler()
