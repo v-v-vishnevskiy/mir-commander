@@ -410,4 +410,9 @@ class ToolBar(SubWindowToolBar):
 
     @Slot()
     def save_img_action_handler(self):
+        # Note, this callback is only triggered, when the respective action is enabled.
+        # Whether this is the case, is determined by the update_state method of the SubWindowToolBar class.
+        # This method receives the window parameter, so it is possible to determine the currently active type
+        # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
+        # and we may call save_img_action_handler().
         self.mdi_area.activeSubWindow().widget().save_img_action_handler()
