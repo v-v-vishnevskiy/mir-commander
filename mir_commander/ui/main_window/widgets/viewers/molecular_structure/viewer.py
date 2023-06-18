@@ -9,16 +9,18 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
+from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
 from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
+from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.utils.item import Item
 
 
@@ -66,7 +68,7 @@ class MolecularStructure(gl.GLViewWidget):
         self._set_draw_item()
         self.update_window_title()
 
-        # Menus, actions
+        # Menus and actions specific for this particular widget
         self.context_menu = Menu("", self)
         save_img_action = Action(Action.tr("Save image..."), self)
         self.context_menu.addAction(save_img_action)
@@ -391,3 +393,26 @@ class MolecularStructure(gl.GLViewWidget):
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
         self.setWindowTitle(title)
+
+
+class ToolBar(SubWindowToolBar):
+    widget: QWidget = MolecularStructure
+
+    def __init__(self, parent: "MainWindow"):
+        super().__init__(ToolBar.tr("Molecular viewer"), parent)
+        self.setObjectName("Molecular viewer")
+
+    def setup_actions(self):
+        save_img_action = Action(Action.tr("Save image..."), self.parent())
+        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        save_img_action.triggered.connect(self.save_img_action_handler)
+        self.addAction(save_img_action)
+
+    @Slot()
+    def save_img_action_handler(self):
+        # Note, this callback is only triggered, when the respective action is enabled.
+        # Whether this is the case, is determined by the update_state method of the SubWindowToolBar class.
+        # This method receives the window parameter, so it is possible to determine the currently active type
+        # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
+        # and we may call save_img_action_handler().
+        self.mdi_area.activeSubWindow().widget().save_img_action_handler()

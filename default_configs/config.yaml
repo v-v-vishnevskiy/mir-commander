@@ -1,5 +1,7 @@
 language: system
 widgets:
+  toolbars:
+    icon_size: 20
   docks:
     project:
       tree:
