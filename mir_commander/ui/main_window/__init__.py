@@ -2,7 +2,7 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
-        self.sub_windows_toolbars: List[SubWindowToolBar] = []  # All SubWindow's toolbars
+        self.sub_windows_toolbars: list[SubWindowToolBar] = []  # All SubWindow's toolbars
 
         self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
 
@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
     @Slot()
-    def update_menus(self, window: Union[None, QMdiSubWindow]):
+    def update_menus(self, window: None | QMdiSubWindow):
         has_mdi_child = window is not None
         self._win_close_act.setEnabled(has_mdi_child)
         self._win_close_all_act.setEnabled(has_mdi_child)
@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
         self._win_separator_act.setVisible(has_mdi_child)
 
     @Slot()
-    def update_toolbars(self, window: Union[None, QMdiSubWindow]):
+    def update_toolbars(self, window: None | QMdiSubWindow):
         for toolbar in self.sub_windows_toolbars:
             toolbar.update_state(window)
 

@@ -1,7 +1,6 @@
 import logging
 import os
 from dataclasses import asdict, dataclass, field
-from typing import List
 
 import fastjsonschema
 import yaml
@@ -40,8 +39,8 @@ class Project:
 
 @dataclass
 class Config:
-    opened: List[Project] = field(default_factory=list)
-    recent: List[Project] = field(default_factory=list)
+    opened: list[Project] = field(default_factory=list)
+    recent: list[Project] = field(default_factory=list)
 
 
 class RecentProjects:
@@ -87,11 +86,11 @@ class RecentProjects:
             f.write(yaml.dump(asdict(self._config), Dumper=yaml.CDumper))
 
     @property
-    def opened(self) -> List[Project]:
+    def opened(self) -> list[Project]:
         return self._config.opened
 
     @property
-    def recent(self) -> List[Project]:
+    def recent(self) -> list[Project]:
         return self._config.recent
 
     def add_opened(self, title: str, path: str):

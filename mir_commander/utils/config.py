@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional
 
 import yaml
 
@@ -11,19 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(
-        self, path: Union[str, Path], key: str = "", config: Optional["Config"] = None, read_only: bool = False
-    ):
-        self._root_data: Dict[str, Any] = {}
+    def __init__(self, path: str | Path, key: str = "", config: Optional["Config"] = None, read_only: bool = False):
+        self._root_data: dict[str, Any] = {}
         self._nested_key = key
         self._synced = True
         self._defaults: Optional["Config"] = None
         self._read_only = read_only
 
         if config:
-            self._path: Union[str, Path] = path
+            self._path: str | Path = path
             self._root_data = config._root_data
-            self._data: Dict[str, Any] = config._data
+            self._data: dict[str, Any] = config._data
             if not self.contains(key):
                 self.set(key, {})
             self._data = self.get(key)
@@ -74,7 +72,7 @@ class Config:
             config.set_defaults(self._defaults.nested(key))
         return config
 
-    def _key(self, key: str) -> List[str]:
+    def _key(self, key: str) -> list[str]:
         if not isinstance(key, str):
             error = f"Invalid type key: {type(key)}"
             logger.error(error)

@@ -1,5 +1,5 @@
 from time import monotonic
-from typing import Any, List, Optional
+from typing import Any
 
 from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtGui import QAction, QStandardItem
@@ -68,7 +68,7 @@ class Dialog(Widget, QDialog):
 
 
 class DockWidget(Widget, QDockWidget):
-    def __init__(self, title: str, parent: Optional[QWidget] = None):
+    def __init__(self, title: str, parent: QWidget | None = None):
         self.__title = title
         super().__init__(self._tr(title), parent)
 
@@ -81,7 +81,7 @@ class DockWidget(Widget, QDockWidget):
 
 
 class Label(Widget, QLabel):
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
+    def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
 
@@ -94,7 +94,7 @@ class Label(Widget, QLabel):
 
 
 class PushButton(Widget, QPushButton):
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
+    def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
 
@@ -107,7 +107,7 @@ class PushButton(Widget, QPushButton):
 
 
 class GroupBox(Widget, QGroupBox):
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
+    def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
 
@@ -120,7 +120,7 @@ class GroupBox(Widget, QGroupBox):
 
 
 class CheckBox(Widget, QCheckBox):
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
+    def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
         super().__init__(self._tr(text), parent)
 
@@ -133,7 +133,7 @@ class CheckBox(Widget, QCheckBox):
 
 
 class SpinBox(Widget, QSpinBox):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         self.__suffix = ""
         super().__init__(parent)
 
@@ -147,9 +147,9 @@ class SpinBox(Widget, QSpinBox):
 
 
 class ComboBox(Widget, QComboBox):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.__items: List[str] = []
+        self.__items: list[str] = []
 
     def addItem(self, text: str, userData: Any = None):
         self.__items.append(text)
@@ -185,9 +185,9 @@ class StandardItem(Translator, QStandardItem):
 
 
 class TabWidget(Widget, QTabWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.__labels: List[str] = []
+        self.__labels: list[str] = []
 
     def addTab(self, page: QWidget, label: str):
         self.__labels.append(label)
@@ -203,7 +203,7 @@ class TabWidget(Widget, QTabWidget):
 
 
 class Action(Translator, QAction):
-    def __init__(self, text: str, parent: Optional[QWidget] = None, *args, **kwargs):
+    def __init__(self, text: str, parent: QWidget | None = None, *args, **kwargs):
         super().__init__(self._tr(text), parent, *args, **kwargs)
         self.__text = text
 
@@ -216,7 +216,7 @@ class Action(Translator, QAction):
 
 
 class Menu(Widget, QMenu):
-    def __init__(self, title: str = "", parent: Optional[QWidget] = None):
+    def __init__(self, title: str = "", parent: QWidget | None = None):
         super().__init__(self._tr(title), parent)
         self.__title = title
 
@@ -244,7 +244,7 @@ class StatusBar(Widget, QStatusBar):
 
 
 class ToolBar(Widget, QToolBar):
-    def __init__(self, title: str = "", parent: Optional[QWidget] = None):
+    def __init__(self, title: str = "", parent: QWidget | None = None):
         super().__init__(self._tr(title), parent)
         self.__title = title
 

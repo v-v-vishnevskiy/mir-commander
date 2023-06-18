@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
@@ -32,7 +32,7 @@ class Project:
         return False
 
     @property
-    def items_marked_to_view(self) -> List["Item"]:
+    def items_marked_to_view(self) -> list["Item"]:
         """
         Returns list of items marked as opened
         """
@@ -49,7 +49,7 @@ class Project:
             opened.append(path)
         self.config["items.marked_to_view"] = opened
 
-    def _item(self, path: List[str], parent: QStandardItem) -> Union[None, QStandardItem]:
+    def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:
             row = int(path.pop(0))
         except ValueError:

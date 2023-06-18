@@ -1,5 +1,4 @@
 import os
-from typing import Dict
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtWidgets import QApplication
@@ -29,7 +28,7 @@ class Application(QApplication):
         self.settings = Settings(self.config)
         self.recent_projects = RecentProjects(DIR.CONFIG / "recent.yaml")
 
-        self._projects: Dict[int, MainWindow] = {}
+        self._projects: dict[int, MainWindow] = {}
         self._recent_projects_widget = RecentProjectsWidget(self)
 
         self._translator_app = QTranslator(self)

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 from mir_commander.utils.config import Config
 
@@ -14,10 +14,10 @@ class Settings:
 
     def __init__(self, config: Config):
         self._config = config
-        self._changes: Dict[str, Any] = {}
-        self._applied_changes: Dict[str, Any] = {}
-        self._defaults: Dict[str, Any] = {}
-        self._apply_callbacks: Dict[str, List[Callable]] = {}
+        self._changes: dict[str, Any] = {}
+        self._applied_changes: dict[str, Any] = {}
+        self._defaults: dict[str, Any] = {}
+        self._apply_callbacks: dict[str, list[Callable]] = {}
         self._changed_callback: Callable = lambda: None
 
     def __getitem__(self, key: str) -> Any:
@@ -26,7 +26,7 @@ class Settings:
     def __setitem__(self, key: str, value: Any):
         self.set(key, value)
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: str, default: Any = None) -> Any:
         if key in self._changes:
             return self._changes[key]
         elif self._config.contains(key):

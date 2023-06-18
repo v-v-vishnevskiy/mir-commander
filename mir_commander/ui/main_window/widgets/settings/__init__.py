@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
@@ -27,7 +27,7 @@ class Settings(Dialog):
         self.global_settings = parent.app.settings
         self.project_settings = parent.project.settings
         self._settings = [self.global_settings, self.project_settings]
-        self._categories: List[Category] = []
+        self._categories: list[Category] = []
 
         self.setWindowTitle(self.tr("Settings"))
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))

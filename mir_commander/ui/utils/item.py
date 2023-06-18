@@ -1,4 +1,4 @@
-from typing import Optional, Type, Union
+from typing import Type
 
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QMdiArea, QWidget
@@ -9,9 +9,9 @@ from mir_commander.ui.utils.widget import Action, Menu
 
 
 class Item(QStandardItem):
-    default_viewer: Optional[Type[QWidget]] = None
+    default_viewer: Type[QWidget] | None = None
 
-    def __init__(self, title: str, data: Optional[DataStructure] = None):
+    def __init__(self, title: str, data: DataStructure | None = None):
         super().__init__(title)
         self.setData(data)
         self.setEditable(False)
@@ -61,7 +61,7 @@ class Item(QStandardItem):
         viewer.setParent(sub_window)
         return viewer
 
-    def view(self, *args, **kwargs) -> Union[None, QWidget]:
+    def view(self, *args, **kwargs) -> None | QWidget:
         """
         Add viewer instance to MDI area and returns this viewer instance for this item
         """
@@ -90,7 +90,7 @@ class Molecule(Item):
 class AtomicCoordinatesGroup(Group):
     default_viewer = viewers.MolecularStructure
 
-    def __init__(self, title: str = "Atomic Coordinates", data: Optional[DataStructure] = None):
+    def __init__(self, title: str = "Atomic Coordinates", data: DataStructure | None = None):
         super().__init__(title, data)
 
     def _set_icon(self):

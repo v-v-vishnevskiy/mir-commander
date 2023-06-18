@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
@@ -29,7 +29,7 @@ class SubWindowToolBar(ToolBarWidget):
         for action in self.actions():
             action.setEnabled(flag)
 
-    def update_state(self, window: Union[None, QMdiSubWindow]):
+    def update_state(self, window: None | QMdiSubWindow):
         if window and type(window.widget()) == self.widget:
             self.set_enabled(True)
         else:

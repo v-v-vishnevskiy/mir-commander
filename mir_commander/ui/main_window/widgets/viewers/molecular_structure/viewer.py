@@ -2,7 +2,7 @@ import logging
 import math
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 import pyqtgraph as pg
@@ -29,12 +29,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MoleculeStruct:
-    atoms: List[gl.GLMeshItem]
-    bonds: List[gl.GLMeshItem]
+    atoms: list[gl.GLMeshItem]
+    bonds: list[gl.GLMeshItem]
 
 
 class MolecularStructure(gl.GLViewWidget):
-    styles: List[Config] = []
+    styles: list[Config] = []
 
     def __init__(self, item: "Item", all: bool = False):
         super().__init__(None, rotationMethod="quaternion")
@@ -50,8 +50,8 @@ class MolecularStructure(gl.GLViewWidget):
         self.__mouse_pos = None
         self.__atom_mesh_data = None
         self.__bond_mesh_data = None
-        self.__at_rad: List[int] = []
-        self.__at_color: List[str] = []
+        self.__at_rad: list[int] = []
+        self.__at_color: list[str] = []
 
         if not self.styles:
             self._load_styles()
@@ -145,7 +145,7 @@ class MolecularStructure(gl.GLViewWidget):
         self.__at_rad = self.__style["atoms.radius"]
         self.__at_color = self.__style["atoms.color"]
 
-    def _build_molecule(self) -> Optional[MoleculeStruct]:
+    def _build_molecule(self) -> MoleculeStruct | None:
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
@@ -158,7 +158,7 @@ class MolecularStructure(gl.GLViewWidget):
 
         return MoleculeStruct(atoms, bonds)
 
-    def _build_atoms(self, ds: AtomicCoordinatesDS) -> List[gl.GLMeshItem]:
+    def _build_atoms(self, ds: AtomicCoordinatesDS) -> list[gl.GLMeshItem]:
         result = []
         for i, atomic_num in enumerate(ds.atomic_num):
             mesh_item = gl.GLMeshItem(
@@ -176,7 +176,7 @@ class MolecularStructure(gl.GLViewWidget):
             result.append(mesh_item)
         return result
 
-    def _build_bonds(self, ds: AtomicCoordinatesDS) -> List[gl.GLMeshItem]:
+    def _build_bonds(self, ds: AtomicCoordinatesDS) -> list[gl.GLMeshItem]:
         result = []
         geom_bond_tol = 0.15
         for i in range(len(ds.atomic_num)):
@@ -197,7 +197,7 @@ class MolecularStructure(gl.GLViewWidget):
                     )
         return result
 
-    def _build_bond(self, length: float, atom1: Vector, atom2: Vector, a_num1: int, a_num2: int) -> List[gl.GLMeshItem]:
+    def _build_bond(self, length: float, atom1: Vector, atom2: Vector, a_num1: int, a_num2: int) -> list[gl.GLMeshItem]:
         result = []
         color = self.__style["bond.color"]
         if color.startswith("#") and len(color) == 7:
@@ -271,7 +271,7 @@ class MolecularStructure(gl.GLViewWidget):
                 self.__camera_set = True
         self.setBackgroundColor(self.__style["background.color"])
 
-    def normalize_color(self, value: str) -> Tuple[float, float, float, float]:
+    def normalize_color(self, value: str) -> tuple[float, float, float, float]:
         """
         Converts #RRGGBB string to tuple, where each component represented from 0.0 to 1.0
         """
@@ -279,7 +279,7 @@ class MolecularStructure(gl.GLViewWidget):
 
     def __atomic_coordinates_item(
         self, index: int, parent: "Item", counter: int = -1
-    ) -> Tuple[bool, int, Optional["Item"]]:
+    ) -> tuple[bool, int, Optional["Item"]]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
