@@ -40,6 +40,7 @@ class MolecularStructure(gl.GLViewWidget):
         super().__init__(None, rotationMethod="quaternion")
         self._main_window = None
         self.item = item
+        self.all = all
         self._global_config = QCoreApplication.instance().config
         self._config = self._global_config.nested("widgets.viewers.molecular_structure")
         self._draw_item = None
