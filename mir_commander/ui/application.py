@@ -1,6 +1,7 @@
 import os
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
+from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
 from mir_commander import exceptions
@@ -37,6 +38,42 @@ class Application(QApplication):
 
         self.settings.set_default("language", "system")
         self.settings.add_apply_callback("language", self._set_translation)
+
+    def fix_palette(self):
+        """
+        PySide6 may work bad if GTK3 theme engine is active with builtin themes Adwaita, Adwaita-dark and High-Contrast.
+        In this case text labels (window text) of many different (QLabel, etc) Qt widgets is shown as if it were
+        disabled. This behavior has been seen in Debian 11, 12 with XFCE at least as of 19.06.2023.
+        The problem is detected by checking current colors for active and disabled QPalette.WindowText.
+        You may want to add more checking if the current way is too generic.
+        It is also possible, that the bug will be fixed at some point in Adwaita, so we will not need this hack anymore.
+        """
+        palette = self.palette()
+        color_windowtext = palette.color(QPalette.WindowText)
+        color_disabledwindowtext = palette.color(QPalette.Disabled, QPalette.WindowText)
+
+        # This combination is specific to Adwaita and High-Contrast:
+        if (
+            color_windowtext.red() == 146
+            and color_windowtext.green() == 149
+            and color_windowtext.blue() == 149
+            and color_disabledwindowtext.red() == 73
+            and color_disabledwindowtext.green() == 74
+            and color_disabledwindowtext.blue() == 74
+        ):
+            palette.setColor(QPalette.WindowText, QColor(46, 52, 54))
+            self.setPalette(palette)
+        # specific to Adwaita-dark:
+        elif (
+            color_windowtext.red() == 145
+            and color_windowtext.green() == 145
+            and color_windowtext.blue() == 144
+            and color_disabledwindowtext.red() == 72
+            and color_disabledwindowtext.green() == 72
+            and color_disabledwindowtext.blue() == 72
+        ):
+            palette.setColor(QPalette.WindowText, QColor(238, 238, 236))
+            self.setPalette(palette)
 
     def register_resources(self):
         for file in DIR.ICONS.glob("*.rcc"):
