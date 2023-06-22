@@ -19,4 +19,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     app = Application([])
+    app.fix_palette()
     sys.exit(app.run(args.path))
