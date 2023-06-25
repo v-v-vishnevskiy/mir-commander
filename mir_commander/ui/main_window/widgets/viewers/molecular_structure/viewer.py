@@ -262,7 +262,7 @@ class MolecularStructure(gl.GLViewWidget):
         """
         self.clear()
         if molecule := self._build_molecule():
-            for atom in molecule.atoms + molecule.bonds:
+            for atom in molecule.atoms:
                 self.addItem(atom)
             for bond in molecule.bonds:
                 self.addItem(bond)
