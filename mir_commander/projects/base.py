@@ -42,12 +42,30 @@ class Project:
                 result.append(item)
         return result
 
+    @property
+    def items_marked_to_expand(self) -> list["Item"]:
+        """
+        Returns list of items marked as expanded
+        """
+        result = []
+        for item in self.config["items.marked_to_expand"] or []:
+            if item := self._item(item.split("."), self.root_item):
+                result.append(item)
+        return result
+
     def mark_item_to_view(self, item: "Item"):
         opened = self.config["items.marked_to_view"] or []
         path = item.path
         if path not in opened:
             opened.append(path)
         self.config["items.marked_to_view"] = opened
+
+    def mark_item_to_expand(self, item: "Item"):
+        expanded = self.config["items.marked_to_expand"] or []
+        path = item.path
+        if path not in expanded:
+            expanded.append(path)
+        self.config["items.marked_to_expand"] = expanded
 
     def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:

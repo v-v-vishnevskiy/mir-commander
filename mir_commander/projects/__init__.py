@@ -15,7 +15,7 @@ from mir_commander.utils.config import Config
 logger = logging.getLogger(__name__)
 
 
-def import_file(path: str) -> item.Item:
+def import_file(project: Temporary, path: str):
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!
     # cclib is currently on the way to implement this possibility by returning
@@ -37,6 +37,7 @@ def import_file(path: str) -> item.Item:
         moldata.multiplicity = data.mult
     molitem = item.Molecule(os.path.split(path)[1], moldata)
     molitem.file_path = path
+    project.root_item.appendRow(molitem)
 
     # If we have coordinates of atoms.
     # This is actually expected to be always true
@@ -68,7 +69,10 @@ def import_file(path: str) -> item.Item:
             data.atomcoords[xyz_idx][:, 1],
             data.atomcoords[xyz_idx][:, 2],
         )
-        molitem.appendRow(item.AtomicCoordinates(xyz_title, atcoods_data))
+        arcoords_item = item.AtomicCoordinates(xyz_title, atcoods_data)
+        molitem.appendRow(arcoords_item)
+        project.mark_item_to_view(arcoords_item)
+        project.mark_item_to_expand(molitem)
 
         # If we have multiple sets of coordinates
         if cshape[0] > 1:
@@ -115,8 +119,6 @@ def import_file(path: str) -> item.Item:
                 csname = "Step {}".format(i + 1)
                 scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
-    return molitem
-
 
 def load_project(path: str) -> Project:
     path = os.path.normpath(path)
@@ -125,9 +127,7 @@ def load_project(path: str) -> Project:
     # and we can try to import its data and create a project on the fly.
     if os.path.isfile(path):
         project = Temporary(path)
-        project_item = import_file(path)
-        project.root_item.appendRow(project_item)
-        project.mark_item_to_view(project_item)
+        import_file(project, path)
         return project
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):
