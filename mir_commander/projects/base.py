@@ -31,41 +31,39 @@ class Project:
     def is_temporary(self) -> bool:
         return False
 
-    @property
-    def items_marked_to_view(self) -> list["Item"]:
-        """
-        Returns list of items marked as opened
-        """
+    def _get_items_from_config(self, category: str) -> list["Item"]:
         result = []
-        for item in self.config["items.marked_to_view"] or []:
+        for item in self.config[category] or []:
             if item := self._item(item.split("."), self.root_item):
                 result.append(item)
         return result
+
+    @property
+    def items_marked_to_view(self) -> list["Item"]:
+        """
+        Returns list of items marked as opened in viewer(s)
+        """
+        return self._get_items_from_config("items.marked_to_view")
 
     @property
     def items_marked_to_expand(self) -> list["Item"]:
         """
         Returns list of items marked as expanded
         """
-        result = []
-        for item in self.config["items.marked_to_expand"] or []:
-            if item := self._item(item.split("."), self.root_item):
-                result.append(item)
-        return result
+        return self._get_items_from_config("items.marked_to_expand")
+
+    def _append_itempath_to_config(self, item: "Item", category: str):
+        entries = self.config[category] or []
+        path = item.path
+        if path not in entries:
+            entries.append(path)
+        self.config[category] = entries
 
     def mark_item_to_view(self, item: "Item"):
-        opened = self.config["items.marked_to_view"] or []
-        path = item.path
-        if path not in opened:
-            opened.append(path)
-        self.config["items.marked_to_view"] = opened
+        self._append_itempath_to_config(item, "items.marked_to_view")
 
     def mark_item_to_expand(self, item: "Item"):
-        expanded = self.config["items.marked_to_expand"] or []
-        path = item.path
-        if path not in expanded:
-            expanded.append(path)
-        self.config["items.marked_to_expand"] = expanded
+        self._append_itempath_to_config(item, "items.marked_to_expand")
 
     def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:

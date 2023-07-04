@@ -56,15 +56,13 @@ class Project(DockWidget):
 
     def __init__(self, parent: "MainWindow"):
         super().__init__(self.tr("Project"), parent)
-        self._model: QStandardItemModel = QStandardItemModel | None
         self._tree = TreeView(self, self.config.nested("tree"))
         self.setWidget(self._tree)
 
     def set_model(self, model: QStandardItemModel):
-        self._model = model
         model.setParent(self._tree)
         self._tree.setModel(model)
 
     def expand_items(self, items: list["Item"]):
         for item in items:
-            self._tree.setExpanded(self._model.indexFromItem(item), True)
+            self._tree.setExpanded(self._tree.model().indexFromItem(item), True)
