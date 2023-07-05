@@ -33,7 +33,7 @@ class Project:
 
     def _get_items_from_config(self, category: str) -> list["Item"]:
         result = []
-        for item in self.config[category] or []:
+        for item in self.config[f"items.{category}"] or []:
             if item := self._item(item.split("."), self.root_item):
                 result.append(item)
         return result
@@ -43,27 +43,27 @@ class Project:
         """
         Returns list of items marked as opened in viewer(s)
         """
-        return self._get_items_from_config("items.marked_to_view")
+        return self._get_items_from_config("marked_to_view")
 
     @property
     def items_marked_to_expand(self) -> list["Item"]:
         """
         Returns list of items marked as expanded
         """
-        return self._get_items_from_config("items.marked_to_expand")
+        return self._get_items_from_config("marked_to_expand")
 
-    def _append_itempath_to_config(self, item: "Item", category: str):
-        entries = self.config[category] or []
+    def _add_item_to_config(self, item: "Item", category: str):
+        entries = self.config[f"items.{category}"] or []
         path = item.path
         if path not in entries:
             entries.append(path)
-        self.config[category] = entries
+        self.config[f"items.{category}"] = entries
 
     def mark_item_to_view(self, item: "Item"):
-        self._append_itempath_to_config(item, "items.marked_to_view")
+        self._add_item_to_config(item, "marked_to_view")
 
     def mark_item_to_expand(self, item: "Item"):
-        self._append_itempath_to_config(item, "items.marked_to_expand")
+        self._add_item_to_config(item, "marked_to_expand")
 
     def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:
