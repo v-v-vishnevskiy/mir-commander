@@ -9,6 +9,7 @@ from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
+    from mir_commander.ui.utils.item import Item
 
 
 class TreeView(QTreeView):
@@ -61,3 +62,7 @@ class Project(DockWidget):
     def set_model(self, model: QStandardItemModel):
         model.setParent(self._tree)
         self._tree.setModel(model)
+
+    def expand_items(self, items: list["Item"]):
+        for item in items:
+            self._tree.setExpanded(self._tree.model().indexFromItem(item), True)
