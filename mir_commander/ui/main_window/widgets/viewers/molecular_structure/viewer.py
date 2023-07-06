@@ -55,6 +55,8 @@ class MolecularStructure(gl.GLViewWidget):
         self.__at_color: list[str] = []
         self._molecule: MoleculeStruct | None = None
         self._selected_atoms: set[int] = set()
+        self._atom_index_under_point: None | int = None
+        self._atom_transform_under_point: None | Transform3D = None
 
         if not self.styles:
             self._load_styles()
@@ -79,6 +81,8 @@ class MolecularStructure(gl.GLViewWidget):
 
         # Connect the actions to methods
         save_img_action.triggered.connect(self.save_img_action_handler)
+
+        self.setMouseTracking(True)
 
         self.draw()
 
@@ -401,6 +405,36 @@ class MolecularStructure(gl.GLViewWidget):
                     distance = d
         return result
 
+    def _line_under_point(self, x: int, y: int) -> tuple[QVector3D, QVector3D]:
+        viewport = QRect(0, 0, self.size().width(), self.size().height())
+        projection = self.projectionMatrix()
+        modelview = self.viewMatrix()
+
+        y = self.size().height() - y  # opengl computes from left-bottom corner
+        return (
+            QVector3D(x, y, -1.0).unproject(modelview, projection, viewport),
+            QVector3D(x, y, 1.0).unproject(modelview, projection, viewport),
+        )
+
+    def _highlight_atom_under_point(self, x: int, y: int):
+        if not self._molecule:
+            return
+
+        index = self._atom_under_point(x, y)
+        if index is not None:
+            if index != self._atom_index_under_point:
+                if self._atom_index_under_point is not None:
+                    item = self.items[self._atom_index_under_point]
+                    item.setTransform(self._atom_transform_under_point)
+                self._atom_transform_under_point = self._molecule.atoms[index].transform()
+                item = self.items[index]
+                item.scale(1.1, 1.1, 1.1)
+        elif self._atom_index_under_point is not None:
+            item = self.items[self._atom_index_under_point]
+            item.setTransform(self._atom_transform_under_point)
+            self._atom_transform_under_point = None
+        self._atom_index_under_point = index
+
     def keyPressEvent(self, event: QKeyEvent):
         if not self._key_press_handler(event):
             super().keyPressEvent(event)
@@ -419,24 +453,15 @@ class MolecularStructure(gl.GLViewWidget):
                     self._selected_atoms.add(index)
                 else:
                     self._selected_atoms.remove(index)
-            print(self._selected_atoms)
-
-    def _line_under_point(self, x: int, y: int) -> tuple[QVector3D, QVector3D]:
-        viewport = QRect(0, 0, self.size().width(), self.size().height())
-        projection = self.projectionMatrix()
-        modelview = self.viewMatrix()
-
-        y = self.size().height() - y  # opengl computes from left-bottom corner
-        return (
-            QVector3D(x, y, -1.0).unproject(modelview, projection, viewport),
-            QVector3D(x, y, 1.0).unproject(modelview, projection, viewport),
-        )
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
             diff = event.position() - self.__mouse_pos
             self.__mouse_pos = event.position()
             self.orbit(-diff.x(), diff.y())
+        else:
+            pos = event.position()
+            self._highlight_atom_under_point(pos.x(), pos.y())
 
     def update_window_title(self):
         title = self._draw_item.text()
