@@ -8,7 +8,7 @@ import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
-from PySide6.QtCore import QCoreApplication, QKeyCombination, QPoint, QRect, Qt, Slot
+from PySide6.QtCore import QCoreApplication, QKeyCombination, QRect, Qt, Slot
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QMessageBox, QWidget
 
@@ -48,7 +48,6 @@ class MolecularStructure(gl.GLViewWidget):
         self.__default_style = self._config.nested("style.default")
         self.__camera_set = False
         self.__mouse_pos = None
-        self.__mouse_click_pos = None
         self.__atom_mesh_data = None
         self.__bond_mesh_data = None
         self.__at_rad: list[int] = []
@@ -443,13 +442,10 @@ class MolecularStructure(gl.GLViewWidget):
             super().keyPressEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent):
-        self.__mouse_click_pos = event.position()
+        pos = event.position()
+        self._handler_click_by_atom(pos.x(), pos.y())
         if event.button() == Qt.MouseButton.LeftButton:
-            self.__mouse_pos = event.position()
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        if self.__mouse_click_pos - event.position() == QPoint(0, 0):
-            self.mouse_click_event(event)
+            self.__mouse_pos = pos
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -460,9 +456,8 @@ class MolecularStructure(gl.GLViewWidget):
             pos = event.position()
             self._highlight_atom_under_point(pos.x(), pos.y())
 
-    def mouse_click_event(self, event: QMouseEvent):
-        pos = event.position()
-        index = self._atom_under_point(pos.x(), pos.y())
+    def _handler_click_by_atom(self, x: int, y: int):
+        index = self._atom_under_point(x, y)
         if index is not None:
             if index not in self._selected_atoms:
                 self._selected_atoms.add(index)
