@@ -448,16 +448,8 @@ class MolecularStructure(gl.GLViewWidget):
             self.__mouse_pos = event.position()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        pos = event.position()
-        if self.__mouse_click_pos - pos == QPoint(0, 0):
-            index = self._atom_under_point(pos.x(), pos.y())
-            if index is not None:
-                if index not in self._selected_atoms:
-                    self._selected_atoms.add(index)
-                    self.items[index].setShader("edgeHilight")
-                else:
-                    self._selected_atoms.remove(index)
-                    self.items[index].setShader("shaded")
+        if self.__mouse_click_pos - event.position() == QPoint(0, 0):
+            self.mouse_click_event(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -467,6 +459,17 @@ class MolecularStructure(gl.GLViewWidget):
         else:
             pos = event.position()
             self._highlight_atom_under_point(pos.x(), pos.y())
+
+    def mouse_click_event(self, event: QMouseEvent):
+        pos = event.position()
+        index = self._atom_under_point(pos.x(), pos.y())
+        if index is not None:
+            if index not in self._selected_atoms:
+                self._selected_atoms.add(index)
+                self.items[index].setShader("edgeHilight")
+            else:
+                self._selected_atoms.remove(index)
+                self.items[index].setShader("shaded")
 
     def update_window_title(self):
         title = self._draw_item.text()
