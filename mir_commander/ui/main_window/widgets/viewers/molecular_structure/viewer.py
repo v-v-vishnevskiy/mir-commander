@@ -451,11 +451,13 @@ class MolecularStructure(gl.GLViewWidget):
         pos = event.position()
         if self.__mouse_click_pos - pos == QPoint(0, 0):
             index = self._atom_under_point(pos.x(), pos.y())
-            if index:
+            if index is not None:
                 if index not in self._selected_atoms:
                     self._selected_atoms.add(index)
+                    self.items[index].setShader("edgeHilight")
                 else:
                     self._selected_atoms.remove(index)
+                    self.items[index].setShader("shaded")
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
