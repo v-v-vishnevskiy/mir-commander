@@ -8,8 +8,8 @@ import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph import Transform3D, Vector
-from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
-from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat
+from PySide6.QtCore import QCoreApplication, QKeyCombination, QPoint, QRect, Qt, Slot
+from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
@@ -48,10 +48,13 @@ class MolecularStructure(gl.GLViewWidget):
         self.__default_style = self._config.nested("style.default")
         self.__camera_set = False
         self.__mouse_pos = None
+        self.__mouse_click_pos = None
         self.__atom_mesh_data = None
         self.__bond_mesh_data = None
         self.__at_rad: list[int] = []
         self.__at_color: list[str] = []
+        self._molecule: MoleculeStruct | None = None
+        self._selected_atoms: set[int] = set()
 
         if not self.styles:
             self._load_styles()
@@ -173,6 +176,12 @@ class MolecularStructure(gl.GLViewWidget):
                 radius = self.__style["bond.radius"]
             mesh_item.scale(radius, radius, radius)
             mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
+            mesh_item.atom_params = {
+                "atomic_num": atomic_num,
+                "index": i,
+                "radius": radius,
+                "pos": QVector3D(ds.x[i], ds.y[i], ds.z[i]),
+            }
             result.append(mesh_item)
         return result
 
@@ -261,8 +270,10 @@ class MolecularStructure(gl.GLViewWidget):
         Sets graphics objects to draw and camera position
         """
         self.clear()
+        molecule = self._build_molecule()
+        self._molecule = molecule
         if molecule := self._build_molecule():
-            for atom in molecule.atoms + molecule.bonds:
+            for atom in molecule.atoms:
                 self.addItem(atom)
             for bond in molecule.bonds:
                 self.addItem(bond)
@@ -373,13 +384,53 @@ class MolecularStructure(gl.GLViewWidget):
             self.__apply_style()
             self.draw()
 
+    def _atom_under_point(self, x: int, y: int) -> None | int:
+        result = None
+
+        if not self._molecule:
+            return result
+
+        point, direction = self._line_under_point(x, y)
+        direction.normalize()
+        distance = None
+        for atom in self._molecule.atoms:
+            if atom.atom_params["pos"].distanceToLine(point, direction) <= atom.atom_params["radius"]:
+                d = atom.atom_params["pos"].distanceToPoint(point)
+                if distance is None or d < distance:
+                    result = atom.atom_params["index"]
+                    distance = d
+        return result
+
     def keyPressEvent(self, event: QKeyEvent):
         if not self._key_press_handler(event):
             super().keyPressEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent):
+        self.__mouse_click_pos = event.position()
         if event.button() == Qt.MouseButton.LeftButton:
             self.__mouse_pos = event.position()
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        pos = event.position()
+        if self.__mouse_click_pos - pos == QPoint(0, 0):
+            index = self._atom_under_point(pos.x(), pos.y())
+            if index:
+                if index not in self._selected_atoms:
+                    self._selected_atoms.add(index)
+                else:
+                    self._selected_atoms.remove(index)
+            print(self._selected_atoms)
+
+    def _line_under_point(self, x: int, y: int) -> tuple[QVector3D, QVector3D]:
+        viewport = QRect(0, 0, self.size().width(), self.size().height())
+        projection = self.projectionMatrix()
+        modelview = self.viewMatrix()
+
+        y = self.size().height() - y  # opengl computes from left-bottom corner
+        return (
+            QVector3D(x, y, -1.0).unproject(modelview, projection, viewport),
+            QVector3D(x, y, 1.0).unproject(modelview, projection, viewport),
+        )
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
