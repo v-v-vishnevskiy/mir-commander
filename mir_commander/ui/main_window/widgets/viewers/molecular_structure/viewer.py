@@ -442,10 +442,10 @@ class MolecularStructure(gl.GLViewWidget):
             super().keyPressEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent):
-        pos = event.position()
-        self._handler_click_by_atom(pos.x(), pos.y())
         if event.button() == Qt.MouseButton.LeftButton:
+            pos = event.position()
             self.__mouse_pos = pos
+            self._handler_click_by_atom(pos.x(), pos.y())
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
