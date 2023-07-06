@@ -15,7 +15,15 @@ from mir_commander.utils.config import Config
 logger = logging.getLogger(__name__)
 
 
-def import_file(path: str) -> item.Item:
+def import_file(path: str) -> tuple[item.Item, list[dict]]:
+    """
+    Import data from file, build and populate a respective tree of items.
+    Here also is implemented logic on how to visualize by default the imported items.
+    We mark them for a possible automatic visualization and for expanding of the tree branches.
+    Whether this will be actually done is decided in the upper context.
+    """
+    flagged_items = []
+
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!
     # cclib is currently on the way to implement this possibility by returning
@@ -68,7 +76,11 @@ def import_file(path: str) -> item.Item:
             data.atomcoords[xyz_idx][:, 1],
             data.atomcoords[xyz_idx][:, 2],
         )
-        molitem.appendRow(item.AtomicCoordinates(xyz_title, atcoods_data))
+        arcoords_item = item.AtomicCoordinates(xyz_title, atcoods_data)
+        molitem.appendRow(arcoords_item)
+
+        flagged_items.append({"item": arcoords_item, "view": True})
+        flagged_items.append({"item": molitem, "expand": True})
 
         # If we have multiple sets of coordinates
         if cshape[0] > 1:
@@ -115,7 +127,7 @@ def import_file(path: str) -> item.Item:
                 csname = "Step {}".format(i + 1)
                 scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
-    return molitem
+    return molitem, flagged_items
 
 
 def load_project(path: str) -> Project:
@@ -125,9 +137,15 @@ def load_project(path: str) -> Project:
     # and we can try to import its data and create a project on the fly.
     if os.path.isfile(path):
         project = Temporary(path)
-        project_item = import_file(path)
-        project.root_item.appendRow(project_item)
-        project.mark_item_to_view(project_item)
+        project_root_item, flagged_items = import_file(path)
+        project.root_item.appendRow(project_root_item)
+
+        for fitem in flagged_items:
+            if fitem.get("view"):
+                project.mark_item_to_view(fitem["item"])
+            if fitem.get("expand"):
+                project.mark_item_to_expand(fitem["item"])
+
         return project
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):
