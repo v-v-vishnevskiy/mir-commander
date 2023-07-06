@@ -274,9 +274,12 @@ class MolecularStructure(gl.GLViewWidget):
         Sets graphics objects to draw and camera position
         """
         self.clear()
+        self._selected_atoms = set()
+        self._atom_index_under_point = None
+        self._atom_transform_under_point = None
         molecule = self._build_molecule()
         self._molecule = molecule
-        if molecule := self._build_molecule():
+        if molecule:
             for atom in molecule.atoms:
                 self.addItem(atom)
             for bond in molecule.bonds:
