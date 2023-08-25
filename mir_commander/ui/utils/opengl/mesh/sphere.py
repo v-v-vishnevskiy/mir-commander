@@ -4,8 +4,8 @@ from mir_commander.ui.utils.opengl.mesh.base import MeshData
 
 
 class Sphere(MeshData):
-    min_rows = 6
-    min_cols = 8
+    min_rows = 2
+    min_cols = 3
     min_radius = 0.001
 
     def __init__(self, rows: int = 10, cols: int = 10, radius: float = 1.0):

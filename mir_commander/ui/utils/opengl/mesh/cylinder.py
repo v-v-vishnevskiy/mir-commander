@@ -4,7 +4,7 @@ from mir_commander.ui.utils.opengl.mesh.base import MeshData
 
 
 class Cylinder(MeshData):
-    min_cols = 8
+    min_cols = 3
     min_radius = 0.001
     min_length = 0.001
 
