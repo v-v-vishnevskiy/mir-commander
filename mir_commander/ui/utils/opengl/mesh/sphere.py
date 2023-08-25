@@ -6,18 +6,21 @@ from mir_commander.ui.utils.opengl.mesh.base import MeshData
 class Sphere(MeshData):
     min_rows = 6
     min_cols = 8
+    min_radius = 0.001
 
-    def __init__(self, rows: int = 10, cols: int = 10):
+    def __init__(self, rows: int = 10, cols: int = 10, radius: float = 1.0):
         super().__init__()
         self._rows = self.min_rows
         self._cols = self.min_cols
+        self._radius = self.min_radius
 
-        self.generate_mesh(rows, cols)
+        self.generate_mesh(rows, cols, radius)
 
-    def generate_mesh(self, rows: int, cols: int):
+    def generate_mesh(self, rows: int, cols: int, radius: float = 1.0):
         self.vertices = []
         self._rows = max(self.min_rows, rows)
         self._cols = max(self.min_cols, cols)
+        self._radius = max(self.min_radius, radius)
 
         vertices = self._generate_vertices()
         faces = self._generate_faces()
@@ -30,14 +33,14 @@ class Sphere(MeshData):
         vertices = []
         a = pi / self._rows
         b = (pi * 2) / self._cols
-        vertices.extend([0.0, 0.0, 1.0])
+        vertices.extend([0.0, 0.0, self._radius])
         for i in range(1, self._rows):
             z = cos(a * i)
             for j in range(self._cols):
                 x = sin(a * i) * cos(b * j)
                 y = sin(a * i) * sin(b * j)
-                vertices.extend([x, y, z])
-        vertices.extend([0.0, 0.0, -1.0])
+                vertices.extend([x * self._radius, y * self._radius, z * self._radius])
+        vertices.extend([0.0, 0.0, -self._radius])
         return vertices
 
     def _generate_faces(self) -> list[int]:
