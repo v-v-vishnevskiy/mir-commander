@@ -41,9 +41,16 @@ class Project:
     @property
     def items_marked_to_view(self) -> list["Item"]:
         """
-        Returns list of items marked as opened in viewer(s)
+        Returns list of items marked as (to be) opened in viewer(s)
         """
         return self._get_items_from_config("marked_to_view")
+
+    @property
+    def items_marked_to_viewmax(self) -> list["Item"]:
+        """
+        Returns list of items marked as (to be) opened in viewer(s)
+        """
+        return self._get_items_from_config("marked_to_viewmax")
 
     @property
     def items_marked_to_expand(self) -> list["Item"]:
@@ -61,6 +68,9 @@ class Project:
 
     def mark_item_to_view(self, item: "Item"):
         self._add_item_to_config(item, "marked_to_view")
+
+    def mark_item_to_viewmax(self, item: "Item"):
+        self._add_item_to_config(item, "marked_to_viewmax")
 
     def mark_item_to_expand(self, item: "Item"):
         self._add_item_to_config(item, "marked_to_expand")

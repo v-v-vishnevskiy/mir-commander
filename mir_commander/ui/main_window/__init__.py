@@ -74,6 +74,7 @@ class MainWindow(QMainWindow):
         self._fix_window_composition()
 
         self.view_items_marked_to_view()
+        self.view_items_marked_to_viewmax()
 
     def _fix_window_composition(self):
         widget = QOpenGLWidget()
@@ -222,6 +223,11 @@ class MainWindow(QMainWindow):
     def view_items_marked_to_view(self):
         for item in self.project.items_marked_to_view:
             if item.view() is None:
+                logger.warning(f"No viewer for `{item.__class__.__name__}` item")
+
+    def view_items_marked_to_viewmax(self):
+        for item in self.project.items_marked_to_viewmax:
+            if item.view(maximize=True) is None:
                 logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
