@@ -16,6 +16,7 @@ from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import MeshData
+from mir_commander.ui.utils.opengl.utils import Color4f
 
 
 class MeshItem(Item):
@@ -23,7 +24,7 @@ class MeshItem(Item):
         self,
         mesh_data: MeshData,
         smooth: bool = False,
-        color: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
+        color: Color4f = (0.5, 0.5, 0.5, 1.0),
         compute_normals: bool = True,
         parent: Union[None, "Item"] = None,
     ):
