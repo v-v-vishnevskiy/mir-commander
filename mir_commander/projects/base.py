@@ -31,49 +31,39 @@ class Project:
     def is_temporary(self) -> bool:
         return False
 
-    def _get_items_from_config(self, category: str) -> list["Item"]:
+    def _get_items_from_config(self, category: str) -> list[dict]:
         result = []
-        for item in self.config[f"items.{category}"] or []:
-            if item := self._item(item.split("."), self.root_item):
-                result.append(item)
+        for itemdict in self.config[f"items.{category}"] or []:
+            if item := self._item(itemdict["path"].split("."), self.root_item):
+                result.append({"item": item, "parameters": itemdict["parameters"]})
         return result
 
     @property
-    def items_marked_to_view(self) -> list["Item"]:
+    def items_marked_to_view(self) -> list[dict]:
         """
         Returns list of items marked as (to be) opened in viewer(s)
         """
         return self._get_items_from_config("marked_to_view")
 
     @property
-    def items_marked_to_viewmax(self) -> list["Item"]:
-        """
-        Returns list of items marked as (to be) opened in viewer(s)
-        """
-        return self._get_items_from_config("marked_to_viewmax")
-
-    @property
-    def items_marked_to_expand(self) -> list["Item"]:
+    def items_marked_to_expand(self) -> list[dict]:
         """
         Returns list of items marked as expanded
         """
         return self._get_items_from_config("marked_to_expand")
 
-    def _add_item_to_config(self, item: "Item", category: str):
+    def _add_item_to_config(self, item: "Item", category: str, parameters: dict):
         entries = self.config[f"items.{category}"] or []
         path = item.path
         if path not in entries:
-            entries.append(path)
+            entries.append({"path": path, "parameters": parameters})
         self.config[f"items.{category}"] = entries
 
-    def mark_item_to_view(self, item: "Item"):
-        self._add_item_to_config(item, "marked_to_view")
+    def mark_item_to_view(self, item: "Item", parameters: dict):
+        self._add_item_to_config(item, "marked_to_view", parameters)
 
-    def mark_item_to_viewmax(self, item: "Item"):
-        self._add_item_to_config(item, "marked_to_viewmax")
-
-    def mark_item_to_expand(self, item: "Item"):
-        self._add_item_to_config(item, "marked_to_expand")
+    def mark_item_to_expand(self, item: "Item", parameters: dict):
+        self._add_item_to_config(item, "marked_to_expand", parameters)
 
     def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:

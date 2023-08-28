@@ -79,7 +79,7 @@ def import_file(path: str) -> tuple[item.Item, list[dict]]:
         arcoords_item = item.AtomicCoordinates(xyz_title, atcoods_data)
         molitem.appendRow(arcoords_item)
 
-        flagged_items.append({"item": arcoords_item, "viewmax": True})
+        flagged_items.append({"item": arcoords_item, "view": {"maximize": True}})
         flagged_items.append({"item": molitem, "expand": True})
 
         # If we have multiple sets of coordinates
@@ -142,11 +142,9 @@ def load_project(path: str) -> Project:
 
         for fitem in flagged_items:
             if fitem.get("view"):
-                project.mark_item_to_view(fitem["item"])
-            if fitem.get("viewmax"):
-                project.mark_item_to_viewmax(fitem["item"])
+                project.mark_item_to_view(fitem["item"], fitem["view"])
             if fitem.get("expand"):
-                project.mark_item_to_expand(fitem["item"])
+                project.mark_item_to_expand(fitem["item"], {})
 
         return project
     # If this is a directory, then we expect a Mir Commander project

@@ -55,7 +55,7 @@ class Item(QStandardItem):
     def _view_structures_child(self):
         self._viewer(viewers.MolecularStructure, all=False).show()
 
-    def _viewer(self, cls: Type[QWidget], maximize=False, *args, **kwargs) -> QWidget:
+    def _viewer(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
         viewer = cls(item=self, *args, **kwargs)
         sub_window = self.__mdi_area.addSubWindow(viewer)
         viewer.setParent(sub_window)
@@ -63,7 +63,7 @@ class Item(QStandardItem):
             sub_window.showMaximized()
         return viewer
 
-    def view(self, maximize=False, *args, **kwargs) -> None | QWidget:
+    def view(self, maximize: bool = False, *args, **kwargs) -> None | QWidget:
         """
         Add viewer instance to MDI area and returns this viewer instance for this item
         """
