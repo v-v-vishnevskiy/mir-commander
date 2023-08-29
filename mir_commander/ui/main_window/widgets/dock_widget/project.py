@@ -4,6 +4,7 @@ from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
+from mir_commander.projects.base import ItemParameters
 from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
 
@@ -62,7 +63,7 @@ class Project(DockWidget):
         model.setParent(self._tree)
         self._tree.setModel(model)
 
-    def expand_items(self, items: list[dict]):
-        for itemdict in items:
-            item = itemdict["item"]
+    def expand_items(self, config_items: list[ItemParameters]):
+        for config_item in config_items:
+            item = config_item.item
             self._tree.setExpanded(self._tree.model().indexFromItem(item), True)

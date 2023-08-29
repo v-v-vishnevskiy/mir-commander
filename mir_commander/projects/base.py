@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
@@ -8,6 +9,12 @@ from mir_commander.utils.settings import Settings
 
 if TYPE_CHECKING:
     from mir_commander.ui.utils.item import Item
+
+
+@dataclass
+class ItemParameters:
+    item: "Item"
+    parameters: dict
 
 
 class Project:
@@ -31,22 +38,22 @@ class Project:
     def is_temporary(self) -> bool:
         return False
 
-    def _get_items_from_config(self, category: str) -> list[dict]:
+    def _get_items_from_config(self, category: str) -> list[ItemParameters]:
         result = []
-        for itemdict in self.config[f"items.{category}"] or []:
-            if item := self._item(itemdict["path"].split("."), self.root_item):
-                result.append({"item": item, "parameters": itemdict["parameters"]})
+        for item_dict in self.config[f"items.{category}"] or []:
+            if item := self._item(item_dict["path"].split("."), self.root_item):
+                result.append(ItemParameters(item, item_dict["parameters"]))
         return result
 
     @property
-    def items_marked_to_view(self) -> list[dict]:
+    def items_marked_to_view(self) -> list[ItemParameters]:
         """
         Returns list of items marked as (to be) opened in viewer(s)
         """
         return self._get_items_from_config("marked_to_view")
 
     @property
-    def items_marked_to_expand(self) -> list[dict]:
+    def items_marked_to_expand(self) -> list[ItemParameters]:
         """
         Returns list of items marked as expanded
         """
