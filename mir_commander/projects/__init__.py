@@ -6,7 +6,7 @@ from cclib.io import ccread
 
 from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
-from mir_commander.projects.base import Project
+from mir_commander.projects.base import ItemParametrized, Project
 from mir_commander.projects.molecule import Molecule
 from mir_commander.projects.temporary import Temporary
 from mir_commander.ui.utils import item
@@ -79,8 +79,8 @@ def import_file(path: str) -> tuple[item.Item, list[dict]]:
         arcoords_item = item.AtomicCoordinates(xyz_title, atcoods_data)
         molitem.appendRow(arcoords_item)
 
-        flagged_items.append({"item": arcoords_item, "view": {"maximize": True}})
-        flagged_items.append({"item": molitem, "expand": True})
+        flagged_items.append({"itempar": ItemParametrized(arcoords_item, {"maximize": True}), "view": True})
+        flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
 
         # If we have multiple sets of coordinates
         if cshape[0] > 1:
@@ -142,9 +142,9 @@ def load_project(path: str) -> Project:
 
         for fitem in flagged_items:
             if fitem.get("view"):
-                project.mark_item_to_view(fitem["item"], fitem["view"])
+                project.mark_item_to_view(fitem["itempar"])
             if fitem.get("expand"):
-                project.mark_item_to_expand(fitem["item"], {})
+                project.mark_item_to_expand(fitem["itempar"])
 
         return project
     # If this is a directory, then we expect a Mir Commander project
