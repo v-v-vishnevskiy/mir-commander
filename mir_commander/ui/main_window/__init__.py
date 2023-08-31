@@ -220,8 +220,10 @@ class MainWindow(QMainWindow):
         self._win_separator_act.setSeparator(True)
 
     def view_items_marked_to_view(self):
-        for item in self.project.items_marked_to_view:
-            if item.view() is None:
+        for config_item in self.project.items_marked_to_view:
+            maximize_flag = config_item.parameters.get("maximize", False)
+            item = config_item.item
+            if item.view(maximize_flag) is None:
                 logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
