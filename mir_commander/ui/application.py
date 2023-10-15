@@ -101,7 +101,7 @@ class Application(QApplication):
 
     def open_project(self, path: str, raise_exc: bool = False) -> bool:
         try:
-            project = load_project(path)
+            project, messages = load_project(path)
         except exceptions.LoadProject:
             if raise_exc:
                 raise
@@ -109,7 +109,8 @@ class Application(QApplication):
             return False
 
         if project:
-            main_window = MainWindow(self, project)
+            messages.insert(0, f"{path}")
+            main_window = MainWindow(self, project, messages)
             self._projects[id(main_window)] = main_window
             if not main_window.project.is_temporary:
                 self.recent_projects.add_opened(project.name, project.path)

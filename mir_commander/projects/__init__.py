@@ -1,5 +1,6 @@
 import logging
 import os
+import pprint
 
 import numpy as np
 from cclib.io import ccread
@@ -15,14 +16,16 @@ from mir_commander.utils.config import Config
 logger = logging.getLogger(__name__)
 
 
-def import_file(path: str) -> tuple[item.Item, list[dict]]:
+def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     """
     Import data from file, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
     We mark them for a possible automatic visualization and for expanding of the tree branches.
     Whether this will be actually done is decided in the upper context.
+    Also returned is a list of messages, which can be printed later.
     """
     flagged_items = []
+    messages = []
 
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!
@@ -37,6 +40,9 @@ def import_file(path: str) -> tuple[item.Item, list[dict]]:
         msg = "cclib cannot determine the format of file"
         logger.error(f"{msg}: {path}")
         raise exceptions.LoadFile(msg, f"{msg}: {path}")
+
+    if hasattr(data, "metadata"):
+        messages.append(pprint.pformat(data.metadata, compact=True))
 
     moldata = ds_molecule.Molecule(data.natom, data.atomnos)
     if hasattr(data, "charge"):
@@ -127,17 +133,20 @@ def import_file(path: str) -> tuple[item.Item, list[dict]]:
                 csname = "Step {}".format(i + 1)
                 scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
-    return molitem, flagged_items
+    return molitem, flagged_items, messages
 
 
-def load_project(path: str) -> Project:
+def load_project(path: str) -> tuple[Project, list[str]]:
+    """
+    Returns (re)created project and a list of messages corresponding to the process of project loading.
+    """
     path = os.path.normpath(path)
 
     # If this is a file, then it may be from some other program
     # and we can try to import its data and create a project on the fly.
     if os.path.isfile(path):
         project = Temporary(path)
-        project_root_item, flagged_items = import_file(path)
+        project_root_item, flagged_items, messages = import_file(path)
         project.root_item.appendRow(project_root_item)
 
         for fitem in flagged_items:
@@ -146,7 +155,7 @@ def load_project(path: str) -> Project:
             if fitem.get("expand"):
                 project.mark_item_to_expand(fitem["itempar"])
 
-        return project
+        return project, messages
     # If this is a directory, then we expect a Mir Commander project
     elif os.path.isdir(path):
         config_path = os.path.join(path, ".mircmd", "config.yaml")
@@ -164,7 +173,7 @@ def load_project(path: str) -> Project:
         config = Config(config_path)
         project_type = config["type"]
         if project_type == "Molecule":
-            return Molecule(path, config)
+            return Molecule(path, config), []
         else:
             msg = "Invalid project type"
             logger.error(f"{msg}: {project_type}")
