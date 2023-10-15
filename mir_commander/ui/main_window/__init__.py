@@ -33,7 +33,7 @@ class DockWidgets:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", project: Project, initmsg: str = ""):
+    def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
@@ -68,14 +68,16 @@ class MainWindow(QMainWindow):
 
         self.update_menus(None)
 
-        self.status.showMessage(StatusBar.tr("Ready"), 10000)
         self.append_to_console(self.tr("Started") + f" Mir Commander {__version__}")
-        if initmsg:
-            self.append_to_console(initmsg)
+        if init_msg:
+            for msg in init_msg:
+                self.append_to_console(msg)
 
         self._fix_window_composition()
 
         self.view_items_marked_to_view()
+
+        self.status.showMessage(StatusBar.tr("Ready"), 10000)
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)

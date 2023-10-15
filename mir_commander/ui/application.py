@@ -1,5 +1,4 @@
 import os
-import pprint
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette
@@ -102,7 +101,7 @@ class Application(QApplication):
 
     def open_project(self, path: str, raise_exc: bool = False) -> bool:
         try:
-            project, metadata = load_project(path)
+            project, messages = load_project(path)
         except exceptions.LoadProject:
             if raise_exc:
                 raise
@@ -110,7 +109,8 @@ class Application(QApplication):
             return False
 
         if project:
-            main_window = MainWindow(self, project, f"{path}\n" + pprint.pformat(metadata, compact=True))
+            messages.insert(0, f"{path}")
+            main_window = MainWindow(self, project, messages)
             self._projects[id(main_window)] = main_window
             if not main_window.project.is_temporary:
                 self.recent_projects.add_opened(project.name, project.path)
