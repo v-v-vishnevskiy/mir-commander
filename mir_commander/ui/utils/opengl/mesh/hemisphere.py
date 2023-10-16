@@ -19,7 +19,6 @@ class Hemisphere(MeshData):
         self.compute_face_normals()
 
     def generate_mesh(self, rows: int, cols: int, radius: float = 1.0):
-        self.vertices = []
         self.rows = max(self.min_rows, rows)
         self.cols = max(self.min_cols, cols)
         self.radius = max(self.min_radius, radius)
@@ -27,9 +26,11 @@ class Hemisphere(MeshData):
         vertices = self._generate_vertices()
         faces = self._generate_faces()
 
+        new_vertices = []
         for i in faces:
             i *= 3
-            self.vertices.extend([vertices[i], vertices[i + 1], vertices[i + 2]])
+            new_vertices.extend([vertices[i], vertices[i + 1], vertices[i + 2]])
+        self.set_vertices(new_vertices)
 
     def _generate_vertices(self) -> list[float]:
         vertices = []

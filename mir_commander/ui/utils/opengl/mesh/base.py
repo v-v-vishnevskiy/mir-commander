@@ -1,25 +1,31 @@
+import numpy as np
 from PySide6.QtGui import QVector3D
 
 
 class MeshData:
     def __init__(self, vertices: None | list[float] = None):
-        self.vertices: list[float] = vertices or []
-        self.face_normals: list[float] = []
-        self.vertex_normals: list[float] = []
+        vertices = vertices or []
+        self.vertices: np.ndarray = np.array(vertices, dtype=np.float32)
+        self.face_normals: np.ndarray = np.array([], dtype=np.float32)
+        self.vertex_normals: np.ndarray = np.array([], dtype=np.float32)
+
+    def set_vertices(self, vertices: list[float]):
+        self.vertices = np.array(vertices, dtype=np.float32)
 
     def compute_vertex_normals(self):
-        self.vertex_normals.clear()
         vertices = self.vertices
 
+        normals = []
         for i in range(0, len(vertices), 3):
             norm = QVector3D(*vertices[i : i + 3])
             norm.normalize()
-            self.vertex_normals.extend([norm.x(), norm.y(), norm.z()])
+            normals.extend([norm.x(), norm.y(), norm.z()])
+        self.vertex_normals = np.array(normals, dtype=np.float32)
 
     def compute_face_normals(self):
-        self.face_normals.clear()
         vertices = self.vertices
 
+        normals = []
         for i in range(0, len(vertices), 9):
             norm = QVector3D().normal(
                 QVector3D(*vertices[i : i + 3]),
@@ -27,4 +33,5 @@ class MeshData:
                 QVector3D(*vertices[i + 6 : i + 9]),
             )
             norm = [norm.x(), norm.y(), norm.z()] * 3
-            self.face_normals.extend(norm)
+            normals.extend(norm)
+        self.face_normals = np.array(normals, dtype=np.float32)
