@@ -1,3 +1,4 @@
+import numpy as np
 from OpenGL.GL import (
     GL_FLOAT,
     GL_NORMAL_ARRAY,
@@ -36,7 +37,6 @@ class MeshItem(Item):
         self._mesh_data = mesh_data
         self._smooth = smooth
         self._color = color
-        self._normals: list[float] = []
 
         if shader is None:
             if self.__class__.default_shader is None:
@@ -78,8 +78,11 @@ class MeshItem(Item):
         glPopMatrix()
 
     @property
-    def normals(self) -> list[float]:
-        return self._normals
+    def _normals(self) -> np.ndarray:
+        if self._smooth:
+            return self._mesh_data.vertex_normals
+        else:
+            return self._mesh_data.face_normals
 
     def set_color(self, color: Color4f):
         self._color = color
@@ -88,12 +91,5 @@ class MeshItem(Item):
         self._mesh_data = data
         self.set_smooth(self._smooth)
 
-    def set_normals(self, normals: list[float]):
-        self._normals = normals
-
     def set_smooth(self, smooth: bool):
         self._smooth = smooth
-        if self._smooth:
-            self._normals = self._mesh_data.vertex_normals
-        else:
-            self._normals = self._mesh_data.face_normals
