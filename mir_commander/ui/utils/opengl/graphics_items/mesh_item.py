@@ -14,7 +14,6 @@ from OpenGL.GL import (
     glUseProgram,
     glVertexPointer,
 )
-from PySide6.QtGui import QMatrix4x4
 
 from mir_commander.ui.utils.opengl.default_shaders import SHADED
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
@@ -33,7 +32,7 @@ class MeshItem(Item):
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
         shader: None | ShaderProgram = None,
     ):
-        self.transform = QMatrix4x4()
+        super().__init__()
         self._mesh_data = mesh_data
         self._smooth = smooth
         self._color = color
@@ -55,6 +54,9 @@ class MeshItem(Item):
         return self._color
 
     def paint(self):
+        if not self.visible:
+            return
+
         glPushMatrix()
         glMultMatrixf(self.transform.data())
 

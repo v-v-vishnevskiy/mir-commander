@@ -11,6 +11,7 @@ class Atom(MeshItem):
         self.position = position
         self.radius = radius
         self.atomic_num = atomic_num
+        self.enabled = True
 
         self._compute_transform()
 
@@ -18,6 +19,10 @@ class Atom(MeshItem):
         self.transform.setToIdentity()
         self.transform.translate(self.position)
         self.transform.scale(self.radius, self.radius, self.radius)
+
+    def paint(self):
+        if self.enabled:
+            super().paint()
 
     def set_radius(self, radius: float):
         self.radius = radius

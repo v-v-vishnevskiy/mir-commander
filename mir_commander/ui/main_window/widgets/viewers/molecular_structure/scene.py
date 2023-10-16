@@ -3,7 +3,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom, Bond
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
-from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
+from mir_commander.ui.utils.opengl.mesh import Cylinder, Hemisphere, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
 from mir_commander.ui.utils.opengl.utils import Color4f
 
@@ -14,6 +14,7 @@ class Scene(BaseScene):
 
         self.__atom_mesh_data = Sphere(rows=Sphere.min_rows, cols=Sphere.min_cols, radius=1.0)
         self.__bond_mesh_data = Cylinder(rows=1, cols=Cylinder.min_cols, radius=1.0, length=1.0, caps=False)
+        self.__bond_cap_mesh_data = Hemisphere(rows=Hemisphere.min_rows, cols=Hemisphere.min_cols, radius=1.0)
 
         self.__atom_items: list[Atom] = []
         self.__bond_items: list[Bond] = []
@@ -24,16 +25,16 @@ class Scene(BaseScene):
 
     def apply_style(self, update: bool = True):
         mesh_quality = self.style["quality.mesh"]
-        mesh_quality = max(min(mesh_quality, 1), 0.1)
+        mesh_quality = max(min(mesh_quality, 100), 1)
         self.__apply_atoms_style(mesh_quality)
         self.__apply_bonds_style(mesh_quality)
 
         if update:
             self.update()
 
-    def __apply_atoms_style(self, mesh_quality: float):
+    def __apply_atoms_style(self, mesh_quality: int):
         # update mesh
-        s_rows, s_cols = int(40 * mesh_quality), int(50 * mesh_quality)
+        s_rows, s_cols = Sphere.min_rows * mesh_quality, Sphere.min_cols * mesh_quality
         if (s_rows, s_cols) != (self.__atom_mesh_data.rows, self.__atom_mesh_data.cols):
             self.__atom_mesh_data.generate_mesh(rows=s_rows, cols=s_cols, radius=self.__atom_mesh_data.radius)
             self.__atom_mesh_data.compute_vertex_normals()
@@ -41,18 +42,17 @@ class Scene(BaseScene):
 
         # update items
         for atom in self.__atom_items:
+            atom.enabled = self.style["atoms.enabled"]
             if self.style["atoms.enabled"]:
                 atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
-            else:
-                atom.set_radius(self.style["bond.radius"])
 
             atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
 
             atom.set_smooth(self.style["quality.smooth"])
 
-    def __apply_bonds_style(self, mesh_quality: float):
+    def __apply_bonds_style(self, mesh_quality: int):
         # update mesh
-        c_cols = int(mesh_quality * 40)
+        c_cols = Cylinder.min_cols * mesh_quality
         if c_cols != self.__bond_mesh_data.cols:
             self.__bond_mesh_data.generate_mesh(
                 rows=self.__bond_mesh_data.rows,
@@ -63,6 +63,16 @@ class Scene(BaseScene):
             )
             self.__bond_mesh_data.compute_vertex_normals()
             self.__bond_mesh_data.compute_face_normals()
+
+        h_rows, h_cols = Hemisphere.min_rows * mesh_quality, Hemisphere.min_cols * mesh_quality
+        if (h_rows, h_cols) != (self.__bond_cap_mesh_data.rows, self.__bond_cap_mesh_data.cols):
+            self.__bond_cap_mesh_data.generate_mesh(
+                rows=h_rows,
+                cols=h_cols,
+                radius=self.__bond_cap_mesh_data.radius,
+            )
+            self.__bond_cap_mesh_data.compute_vertex_normals()
+            self.__bond_cap_mesh_data.compute_face_normals()
 
         # update items
         for bond in self.__bond_items:
@@ -89,6 +99,7 @@ class Scene(BaseScene):
         color = self.normalize_color(self.style["atoms.color"][atomic_num])
 
         item = Atom(self.__atom_mesh_data, atomic_num, position, radius, color)
+        item.enabled = self.style["atoms.enabled"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
@@ -103,7 +114,15 @@ class Scene(BaseScene):
         else:
             color = self.normalize_color(self.style["bond.color"])
 
-        item = Bond(self.__bond_mesh_data, atom_1, atom_2, self.style["bond.radius"], atoms_color, color)
+        item = Bond(
+            self.__bond_mesh_data,
+            self.__bond_cap_mesh_data,
+            atom_1,
+            atom_2,
+            self.style["bond.radius"],
+            atoms_color,
+            color,
+        )
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 

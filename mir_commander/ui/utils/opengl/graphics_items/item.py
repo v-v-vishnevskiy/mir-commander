@@ -1,9 +1,11 @@
-import logging
-
-logger = logging.getLogger(__name__)
+from PySide6.QtGui import QMatrix4x4
 
 
 class Item:
+    def __init__(self):
+        self.visible = True
+        self.transform = QMatrix4x4()
+
     def clear(self):
         pass
 
