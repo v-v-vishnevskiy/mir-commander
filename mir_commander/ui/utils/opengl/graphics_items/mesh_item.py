@@ -1,5 +1,3 @@
-from typing import Union
-
 from OpenGL.GL import (
     GL_FLOAT,
     GL_NORMAL_ARRAY,
@@ -9,61 +7,62 @@ from OpenGL.GL import (
     glDisableClientState,
     glDrawArrays,
     glEnableClientState,
+    glMultMatrixf,
     glNormalPointer,
+    glPopMatrix,
+    glPushMatrix,
+    glUseProgram,
     glVertexPointer,
 )
-from PySide6.QtGui import QVector3D
+from PySide6.QtGui import QMatrix4x4
 
+from mir_commander.ui.utils.opengl.default_shaders import SHADED
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import MeshData
+from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 
 class MeshItem(Item):
+    default_shader: None | ShaderProgram = None
+
     def __init__(
         self,
         mesh_data: MeshData,
-        smooth: bool = False,
+        smooth: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
-        compute_normals: bool = True,
-        parent: Union[None, "Item"] = None,
+        shader: None | ShaderProgram = None,
     ):
-        super().__init__(parent)
+        self.transform = QMatrix4x4()
         self._mesh_data = mesh_data
         self._smooth = smooth
         self._color = color
         self._normals: list[float] = []
-        if compute_normals:
-            self.compute_normals(smooth)
 
-    def _compute_vertex_normals(self):
-        self._normals.clear()
-        vertices = self._mesh_data.vertices
-        for i in range(0, len(vertices), 3):
-            norm = QVector3D(*vertices[i : i + 3])
-            norm.normalize()
-            self._normals.extend([norm.x(), norm.y(), norm.z()])
+        if shader is None:
+            if self.__class__.default_shader is None:
+                self.__class__.default_shader = ShaderProgram(
+                    VertexShader(SHADED["vertex"]), FragmentShader(SHADED["fragment"])
+                )
+            self._shader = self.__class__.default_shader
+        else:
+            self._shader = shader
 
-    def _compute_face_normals(self):
-        self._normals.clear()
-        vertices = self._mesh_data.vertices
-        for i in range(0, len(vertices), 9):
-            norm = QVector3D().normal(
-                QVector3D(*vertices[i : i + 3]),
-                QVector3D(*vertices[i + 3 : i + 6]),
-                QVector3D(*vertices[i + 6 : i + 9]),
-            )
-            norm = [norm.x(), norm.y(), norm.z()] * 3
-            self._normals.extend(norm)
+        self.set_smooth(smooth)
 
-    def _paint_color(self):
-        glColor4f(self._color)
+    @property
+    def color(self) -> Color4f:
+        return self._color
 
-    def _paint(self):
+    def paint(self):
+        glPushMatrix()
+        glMultMatrixf(self.transform.data())
+
+        glUseProgram(self._shader.program)
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self._mesh_data.vertices)
 
-        self._paint_color()
+        glColor4f(*self._color)
 
         glEnableClientState(GL_NORMAL_ARRAY)
         glNormalPointer(GL_FLOAT, 0, self._normals)
@@ -72,20 +71,27 @@ class MeshItem(Item):
 
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
+        glUseProgram(0)
+
+        glPopMatrix()
 
     @property
     def normals(self) -> list[float]:
         return self._normals
 
+    def set_color(self, color: Color4f):
+        self._color = color
+
     def set_mesh_data(self, data: MeshData):
         self._mesh_data = data
+        self.set_smooth(self._smooth)
 
     def set_normals(self, normals: list[float]):
         self._normals = normals
 
-    def compute_normals(self, smooth: bool = False):
+    def set_smooth(self, smooth: bool):
         self._smooth = smooth
         if self._smooth:
-            self._compute_vertex_normals()
+            self._normals = self._mesh_data.vertex_normals
         else:
-            self._compute_face_normals()
+            self._normals = self._mesh_data.face_normals

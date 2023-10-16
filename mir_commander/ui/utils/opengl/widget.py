@@ -1,9 +1,9 @@
 from enum import Enum
 
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QMouseEvent, QWheelEvent
+from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from mir_commander.ui.utils.opengl.scene import Scene
 
@@ -26,11 +26,43 @@ class Widget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._scene = Scene(self)
 
+        self.setMouseTracking(True)
+
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+
+    def resize(self, w: int, h: int):
+        parent = self.parent()
+        if isinstance(parent, QMdiSubWindow):
+            parent.resize(w, h)
+        else:
+            super().resize(w, h)
+
+    def setWindowIcon(self, icon: QIcon):
+        parent = self.parent()
+        if isinstance(parent, QMdiSubWindow):
+            parent.setWindowIcon(icon)
+        else:
+            super().setWindowIcon(icon)
+
+    def initializeGL(self):
+        self._scene.initialize_gl()
+
     def paintGL(self):
         self._scene.paint()
 
     def resizeGL(self, w: int, h: int):
         self._scene.update_window_size()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        key = event.key()
+        if key == Qt.Key_Left:
+            self._scene.rotate(0, 10)
+        elif key == Qt.Key_Right:
+            self._scene.rotate(0, -10)
+        elif key == Qt.Key_Up:
+            self._scene.rotate(10, 0)
+        elif key == Qt.Key_Down:
+            self._scene.rotate(-10, 0)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() == Qt.MouseButton.LeftButton:
