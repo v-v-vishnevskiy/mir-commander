@@ -38,9 +38,12 @@ class Scene:
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._translation_matrix = QMatrix4x4()
         self._projection_matrix = QMatrix4x4()
-        self._projection_mode = ProjectionMode.Perspective
-        self._perspective_projection_settings = {"fov": 45.0, "near_plane": 0.001, "far_plane": 50.0}
+        self._projection_mode = ProjectionMode.Orthographic
+        self._fov = 45.0
+        self._near_plane = 0.001
+        self._far_plane = 10000.0
         self._camera_distance = 10.0
+        self._center = QVector3D()
         self._scale_factor = 1.0
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
@@ -59,19 +62,17 @@ class Scene:
         glViewport(0, 0, width, height)
         self._projection_matrix.setToIdentity()
         if self._projection_mode == ProjectionMode.Orthographic:
-            cd = self._camera_distance
+            cd = self._camera_distance * 1.3
             if width <= height:
-                self._projection_matrix.ortho(-cd, cd, -cd * (height / width), cd * (height / width), -cd, cd)
+                self._projection_matrix.ortho(-cd, cd, -cd * (height / width), cd * (height / width), -cd * 10, cd * 10)
             else:
-                self._projection_matrix.ortho(-cd * (width / height), cd * (width / height), -cd, cd, -cd, cd)
+                self._projection_matrix.ortho(-cd * (width / height), cd * (width / height), -cd, cd, -cd * 10, cd * 10)
         elif self._projection_mode == ProjectionMode.Perspective:
-            fov = self._perspective_projection_settings["fov"]
-            near_plane = self._perspective_projection_settings["near_plane"]
-            far_plane = self._perspective_projection_settings["far_plane"]
-            self._projection_matrix.perspective(fov, width / height, near_plane, far_plane)
+            self._projection_matrix.perspective(self._fov, width / height, self._near_plane, self._far_plane)
         else:
             raise RuntimeError("Invalid projection mode")
 
+        self.__gl_widget.makeCurrent()
         glMatrixMode(GL_PROJECTION)
         glLoadMatrixf(self._projection_matrix.data())
         glMatrixMode(GL_MODELVIEW)
@@ -79,9 +80,10 @@ class Scene:
     def _setup_translation_matrix(self):
         matrix = self._translation_matrix
         matrix.setToIdentity()
-        matrix.translate(0, 0, -self._camera_distance)
+        matrix.translate(0.0, 0.0, -self._camera_distance * 3.6)
         matrix.scale(self._scale_factor)
         matrix.rotate(self._rotation)
+        matrix.translate(-self._center)
 
     def clear(self):
         for item in self._items:
@@ -105,13 +107,30 @@ class Scene:
         self._setup_projection_matrix()
         self.__gl_widget.update()
 
+    def toggle_projection_mode(self):
+        if self._projection_mode == ProjectionMode.Orthographic:
+            self.set_projection_mode(ProjectionMode.Perspective)
+        else:
+            self.set_projection_mode(ProjectionMode.Orthographic)
+
     def set_fov(self, value: float):
-        self._perspective_projection_settings["fov"] = max(35.0, value)
+        self._fov = max(35.0, value)
         self._setup_projection_matrix()
         self.__gl_widget.update()
 
     def set_far_plane(self, value: float):
-        self._perspective_projection_settings["far_plane"] = max(1.0, value)
+        self._far_plane = max(500.0, value)
+        self._setup_projection_matrix()
+        self.__gl_widget.update()
+
+    def set_center(self, point: QVector3D):
+        self._center = point
+        self._setup_translation_matrix()
+        self.__gl_widget.update()
+
+    def set_camera_distance(self, distance: float):
+        self._camera_distance = distance
+        self._setup_translation_matrix()
         self._setup_projection_matrix()
         self.__gl_widget.update()
 
@@ -131,17 +150,6 @@ class Scene:
     def projection_matrix(self) -> QMatrix4x4:
         return self._projection_matrix
 
-    def set_translation_matrix(self, matrix: QMatrix4x4):
-        self._translation_matrix = matrix
-        self.__gl_widget.update()
-
-    def set_projection_matrix(self, matrix: QMatrix4x4):
-        self._projection_matrix = matrix
-        glMatrixMode(GL_PROJECTION)
-        glLoadMatrixf(self._projection_matrix.data())
-        glMatrixMode(GL_MODELVIEW)
-        self.__gl_widget.update()
-
     def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
         speed = self._rotation_speed
         r = QQuaternion.fromEulerAngles(pitch * speed, -yaw * speed, roll * speed)
@@ -155,7 +163,10 @@ class Scene:
         self._setup_translation_matrix()
         self.__gl_widget.update()
 
-    def paint(self, transparent_bg: bool = False):
+    def move_cursor(self, x: int, y: int):
+        pass
+
+    def paint(self):
         glLoadMatrixf(self._translation_matrix.data())
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)

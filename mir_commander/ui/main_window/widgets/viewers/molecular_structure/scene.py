@@ -19,20 +19,11 @@ class Scene(BaseScene):
         self.__atom_items: list[Atom] = []
         self.__bond_items: list[Bond] = []
 
+        self.__atom_index_under_cursor: None | Atom = None
+
         self.style = style
 
         self.apply_style(update=False)
-
-    def apply_style(self, update: bool = True):
-        mesh_quality = self.style["quality.mesh"]
-        mesh_quality = max(min(mesh_quality, 100), 1)
-        self.__apply_atoms_style(mesh_quality)
-        self.__apply_bonds_style(mesh_quality)
-
-        self.set_background_color(self.normalize_color(self.style["background.color"]))
-
-        if update:
-            self.update()
 
     def __apply_atoms_style(self, mesh_quality: int):
         # update mesh
@@ -86,6 +77,49 @@ class Scene(BaseScene):
                 bond.set_color(self.normalize_color(self.style["bond.color"]))
 
             bond.set_smooth(self.style["quality.smooth"])
+
+    def _atom_under_cursor(self, x: int, y: int) -> None | Atom:
+        if not self.__atom_items:
+            return None
+
+        result = None
+        point, direction = self.point_to_line(x, y)
+        direction.normalize()
+        distance = None
+        for atom in self.__atom_items:
+            if atom.cross_with_line_test(point, direction):
+                d = atom.position.distanceToPoint(point)
+                if distance is None or d < distance:
+                    result = atom
+                    distance = d
+        return result
+
+    def _highlight_atom_under_cursor(self, x: int, y: int):
+        if not self.__atom_items:
+            return
+
+        atom = self._atom_under_cursor(x, y)
+        if atom:
+            if atom != self.__atom_index_under_cursor:
+                if self.__atom_index_under_cursor is not None:
+                    self.__atom_index_under_cursor.set_under_cursor(False)
+                atom.set_under_cursor(True)
+                self.update()
+        elif self.__atom_index_under_cursor:
+            self.__atom_index_under_cursor.set_under_cursor(False)
+            self.update()
+        self.__atom_index_under_cursor = atom
+
+    def apply_style(self, update: bool = True):
+        mesh_quality = self.style["quality.mesh"]
+        mesh_quality = max(min(mesh_quality, 100), 1)
+        self.__apply_atoms_style(mesh_quality)
+        self.__apply_bonds_style(mesh_quality)
+
+        self.set_background_color(self.normalize_color(self.style["background.color"]))
+
+        if update:
+            self.update()
 
     def clear(self):
         self.__atom_items.clear()
@@ -144,3 +178,6 @@ class Scene(BaseScene):
         Converts #RRGGBB string to tuple, where each component represented from 0.0 to 1.0
         """
         return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
+
+    def move_cursor(self, x: int, y: int):
+        self._highlight_atom_under_cursor(x, y)

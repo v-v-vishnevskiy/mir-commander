@@ -63,14 +63,19 @@ class Widget(QOpenGLWidget):
             self._scene.rotate(10, 0)
         elif key == Qt.Key_Down:
             self._scene.rotate(-10, 0)
+        elif key == Qt.Key_P:
+            self._scene.toggle_projection_mode()
 
     def mouseMoveEvent(self, event: QMouseEvent):
+        pos = event.position()
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
-                diff = event.position() - self.__mouse_pos
+                diff = pos - self.__mouse_pos
                 self._scene.rotate(diff.y(), -diff.x())
+        else:
+            self._scene.move_cursor(pos.x(), pos.y())
 
-        self.__mouse_pos = event.position()
+        self.__mouse_pos = pos
 
     def mousePressEvent(self, event: QMouseEvent):
         pass

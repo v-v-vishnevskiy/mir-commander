@@ -12,17 +12,28 @@ class Atom(MeshItem):
         self.radius = radius
         self.atomic_num = atomic_num
         self.enabled = True
+        self._under_cursor = False
 
         self._compute_transform()
 
     def _compute_transform(self):
         self.transform.setToIdentity()
         self.transform.translate(self.position)
-        self.transform.scale(self.radius, self.radius, self.radius)
+
+        radius = self.radius
+        if self._under_cursor:
+            radius *= 1.15
+
+        self.transform.scale(radius, radius, radius)
 
     def paint(self):
         if self.enabled:
             super().paint()
+
+    def set_under_cursor(self, value: bool):
+        if self._under_cursor != value:
+            self._under_cursor = value
+            self._compute_transform()
 
     def set_radius(self, radius: float):
         self.radius = radius
@@ -31,3 +42,6 @@ class Atom(MeshItem):
     def set_position(self, position: QVector3D):
         self.position = position
         self._compute_transform()
+
+    def cross_with_line_test(self, point: QVector3D, direction: QVector3D) -> bool:
+        return self.position.distanceToLine(point, direction) <= self.radius

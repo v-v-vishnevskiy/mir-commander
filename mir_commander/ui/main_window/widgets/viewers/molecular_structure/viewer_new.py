@@ -2,6 +2,7 @@ import math
 import os
 from typing import TYPE_CHECKING, Optional
 
+import numpy as np
 from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
 from PySide6.QtGui import QContextMenuEvent, QKeyEvent, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QMessageBox, QWidget
@@ -94,12 +95,23 @@ class MolecularStructureNew(Widget):
 
         ds: AtomicCoordinatesDS = self._draw_item.data()
 
+        longest_distance = 0
+
         # add atoms
         for i, atomic_num in enumerate(ds.atomic_num):
-            self._scene.add_atom(atomic_num, QVector3D(ds.x[i], ds.y[i], ds.z[i]))
+            position = QVector3D(ds.x[i], ds.y[i], ds.z[i])
+            atom = self._scene.add_atom(atomic_num, position)
+
+            d = position.length() + atom.radius
+            if longest_distance < d:
+                longest_distance = d
 
         # add bonds
         self._build_bonds(ds)
+
+        center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
+        self._scene.set_center(center)
+        self._scene.set_camera_distance(longest_distance - center.length())
 
     def _build_bonds(self, ds: AtomicCoordinatesDS):
         geom_bond_tol = 0.15
