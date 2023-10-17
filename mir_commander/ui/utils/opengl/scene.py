@@ -102,8 +102,15 @@ class Scene:
         self._setup_projection_matrix()
         self.__gl_widget.update()
 
-    def set_projection_mode(self, mode: ProjectionMode):
-        self._projection_mode = mode
+    def set_projection_mode(self, mode: ProjectionMode | str):
+        if type(mode) is str:
+            if mode == "perspective":
+                mode = ProjectionMode.Perspective
+            elif mode == "orthographic":
+                mode = ProjectionMode.Orthographic
+            else:
+                raise RuntimeError(f"Invalid projection mode: {mode}")
+        self._projection_mode = mode  # type: ignore
         self._setup_projection_matrix()
         self.__gl_widget.update()
 

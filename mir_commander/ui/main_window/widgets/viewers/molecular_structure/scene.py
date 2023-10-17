@@ -118,6 +118,8 @@ class Scene(BaseScene):
 
         self.set_background_color(self.normalize_color(self.style["background.color"]))
 
+        self.set_projection_mode(self.style["projection"])
+
         if update:
             self.update()
 

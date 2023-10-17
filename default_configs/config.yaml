@@ -15,14 +15,15 @@ widgets:
         current: Colored Bonds
         default:
           name: Colored Bonds
+          projection: perspective  # or orthographic
           background:
             color: "#000000"
           quality:
-            mesh: 10
+            mesh: 10  # from 1 to 100
             smooth: true
           bond:
             radius: 0.1
-            color: atoms
+            color: atoms  # or hex variant "#AABBCC"
           atoms:
             enabled: true
             scale_factor: 1
