@@ -1,4 +1,4 @@
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
@@ -6,6 +6,9 @@ from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 from mir_commander.data_structures.base import DataStructure
 from mir_commander.ui.main_window.widgets import viewers
 from mir_commander.ui.utils.widget import Action, Menu
+
+if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
 
 
 class Item(QStandardItem):
@@ -21,6 +24,10 @@ class Item(QStandardItem):
     @property
     def __mdi_area(self) -> QMdiArea:
         return self.model().parent().parent().mdi_area
+
+    @property
+    def __main_window(self) -> "MainWindow":
+        return self.model().parent().parent().parent()
 
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
@@ -57,7 +64,7 @@ class Item(QStandardItem):
 
     def _viewer(self, cls: Type[QWidget], *args, **kwargs) -> QWidget:
         sub_window = QMdiSubWindow(self.__mdi_area)
-        viewer = cls(sub_window, item=self, *args, **kwargs)
+        viewer = cls(sub_window, item=self, main_window=self.__main_window, *args, **kwargs)
         sub_window.setWidget(viewer)
         self.__mdi_area.addSubWindow(sub_window)
         return viewer

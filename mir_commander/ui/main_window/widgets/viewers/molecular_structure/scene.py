@@ -29,6 +29,8 @@ class Scene(BaseScene):
         self.__apply_atoms_style(mesh_quality)
         self.__apply_bonds_style(mesh_quality)
 
+        self.set_background_color(self.normalize_color(self.style["background.color"]))
+
         if update:
             self.update()
 

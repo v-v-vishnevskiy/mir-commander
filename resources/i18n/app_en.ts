@@ -85,6 +85,11 @@
         <source>Proportional size</source>
         <translation>Proportional size</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="55"/>
+        <source>Transparent background</source>
+        <translation></translation>
+    </message>
 </context>
 <context>
     <name>ComboBox</name>

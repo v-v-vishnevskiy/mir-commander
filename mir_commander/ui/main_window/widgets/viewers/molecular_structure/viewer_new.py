@@ -1,26 +1,29 @@
 import math
+import os
 from typing import TYPE_CHECKING, Optional
 
-from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt
-from PySide6.QtGui import QKeyEvent, QVector3D
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
+from PySide6.QtGui import QContextMenuEvent, QKeyEvent, QSurfaceFormat, QVector3D
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
 from mir_commander.ui.utils.opengl.widget import Widget
-from mir_commander.utils.config import Config
+from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.utils.item import Item
 
 
 class MolecularStructureNew(Widget):
-    styles: list[Config] = []
-
-    def __init__(self, parent: QWidget, item: "Item", all: bool = False):
+    def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
         super().__init__(parent)
+
+        self._main_window = main_window
 
         self.item = item
         self.all = all
@@ -32,14 +35,30 @@ class MolecularStructureNew(Widget):
         self.setMinimumSize(config["min_size"][0], config["min_size"][1])
         self.resize(config["size"][0], config["size"][1])
 
+        if config["antialiasing"]:
+            sf = QSurfaceFormat()
+            sf.setSamples(16)
+            self.setFormat(sf)
+
         self.__molecule_index = 0
         self._draw_item = None
         self._set_draw_item()
+
+        # Menus and actions specific for this particular widget
+        self.context_menu = Menu("", self)
+        save_img_action = Action(Action.tr("Save image..."), self)
+        self.context_menu.addAction(save_img_action)
+
+        # Connect the actions to methods
+        save_img_action.triggered.connect(self.save_img_action_handler)
 
         self.update_window_title()
 
         self._scene: Scene = Scene(self, self.__style)
         self._build_molecule()
+
+    def _apply_style(self):
+        self._scene.apply_style()
 
     def __atomic_coordinates_item(
         self, index: int, parent: "Item", counter: int = -1
@@ -98,11 +117,11 @@ class MolecularStructureNew(Widget):
 
     def _set_prev_style(self):
         if self.__style.set_prev_style():
-            self._scene.apply_style()
+            self._apply_style()
 
     def _set_next_style(self):
         if self.__style.set_next_style():
-            self._scene.apply_style()
+            self._apply_style()
 
     def _draw_prev_item(self):
         if self.__molecule_index > 0:
@@ -118,6 +137,10 @@ class MolecularStructureNew(Widget):
         if id(item) != id(self._draw_item):
             self.update_window_title()
             # self.draw()
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        # Show the context menu
+        self.context_menu.exec(event.globalPos())
 
     def keyPressEvent(self, event: QKeyEvent):
         if not self._key_press_handler(event):
@@ -155,6 +178,30 @@ class MolecularStructureNew(Widget):
             # No match
             return False  # not processed
         return True  # processed
+
+    @Slot()
+    def save_img_action_handler(self):
+        dlg = SaveImageDialog(self.size().width(), self.size().height(), self._draw_item.text(), self)
+        if dlg.exec():
+            save_flag = True
+            if os.path.exists(dlg.img_file_path):
+                ret = QMessageBox.warning(
+                    self,
+                    self.tr("Save image"),
+                    self.tr("The file already exists:")
+                    + "\n"
+                    + dlg.img_file_path
+                    + "\n"
+                    + self.tr("Do you want to overwrite it?"),
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if ret != QMessageBox.Yes:
+                    save_flag = False
+
+            if save_flag:
+                image = self._scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
+                image.save(dlg.img_file_path)
+                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
 
     def update_window_title(self):
         title = self._draw_item.text()
