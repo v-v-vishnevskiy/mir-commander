@@ -29,7 +29,7 @@ SHADED = {
             vec3 diffuse = diff * light_color;
 
             // Specular
-            float specular_strength = 1.0;
+            float specular_strength = 0.6;
 
             if (blinn) {
                 const float energy_conservation = ( 8.0 + shininess ) / ( 8.0 * Pi );
