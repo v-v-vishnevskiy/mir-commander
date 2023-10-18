@@ -44,15 +44,14 @@ class Scene:
         self._far_plane = 10000.0
         self._camera_distance = 10.0
         self._center = QVector3D()
-        self._scale_factor = 1.0
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
         self._rotation = QQuaternion()
 
+    def initialize_gl(self):
         self._setup_projection_matrix()
         self._setup_translation_matrix()
 
-    def initialize_gl(self):
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_MULTISAMPLE)
 
@@ -81,7 +80,6 @@ class Scene:
         matrix = self._translation_matrix
         matrix.setToIdentity()
         matrix.translate(0.0, 0.0, -self._camera_distance * 3.6)
-        matrix.scale(self._scale_factor)
         matrix.rotate(self._rotation)
         matrix.translate(-self._center)
 
@@ -121,7 +119,7 @@ class Scene:
             self.set_projection_mode(ProjectionMode.Orthographic)
 
     def set_fov(self, value: float):
-        self._fov = max(35.0, value)
+        self._fov = min(90.0, max(35.0, value))
         self._setup_projection_matrix()
         self.__gl_widget.update()
 
@@ -166,9 +164,7 @@ class Scene:
         self.__gl_widget.update()
 
     def scale(self, factor: float):
-        self._scale_factor *= factor * self._scale_speed
-        self._setup_translation_matrix()
-        self.__gl_widget.update()
+        self.set_camera_distance(self._camera_distance * factor * self._scale_speed)
 
     def move_cursor(self, x: int, y: int):
         pass
