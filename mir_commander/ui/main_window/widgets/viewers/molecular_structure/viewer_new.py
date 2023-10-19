@@ -3,8 +3,8 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-from PySide6.QtCore import QCoreApplication, QKeyCombination, Qt, Slot
-from PySide6.QtGui import QContextMenuEvent, QKeyEvent, QSurfaceFormat, QVector3D
+from PySide6.QtCore import Slot
+from PySide6.QtGui import QContextMenuEvent, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
@@ -12,6 +12,7 @@ from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCo
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
+from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
@@ -22,21 +23,25 @@ if TYPE_CHECKING:
 
 class MolecularStructureNew(Widget):
     def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
-        super().__init__(parent)
-
+        self.__style = Style.style("")
         self._main_window = main_window
+        self._config = main_window.project.config.nested("widgets.viewers.molecular_structure")
+
+        keymap = self._main_window.keymaps.get(self.__class__.__name__) or Keymap(self._config["keymap"])
+
+        super().__init__(scene=Scene(self, self.__style), keymap=keymap, parent=parent)
+
+        self._scene: Scene
+
+        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
+        self.resize(self._config["size"][0], self._config["size"][1])
 
         self.item = item
         self.all = all
 
-        self.__style = Style.style("")
+        self._keymap.load_from_config(self._config["keymap"])
 
-        global_config = QCoreApplication.instance().config
-        config = global_config.nested("widgets.viewers.molecular_structure")
-        self.setMinimumSize(config["min_size"][0], config["min_size"][1])
-        self.resize(config["size"][0], config["size"][1])
-
-        if config["antialiasing"]:
+        if self._config["antialiasing"]:
             sf = QSurfaceFormat()
             sf.setSamples(16)
             self.setFormat(sf)
@@ -55,8 +60,15 @@ class MolecularStructureNew(Widget):
 
         self.update_window_title()
 
-        self._scene: Scene = Scene(self, self.__style)
         self._build_molecule()
+
+    def _init_actions(self):
+        super()._init_actions()
+        self._actions["item_next"] = (self._draw_next_item, tuple())
+        self._actions["item_prev"] = (self._draw_prev_item, tuple())
+        self._actions["style_next"] = (self._set_next_style, tuple())
+        self._actions["style_prev"] = (self._set_prev_style, tuple())
+        self._actions["save_image"] = (self.save_img_action_handler, tuple())
 
     def _apply_style(self):
         self._scene.apply_style()
@@ -153,43 +165,6 @@ class MolecularStructureNew(Widget):
     def contextMenuEvent(self, event: QContextMenuEvent):
         # Show the context menu
         self.context_menu.exec(event.globalPos())
-
-    def keyPressEvent(self, event: QKeyEvent):
-        if not self._key_press_handler(event):
-            super().keyPressEvent(event)
-
-    def _key_press_handler(self, event: QKeyEvent) -> bool:
-        """
-        :return: Has the event been processed
-        """
-        ctrl_left = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Left),
-        }
-        ctrl_right = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Right),
-        }
-        ctrl_up = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Up),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Up),
-        }
-        ctrl_down = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Down),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Down),
-        }
-        if event.keyCombination() in ctrl_left:  # Ctrl + Left
-            self._draw_prev_item()
-        elif event.keyCombination() in ctrl_right:  # Ctrl + Right
-            self._draw_next_item()
-        elif event.keyCombination() in ctrl_up:  # Ctrl + Up
-            self._set_prev_style()
-        elif event.keyCombination() in ctrl_down:  # Ctrl + Down
-            self._set_next_style()
-        else:
-            # No match
-            return False  # not processed
-        return True  # processed
 
     @Slot()
     def save_img_action_handler(self):

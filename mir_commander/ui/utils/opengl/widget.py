@@ -1,10 +1,12 @@
 from enum import Enum
+from typing import Callable
 
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
+from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.scene import Scene
 
 
@@ -19,16 +21,46 @@ class WheelMode(Enum):
 
 
 class Widget(QOpenGLWidget):
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, scene: None | Scene = None, keymap: None | Keymap = None, parent: None | QWidget = None):
         super().__init__(parent)
         self.__mouse_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
-        self._scene = Scene(self)
+        self._scene = scene or Scene(self)
+        self._keymap = keymap or Keymap(
+            {
+                "rotate_down": "down",
+                "rotate_left": "left",
+                "rotate_right": "right",
+                "rotate_up": "up",
+                "toggle_projection": "p",
+                "zoom_in": "wheel_up",
+                "zoom_out": "wheel_down",
+            }
+        )
+        self._actions: dict[str, tuple[Callable, tuple]] = {}
+        self._init_actions()
 
         self.setMouseTracking(True)
 
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+
+    def _init_actions(self):
+        self._actions["rotate_down"] = (self._scene.rotate, (-10, 0))
+        self._actions["rotate_left"] = (self._scene.rotate, (0, 10))
+        self._actions["rotate_right"] = (self._scene.rotate, (0, -10))
+        self._actions["rotate_up"] = (self._scene.rotate, (10, 0))
+        self._actions["toggle_projection"] = (self._scene.toggle_projection_mode, tuple())
+        self._actions["zoom_in"] = (self._scene.scale, (0.1,))
+        self._actions["zoom_out"] = (self._scene.scale, (-0.1,))
+
+    def _call_action(self, event: QKeyEvent | QMouseEvent | str, match_fn: Callable):
+        action = match_fn(event)
+        try:
+            fn, args = self._actions[action]
+            fn(*args)
+        except KeyError:
+            pass
 
     def resize(self, w: int, h: int):
         parent = self.parent()
@@ -54,17 +86,7 @@ class Widget(QOpenGLWidget):
         self._scene.update_window_size()
 
     def keyPressEvent(self, event: QKeyEvent):
-        key = event.key()
-        if key == Qt.Key_Left:
-            self._scene.rotate(0, 10)
-        elif key == Qt.Key_Right:
-            self._scene.rotate(0, -10)
-        elif key == Qt.Key_Up:
-            self._scene.rotate(10, 0)
-        elif key == Qt.Key_Down:
-            self._scene.rotate(-10, 0)
-        elif key == Qt.Key_P:
-            self._scene.toggle_projection_mode()
+        self._call_action(event, self._keymap.match_key_event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         pos = event.position()
@@ -78,12 +100,21 @@ class Widget(QOpenGLWidget):
         self.__mouse_pos = pos
 
     def mousePressEvent(self, event: QMouseEvent):
-        pass
+        self._call_action(event, self._keymap.match_mouse_event)
 
     def wheelEvent(self, event: QWheelEvent):
-        if self._wheel_mode == WheelMode.Scale:
-            delta = event.angleDelta().y()
-            if delta > 0:
-                self._scene.scale(1.1)
-            elif delta < 0:
-                self._scene.scale(0.9)
+        events: list[str] = []
+        delta = event.angleDelta().x()
+        if delta > 0:
+            events.append("wheel_left")
+        elif delta < 0:
+            events.append("wheel_right")
+
+        delta = event.angleDelta().y()
+        if delta > 0:
+            events.append("wheel_up")
+        elif delta < 0:
+            events.append("wheel_down")
+
+        for event in events:
+            self._call_action(event, self._keymap.match_wheel_event)

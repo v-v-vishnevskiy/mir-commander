@@ -164,7 +164,7 @@ class Scene:
         self.__gl_widget.update()
 
     def scale(self, factor: float):
-        self.set_camera_distance(self._camera_distance * factor * self._scale_speed)
+        self.set_camera_distance(self._camera_distance + (factor * self._scale_speed) * self._camera_distance)
 
     def move_cursor(self, x: int, y: int):
         pass

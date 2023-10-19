@@ -8,6 +8,19 @@ widgets:
         icon_size: 20
   viewers:
     molecular_structure:
+      keymap:
+        item_next: ctrl+right
+        item_prev: ctrl+left
+        style_next: ctrl+down
+        style_prev: ctrl+up
+        rotate_down: down
+        rotate_left: left
+        rotate_right: right
+        rotate_up: up
+        save_image: s
+        toggle_projection: p
+        zoom_in: wheel_up
+        zoom_out: wheel_down
       antialiasing: true
       size: [500, 500]
       min_size: [150, 150]
@@ -15,7 +28,9 @@ widgets:
         current: Colored Bonds
         default:
           name: Colored Bonds
-          projection: perspective  # or orthographic
+          projection:
+            mode: perspective  # or orthographic
+            fov: 45.0  # works with perspective mode only. From 35.0 to 90.0
           background:
             color: "#000000"
           quality:

@@ -9,8 +9,8 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 
 
 class Scene(BaseScene):
-    def __init__(self, window: QOpenGLWidget, style: Style):
-        super().__init__(window)
+    def __init__(self, widget: QOpenGLWidget, style: Style):
+        super().__init__(widget)
 
         self.__atom_mesh_data = Sphere(rows=Sphere.min_rows, cols=Sphere.min_cols, radius=1.0)
         self.__bond_mesh_data = Cylinder(rows=1, cols=Cylinder.min_cols, radius=1.0, length=1.0, caps=False)
@@ -22,8 +22,6 @@ class Scene(BaseScene):
         self.__atom_index_under_cursor: None | Atom = None
 
         self.style = style
-
-        self.apply_style(update=False)
 
     def __apply_atoms_style(self, mesh_quality: int):
         # update mesh
@@ -110,7 +108,11 @@ class Scene(BaseScene):
             self.update()
         self.__atom_index_under_cursor = atom
 
-    def apply_style(self, update: bool = True):
+    def initialize_gl(self):
+        super().initialize_gl()
+        self.apply_style()
+
+    def apply_style(self):
         mesh_quality = self.style["quality.mesh"]
         mesh_quality = max(min(mesh_quality, 100), 1)
         self.__apply_atoms_style(mesh_quality)
@@ -118,10 +120,10 @@ class Scene(BaseScene):
 
         self.set_background_color(self.normalize_color(self.style["background.color"]))
 
-        self.set_projection_mode(self.style["projection"])
+        self.set_projection_mode(self.style["projection.mode"])
+        self.set_fov(self.style["projection.fov"])
 
-        if update:
-            self.update()
+        self.update()
 
     def clear(self):
         self.__atom_items.clear()

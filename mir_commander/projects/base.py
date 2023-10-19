@@ -1,6 +1,7 @@
 import os
 from typing import TYPE_CHECKING
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from mir_commander.utils.config import Config
@@ -16,6 +17,7 @@ class Project:
     def __init__(self, path: str, config: Config):
         self.path = os.path.normpath(path)
         self.config = config
+        self.config.set_defaults(QCoreApplication.instance().config)
         self.settings = Settings(config)
         self.model = QStandardItemModel()
 

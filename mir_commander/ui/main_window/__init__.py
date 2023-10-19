@@ -15,6 +15,7 @@ from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.toolbar import ToolBar as ToolBarMolViewer
+from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
@@ -38,6 +39,7 @@ class MainWindow(QMainWindow):
         self.app: "Application" = app
         self.project = project
         self.sub_windows_toolbars: list[SubWindowToolBar] = []  # All SubWindow's toolbars
+        self.keymaps: dict[str, Keymap] = {}
 
         self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
 
