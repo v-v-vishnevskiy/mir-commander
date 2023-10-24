@@ -28,6 +28,7 @@ class Widget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._scene = scene or Scene(self)
         self._keymap = keymap or Keymap(
+            id(self),
             {
                 "rotate_down": "down",
                 "rotate_left": "left",
@@ -36,7 +37,7 @@ class Widget(QOpenGLWidget):
                 "toggle_projection": "p",
                 "zoom_in": "wheel_up",
                 "zoom_out": "wheel_down",
-            }
+            },
         )
         self._actions: dict[str, tuple[Callable, tuple]] = {}
         self._init_actions()

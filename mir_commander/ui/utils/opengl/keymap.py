@@ -2,7 +2,14 @@ from PySide6.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 
 
 class Keymap:
-    def __init__(self, config: None | dict[str, str] = None):
+    _instances: dict[int, "Keymap"] = {}
+
+    def __new__(cls, key: int, config: None | dict[str, str] = None) -> "Keymap":
+        if key not in cls._instances:
+            cls._instances[key] = super().__new__(cls)
+        return cls._instances[key]
+
+    def __init__(self, key: int, config: None | dict[str, str] = None):
         self._map: dict[str, str] = {}
 
         if config is not None:

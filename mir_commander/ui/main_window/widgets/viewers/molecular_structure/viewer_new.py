@@ -23,11 +23,12 @@ if TYPE_CHECKING:
 
 class MolecularStructureNew(Widget):
     def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
-        self.__style = Style.style("")
         self._main_window = main_window
         self._config = main_window.project.config.nested("widgets.viewers.molecular_structure")
 
-        keymap = self._main_window.keymaps.get(self.__class__.__name__) or Keymap(self._config["keymap"])
+        project_id = id(main_window.project)
+        self.__style = Style(project_id, self._config)
+        keymap = Keymap(project_id, self._config["keymap"])
 
         super().__init__(scene=Scene(self, self.__style), keymap=keymap, parent=parent)
 
