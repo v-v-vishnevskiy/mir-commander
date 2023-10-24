@@ -4,6 +4,7 @@ from OpenGL.GL import (
     GL_NORMAL_ARRAY,
     GL_TRIANGLES,
     GL_VERTEX_ARRAY,
+    GLuint,
     glColor4f,
     glDisableClientState,
     glDrawArrays,
@@ -60,11 +61,11 @@ class MeshItem(Item):
         glPushMatrix()
         glMultMatrixf(self.transform.data())
 
-        glUseProgram(self._shader.program)
+        glUseProgram(self.shader)
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self._mesh_data.vertices)
 
-        glColor4f(*self._color)
+        glColor4f(*self.color)
 
         glEnableClientState(GL_NORMAL_ARRAY)
         glNormalPointer(GL_FLOAT, 0, self._normals)
@@ -76,6 +77,10 @@ class MeshItem(Item):
         glUseProgram(0)
 
         glPopMatrix()
+
+    @property
+    def shader(self) -> GLuint:
+        return self._shader.program
 
     @property
     def _normals(self) -> np.ndarray:

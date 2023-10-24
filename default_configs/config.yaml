@@ -18,6 +18,7 @@ widgets:
         rotate_right: right
         rotate_up: up
         save_image: s
+        toggle_atom_selection: mb_1
         toggle_projection: p
         zoom_in: wheel_up
         zoom_out: wheel_down

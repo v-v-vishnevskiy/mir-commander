@@ -62,6 +62,10 @@ class Widget(QOpenGLWidget):
         except KeyError:
             pass
 
+    @property
+    def mouse_pos(self) -> tuple[int, int]:
+        return self.__mouse_pos.x(), self.__mouse_pos.y()
+
     def resize(self, w: int, h: int):
         parent = self.parent()
         if isinstance(parent, QMdiSubWindow):

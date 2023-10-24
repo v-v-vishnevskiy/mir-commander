@@ -69,6 +69,7 @@ class MolecularStructureNew(Widget):
         self._actions["style_next"] = (self._set_next_style, tuple())
         self._actions["style_prev"] = (self._set_prev_style, tuple())
         self._actions["save_image"] = (self.save_img_action_handler, tuple())
+        self._actions["toggle_atom_selection"] = (self._scene.toggle_atom_selection, tuple())
 
     def _apply_style(self):
         self._scene.apply_style()

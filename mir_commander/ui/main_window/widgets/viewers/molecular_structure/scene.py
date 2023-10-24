@@ -2,9 +2,11 @@ from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom, Bond
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.shaders import OUTLINE
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Hemisphere, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
+from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 
@@ -18,6 +20,7 @@ class Scene(BaseScene):
 
         self.__atom_items: list[Atom] = []
         self.__bond_items: list[Bond] = []
+        self.__edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
 
         self.__atom_index_under_cursor: None | Atom = None
 
@@ -34,11 +37,8 @@ class Scene(BaseScene):
         # update items
         for atom in self.__atom_items:
             atom.enabled = self.style["atoms.enabled"]
-            if self.style["atoms.enabled"]:
-                atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
-
+            atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
             atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
-
             atom.set_smooth(self.style["quality.smooth"])
 
     def __apply_bonds_style(self, mesh_quality: int):
@@ -93,9 +93,6 @@ class Scene(BaseScene):
         return result
 
     def _highlight_atom_under_cursor(self, x: int, y: int):
-        if not self.__atom_items:
-            return
-
         atom = self._atom_under_cursor(x, y)
         if atom:
             if atom != self.__atom_index_under_cursor:
@@ -107,6 +104,12 @@ class Scene(BaseScene):
             self.__atom_index_under_cursor.set_under_cursor(False)
             self.update()
         self.__atom_index_under_cursor = atom
+
+    def toggle_atom_selection(self):
+        atom = self._atom_under_cursor(*self.mouse_pos)
+        if atom is not None:
+            atom.toggle_selection()
+            self.update()
 
     def initialize_gl(self):
         super().initialize_gl()
@@ -138,7 +141,7 @@ class Scene(BaseScene):
 
         color = self.normalize_color(self.style["atoms.color"][atomic_num])
 
-        item = Atom(self.__atom_mesh_data, atomic_num, position, radius, color)
+        item = Atom(self.__atom_mesh_data, atomic_num, position, radius, color, selected_shader=self.__edge_shader)
         item.enabled = self.style["atoms.enabled"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)

@@ -1,3 +1,4 @@
+from OpenGL.GL import GLuint
 from PySide6.QtGui import QQuaternion, QVector3D
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
@@ -46,14 +47,13 @@ class BondCapItem(MeshItem):
     def __init__(
         self,
         mesh_data: Hemisphere,
-        position: QVector3D,
+        atom: Atom,
         direction: QVector3D,
         flip: bool,
         radius: float,
-        color: Color4f,
     ):
-        super().__init__(mesh_data, color=color)
-        self._position = position
+        super().__init__(mesh_data)
+        self._atom = atom
         self._direction = direction
         self._flip = flip
         self._radius = radius
@@ -62,14 +62,31 @@ class BondCapItem(MeshItem):
 
     def _compute_transform(self):
         self.transform.setToIdentity()
-        self.transform.translate(self._position)
+        self.transform.translate(self._atom.position)
         self.transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, 1.0), self._direction))
         if self._flip:
             self.transform.rotate(180.0, 1.0, 0.0, 0.0)
         self.transform.scale(self._radius, self._radius, self._radius)
 
-    def set_transformation(self, position: QVector3D, direction: QVector3D, flip: bool, radius: float):
-        self._position = position
+    @property
+    def color(self) -> Color4f:
+        return self._atom.color
+
+    @property
+    def flip(self) -> bool:
+        return self._flip
+
+    @property
+    def shader(self) -> GLuint:
+        if self._atom.selected:
+            return self._atom.shader
+        return super().shader
+
+    def paint(self):
+        if not self._atom.enabled:
+            super().paint()
+
+    def set_transformation(self, direction: QVector3D, flip: bool, radius: float):
         self._direction = direction
         self._flip = flip
         self._radius = radius
@@ -104,6 +121,7 @@ class Bond(Item):
         self._items_bonds_cap: list[BondCapItem] = []
 
         self._add_bonds()
+        self._add_hemispheres()
 
     def _compute_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
         result = []
@@ -126,36 +144,34 @@ class Bond(Item):
         return result
 
     def _add_bonds(self):
-        self.clear()
+        self._clear_bonds()
         bonds = self._compute_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
             self._items.append(BondItem(self._c_mesh_data, position, direction, self._radius, length, color))
-        self._add_hemispheres()
 
     def _add_hemispheres(self):
-        if not self._atom_1.enabled:
-            self._items_bonds_cap.append(
-                BondCapItem(
-                    self._h_mesh_data,
-                    self._atom_1.position,
-                    self._atom_2.position - self._atom_1.position,
-                    True,
-                    self._radius,
-                    self._atom_1.color,
-                )
+        self._clear_bonds_cap()
+        self._items_bonds_cap.append(
+            BondCapItem(
+                self._h_mesh_data, self._atom_1, self._atom_2.position - self._atom_1.position, True, self._radius
             )
-        if not self._atom_2.enabled:
-            self._items_bonds_cap.append(
-                BondCapItem(
-                    self._h_mesh_data,
-                    self._atom_2.position,
-                    self._atom_2.position - self._atom_1.position,
-                    False,
-                    self._radius,
-                    self._atom_2.color,
-                )
+        )
+        self._items_bonds_cap.append(
+            BondCapItem(
+                self._h_mesh_data, self._atom_2, self._atom_2.position - self._atom_1.position, False, self._radius
             )
+        )
+
+    def _clear_bonds(self):
+        for item in self._items:
+            item.clear()
+        self._items.clear()
+
+    def _clear_bonds_cap(self):
+        for item in self._items_bonds_cap:
+            item.clear()
+        self._items_bonds_cap.clear()
 
     def update_bonds(self):
         bonds = self._compute_bonds()
@@ -164,22 +180,17 @@ class Bond(Item):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
-        # TODO: update hemispheres
+        direction = self._atom_2.position - self._atom_1.position
+        for item in self._items_bonds_cap:
+            item.set_transformation(direction, item.flip, self._radius)
 
     def clear(self):
-        for item in self._items:
-            item.clear()
-        self._items.clear()
-
-        for item in self._items_bonds_cap:
-            item.clear()
-        self._items_bonds_cap.clear()
+        self._clear_bonds_cap()
+        self._clear_bonds()
 
     def paint(self):
         if self.visible:
-            for bond in self._items:
-                bond.paint()
-            for item in self._items_bonds_cap:
+            for item in self._items + self._items_bonds_cap:
                 item.paint()
 
     def set_radius(self, radius: float):

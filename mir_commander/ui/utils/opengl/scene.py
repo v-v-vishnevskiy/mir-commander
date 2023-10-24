@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from OpenGL.GL import (
     GL_COLOR_BUFFER_BIT,
@@ -18,12 +19,15 @@ from OpenGL.GL import (
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QImage, QMatrix4x4, QQuaternion, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
-from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 logger = logging.getLogger(__name__)
+
+
+if TYPE_CHECKING:
+    from mir_commander.ui.utils.opengl.widget import Widget
 
 
 class ProjectionMode(Enum):
@@ -32,7 +36,7 @@ class ProjectionMode(Enum):
 
 
 class Scene:
-    def __init__(self, widget: QOpenGLWidget):
+    def __init__(self, widget: "Widget"):
         self.__gl_widget = widget
         self._items: set[Item] = set()
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
@@ -95,6 +99,10 @@ class Scene:
             return
 
         self._items.add(item)
+
+    @property
+    def mouse_pos(self) -> tuple[int, int]:
+        return self.__gl_widget.mouse_pos
 
     def update_window_size(self):
         self._setup_projection_matrix()
