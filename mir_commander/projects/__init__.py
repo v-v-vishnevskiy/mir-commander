@@ -1,7 +1,9 @@
 import logging
 import os
 import pprint
+import re
 
+import cclib
 import numpy as np
 from cclib.io import ccread
 
@@ -15,10 +17,35 @@ from mir_commander.utils.config import Config
 
 logger = logging.getLogger(__name__)
 
+IMPORT_FORMAT_UNKNOWN = 0
+IMPORT_FORMAT_UNEX = 1
 
-def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
+
+def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
     """
-    Import data from file, build and populate a respective tree of items.
+    Import data from UNEX file, build and populate a respective tree of items.
+    Also return a list of flagged items.
+    Additionally return a list of messages, which can be printed later.
+    """
+    flagged_items = []
+    messages = []
+
+    with open(path, "r") as input_file:
+        for line_number, line in enumerate(input_file):
+            if line_number == 0:
+                messages.append(line.strip())
+
+    molitem = item.Molecule(os.path.split(path)[1], None)
+    molitem.file_path = path
+
+    flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
+
+    return molitem, flagged_items, messages
+
+
+def import_file_cclib(path: str) -> tuple[item.Item, list[dict], list[str]]:
+    """
+    Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
     We mark them for a possible automatic visualization and for expanding of the tree branches.
     Whether this will be actually done is decided in the upper context.
@@ -33,6 +60,8 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     # lists of data from ccread.
     # So currently we just fill in our project tree as is, but in the future
     # we will split project to independent jobs.
+    messages.append("cclib {}".format(cclib.__version__))
+
     kwargs = {}
     kwargs["future"] = True
     data = ccread(path, **kwargs)
@@ -134,6 +163,32 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
                 scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
     return molitem, flagged_items, messages
+
+
+def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
+    """
+    Import data from file,
+    return tree of items, list of flagged items and list of messages
+    """
+    unexver_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
+    file_format = IMPORT_FORMAT_UNKNOWN
+    line_number_limit = 10
+    with open(path, "r") as input_file:
+        for line_number, line in enumerate(input_file):
+            if "UNEX" in line and line_number == 0:
+                unexver_match = unexver_validator.match(line.split()[1])
+                if unexver_match:
+                    file_format = IMPORT_FORMAT_UNEX
+                    break
+            if line_number > line_number_limit:  # line_number starts at 0.
+                break
+
+    if file_format == IMPORT_FORMAT_UNEX:
+        project_root_item, flagged_items, messages = import_file_unex(path)
+    else:
+        project_root_item, flagged_items, messages = import_file_cclib(path)
+
+    return project_root_item, flagged_items, messages
 
 
 def load_project(path: str) -> tuple[Project, list[str]]:
