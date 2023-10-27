@@ -9,6 +9,7 @@ from cclib.io import ccread
 
 from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
+from mir_commander.data_structures.unex import project as ds_unex_project
 from mir_commander.projects.base import ItemParametrized, Project
 from mir_commander.projects.molecule import Molecule
 from mir_commander.projects.temporary import Temporary
@@ -35,7 +36,9 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
             if line_number == 0:
                 messages.append(line.strip())
 
-    molitem = item.UnexProject(os.path.split(path)[1], None)
+    project_data = ds_unex_project.Project()
+
+    molitem = item.UnexProject(os.path.split(path)[1], project_data)
     molitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
