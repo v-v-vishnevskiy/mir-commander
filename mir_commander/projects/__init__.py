@@ -35,7 +35,7 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
             if line_number == 0:
                 messages.append(line.strip())
 
-    molitem = item.Molecule(os.path.split(path)[1], None)
+    molitem = item.UnexProject(os.path.split(path)[1], None)
     molitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
