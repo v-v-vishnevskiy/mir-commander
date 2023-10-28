@@ -154,7 +154,9 @@ class MolecularStructureNew(Widget):
             self.__molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            # self.draw()
+            self._scene.clear(update=False)
+            self._build_molecule()
+            self.update()
 
     def _draw_next_item(self):
         self.__molecule_index += 1
@@ -162,7 +164,9 @@ class MolecularStructureNew(Widget):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            # self.draw()
+            self._scene.clear(update=False)
+            self._build_molecule()
+            self.update()
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         # Show the context menu

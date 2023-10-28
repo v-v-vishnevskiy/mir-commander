@@ -87,11 +87,12 @@ class Scene:
         matrix.rotate(self._rotation)
         matrix.translate(-self._center)
 
-    def clear(self):
+    def clear(self, update: bool = True):
         for item in self._items:
             item.clear()
         self._items.clear()
-        self.__gl_widget.update()
+        if update:
+            self.__gl_widget.update()
 
     def add_item(self, item: Item):
         if not issubclass(type(item), Item):

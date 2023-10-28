@@ -128,10 +128,10 @@ class Scene(BaseScene):
 
         self.update()
 
-    def clear(self):
+    def clear(self, update: bool = True):
         self.__atom_items.clear()
         self.__bond_items.clear()
-        super().clear()
+        super().clear(update)
 
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
         if self.style["atoms.enabled"]:
