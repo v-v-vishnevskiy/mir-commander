@@ -11,8 +11,7 @@ from cclib.io import ccread
 
 from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
-from mir_commander.data_structures.unex import Molecule as UnexMolecule
-from mir_commander.data_structures.unex import Project as UnexProject
+from mir_commander.data_structures import unex
 from mir_commander.projects.base import ItemParametrized, Project
 from mir_commander.projects.molecule import Molecule
 from mir_commander.projects.temporary import Temporary
@@ -22,7 +21,7 @@ from mir_commander.utils.config import Config
 logger = logging.getLogger(__name__)
 
 
-class ImportFormat(Enum):
+class FileFormat(Enum):
     UNKNOWN = 0
     UNEX = 1
 
@@ -39,7 +38,7 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
     mol_cart_item_last: dict[str, item.AtomicCoordinates] = {}  # name of molecule: last item of Cartesian coordinates
     mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
-    project_data = UnexProject()
+    project_data = unex.Project()
     rootitem = item.UnexProject(os.path.split(path)[1], project_data)
     rootitem.file_path = path
 
@@ -54,7 +53,7 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
                 if molname in mol_items:
                     current_mol_item = mol_items[molname]
                 else:
-                    current_mol_ds = UnexMolecule()
+                    current_mol_ds = unex.Molecule()
                     current_mol_item = item.Molecule(molname, current_mol_ds)
                     mol_items[molname] = current_mol_item
                     rootitem.appendRow(current_mol_item)
@@ -231,18 +230,18 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return tree of items, list of flagged items and list of messages
     """
     unexver_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
-    file_format = ImportFormat.UNKNOWN
+    file_format = FileFormat.UNKNOWN
     line_number_limit = 10
     with open(path, "r") as input_file:
         for line_number, line in enumerate(input_file):
             if line_number == 0 and "UNEX" in line:
                 if unexver_validator.match(line.split()[1]):
-                    file_format = ImportFormat.UNEX
+                    file_format = FileFormat.UNEX
                     break
             if line_number > line_number_limit:  # line_number starts at 0.
                 break
 
-    if file_format == ImportFormat.UNEX:
+    if file_format == FileFormat.UNEX:
         project_root_item, flagged_items, messages = import_file_unex(path)
     else:
         project_root_item, flagged_items, messages = import_file_cclib(path)
