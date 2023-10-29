@@ -89,6 +89,10 @@ class Molecule(Item):
     pass
 
 
+class UnexProject(Item):
+    pass
+
+
 class AtomicCoordinatesGroup(Group):
     default_viewer = viewers.MolecularStructure
 

@@ -1,12 +1,17 @@
 import logging
 import os
 import pprint
+import re
+from collections import defaultdict
+from enum import Enum
 
+import cclib
 import numpy as np
 from cclib.io import ccread
 
 from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
+from mir_commander.data_structures import unex
 from mir_commander.projects.base import ItemParametrized, Project
 from mir_commander.projects.molecule import Molecule
 from mir_commander.projects.temporary import Temporary
@@ -16,9 +21,90 @@ from mir_commander.utils.config import Config
 logger = logging.getLogger(__name__)
 
 
-def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
+class FileFormat(Enum):
+    UNKNOWN = 0
+    UNEX = 1
+
+
+def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
     """
-    Import data from file, build and populate a respective tree of items.
+    Import data from UNEX file, build and populate a respective tree of items.
+    Also return a list of flagged items.
+    Additionally return a list of messages, which can be printed later.
+    """
+    flagged_items: list[dict] = []
+    messages: list[str] = []
+    mol_items: dict[str, item.Molecule] = {}  # name: item
+    mol_cart_item_last: dict[str, item.AtomicCoordinates] = {}  # name of molecule: last item of Cartesian coordinates
+    mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
+
+    project_data = unex.Project()
+    rootitem = item.UnexProject(os.path.split(path)[1], project_data)
+    rootitem.file_path = path
+
+    flagged_items.append({"itempar": ItemParametrized(rootitem, {}), "expand": True})
+
+    with open(path, "r") as input_file:
+        for line_number, line in enumerate(input_file):
+            if line_number == 0:
+                messages.append(line.strip())  # First string is the UNEX version.
+            if "> Cartesian coordinates of all atoms (Angstroms) in" in line:
+                molname = line.split(">")[0]
+                if molname in mol_items:
+                    current_mol_item = mol_items[molname]
+                else:
+                    current_mol_ds = unex.Molecule()
+                    current_mol_item = item.Molecule(molname, current_mol_ds)
+                    mol_items[molname] = current_mol_item
+                    rootitem.appendRow(current_mol_item)
+
+                mol_cart_set_number[molname] += 1
+
+                # Skip header of the table (3 lines)
+                for block_line_number, block_line in enumerate(input_file):
+                    if block_line_number > 1:
+                        break
+
+                # Read the table
+                atomic_num = []
+                at_coord_x = []
+                at_coord_y = []
+                at_coord_z = []
+                for block_line in input_file:
+                    if "--" in block_line:
+                        break
+                    line_items = block_line.split()
+                    atomic_num.append(int(line_items[2]))
+                    at_coord_x.append(float(line_items[4]))
+                    at_coord_y.append(float(line_items[5]))
+                    at_coord_z.append(float(line_items[6]))
+
+                # Add the set of Cartesian coordinates directly to the molecule
+                at_coord_data = ds_molecule.AtomicCoordinates(
+                    np.array(atomic_num, dtype="int16"),
+                    np.array(at_coord_x, dtype="float64"),
+                    np.array(at_coord_y, dtype="float64"),
+                    np.array(at_coord_z, dtype="float64"),
+                )
+                at_coord_item = item.AtomicCoordinates(f"Set#{mol_cart_set_number[molname]}", at_coord_data)
+                current_mol_item.appendRow(at_coord_item)
+                mol_cart_item_last[molname] = at_coord_item
+
+    # Set flags to items
+    prm = {}
+    if len(mol_cart_item_last) == 1:
+        prm = {"maximize": True}
+
+    # Autoview last sets of coordinates of each molecule
+    for at_coord_item in mol_cart_item_last.values():
+        flagged_items.append({"itempar": ItemParametrized(at_coord_item, prm), "view": True})
+
+    return rootitem, flagged_items, messages
+
+
+def import_file_cclib(path: str) -> tuple[item.Item, list[dict], list[str]]:
+    """
+    Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
     We mark them for a possible automatic visualization and for expanding of the tree branches.
     Whether this will be actually done is decided in the upper context.
@@ -33,6 +119,8 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     # lists of data from ccread.
     # So currently we just fill in our project tree as is, but in the future
     # we will split project to independent jobs.
+    messages.append("cclib {}".format(cclib.__version__))
+
     kwargs = {}
     kwargs["future"] = True
     data = ccread(path, **kwargs)
@@ -76,16 +164,16 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
             xyz_title = "Final coordinates"
 
         # Add a set of representative Cartesian coordinates directly to the molecule
-        atcoods_data = ds_molecule.AtomicCoordinates(
+        at_coord_data = ds_molecule.AtomicCoordinates(
             moldata.atomic_num,
             data.atomcoords[xyz_idx][:, 0],
             data.atomcoords[xyz_idx][:, 1],
             data.atomcoords[xyz_idx][:, 2],
         )
-        arcoords_item = item.AtomicCoordinates(xyz_title, atcoods_data)
-        molitem.appendRow(arcoords_item)
+        at_coord_item = item.AtomicCoordinates(xyz_title, at_coord_data)
+        molitem.appendRow(at_coord_item)
 
-        flagged_items.append({"itempar": ItemParametrized(arcoords_item, {"maximize": True}), "view": True})
+        flagged_items.append({"itempar": ItemParametrized(at_coord_item, {"maximize": True}), "view": True})
         flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
 
         # If we have multiple sets of coordinates
@@ -134,6 +222,31 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
                 scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
 
     return molitem, flagged_items, messages
+
+
+def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
+    """
+    Import data from file,
+    return tree of items, list of flagged items and list of messages
+    """
+    unexver_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
+    file_format = FileFormat.UNKNOWN
+    line_number_limit = 10
+    with open(path, "r") as input_file:
+        for line_number, line in enumerate(input_file):
+            if line_number == 0 and "UNEX" in line:
+                if unexver_validator.match(line.split()[1]):
+                    file_format = FileFormat.UNEX
+                    break
+            if line_number > line_number_limit:  # line_number starts at 0.
+                break
+
+    if file_format == FileFormat.UNEX:
+        project_root_item, flagged_items, messages = import_file_unex(path)
+    else:
+        project_root_item, flagged_items, messages = import_file_cclib(path)
+
+    return project_root_item, flagged_items, messages
 
 
 def load_project(path: str) -> tuple[Project, list[str]]:
