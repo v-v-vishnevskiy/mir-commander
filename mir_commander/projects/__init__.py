@@ -59,7 +59,7 @@ def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
                 try:
                     num_atoms = int(line.strip())
                 except ValueError:
-                    print(f"Invalid line {line_number+1}, expected number of atoms.")
+                    logger.info(f"Invalid line {line_number+1}, expected number of atoms.")
                     raise
                 if num_atoms <= 0:
                     raise ValueError(f"Invalid number of atoms {num_atoms} at line {line_number+1}.")
@@ -88,16 +88,15 @@ def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
                         else:
                             atomic_num = elements.symbol(line_items[0]).number
                     except ValueError:
-                        print(f"Invalid atom at line {line_number + 1}.")
+                        logger.info(f"Invalid atom at line {line_number + 1}.")
                         raise
-                    pass
                 try:
                     coord_x = float(line_items[1])
                     coord_y = float(line_items[2])
                     coord_z = float(line_items[3])
                 except ValueError:
                     # Something is wrong with format
-                    print(f"Invalid coordinate value(s) at line {line_number + 1}.")
+                    logger.info(f"Invalid coordinate value(s) at line {line_number + 1}.")
                     raise
 
                 num_read_cards += 1

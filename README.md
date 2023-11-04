@@ -86,3 +86,4 @@ In the source code we stick to the principles similar to those described in [PEP
 
 Other principles:
 - Prefer string interpolation `f"parameter={par}"` over string `format()` method.
+- Use `logger.info()` instead of `print()`.
