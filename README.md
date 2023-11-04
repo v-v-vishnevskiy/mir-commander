@@ -83,3 +83,7 @@ In the source code we stick to the principles similar to those described in [PEP
 - For variables, methods, functions and modules we use [Snake case](https://en.wikipedia.org/wiki/Snake_case) style, for example `my_method()`.
 - Note, private literals must be started with the underscore (_) character, e.g. `_private_variable` or `_private_method()`.
 - Public interfaces must use [Type Hints](https://peps.python.org/pep-0484/).
+
+Other principles:
+- Prefer string interpolation `f"parameter={par}"` over string `format()` method.
+- Instead of `print()` you should obtain a `logger` by calling `logging.getLogger(__name__)` in the beginning of the module and then use the loggers methods `info()`, `debug()`, `warning()`, `error()` and `exception()`.

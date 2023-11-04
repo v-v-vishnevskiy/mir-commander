@@ -8,6 +8,7 @@ from enum import Enum
 import cclib
 import numpy as np
 from cclib.io import ccread
+from periodictable import elements
 
 from mir_commander import consts, exceptions
 from mir_commander.data_structures import molecule as ds_molecule
@@ -24,6 +25,104 @@ logger = logging.getLogger(__name__)
 class FileFormat(Enum):
     UNKNOWN = 0
     UNEX = 1
+    XYZ = 2
+
+
+class XyzParserState(Enum):
+    INIT = 0
+    COMMENT = 1
+    CARDS = 2
+
+
+def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
+    """
+    Import data from XYZ file, build and populate a respective tree of items.
+    Also return a list of flagged items.
+    Additionally return a list of messages, which can be printed later.
+    """
+    flagged_items: list[dict] = []
+    messages: list[str] = []
+
+    messages.append("XYZ format.")  # First string is the UNEX version.
+
+    moldata = ds_molecule.Molecule()
+    molitem = item.Molecule(os.path.split(path)[1], moldata)
+    molitem.file_path = path
+
+    flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
+
+    state = XyzParserState.INIT
+    at_coord_item = None
+    with open(path, "r") as input_file:
+        for line_number, line in enumerate(input_file):
+            if state == XyzParserState.INIT:
+                try:
+                    num_atoms = int(line.strip())
+                except ValueError:
+                    logger.info(f"Invalid line {line_number+1}, expected number of atoms.")
+                    raise
+                if num_atoms <= 0:
+                    raise ValueError(f"Invalid number of atoms {num_atoms} at line {line_number+1}.")
+                state = XyzParserState.COMMENT
+            elif state == XyzParserState.COMMENT:
+                title = line.strip()
+                if len(title) == 0:
+                    title = f"Set@line={line_number}"
+                state = XyzParserState.CARDS
+                num_read_cards = 0
+                atom_atomic_num = []
+                atom_coord_x = []
+                atom_coord_y = []
+                atom_coord_z = []
+            elif state == XyzParserState.CARDS:
+                line_items = line.strip().split()
+                try:
+                    atomic_num = int(line_items[0])
+                except ValueError:
+                    try:
+                        # Convert here atomic symbol to atomic number
+                        if line_items[0] == "X":
+                            atomic_num = -1
+                        elif line_items[0] == "Q":
+                            atomic_num = -2
+                        else:
+                            atomic_num = elements.symbol(line_items[0]).number
+                    except ValueError:
+                        logger.info(f"Invalid atom at line {line_number + 1}.")
+                        raise
+                try:
+                    coord_x = float(line_items[1])
+                    coord_y = float(line_items[2])
+                    coord_z = float(line_items[3])
+                except ValueError:
+                    # Something is wrong with format
+                    logger.info(f"Invalid coordinate value(s) at line {line_number + 1}.")
+                    raise
+
+                num_read_cards += 1
+                atom_atomic_num.append(atomic_num)
+                atom_coord_x.append(coord_x)
+                atom_coord_y.append(coord_y)
+                atom_coord_z.append(coord_z)
+
+                if num_read_cards == num_atoms:
+                    # Add the set of Cartesian coordinates directly to the molecule
+                    at_coord_data = ds_molecule.AtomicCoordinates(
+                        np.array(atom_atomic_num, dtype="int16"),
+                        np.array(atom_coord_x, dtype="float64"),
+                        np.array(atom_coord_y, dtype="float64"),
+                        np.array(atom_coord_z, dtype="float64"),
+                    )
+                    at_coord_item = item.AtomicCoordinates(title, at_coord_data)
+                    molitem.appendRow(at_coord_item)
+
+                    state = XyzParserState.INIT
+
+    # Autoview last set of coordinates
+    if at_coord_item:
+        flagged_items.append({"itempar": ItemParametrized(at_coord_item, {"maximize": True}), "view": True})
+
+    return molitem, flagged_items, messages
 
 
 def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
@@ -230,19 +329,50 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return tree of items, list of flagged items and list of messages
     """
     unexver_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
+    int_validator = re.compile(r"^[0-9]+$")  # For example 15
+    xyzcard_validator = re.compile(
+        r"^([A-Z][a-z]?|[0-9]+)([\s]+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?){3}$"
+    )  # For example Ca 1.0 -2.0 +0.1e-01
+    xyzcard_validated = 0
     file_format = FileFormat.UNKNOWN
     line_number_limit = 10
     with open(path, "r") as input_file:
         for line_number, line in enumerate(input_file):
-            if line_number == 0 and "UNEX" in line:
-                if unexver_validator.match(line.split()[1]):
+            if line_number == 0:
+                if "UNEX" in line and unexver_validator.match(line.split()[1]):
                     file_format = FileFormat.UNEX
                     break
+                elif numat_match := int_validator.match(line.strip()):
+                    numat = int(numat_match.group(0))
+                    if numat > 0:
+                        file_format = FileFormat.XYZ  # suspect xyz file format here
+            else:
+                if file_format == FileFormat.XYZ:
+                    if line_number == 1:
+                        # in XYZ format second line is comment, it may be anything, even empty
+                        pass
+                    else:
+                        if xyzcard_validator.match(line.strip()):
+                            xyzcard_validated += 1
+                            if xyzcard_validated == numat:
+                                # All cards validated, accept here XYZ format
+                                break
+                            else:
+                                # Call continue explicitly,
+                                # otherwise we can hit the limit on the number of checked lines
+                                continue
+                        else:
+                            # The card is not validated, discard XYZ format
+                            file_format = FileFormat.UNKNOWN
+                            numat = 0
+
             if line_number > line_number_limit:  # line_number starts at 0.
                 break
 
     if file_format == FileFormat.UNEX:
         project_root_item, flagged_items, messages = import_file_unex(path)
+    elif file_format == FileFormat.XYZ:
+        project_root_item, flagged_items, messages = import_file_xyz(path)
     else:
         project_root_item, flagged_items, messages = import_file_cclib(path)
 
