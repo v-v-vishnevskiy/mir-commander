@@ -86,4 +86,4 @@ In the source code we stick to the principles similar to those described in [PEP
 
 Other principles:
 - Prefer string interpolation `f"parameter={par}"` over string `format()` method.
-- Use `logger.info()` instead of `print()`.
+- Instead of `print()` you should obtain a `logger` by calling `logging.getLogger(__name__)` in the beginning of the module and then use the loggers methods `info()`, `debug()`, `warning()`, `error()` and `exception()`.
