@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QCoreApplication
@@ -9,6 +10,12 @@ from mir_commander.utils.settings import Settings
 
 if TYPE_CHECKING:
     from mir_commander.ui.utils.item import Item
+
+
+@dataclass
+class ItemParametrized:
+    item: "Item"
+    parameters: dict
 
 
 class Project:
@@ -33,39 +40,39 @@ class Project:
     def is_temporary(self) -> bool:
         return False
 
-    def _get_items_from_config(self, category: str) -> list["Item"]:
+    def _get_items_from_config(self, category: str) -> list[ItemParametrized]:
         result = []
-        for item in self.config[f"items.{category}"] or []:
-            if item := self._item(item.split("."), self.root_item):
-                result.append(item)
+        for item_dict in self.config[f"items.{category}"] or []:
+            if item := self._item(item_dict["path"].split("."), self.root_item):
+                result.append(ItemParametrized(item, item_dict["parameters"]))
         return result
 
     @property
-    def items_marked_to_view(self) -> list["Item"]:
+    def items_marked_to_view(self) -> list[ItemParametrized]:
         """
-        Returns list of items marked as opened in viewer(s)
+        Returns list of items marked as (to be) opened in viewer(s)
         """
         return self._get_items_from_config("marked_to_view")
 
     @property
-    def items_marked_to_expand(self) -> list["Item"]:
+    def items_marked_to_expand(self) -> list[ItemParametrized]:
         """
         Returns list of items marked as expanded
         """
         return self._get_items_from_config("marked_to_expand")
 
-    def _add_item_to_config(self, item: "Item", category: str):
+    def _add_item_to_config(self, itempar: ItemParametrized, category: str):
         entries = self.config[f"items.{category}"] or []
-        path = item.path
+        path = itempar.item.path
         if path not in entries:
-            entries.append(path)
+            entries.append({"path": path, "parameters": itempar.parameters})
         self.config[f"items.{category}"] = entries
 
-    def mark_item_to_view(self, item: "Item"):
-        self._add_item_to_config(item, "marked_to_view")
+    def mark_item_to_view(self, itempar: ItemParametrized):
+        self._add_item_to_config(itempar, "marked_to_view")
 
-    def mark_item_to_expand(self, item: "Item"):
-        self._add_item_to_config(item, "marked_to_expand")
+    def mark_item_to_expand(self, itempar: ItemParametrized):
+        self._add_item_to_config(itempar, "marked_to_expand")
 
     def _item(self, path: list[str], parent: QStandardItem) -> None | QStandardItem:
         try:
