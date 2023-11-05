@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Callable
 
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
@@ -39,29 +39,53 @@ class Widget(QOpenGLWidget):
                 "zoom_out": "wheel_down",
             },
         )
-        self._actions: dict[str, tuple[Callable, tuple]] = {}
+        self._actions: dict[str, tuple[bool, Callable, tuple]] = {}
         self._init_actions()
 
         self.setMouseTracking(True)
 
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
+        self._to_repeat_actions: dict[str, tuple[Callable, tuple]] = {}
+        self._repeatable_actions_timer = QTimer()
+        self._repeatable_actions_timer.timeout.connect(self._call_action_timer)
+
     def _init_actions(self):
-        self._actions["rotate_down"] = (self._scene.rotate, (-10, 0))
-        self._actions["rotate_left"] = (self._scene.rotate, (0, 10))
-        self._actions["rotate_right"] = (self._scene.rotate, (0, -10))
-        self._actions["rotate_up"] = (self._scene.rotate, (10, 0))
-        self._actions["toggle_projection"] = (self._scene.toggle_projection_mode, tuple())
-        self._actions["zoom_in"] = (self._scene.scale, (0.1,))
-        self._actions["zoom_out"] = (self._scene.scale, (-0.1,))
+        self._actions["rotate_down"] = (True, self._scene.rotate, (-3, 0))
+        self._actions["rotate_left"] = (True, self._scene.rotate, (0, 3))
+        self._actions["rotate_right"] = (True, self._scene.rotate, (0, -3))
+        self._actions["rotate_up"] = (True, self._scene.rotate, (3, 0))
+        self._actions["toggle_projection"] = (False, self._scene.toggle_projection_mode, tuple())
+        self._actions["zoom_in"] = (True, self._scene.scale, (-0.02,))
+        self._actions["zoom_out"] = (True, self._scene.scale, (0.02,))
 
     def _call_action(self, event: QKeyEvent | QMouseEvent | str, match_fn: Callable):
         action = match_fn(event)
         try:
-            fn, args = self._actions[action]
-            fn(*args)
+            repeatable, fn, args = self._actions[action]
+            if repeatable and type(event) in (QKeyEvent, QMouseEvent):
+                self._to_repeat_actions[action] = fn, args
+                self._repeatable_actions_timer.start()
+            else:
+                fn(*args)
         except KeyError:
             pass
+
+    def _stop_action(self, event: QKeyEvent | QMouseEvent, match_fn: Callable):
+        action = match_fn(event)
+        try:
+            repeatable, fn, args = self._actions[action]
+            if repeatable and type(event) in (QKeyEvent, QMouseEvent):
+                del self._to_repeat_actions[action]
+        except KeyError:
+            pass
+
+    def _call_action_timer(self):
+        if not self._to_repeat_actions:
+            self._repeatable_actions_timer.stop()
+        else:
+            for fn, args in self._to_repeat_actions.values():
+                fn(*args)
 
     @property
     def mouse_pos(self) -> tuple[int, int]:
@@ -93,6 +117,9 @@ class Widget(QOpenGLWidget):
     def keyPressEvent(self, event: QKeyEvent):
         self._call_action(event, self._keymap.match_key_event)
 
+    def keyReleaseEvent(self, event: QKeyEvent):
+        self._stop_action(event, self._keymap.match_key_event)
+
     def mouseMoveEvent(self, event: QMouseEvent):
         pos = event.position()
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -106,6 +133,9 @@ class Widget(QOpenGLWidget):
 
     def mousePressEvent(self, event: QMouseEvent):
         self._call_action(event, self._keymap.match_mouse_event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self._stop_action(event, self._keymap.match_key_event)
 
     def wheelEvent(self, event: QWheelEvent):
         events: list[str] = []
