@@ -102,7 +102,7 @@ class UnexProject(Item):
 
 
 class AtomicCoordinatesGroup(Group):
-    default_viewer = viewers.MolecularStructureNew
+    default_viewer = viewers.MolecularStructure
 
     def __init__(self, title: str = "Atomic Coordinates", data: DataStructure | None = None):
         super().__init__(title, data)
@@ -112,7 +112,7 @@ class AtomicCoordinatesGroup(Group):
 
 
 class AtomicCoordinates(Item):
-    default_viewer = viewers.MolecularStructureNew
+    default_viewer = viewers.MolecularStructure
 
     def context_menu(self) -> Menu:
         return Menu()

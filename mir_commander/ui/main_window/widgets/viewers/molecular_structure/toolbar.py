@@ -4,7 +4,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer_new import MolecularStructureNew
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure
 from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
 from mir_commander.ui.utils.widget import Action
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class ToolBar(SubWindowToolBar):
-    widget: QWidget = MolecularStructureNew
+    widget: QWidget = MolecularStructure
 
     def __init__(self, parent: "MainWindow"):
         super().__init__(ToolBar.tr("Molecular viewer"), parent)
