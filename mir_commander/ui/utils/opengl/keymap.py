@@ -9,7 +9,7 @@ class Keymap:
             cls._instances[key] = super().__new__(cls)
         return cls._instances[key]
 
-    def __init__(self, key: int, config: None | dict[str, str] = None):
+    def __init__(self, key: int, config: None | dict[str, list[str]] = None):
         self._map: dict[str, str] = {}
 
         if config is not None:
@@ -28,9 +28,10 @@ class Keymap:
 
         self._map[key] = action
 
-    def load_from_config(self, config: dict[str, str]):
-        for action, key in config.items():
-            self.add(action, key)
+    def load_from_config(self, config: dict[str, list[str]]):
+        for action, keys in config.items():
+            for key in keys:
+                self.add(action, key)
 
     def match_key_event(self, event: QKeyEvent) -> None | str:
         key = QKeySequence(event.keyCombination()).toString().lower().replace("num+", "")

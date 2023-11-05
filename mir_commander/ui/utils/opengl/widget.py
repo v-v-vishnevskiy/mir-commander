@@ -30,13 +30,13 @@ class Widget(QOpenGLWidget):
         self._keymap = keymap or Keymap(
             id(self),
             {
-                "rotate_down": "down",
-                "rotate_left": "left",
-                "rotate_right": "right",
-                "rotate_up": "up",
-                "toggle_projection": "p",
-                "zoom_in": "wheel_up",
-                "zoom_out": "wheel_down",
+                "rotate_down": ["down"],
+                "rotate_left": ["left"],
+                "rotate_right": ["right"],
+                "rotate_up": ["up"],
+                "toggle_projection": ["p"],
+                "zoom_in": ["wheel_up", "="],
+                "zoom_out": ["wheel_down", "-"],
             },
         )
         self._actions: dict[str, tuple[bool, Callable, tuple]] = {}
@@ -51,13 +51,13 @@ class Widget(QOpenGLWidget):
         self._repeatable_actions_timer.timeout.connect(self._call_action_timer)
 
     def _init_actions(self):
-        self._actions["rotate_down"] = (True, self._scene.rotate, (-3, 0))
-        self._actions["rotate_left"] = (True, self._scene.rotate, (0, 3))
-        self._actions["rotate_right"] = (True, self._scene.rotate, (0, -3))
-        self._actions["rotate_up"] = (True, self._scene.rotate, (3, 0))
+        self._actions["rotate_down"] = (True, self._scene.rotate, (1, 0))
+        self._actions["rotate_left"] = (True, self._scene.rotate, (0, 1))
+        self._actions["rotate_right"] = (True, self._scene.rotate, (0, -1))
+        self._actions["rotate_up"] = (True, self._scene.rotate, (-1, 0))
         self._actions["toggle_projection"] = (False, self._scene.toggle_projection_mode, tuple())
-        self._actions["zoom_in"] = (True, self._scene.scale, (-0.02,))
-        self._actions["zoom_out"] = (True, self._scene.scale, (0.02,))
+        self._actions["zoom_in"] = (True, self._scene.scale, (-0.015,))
+        self._actions["zoom_out"] = (True, self._scene.scale, (0.015,))
 
     def _call_action(self, event: QKeyEvent | QMouseEvent | str, match_fn: Callable):
         action = match_fn(event)
