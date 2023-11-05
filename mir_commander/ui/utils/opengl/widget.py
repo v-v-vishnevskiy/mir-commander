@@ -135,7 +135,7 @@ class Widget(QOpenGLWidget):
         self._call_action(event, self._keymap.match_mouse_event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        self._stop_action(event, self._keymap.match_key_event)
+        self._stop_action(event, self._keymap.match_mouse_event)
 
     def wheelEvent(self, event: QWheelEvent):
         events: list[str] = []
