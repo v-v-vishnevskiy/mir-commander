@@ -65,12 +65,12 @@ class MolecularStructureNew(Widget):
 
     def _init_actions(self):
         super()._init_actions()
-        self._actions["item_next"] = (self._draw_next_item, tuple())
-        self._actions["item_prev"] = (self._draw_prev_item, tuple())
-        self._actions["style_next"] = (self._set_next_style, tuple())
-        self._actions["style_prev"] = (self._set_prev_style, tuple())
-        self._actions["save_image"] = (self.save_img_action_handler, tuple())
-        self._actions["toggle_atom_selection"] = (self._scene.toggle_atom_selection, tuple())
+        self._actions["item_next"] = (False, self._draw_next_item, tuple())
+        self._actions["item_prev"] = (False, self._draw_prev_item, tuple())
+        self._actions["style_next"] = (False, self._set_next_style, tuple())
+        self._actions["style_prev"] = (False, self._set_prev_style, tuple())
+        self._actions["save_image"] = (False, self.save_img_action_handler, tuple())
+        self._actions["toggle_atom_selection"] = (False, self._scene.toggle_atom_selection, tuple())
 
     def _apply_style(self):
         self._scene.apply_style()
