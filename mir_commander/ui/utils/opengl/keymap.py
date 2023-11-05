@@ -37,7 +37,7 @@ class Keymap:
         return self._match(key)
 
     def match_mouse_event(self, event: QMouseEvent) -> None | str:
-        return self._match(f"mb_{event.buttons().value}")
+        return self._match(f"mb_{event.button().value}")
 
     def match_wheel_event(self, key: str) -> None | str:
         return self._match(key)
