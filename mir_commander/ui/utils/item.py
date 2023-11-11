@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Type
 
-from PySide6.QtGui import QIcon, QStandardItem
+from PySide6.QtGui import QIcon, QStandardItem, Qt
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.data_structures.base import DataStructure
@@ -67,6 +67,7 @@ class Item(QStandardItem):
         Create viewer instance and add it to MDI area and return this viewer instance
         """
         sub_window = QMdiSubWindow(self._mdi_area)
+        sub_window.setAttribute(Qt.WA_DeleteOnClose)
         viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
         sub_window.setWidget(viewer)
         self._mdi_area.addSubWindow(sub_window)
