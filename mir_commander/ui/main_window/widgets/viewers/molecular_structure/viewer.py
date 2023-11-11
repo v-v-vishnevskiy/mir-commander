@@ -27,10 +27,10 @@ class MolecularStructure(Widget):
         self._config = main_window.project.config.nested("widgets.viewers.molecular_structure")
 
         project_id = id(main_window.project)
-        self.__style = Style(project_id, self._config)
+        self._style = Style(project_id, self._config)
         keymap = Keymap(project_id, self._config["keymap"])
 
-        super().__init__(scene=Scene(self, self.__style), keymap=keymap, parent=parent)
+        super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
         self._scene: Scene
 
@@ -47,7 +47,7 @@ class MolecularStructure(Widget):
             sf.setSamples(16)
             self.setFormat(sf)
 
-        self.__molecule_index = 0
+        self._molecule_index = 0
         self._draw_item = None
         self._set_draw_item()
 
@@ -75,7 +75,7 @@ class MolecularStructure(Widget):
     def _apply_style(self):
         self._scene.apply_style()
 
-    def __atomic_coordinates_item(
+    def _atomic_coordinates_item(
         self, index: int, parent: "Item", counter: int = -1
     ) -> tuple[bool, int, Optional["Item"]]:
         """
@@ -94,7 +94,7 @@ class MolecularStructure(Widget):
                     if index == counter:
                         return True, counter, item
                 elif self.all and item.hasChildren():
-                    found, counter, item = self.__atomic_coordinates_item(index, item, counter)
+                    found, counter, item = self._atomic_coordinates_item(index, item, counter)
                     last_item = item
                     if found:
                         return found, counter, item
@@ -139,19 +139,19 @@ class MolecularStructure(Widget):
                     self._scene.add_bond(self._scene.atom(i), self._scene.atom(j))
 
     def _set_draw_item(self):
-        _, self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
+        _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
 
     def _set_prev_style(self):
-        if self.__style.set_prev_style():
+        if self._style.set_prev_style():
             self._apply_style()
 
     def _set_next_style(self):
-        if self.__style.set_next_style():
+        if self._style.set_next_style():
             self._apply_style()
 
     def _draw_prev_item(self):
-        if self.__molecule_index > 0:
-            self.__molecule_index -= 1
+        if self._molecule_index > 0:
+            self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
             self._scene.clear(update=False)
@@ -159,7 +159,7 @@ class MolecularStructure(Widget):
             self.update()
 
     def _draw_next_item(self):
-        self.__molecule_index += 1
+        self._molecule_index += 1
         item = self._draw_item
         self._set_draw_item()
         if id(item) != id(self._draw_item):

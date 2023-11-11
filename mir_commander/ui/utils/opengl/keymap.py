@@ -5,6 +5,11 @@ class Keymap:
     _instances: dict[int, "Keymap"] = {}
 
     def __new__(cls, key: int, config: None | dict[str, str] = None) -> "Keymap":
+        """
+        This function is required to prevent re-reading config files when each new window is created.
+        :param key: unique value
+        :param config:
+        """
         if key not in cls._instances:
             cls._instances[key] = super().__new__(cls)
         return cls._instances[key]

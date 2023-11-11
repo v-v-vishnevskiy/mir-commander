@@ -4,23 +4,23 @@ from mir_commander.ui.utils.opengl.mesh.base import MeshData
 
 
 class Sphere(MeshData):
-    min_rows = 2
-    min_cols = 3
+    min_stacks = 2
+    min_slices = 3
     min_radius = 0.001
 
-    def __init__(self, rows: int = 10, cols: int = 10, radius: float = 1.0):
+    def __init__(self, stacks: int = 10, slices: int = 10, radius: float = 1.0):
         super().__init__()
-        self.rows = self.min_rows
-        self.cols = self.min_cols
+        self.stacks = self.min_stacks
+        self.slices = self.min_slices
         self.radius = self.min_radius
 
-        self.generate_mesh(rows, cols, radius)
+        self.generate_mesh(stacks, slices, radius)
         self.compute_vertex_normals()
         self.compute_face_normals()
 
-    def generate_mesh(self, rows: int, cols: int, radius: float = 1.0):
-        self.rows = max(self.min_rows, rows)
-        self.cols = max(self.min_cols, cols)
+    def generate_mesh(self, stacks: int, slices: int, radius: float = 1.0):
+        self.stacks = max(self.min_stacks, stacks)
+        self.slices = max(self.min_slices, slices)
         self.radius = max(self.min_radius, radius)
 
         vertices = self._generate_vertices()
@@ -34,12 +34,12 @@ class Sphere(MeshData):
 
     def _generate_vertices(self) -> list[float]:
         vertices = []
-        a = pi / self.rows
-        b = (pi * 2) / self.cols
+        a = pi / self.stacks
+        b = (pi * 2) / self.slices
         vertices.extend([0.0, 0.0, self.radius])
-        for i in range(1, self.rows):
+        for i in range(1, self.stacks):
             z = cos(a * i)
-            for j in range(self.cols):
+            for j in range(self.slices):
                 x = sin(a * i) * cos(b * j)
                 y = sin(a * i) * sin(b * j)
                 vertices.extend([x * self.radius, y * self.radius, z * self.radius])
@@ -49,26 +49,26 @@ class Sphere(MeshData):
     def _generate_faces(self) -> list[int]:
         faces = []
         # the top
-        prev_i = self.cols
-        for i in range(1, self.cols + 1):
+        prev_i = self.slices
+        for i in range(1, self.slices + 1):
             faces.extend([0, prev_i, i])
             prev_i = i
 
         # the middle
-        prev_row = 1
-        for row in range(2, self.rows):
-            prev_i = row * self.cols
-            for i in range(prev_row * self.cols + 1, row * self.cols + 1):
-                faces.extend([prev_i - self.cols, prev_i, i])
-                faces.extend([i - self.cols, prev_i - self.cols, i])
+        prev_stack = 1
+        for stack in range(2, self.stacks):
+            prev_i = stack * self.slices
+            for i in range(prev_stack * self.slices + 1, stack * self.slices + 1):
+                faces.extend([prev_i - self.slices, prev_i, i])
+                faces.extend([i - self.slices, prev_i - self.slices, i])
                 prev_i = i
-            prev_row = row
+            prev_stack = stack
 
         # the bottom
-        num_vertices = (self.rows - 1) * self.cols + 2
+        num_vertices = (self.stacks - 1) * self.slices + 2
         last_i = num_vertices - 1
         prev_i = last_i - 1
-        for i in range(last_i - self.cols, last_i):
+        for i in range(last_i - self.slices, last_i):
             faces.extend([i, prev_i, last_i])
             prev_i = i
 

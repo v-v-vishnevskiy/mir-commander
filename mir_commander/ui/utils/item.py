@@ -57,12 +57,15 @@ class Item(QStandardItem):
         return result
 
     def _view_structures_all(self):
-        self._viewer(viewers.MolecularStructure, all=True).show()
+        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=True).show()
 
     def _view_structures_child(self):
-        self._viewer(viewers.MolecularStructure, all=False).show()
+        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=False).show()
 
-    def _viewer(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
+    def _create_viewer_and_add_to_mdi(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
+        """
+        Create viewer instance and add it to MDI area and return this viewer instance
+        """
         sub_window = QMdiSubWindow(self._mdi_area)
         viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
         sub_window.setWidget(viewer)
@@ -73,7 +76,7 @@ class Item(QStandardItem):
 
     def view(self, maximize: bool = False, *args, **kwargs) -> None | QWidget:
         """
-        Add viewer instance to MDI area and returns this viewer instance for this item
+        Check for existing viewer and create if doesn't exist
         """
         mdi_area = self._mdi_area
         for sub_window in mdi_area.subWindowList():
@@ -83,7 +86,7 @@ class Item(QStandardItem):
                 return sub_window.widget()
         else:
             if self.default_viewer:
-                return self._viewer(self.default_viewer, maximize, *args, **kwargs)
+                return self._create_viewer_and_add_to_mdi(self.default_viewer, maximize, *args, **kwargs)
             else:
                 return None
 

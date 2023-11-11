@@ -14,9 +14,9 @@ class Scene(BaseScene):
     def __init__(self, widget: QOpenGLWidget, style: Style):
         super().__init__(widget)
 
-        self._atom_mesh_data = Sphere(rows=Sphere.min_rows, cols=Sphere.min_cols, radius=1.0)
-        self._bond_mesh_data = Cylinder(rows=1, cols=Cylinder.min_cols, radius=1.0, length=1.0, caps=False)
-        self._bond_cap_mesh_data = Hemisphere(rows=Hemisphere.min_rows, cols=Hemisphere.min_cols, radius=1.0)
+        self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
+        self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
+        self._bond_cap_mesh_data = Hemisphere(stacks=Hemisphere.min_stacks, slices=Hemisphere.min_slices, radius=1.0)
 
         self._atom_items: list[Atom] = []
         self._bond_items: list[Bond] = []
@@ -26,11 +26,11 @@ class Scene(BaseScene):
 
         self.style = style
 
-    def __apply_atoms_style(self, mesh_quality: int):
+    def _apply_atoms_style(self, mesh_quality: int):
         # update mesh
-        s_rows, s_cols = Sphere.min_rows * mesh_quality, Sphere.min_cols * mesh_quality
-        if (s_rows, s_cols) != (self._atom_mesh_data.rows, self._atom_mesh_data.cols):
-            self._atom_mesh_data.generate_mesh(rows=s_rows, cols=s_cols, radius=self._atom_mesh_data.radius)
+        s_stacks, s_slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
+        if (s_stacks, s_slices) != (self._atom_mesh_data.stacks, self._atom_mesh_data.slices):
+            self._atom_mesh_data.generate_mesh(stacks=s_stacks, slices=s_slices, radius=self._atom_mesh_data.radius)
             self._atom_mesh_data.compute_vertex_normals()
             self._atom_mesh_data.compute_face_normals()
 
@@ -41,13 +41,13 @@ class Scene(BaseScene):
             atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
             atom.set_smooth(self.style["quality.smooth"])
 
-    def __apply_bonds_style(self, mesh_quality: int):
+    def _apply_bonds_style(self, mesh_quality: int):
         # update mesh
-        c_cols = Cylinder.min_cols * mesh_quality
-        if c_cols != self._bond_mesh_data.cols:
+        c_slices = Cylinder.min_slices * mesh_quality
+        if c_slices != self._bond_mesh_data.slices:
             self._bond_mesh_data.generate_mesh(
-                rows=self._bond_mesh_data.rows,
-                cols=c_cols,
+                stacks=self._bond_mesh_data.stacks,
+                slices=c_slices,
                 radius=self._bond_mesh_data.radius,
                 length=self._bond_mesh_data.length,
                 caps=self._bond_mesh_data.caps,
@@ -55,11 +55,11 @@ class Scene(BaseScene):
             self._bond_mesh_data.compute_vertex_normals()
             self._bond_mesh_data.compute_face_normals()
 
-        h_rows, h_cols = Hemisphere.min_rows * mesh_quality, Hemisphere.min_cols * mesh_quality
-        if (h_rows, h_cols) != (self._bond_cap_mesh_data.rows, self._bond_cap_mesh_data.cols):
+        h_stacks, h_slices = Hemisphere.min_stacks * mesh_quality, Hemisphere.min_slices * mesh_quality
+        if (h_stacks, h_slices) != (self._bond_cap_mesh_data.stacks, self._bond_cap_mesh_data.slices):
             self._bond_cap_mesh_data.generate_mesh(
-                rows=h_rows,
-                cols=h_cols,
+                stacks=h_stacks,
+                slices=h_slices,
                 radius=self._bond_cap_mesh_data.radius,
             )
             self._bond_cap_mesh_data.compute_vertex_normals()
@@ -118,8 +118,8 @@ class Scene(BaseScene):
     def apply_style(self):
         mesh_quality = self.style["quality.mesh"]
         mesh_quality = max(min(mesh_quality, 100), 1)
-        self.__apply_atoms_style(mesh_quality)
-        self.__apply_bonds_style(mesh_quality)
+        self._apply_atoms_style(mesh_quality)
+        self._apply_bonds_style(mesh_quality)
 
         self.set_background_color(self.normalize_color(self.style["background.color"]))
 
