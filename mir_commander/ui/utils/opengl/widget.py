@@ -23,7 +23,7 @@ class WheelMode(Enum):
 class Widget(QOpenGLWidget):
     def __init__(self, scene: None | Scene = None, keymap: None | Keymap = None, parent: None | QWidget = None):
         super().__init__(parent)
-        self.__mouse_pos: QPoint = QPoint(0, 0)
+        self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
         self._scene = scene or Scene(self)
@@ -88,8 +88,8 @@ class Widget(QOpenGLWidget):
                 fn(*args)
 
     @property
-    def mouse_pos(self) -> tuple[int, int]:
-        return self.__mouse_pos.x(), self.__mouse_pos.y()
+    def cursor_position(self) -> tuple[int, int]:
+        return self._cursor_pos.x(), self._cursor_pos.y()
 
     def resize(self, w: int, h: int):
         parent = self.parent()
@@ -124,12 +124,12 @@ class Widget(QOpenGLWidget):
         pos = event.position()
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
-                diff = pos - self.__mouse_pos
+                diff = pos - self._cursor_pos
                 self._scene.rotate(diff.y(), -diff.x())
         else:
-            self._scene.move_cursor(pos.x(), pos.y())
+            self._scene.new_cursor_position(pos.x(), pos.y())
 
-        self.__mouse_pos = pos
+        self._cursor_pos = pos
 
     def mousePressEvent(self, event: QMouseEvent):
         self._call_action(event, self._keymap.match_mouse_event)

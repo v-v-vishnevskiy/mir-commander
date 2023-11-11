@@ -14,28 +14,28 @@ class Scene(BaseScene):
     def __init__(self, widget: QOpenGLWidget, style: Style):
         super().__init__(widget)
 
-        self.__atom_mesh_data = Sphere(rows=Sphere.min_rows, cols=Sphere.min_cols, radius=1.0)
-        self.__bond_mesh_data = Cylinder(rows=1, cols=Cylinder.min_cols, radius=1.0, length=1.0, caps=False)
-        self.__bond_cap_mesh_data = Hemisphere(rows=Hemisphere.min_rows, cols=Hemisphere.min_cols, radius=1.0)
+        self._atom_mesh_data = Sphere(rows=Sphere.min_rows, cols=Sphere.min_cols, radius=1.0)
+        self._bond_mesh_data = Cylinder(rows=1, cols=Cylinder.min_cols, radius=1.0, length=1.0, caps=False)
+        self._bond_cap_mesh_data = Hemisphere(rows=Hemisphere.min_rows, cols=Hemisphere.min_cols, radius=1.0)
 
-        self.__atom_items: list[Atom] = []
-        self.__bond_items: list[Bond] = []
-        self.__edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
+        self._atom_items: list[Atom] = []
+        self._bond_items: list[Bond] = []
+        self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
 
-        self.__atom_index_under_cursor: None | Atom = None
+        self._atom_index_under_cursor: None | Atom = None
 
         self.style = style
 
     def __apply_atoms_style(self, mesh_quality: int):
         # update mesh
         s_rows, s_cols = Sphere.min_rows * mesh_quality, Sphere.min_cols * mesh_quality
-        if (s_rows, s_cols) != (self.__atom_mesh_data.rows, self.__atom_mesh_data.cols):
-            self.__atom_mesh_data.generate_mesh(rows=s_rows, cols=s_cols, radius=self.__atom_mesh_data.radius)
-            self.__atom_mesh_data.compute_vertex_normals()
-            self.__atom_mesh_data.compute_face_normals()
+        if (s_rows, s_cols) != (self._atom_mesh_data.rows, self._atom_mesh_data.cols):
+            self._atom_mesh_data.generate_mesh(rows=s_rows, cols=s_cols, radius=self._atom_mesh_data.radius)
+            self._atom_mesh_data.compute_vertex_normals()
+            self._atom_mesh_data.compute_face_normals()
 
         # update items
-        for atom in self.__atom_items:
+        for atom in self._atom_items:
             atom.enabled = self.style["atoms.enabled"]
             atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
             atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
@@ -44,29 +44,29 @@ class Scene(BaseScene):
     def __apply_bonds_style(self, mesh_quality: int):
         # update mesh
         c_cols = Cylinder.min_cols * mesh_quality
-        if c_cols != self.__bond_mesh_data.cols:
-            self.__bond_mesh_data.generate_mesh(
-                rows=self.__bond_mesh_data.rows,
+        if c_cols != self._bond_mesh_data.cols:
+            self._bond_mesh_data.generate_mesh(
+                rows=self._bond_mesh_data.rows,
                 cols=c_cols,
-                radius=self.__bond_mesh_data.radius,
-                length=self.__bond_mesh_data.length,
-                caps=self.__bond_mesh_data.caps,
+                radius=self._bond_mesh_data.radius,
+                length=self._bond_mesh_data.length,
+                caps=self._bond_mesh_data.caps,
             )
-            self.__bond_mesh_data.compute_vertex_normals()
-            self.__bond_mesh_data.compute_face_normals()
+            self._bond_mesh_data.compute_vertex_normals()
+            self._bond_mesh_data.compute_face_normals()
 
         h_rows, h_cols = Hemisphere.min_rows * mesh_quality, Hemisphere.min_cols * mesh_quality
-        if (h_rows, h_cols) != (self.__bond_cap_mesh_data.rows, self.__bond_cap_mesh_data.cols):
-            self.__bond_cap_mesh_data.generate_mesh(
+        if (h_rows, h_cols) != (self._bond_cap_mesh_data.rows, self._bond_cap_mesh_data.cols):
+            self._bond_cap_mesh_data.generate_mesh(
                 rows=h_rows,
                 cols=h_cols,
-                radius=self.__bond_cap_mesh_data.radius,
+                radius=self._bond_cap_mesh_data.radius,
             )
-            self.__bond_cap_mesh_data.compute_vertex_normals()
-            self.__bond_cap_mesh_data.compute_face_normals()
+            self._bond_cap_mesh_data.compute_vertex_normals()
+            self._bond_cap_mesh_data.compute_face_normals()
 
         # update items
-        for bond in self.__bond_items:
+        for bond in self._bond_items:
             bond.set_radius(self.style["bond.radius"])
 
             if self.style["bond.color"] == "atoms":
@@ -77,14 +77,14 @@ class Scene(BaseScene):
             bond.set_smooth(self.style["quality.smooth"])
 
     def _atom_under_cursor(self, x: int, y: int) -> None | Atom:
-        if not self.__atom_items:
+        if not self._atom_items:
             return None
 
         result = None
         point, direction = self.point_to_line(x, y)
         direction.normalize()
         distance = None
-        for atom in self.__atom_items:
+        for atom in self._atom_items:
             if atom.cross_with_line_test(point, direction):
                 d = atom.position.distanceToPoint(point)
                 if distance is None or d < distance:
@@ -95,15 +95,15 @@ class Scene(BaseScene):
     def _highlight_atom_under_cursor(self, x: int, y: int):
         atom = self._atom_under_cursor(x, y)
         if atom:
-            if atom != self.__atom_index_under_cursor:
-                if self.__atom_index_under_cursor is not None:
-                    self.__atom_index_under_cursor.set_under_cursor(False)
+            if atom != self._atom_index_under_cursor:
+                if self._atom_index_under_cursor is not None:
+                    self._atom_index_under_cursor.set_under_cursor(False)
                 atom.set_under_cursor(True)
                 self.update()
-        elif self.__atom_index_under_cursor:
-            self.__atom_index_under_cursor.set_under_cursor(False)
+        elif self._atom_index_under_cursor:
+            self._atom_index_under_cursor.set_under_cursor(False)
             self.update()
-        self.__atom_index_under_cursor = atom
+        self._atom_index_under_cursor = atom
 
     def toggle_atom_selection(self):
         atom = self._atom_under_cursor(*self.mouse_pos)
@@ -129,8 +129,8 @@ class Scene(BaseScene):
         self.update()
 
     def clear(self, update: bool = True):
-        self.__atom_items.clear()
-        self.__bond_items.clear()
+        self._atom_items.clear()
+        self._bond_items.clear()
         super().clear(update)
 
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
@@ -141,12 +141,12 @@ class Scene(BaseScene):
 
         color = self.normalize_color(self.style["atoms.color"][atomic_num])
 
-        item = Atom(self.__atom_mesh_data, atomic_num, position, radius, color, selected_shader=self.__edge_shader)
+        item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
         item.enabled = self.style["atoms.enabled"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
-        self.__atom_items.append(item)
+        self._atom_items.append(item)
 
         return item
 
@@ -158,8 +158,8 @@ class Scene(BaseScene):
             color = self.normalize_color(self.style["bond.color"])
 
         item = Bond(
-            self.__bond_mesh_data,
-            self.__bond_cap_mesh_data,
+            self._bond_mesh_data,
+            self._bond_cap_mesh_data,
             atom_1,
             atom_2,
             self.style["bond.radius"],
@@ -169,12 +169,12 @@ class Scene(BaseScene):
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
-        self.__bond_items.append(item)
+        self._bond_items.append(item)
 
         return item
 
     def atom(self, index: int) -> Atom:
-        return self.__atom_items[index]
+        return self._atom_items[index]
 
     def set_style(self, name: str):
         self.style.set_style(name)
@@ -186,5 +186,5 @@ class Scene(BaseScene):
         """
         return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
 
-    def move_cursor(self, x: int, y: int):
+    def new_cursor_position(self, x: int, y: int):
         self._highlight_atom_under_cursor(x, y)

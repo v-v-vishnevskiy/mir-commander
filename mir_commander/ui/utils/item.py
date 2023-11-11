@@ -22,11 +22,11 @@ class Item(QStandardItem):
         self.file_path: str = ""
 
     @property
-    def __mdi_area(self) -> QMdiArea:
+    def _mdi_area(self) -> QMdiArea:
         return self.model().parent().parent().mdi_area
 
     @property
-    def __main_window(self) -> "MainWindow":
+    def _main_window(self) -> "MainWindow":
         return self.model().parent().parent().parent()
 
     def _set_icon(self):
@@ -63,10 +63,10 @@ class Item(QStandardItem):
         self._viewer(viewers.MolecularStructure, all=False).show()
 
     def _viewer(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
-        sub_window = QMdiSubWindow(self.__mdi_area)
-        viewer = cls(sub_window, item=self, main_window=self.__main_window, *args, **kwargs)
+        sub_window = QMdiSubWindow(self._mdi_area)
+        viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
         sub_window.setWidget(viewer)
-        self.__mdi_area.addSubWindow(sub_window)
+        self._mdi_area.addSubWindow(sub_window)
         if maximize:
             sub_window.showMaximized()
         return viewer
@@ -75,7 +75,7 @@ class Item(QStandardItem):
         """
         Add viewer instance to MDI area and returns this viewer instance for this item
         """
-        mdi_area = self.__mdi_area
+        mdi_area = self._mdi_area
         for sub_window in mdi_area.subWindowList():
             # checking if viewer for this item already opened
             if id(sub_window.widget().item) == id(self):

@@ -37,7 +37,7 @@ class ProjectionMode(Enum):
 
 class Scene:
     def __init__(self, widget: "Widget"):
-        self.__gl_widget = widget
+        self._gl_widget = widget
         self._items: set[Item] = set()
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._translation_matrix = QMatrix4x4()
@@ -60,8 +60,8 @@ class Scene:
         glEnable(GL_MULTISAMPLE)
 
     def _setup_projection_matrix(self):
-        width = self.__gl_widget.size().width()
-        height = self.__gl_widget.size().height()
+        width = self._gl_widget.size().width()
+        height = self._gl_widget.size().height()
         glViewport(0, 0, width, height)
         self._projection_matrix.setToIdentity()
         if self._projection_mode == ProjectionMode.Orthographic:
@@ -75,7 +75,7 @@ class Scene:
         else:
             raise RuntimeError("Invalid projection mode")
 
-        self.__gl_widget.makeCurrent()
+        self._gl_widget.makeCurrent()
         glMatrixMode(GL_PROJECTION)
         glLoadMatrixf(self._projection_matrix.data())
         glMatrixMode(GL_MODELVIEW)
@@ -92,7 +92,7 @@ class Scene:
             item.clear()
         self._items.clear()
         if update:
-            self.__gl_widget.update()
+            self._gl_widget.update()
 
     def add_item(self, item: Item):
         if not issubclass(type(item), Item):
@@ -103,11 +103,11 @@ class Scene:
 
     @property
     def mouse_pos(self) -> tuple[int, int]:
-        return self.__gl_widget.mouse_pos
+        return self._gl_widget.cursor_position
 
     def update_window_size(self):
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_projection_mode(self, mode: ProjectionMode | str):
         if type(mode) is str:
@@ -119,7 +119,7 @@ class Scene:
                 raise RuntimeError(f"Invalid projection mode: {mode}")
         self._projection_mode = mode  # type: ignore
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def toggle_projection_mode(self):
         if self._projection_mode == ProjectionMode.Orthographic:
@@ -130,31 +130,31 @@ class Scene:
     def set_fov(self, value: float):
         self._fov = min(90.0, max(35.0, value))
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_far_plane(self, value: float):
         self._far_plane = max(500.0, value)
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_center(self, point: QVector3D):
         self._center = point
         self._setup_translation_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_camera_distance(self, distance: float):
         self._camera_distance = distance
         self._setup_translation_matrix()
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_current(self):
         self._setup_projection_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     @property
     def translation_matrix(self) -> QMatrix4x4:
@@ -170,12 +170,12 @@ class Scene:
         r *= self._rotation
         self._rotation = r
         self._setup_translation_matrix()
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def scale(self, factor: float):
         self.set_camera_distance(self._camera_distance + (factor * self._scale_speed) * self._camera_distance)
 
-    def move_cursor(self, x: int, y: int):
+    def new_cursor_position(self, x: int, y: int):
         pass
 
     def paint(self):
@@ -187,8 +187,8 @@ class Scene:
             item.paint()
 
     def point_to_line(self, x: int, y: int) -> tuple[QVector3D, QVector3D]:
-        width = self.__gl_widget.size().width()
-        height = self.__gl_widget.size().height()
+        width = self._gl_widget.size().width()
+        height = self._gl_widget.size().height()
         viewport = QRect(0, 0, width, height)
 
         y = height - y  # opengl computes from left-bottom corner
@@ -198,10 +198,10 @@ class Scene:
         )
 
     def update(self):
-        self.__gl_widget.update()
+        self._gl_widget.update()
 
     def render_to_image(self, width: int, height: int, transparent_bg: bool = False) -> QImage:
-        self.__gl_widget.makeCurrent()
+        self._gl_widget.makeCurrent()
 
         fbo_format = QOpenGLFramebufferObjectFormat()
         fbo_format.setSamples(16)
@@ -214,8 +214,8 @@ class Scene:
         if transparent_bg:
             self._bg_color = bg_color[0], bg_color[1], bg_color[2], 0.0
 
-        w = self.__gl_widget.size().width()
-        h = self.__gl_widget.size().height()
+        w = self._gl_widget.size().width()
+        h = self._gl_widget.size().height()
 
         glViewport(0, 0, width, height)
         self.paint()
