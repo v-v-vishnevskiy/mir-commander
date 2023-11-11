@@ -40,7 +40,7 @@ class TreeView(QTreeView):
     def _item_double_clicked(self, index: QModelIndex):
         item = self.model().itemFromIndex(index)
         if viewer := item.view():
-            viewer.show()
+            viewer.showNormal()
         else:
             self.setExpanded(index, not self.isExpanded(index))
 

@@ -1,77 +1,55 @@
-import logging
 import math
 import os
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
-from pyqtgraph import Transform3D, Vector
-from PySide6.QtCore import QCoreApplication, QKeyCombination, QRect, Qt, Slot
-from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QQuaternion, QSurfaceFormat, QVector3D
+from PySide6.QtCore import Slot
+from PySide6.QtGui import QContextMenuEvent, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QMessageBox, QWidget
 
-from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS, DIR
+from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
-from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
+from mir_commander.ui.utils.opengl.keymap import Keymap
+from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
-from mir_commander.utils.config import Config
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.utils.item import Item
 
 
-logger = logging.getLogger(__name__)
+class MolecularStructure(Widget):
+    def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
+        self._main_window = main_window
+        self._config = main_window.project.config.nested("widgets.viewers.molecular_structure")
 
+        project_id = id(main_window.project)
+        self._style = Style(project_id, self._config)
+        keymap = Keymap(project_id, self._config["keymap"])
 
-@dataclass
-class MoleculeStruct:
-    atoms: list[gl.GLMeshItem]
-    bonds: list[gl.GLMeshItem]
+        super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
+        self._scene: Scene
 
-class MolecularStructure(gl.GLViewWidget):
-    styles: list[Config] = []
+        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
+        self.resize(self._config["size"][0], self._config["size"][1])
 
-    def __init__(self, item: "Item", all: bool = False):
-        super().__init__(None, rotationMethod="quaternion")
-        self._main_window = None
         self.item = item
         self.all = all
-        self._global_config = QCoreApplication.instance().config
-        self._config = self._global_config.nested("widgets.viewers.molecular_structure")
-        self._draw_item = None
-        self.__molecule_index = 0
-        self.__default_style = self._config.nested("style.default")
-        self.__camera_set = False
-        self.__mouse_pos = None
-        self.__atom_mesh_data = None
-        self.__bond_mesh_data = None
-        self.__at_rad: list[int] = []
-        self.__at_color: list[str] = []
-        self._molecule: MoleculeStruct | None = None
-        self._selected_atoms: set[int] = set()
-        self._atom_index_under_point: None | int = None
-        self._atom_transform_under_point: None | Transform3D = None
 
-        if not self.styles:
-            self._load_styles()
-
-        self.__style = self.styles[0]
-        self._set_style(self._config["style.current"])
-        self.__apply_style()
+        self._keymap.load_from_config(self._config["keymap"])
 
         if self._config["antialiasing"]:
             sf = QSurfaceFormat()
             sf.setSamples(16)
             self.setFormat(sf)
 
-        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
+        self._molecule_index = 0
+        self._draw_item = None
         self._set_draw_item()
-        self.update_window_title()
 
         # Menus and actions specific for this particular widget
         self.context_menu = Menu("", self)
@@ -81,220 +59,23 @@ class MolecularStructure(gl.GLViewWidget):
         # Connect the actions to methods
         save_img_action.triggered.connect(self.save_img_action_handler)
 
-        self.setMouseTracking(True)
+        self.update_window_title()
 
-        self.draw()
+        self._build_molecule()
 
-    def contextMenuEvent(self, event):
-        # Show the context menu
-        self.context_menu.exec(event.globalPos())
+    def _init_actions(self):
+        super()._init_actions()
+        self._actions["item_next"] = (False, self._draw_next_item, tuple())
+        self._actions["item_prev"] = (False, self._draw_prev_item, tuple())
+        self._actions["style_next"] = (False, self._set_next_style, tuple())
+        self._actions["style_prev"] = (False, self._set_prev_style, tuple())
+        self._actions["save_image"] = (False, self.save_img_action_handler, tuple())
+        self._actions["toggle_atom_selection"] = (False, self._scene.toggle_atom_selection, tuple())
 
-    @Slot()
-    def save_img_action_handler(self):
-        dlg = SaveImageDialog(self.width(), self.height(), self._draw_item.text(), self)
-        if dlg.exec():
-            save_flag = True
-            if os.path.exists(dlg.img_file_path):
-                ret = QMessageBox.warning(
-                    self,
-                    self.tr("Save image"),
-                    self.tr("The file already exists:")
-                    + "\n"
-                    + dlg.img_file_path
-                    + "\n"
-                    + self.tr("Do you want to overwrite it?"),
-                    QMessageBox.Yes | QMessageBox.No,
-                )
-                if ret != QMessageBox.Yes:
-                    save_flag = False
+    def _apply_style(self):
+        self._scene.apply_style()
 
-            if save_flag:
-                rendered_array = self.renderToArray((dlg.img_width, dlg.img_height), padding=1)
-                pg.makeQImage(rendered_array, transpose=False).save(dlg.img_file_path)
-                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
-
-    def setParent(self, widget: QWidget):
-        pos = widget.pos()
-        size = self._config["size"]
-        widget.setGeometry(pos.x(), pos.y(), size[0], size[1])
-        widget.setWindowIcon(self.item.icon())
-        super().setParent(widget)
-        self._main_window = widget.mdiArea().parent()
-
-    def _load_styles(self):
-        styles = [self.__default_style]
-        for file in (DIR.CONFIG / "styles" / "viewers" / "molecule").glob("*.yaml"):
-            style = Config(file)
-            style.set_defaults(self.__default_style)
-            styles.append(style)
-        self.__class__.styles = sorted(styles, key=lambda x: x["name"])
-
-    def _set_draw_item(self):
-        _, self.__molecule_index, self._draw_item = self.__atomic_coordinates_item(self.__molecule_index, self.item)
-
-    def _set_style(self, name: str):
-        for style in self.styles:
-            if style["name"] == name:
-                self.__style = style
-                break
-        else:
-            self.__style = self.__default_style
-
-    def __apply_style(self):
-        mesh_quality = self.__style["quality.mesh"]
-        mesh_quality = max(min(mesh_quality, 1), 0.1)
-        mesh_quality = int(mesh_quality * 50)
-        bond_radius = self.__style["bond.radius"]
-        self.__atom_mesh_data = gl.MeshData.sphere(mesh_quality, mesh_quality, radius=1)
-        self.__bond_mesh_data = gl.MeshData.cylinder(1, mesh_quality, [bond_radius, bond_radius], length=1)
-
-        self.__at_rad = self.__style["atoms.radius"]
-        self.__at_color = self.__style["atoms.color"]
-
-    def _build_molecule(self) -> MoleculeStruct | None:
-        """
-        Builds molecule graphics object from `AtomicCoordinates` data structure
-        """
-        if not self._draw_item:
-            return None
-
-        ds: AtomicCoordinatesDS = self._draw_item.data()
-        atoms = self._build_atoms(ds)
-        bonds = self._build_bonds(ds)
-
-        return MoleculeStruct(atoms, bonds)
-
-    def _build_atoms(self, ds: AtomicCoordinatesDS) -> list[gl.GLMeshItem]:
-        result = []
-        for i, atomic_num in enumerate(ds.atomic_num):
-            mesh_item = gl.GLMeshItem(
-                meshdata=self.__atom_mesh_data,
-                smooth=self.__style["quality.smooth"],
-                shader="shaded",
-                color=self.normalize_color(self.__at_color[atomic_num]),
-            )
-            if self.__style["atoms.enabled"]:
-                radius = self.__style["atoms.scale_factor"] * self.__at_rad[atomic_num]
-            else:
-                radius = self.__style["bond.radius"]
-            mesh_item.scale(radius, radius, radius)
-            mesh_item.translate(ds.x[i], ds.y[i], ds.z[i])
-            mesh_item.atom_params = {
-                "atomic_num": atomic_num,
-                "index": i,
-                "radius": radius,
-                "pos": QVector3D(ds.x[i], ds.y[i], ds.z[i]),
-            }
-            result.append(mesh_item)
-        return result
-
-    def _build_bonds(self, ds: AtomicCoordinatesDS) -> list[gl.GLMeshItem]:
-        result = []
-        geom_bond_tol = 0.15
-        for i in range(len(ds.atomic_num)):
-            crad_i = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[i]]
-            for j in range(i):
-                crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[j]]
-                crad_sum = crad_i + crad_j
-                dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
-                if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
-                    result.extend(
-                        self._build_bond(
-                            dist_ij,
-                            Vector(ds.x[i], ds.y[i], ds.z[i]),
-                            Vector(ds.x[j], ds.y[j], ds.z[j]),
-                            ds.atomic_num[i],
-                            ds.atomic_num[j],
-                        )
-                    )
-        return result
-
-    def _build_bond(self, length: float, atom1: Vector, atom2: Vector, a_num1: int, a_num2: int) -> list[gl.GLMeshItem]:
-        result = []
-        color = self.__style["bond.color"]
-        if color.startswith("#") and len(color) == 7:
-            result.append(self.__build_cylinder(length, atom1, atom2, color))
-        elif self.__style["bond.color"] == "atoms":
-            if a_num1 == a_num2:
-                result.append(self.__build_cylinder(length, atom1, atom2, self.__at_color[a_num1]))
-            else:
-                if self.__style["atoms.enabled"]:
-                    rad1 = self.__at_rad[a_num1] * self.__style["atoms.scale_factor"]
-                    rad2 = self.__at_rad[a_num2] * self.__style["atoms.scale_factor"]
-                    mid_length = length - rad1 - rad2
-                    if mid_length > 0:
-                        length1 = rad1 + mid_length / 2
-                        length2 = rad2 + mid_length / 2
-                        mid = atom2 - atom1
-                        mid.normalize()
-                        mid = (mid * length1) + atom1
-                        result.append(self.__build_cylinder(length1, atom1, mid, self.__at_color[a_num1]))
-                        result.append(self.__build_cylinder(length2, mid, atom2, self.__at_color[a_num2]))
-                else:
-                    mid = (atom1 + atom2) / 2
-                    result.append(self.__build_cylinder(length / 2, atom1, mid, self.__at_color[a_num1]))
-                    result.append(self.__build_cylinder(length / 2, mid, atom2, self.__at_color[a_num2]))
-        else:
-            logger.warning("Parameter `bond.color` is not set. Use default color #888888")
-            result.append(self.__build_cylinder(length, atom1, atom2, "#888888"))
-        return result
-
-    def __build_cylinder(self, length: float, start: Vector, end: Vector, color: str) -> gl.GLMeshItem:
-        mesh_item = gl.GLMeshItem(
-            meshdata=self.__bond_mesh_data,
-            smooth=self.__style["quality.smooth"],
-            shader="shaded",
-            color=self.normalize_color(color),
-        )
-        tr = Transform3D()
-        tr.translate((start + end) / 2)
-        tr.rotate(QQuaternion.rotationTo(Vector(0, 0, 1), start - end))
-        tr.scale(1, 1, length)
-        tr.translate(0, 0, -0.5)
-        mesh_item.applyTransform(tr, False)
-        return mesh_item
-
-    def _set_camera_position(self):
-        ds: AtomicCoordinatesDS = self._draw_item.data()
-        center = Vector(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
-        distance = 0
-        for i, atomic_num in enumerate(ds.atomic_num):
-            d = (
-                math.sqrt(((ds.x[i] - center.x()) ** 2 + (ds.y[i] - center.y()) ** 2 + (ds.z[i] - center.z()) ** 2))
-                + self.__at_rad[atomic_num]
-            )
-            if d > distance:
-                distance = d
-
-        self.setCameraPosition(pos=center, distance=distance * 2.6)
-
-    def draw(self):
-        """
-        Sets graphics objects to draw and camera position
-        """
-        self.clear()
-        self._selected_atoms = set()
-        self._atom_index_under_point = None
-        self._atom_transform_under_point = None
-        molecule = self._build_molecule()
-        self._molecule = molecule
-        if molecule:
-            for atom in molecule.atoms:
-                self.addItem(atom)
-            for bond in molecule.bonds:
-                self.addItem(bond)
-            if not self.__camera_set:
-                self._set_camera_position()
-                self.__camera_set = True
-        self.setBackgroundColor(self.__style["background.color"])
-
-    def normalize_color(self, value: str) -> tuple[float, float, float, float]:
-        """
-        Converts #RRGGBB string to tuple, where each component represented from 0.0 to 1.0
-        """
-        return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
-
-    def __atomic_coordinates_item(
+    def _atomic_coordinates_item(
         self, index: int, parent: "Item", counter: int = -1
     ) -> tuple[bool, int, Optional["Item"]]:
         """
@@ -313,158 +94,107 @@ class MolecularStructure(gl.GLViewWidget):
                     if index == counter:
                         return True, counter, item
                 elif self.all and item.hasChildren():
-                    found, counter, item = self.__atomic_coordinates_item(index, item, counter)
+                    found, counter, item = self._atomic_coordinates_item(index, item, counter)
                     last_item = item
                     if found:
                         return found, counter, item
             return False, counter, last_item
 
-    def _key_press_handler(self, event: QKeyEvent) -> bool:
+    def _build_molecule(self):
         """
-        :return: Has the event been processed
+        Builds molecule graphics object from `AtomicCoordinates` data structure
         """
-        ctrl_left = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Left),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Left),
-        }
-        ctrl_right = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Right),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Right),
-        }
-        ctrl_up = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Up),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Up),
-        }
-        ctrl_down = {
-            QKeyCombination(Qt.ControlModifier | Qt.KeypadModifier, Qt.Key_Down),
-            QKeyCombination(Qt.ControlModifier, Qt.Key_Down),
-        }
-        if event.keyCombination() in ctrl_left:  # Ctrl + Left
-            self._draw_prev_item()
-        elif event.keyCombination() in ctrl_right:  # Ctrl + Right
-            self._draw_next_item()
-        elif event.keyCombination() in ctrl_up:  # Ctrl + Up
-            self._set_prev_style()
-        elif event.keyCombination() in ctrl_down:  # Ctrl + Down
-            self._set_next_style()
-        else:
-            # No match
-            return False  # not processed
-        return True  # processed
+        if not self._draw_item:
+            return None
+
+        ds: AtomicCoordinatesDS = self._draw_item.data()
+
+        longest_distance = 0
+
+        # add atoms
+        for i, atomic_num in enumerate(ds.atomic_num):
+            position = QVector3D(ds.x[i], ds.y[i], ds.z[i])
+            atom = self._scene.add_atom(atomic_num, position)
+
+            d = position.length() + atom.radius
+            if longest_distance < d:
+                longest_distance = d
+
+        # add bonds
+        self._build_bonds(ds)
+
+        center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
+        self._scene.set_center(center)
+        self._scene.set_camera_distance(longest_distance - center.length())
+
+    def _build_bonds(self, ds: AtomicCoordinatesDS):
+        geom_bond_tol = 0.15
+        for i in range(len(ds.atomic_num)):
+            crad_i = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[i]]
+            for j in range(i):
+                crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[j]]
+                crad_sum = crad_i + crad_j
+                dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
+                if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
+                    self._scene.add_bond(self._scene.atom(i), self._scene.atom(j))
+
+    def _set_draw_item(self):
+        _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
+
+    def _set_prev_style(self):
+        if self._style.set_prev_style():
+            self._apply_style()
+
+    def _set_next_style(self):
+        if self._style.set_next_style():
+            self._apply_style()
 
     def _draw_prev_item(self):
-        if self.__molecule_index > 0:
-            self.__molecule_index -= 1
+        if self._molecule_index > 0:
+            self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.draw()
+            self._scene.clear(update=False)
+            self._build_molecule()
+            self.update()
 
     def _draw_next_item(self):
-        self.__molecule_index += 1
+        self._molecule_index += 1
         item = self._draw_item
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self.draw()
+            self._scene.clear(update=False)
+            self._build_molecule()
+            self.update()
 
-    def _set_prev_style(self):
-        current_style = self.__style
-        prev_style = self.styles[0]
-        for style in self.styles[1:]:
-            if style["name"] == self.__style["name"]:
-                self.__style = prev_style
-                break
-            else:
-                prev_style = style
-        if current_style["name"] != self.__style["name"]:
-            self.__apply_style()
-            self.draw()
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        # Show the context menu
+        self.context_menu.exec(event.globalPos())
 
-    def _set_next_style(self):
-        current_style = self.__style
-        for i, style in enumerate(self.styles):
-            if style["name"] == self.__style["name"]:
-                self.__style = self.styles[min(i + 1, len(self.styles) - 1)]
-                break
-        if current_style["name"] != self.__style["name"]:
-            self.__apply_style()
-            self.draw()
+    @Slot()
+    def save_img_action_handler(self):
+        dlg = SaveImageDialog(self.size().width(), self.size().height(), self._draw_item.text(), self)
+        if dlg.exec():
+            save_flag = True
+            if os.path.exists(dlg.img_file_path):
+                ret = QMessageBox.warning(
+                    self,
+                    self.tr("Save image"),
+                    self.tr("The file already exists:")
+                    + "\n"
+                    + dlg.img_file_path
+                    + "\n"
+                    + self.tr("Do you want to overwrite it?"),
+                    QMessageBox.Yes | QMessageBox.No,
+                )
+                if ret != QMessageBox.Yes:
+                    save_flag = False
 
-    def _atom_under_point(self, x: int, y: int) -> None | int:
-        result = None
-
-        if not self._molecule:
-            return result
-
-        point, direction = self._line_under_point(x, y)
-        direction.normalize()
-        distance = None
-        for atom in self._molecule.atoms:
-            if atom.atom_params["pos"].distanceToLine(point, direction) <= atom.atom_params["radius"]:
-                d = atom.atom_params["pos"].distanceToPoint(point)
-                if distance is None or d < distance:
-                    result = atom.atom_params["index"]
-                    distance = d
-        return result
-
-    def _line_under_point(self, x: int, y: int) -> tuple[QVector3D, QVector3D]:
-        viewport = QRect(0, 0, self.size().width(), self.size().height())
-        projection = self.projectionMatrix()
-        modelview = self.viewMatrix()
-
-        y = self.size().height() - y  # opengl computes from left-bottom corner
-        return (
-            QVector3D(x, y, -1.0).unproject(modelview, projection, viewport),
-            QVector3D(x, y, 1.0).unproject(modelview, projection, viewport),
-        )
-
-    def _highlight_atom_under_point(self, x: int, y: int):
-        if not self._molecule:
-            return
-
-        index = self._atom_under_point(x, y)
-        if index is not None:
-            if index != self._atom_index_under_point:
-                if self._atom_index_under_point is not None:
-                    item = self.items[self._atom_index_under_point]
-                    item.setTransform(self._atom_transform_under_point)
-                self._atom_transform_under_point = self._molecule.atoms[index].transform()
-                item = self.items[index]
-                item.scale(1.1, 1.1, 1.1)
-        elif self._atom_index_under_point is not None:
-            item = self.items[self._atom_index_under_point]
-            item.setTransform(self._atom_transform_under_point)
-            self._atom_transform_under_point = None
-        self._atom_index_under_point = index
-
-    def keyPressEvent(self, event: QKeyEvent):
-        if not self._key_press_handler(event):
-            super().keyPressEvent(event)
-
-    def mousePressEvent(self, event: QMouseEvent):
-        if event.button() == Qt.MouseButton.LeftButton:
-            pos = event.position()
-            self.__mouse_pos = pos
-            self._handler_click_by_atom(pos.x(), pos.y())
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if event.buttons() == Qt.MouseButton.LeftButton:
-            diff = event.position() - self.__mouse_pos
-            self.__mouse_pos = event.position()
-            self.orbit(-diff.x(), diff.y())
-        else:
-            pos = event.position()
-            self._highlight_atom_under_point(pos.x(), pos.y())
-
-    def _handler_click_by_atom(self, x: int, y: int):
-        index = self._atom_under_point(x, y)
-        if index is not None:
-            if index not in self._selected_atoms:
-                self._selected_atoms.add(index)
-                self.items[index].setShader("edgeHilight")
-            else:
-                self._selected_atoms.remove(index)
-                self.items[index].setShader("shaded")
+            if save_flag:
+                image = self._scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
+                image.save(dlg.img_file_path)
+                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
 
     def update_window_title(self):
         title = self._draw_item.text()
@@ -473,26 +203,4 @@ class MolecularStructure(gl.GLViewWidget):
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
         self.setWindowTitle(title)
-
-
-class ToolBar(SubWindowToolBar):
-    widget: QWidget = MolecularStructure
-
-    def __init__(self, parent: "MainWindow"):
-        super().__init__(ToolBar.tr("Molecular viewer"), parent)
-        self.setObjectName("Molecular viewer")
-
-    def setup_actions(self):
-        save_img_action = Action(Action.tr("Save image..."), self.parent())
-        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        save_img_action.triggered.connect(self.save_img_action_handler)
-        self.addAction(save_img_action)
-
-    @Slot()
-    def save_img_action_handler(self):
-        # Note, this callback is only triggered, when the respective action is enabled.
-        # Whether this is the case, is determined by the update_state method of the SubWindowToolBar class.
-        # This method receives the window parameter, so it is possible to determine the currently active type
-        # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
-        # and we may call save_img_action_handler().
-        self.mdi_area.activeSubWindow().widget().save_img_action_handler()
+        self.setWindowIcon(self._draw_item.icon())

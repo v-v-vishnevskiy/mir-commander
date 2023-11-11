@@ -141,6 +141,6 @@ class Config:
 
     def __repr__(self) -> str:
         if self._nested_key:
-            return f'{self.__class__.__name__}("{self._path}", "{self._nested_key}")'
+            return f'{self.__class__.__name__}("{self._path}", "{self._nested_key}", read_only={self._read_only})'
         else:
-            return f'{self.__class__.__name__}("{self._path}")'
+            return f'{self.__class__.__name__}("{self._path}", read_only={self._read_only})'

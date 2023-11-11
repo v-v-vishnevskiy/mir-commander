@@ -1,17 +1,20 @@
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
-from PySide6.QtGui import QIcon, QStandardItem
-from PySide6.QtWidgets import QMdiArea, QWidget
+from PySide6.QtGui import QIcon, QStandardItem, Qt
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.data_structures.base import DataStructure
 from mir_commander.ui.main_window.widgets import viewers
 from mir_commander.ui.utils.widget import Action, Menu
 
+if TYPE_CHECKING:
+    from mir_commander.ui.main_window import MainWindow
+
 
 class Item(QStandardItem):
     default_viewer: Type[QWidget] | None = None
 
-    def __init__(self, title: str, data: DataStructure | None = None):
+    def __init__(self, title: str, data: None | DataStructure = None):
         super().__init__(title)
         self.setData(data)
         self.setEditable(False)
@@ -19,8 +22,12 @@ class Item(QStandardItem):
         self.file_path: str = ""
 
     @property
-    def __mdi_area(self) -> QMdiArea:
+    def _mdi_area(self) -> QMdiArea:
         return self.model().parent().parent().mdi_area
+
+    @property
+    def _main_window(self) -> "MainWindow":
+        return self.model().parent().parent().parent()
 
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
@@ -50,24 +57,29 @@ class Item(QStandardItem):
         return result
 
     def _view_structures_all(self):
-        self._viewer(viewers.MolecularStructure, all=True).show()
+        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=True).show()
 
     def _view_structures_child(self):
-        self._viewer(viewers.MolecularStructure, all=False).show()
+        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=False).show()
 
-    def _viewer(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
-        viewer = cls(item=self, *args, **kwargs)
-        sub_window = self.__mdi_area.addSubWindow(viewer)
-        viewer.setParent(sub_window)
+    def _create_viewer_and_add_to_mdi(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
+        """
+        Create viewer instance and add it to MDI area and return this viewer instance
+        """
+        sub_window = QMdiSubWindow(self._mdi_area)
+        sub_window.setAttribute(Qt.WA_DeleteOnClose)
+        viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
+        sub_window.setWidget(viewer)
+        self._mdi_area.addSubWindow(sub_window)
         if maximize:
             sub_window.showMaximized()
         return viewer
 
     def view(self, maximize: bool = False, *args, **kwargs) -> None | QWidget:
         """
-        Add viewer instance to MDI area and returns this viewer instance for this item
+        Check for existing viewer and create if doesn't exist
         """
-        mdi_area = self.__mdi_area
+        mdi_area = self._mdi_area
         for sub_window in mdi_area.subWindowList():
             # checking if viewer for this item already opened
             if id(sub_window.widget().item) == id(self):
@@ -75,7 +87,7 @@ class Item(QStandardItem):
                 return sub_window.widget()
         else:
             if self.default_viewer:
-                return self._viewer(self.default_viewer, maximize, *args, **kwargs)
+                return self._create_viewer_and_add_to_mdi(self.default_viewer, maximize, *args, **kwargs)
             else:
                 return None
 
