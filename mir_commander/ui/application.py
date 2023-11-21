@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette
@@ -93,13 +93,13 @@ class Application(QApplication):
             self._translator_app = translator
 
         translator = QTranslator(self)
-        path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
-        if translator.load(os.path.join(path, f"qtbase_{language}")):
+        path = Path(QLibraryInfo.location(QLibraryInfo.TranslationsPath)) / f"qtbase_{language}"
+        if translator.load(str(path)):
             self.removeTranslator(self._translator_qt)
             self.installTranslator(translator)
             self._translator_qt = translator
 
-    def open_project(self, path: str, raise_exc: bool = False) -> bool:
+    def open_project(self, path: Path, raise_exc: bool = False) -> bool:
         try:
             project, messages = load_project(path)
         except exceptions.LoadProject:
@@ -141,7 +141,7 @@ class Application(QApplication):
 
     def run(self, projpath: str) -> int:
         if projpath:
-            if not self.open_project(projpath):
+            if not self.open_project(Path(projpath)):
                 return 1
         else:
             if self.recent_projects.opened:

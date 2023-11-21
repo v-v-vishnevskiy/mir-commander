@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -11,29 +10,37 @@ logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(self, path: str | Path, key: str = "", config: Optional["Config"] = None, read_only: bool = False):
+    def __init__(
+        self, path: None | Path = None, key: str = "", config: Optional["Config"] = None, read_only: bool = False
+    ):
+        self._path = path
         self._root_data: dict[str, Any] = {}
         self._nested_key = key
         self._synced = True
         self._defaults: Optional["Config"] = None
         self._read_only = read_only
 
+        if self._path:
+            self._path = self._path.resolve()
+
         if config:
-            self._path: str | Path = path
             self._root_data = config._root_data
             self._data: dict[str, Any] = config._data
             if not self.contains(key):
                 self.set(key, {})
             self._data = self.get(key)
         else:
-            self._path = os.path.normpath(path) if path else ""
             self._load()
             self._data = self._root_data
 
-    def _load(self):
-        if self._path and os.path.exists(self._path):
-            with open(self._path, "r") as f:
-                data = f.read()
+    def _load(self) -> None:
+        if self._path is not None and self._path.exists():
+            try:
+                with self._path.open("r") as f:
+                    data = f.read()
+            except IsADirectoryError:
+                logger.error(f"Trying to load directory: {self._path}")
+                return
 
             if not data:
                 return
@@ -48,23 +55,25 @@ class Config:
     def synced(self) -> bool:
         return self._synced
 
-    def set_data(self, data: dict):
+    def set_data(self, data: dict) -> None:
         self._data = data
 
-    def set_defaults(self, config: "Config"):
+    def set_defaults(self, config: "Config") -> None:
         self._defaults = config
 
-    def dump(self):
-        if self._path:
-            if self._read_only is False:
-                if not os.path.exists(self._path):
-                    Path(os.path.split(self._path)[0]).mkdir(parents=True, exist_ok=True)
-                with open(self._path, "w") as f:
+    def dump(self) -> None:
+        if self._path is not None and self._read_only is False:
+            if not self._path.exists():
+                Path(self._path.parts[0]).mkdir(parents=True, exist_ok=True)
+            try:
+                with self._path.open("w") as f:
                     try:
                         f.write(yaml.dump(self._root_data, Dumper=yaml.CDumper, allow_unicode=True))
                     except yaml.YAMLError:
                         raise
-            self._synced = True
+            except IsADirectoryError:
+                logger.error(f"Trying to load directory: {self._path}")
+        self._synced = True
 
     def nested(self, key: str) -> "Config":
         config = Config(self._path, key, self, read_only=self._read_only)
@@ -113,7 +122,7 @@ class Config:
             else:
                 return default
 
-    def set(self, key: str, value: Any, write: bool = True):
+    def set(self, key: str, value: Any, write: bool = True) -> None:
         parts = self._key(key)
         data = self._data
 
@@ -136,7 +145,7 @@ class Config:
     def __getitem__(self, key: str) -> Any:
         return self.get(key)
 
-    def __setitem__(self, key: str, value: Any):
+    def __setitem__(self, key: str, value: Any) -> None:
         self.set(key, value, False)
 
     def __repr__(self) -> str:

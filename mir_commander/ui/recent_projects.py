@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
@@ -97,9 +98,9 @@ class RecentProjects(Dialog):
         dialog = QFileDialog(self, self.tr("Open Project"), QDir.homePath())
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
-            self._open_project(dialog.selectedFiles()[0])
+            self._open_project(Path(dialog.selectedFiles()[0]))
 
-    def _open_project(self, path: str):
+    def _open_project(self, path: Path):
         try:
             self.app.open_project(path, raise_exc=True)
             self.hide()

@@ -1,5 +1,4 @@
 import math
-import os
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -177,14 +176,12 @@ class MolecularStructure(Widget):
         dlg = SaveImageDialog(self.size().width(), self.size().height(), self._draw_item.text(), self)
         if dlg.exec():
             save_flag = True
-            if os.path.exists(dlg.img_file_path):
+            if dlg.img_file_path.exists():
                 ret = QMessageBox.warning(
                     self,
                     self.tr("Save image"),
                     self.tr("The file already exists:")
-                    + "\n"
-                    + dlg.img_file_path
-                    + "\n"
+                    + f"\n{dlg.img_file_path}\n"
                     + self.tr("Do you want to overwrite it?"),
                     QMessageBox.Yes | QMessageBox.No,
                 )
@@ -193,7 +190,7 @@ class MolecularStructure(Widget):
 
             if save_flag:
                 image = self._scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
-                image.save(dlg.img_file_path)
+                image.save(str(dlg.img_file_path))
                 self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
 
     def update_window_title(self):

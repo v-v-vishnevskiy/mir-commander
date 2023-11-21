@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING, Type
 
 from PySide6.QtGui import QIcon, QStandardItem, Qt
@@ -19,7 +20,7 @@ class Item(QStandardItem):
         self.setData(data)
         self.setEditable(False)
         self._set_icon()
-        self.file_path: str = ""
+        self.file_path: Path
 
     @property
     def _mdi_area(self) -> QMdiArea:
