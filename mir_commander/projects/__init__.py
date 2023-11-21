@@ -1,9 +1,9 @@
 import logging
-import os
 import pprint
 import re
 from collections import defaultdict
 from enum import Enum
+from pathlib import Path
 
 import cclib
 import numpy as np
@@ -34,7 +34,7 @@ class XyzParserState(Enum):
     CARDS = 2
 
 
-def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
+def import_file_xyz(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     """
     Import data from XYZ file, build and populate a respective tree of items.
     Also return a list of flagged items.
@@ -46,14 +46,14 @@ def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
     messages.append("XYZ format.")  # First string is the UNEX version.
 
     moldata = ds_molecule.Molecule()
-    molitem = item.Molecule(os.path.split(path)[1], moldata)
+    molitem = item.Molecule(path.parts[1], moldata)
     molitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
 
     state = XyzParserState.INIT
     at_coord_item = None
-    with open(path, "r") as input_file:
+    with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):
             if state == XyzParserState.INIT:
                 try:
@@ -125,7 +125,7 @@ def import_file_xyz(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return molitem, flagged_items, messages
 
 
-def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
+def import_file_unex(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     """
     Import data from UNEX file, build and populate a respective tree of items.
     Also return a list of flagged items.
@@ -138,12 +138,12 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
     mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
     project_data = unex.Project()
-    rootitem = item.UnexProject(os.path.split(path)[1], project_data)
+    rootitem = item.UnexProject(path.parts[1], project_data)
     rootitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(rootitem, {}), "expand": True})
 
-    with open(path, "r") as input_file:
+    with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):
             if line_number == 0:
                 messages.append(line.strip())  # First string is the UNEX version.
@@ -201,7 +201,7 @@ def import_file_unex(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return rootitem, flagged_items, messages
 
 
-def import_file_cclib(path: str) -> tuple[item.Item, list[dict], list[str]]:
+def import_file_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     """
     Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
@@ -236,7 +236,7 @@ def import_file_cclib(path: str) -> tuple[item.Item, list[dict], list[str]]:
         moldata.charge = data.charge
     if hasattr(data, "mult"):
         moldata.multiplicity = data.mult
-    molitem = item.Molecule(os.path.split(path)[1], moldata)
+    molitem = item.Molecule(path.parts[1], moldata)
     molitem.file_path = path
 
     # If we have coordinates of atoms.
@@ -323,7 +323,7 @@ def import_file_cclib(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return molitem, flagged_items, messages
 
 
-def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
+def import_file(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     """
     Import data from file,
     return tree of items, list of flagged items and list of messages
@@ -336,7 +336,7 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     xyzcard_validated = 0
     file_format = FileFormat.UNKNOWN
     line_number_limit = 10
-    with open(path, "r") as input_file:
+    with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):
             if line_number == 0:
                 if "UNEX" in line and unexver_validator.match(line.split()[1]):
@@ -379,15 +379,16 @@ def import_file(path: str) -> tuple[item.Item, list[dict], list[str]]:
     return project_root_item, flagged_items, messages
 
 
-def load_project(path: str) -> tuple[Project, list[str]]:
+def load_project(path: Path) -> tuple[Project, list[str]]:
     """
     Returns (re)created project and a list of messages corresponding to the process of project loading.
     """
-    path = os.path.normpath(path)
+
+    path = path.resolve()
 
     # If this is a file, then it may be from some other program
     # and we can try to import its data and create a project on the fly.
-    if os.path.isfile(path):
+    if path.is_file():
         project = Temporary(path)
         project_root_item, flagged_items, messages = import_file(path)
         project.root_item.appendRow(project_root_item)
@@ -400,10 +401,10 @@ def load_project(path: str) -> tuple[Project, list[str]]:
 
         return project, messages
     # If this is a directory, then we expect a Mir Commander project
-    elif os.path.isdir(path):
-        config_path = os.path.join(path, ".mircmd", "config.yaml")
+    elif path.is_dir():
+        config_path = path / ".mircmd" / "config.yaml"
         # If config file does not exist in .mircmd
-        if not os.path.isfile(config_path):
+        if not config_path.is_file():
             msg = "Config file does not exist"
             logger.error(f"{msg}: {config_path}")
             raise exceptions.LoadProject(msg, f"{msg}: {config_path}")

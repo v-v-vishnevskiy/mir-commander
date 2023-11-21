@@ -1,5 +1,5 @@
-import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QCoreApplication
@@ -21,8 +21,8 @@ class ItemParametrized:
 class Project:
     """The most basic class of projects."""
 
-    def __init__(self, path: str, config: Config):
-        self.path = os.path.normpath(path)
+    def __init__(self, path: Path, config: Config):
+        self.path = path
         self.config = config
         self.config.set_defaults(QCoreApplication.instance().config)
         self.settings = Settings(config)
@@ -30,7 +30,7 @@ class Project:
 
     @property
     def name(self) -> str:
-        return self.settings["name"] or os.path.split(self.path)[1] or "/"
+        return self.settings["name"] or self.path.parts[-1] or "Untitled"
 
     @property
     def root_item(self) -> QStandardItem:

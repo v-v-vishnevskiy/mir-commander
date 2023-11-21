@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QImageWriter
@@ -64,9 +64,8 @@ class SaveImageDialog(Dialog):
         file_path_layout = QHBoxLayout()
         self.file_path_editbox = QLineEdit()
         # Molecule -> QMdiSubWindow -> QMdiArea -> MainWindow -> project.path
-        self.initial_file_path = self._main_window.project.path
-        self.initial_file_path = os.path.join(self.initial_file_path, self.img_file_name_init + ".png")
-        self.file_path_editbox.setText(self.initial_file_path)
+        self.initial_file_path = self._main_window.project.path / f"{self.img_file_name_init}.png"
+        self.file_path_editbox.setText(str(self.initial_file_path))
         file_path_layout.addWidget(self.file_path_editbox)
         self.file_path_button = PushButton(PushButton.tr("Choose..."))
         self.file_path_button.clicked.connect(self.file_path_button_handler)
@@ -125,6 +124,6 @@ class SaveImageDialog(Dialog):
     def accept_handler(self):
         self.img_width = self.width_spinbox.value()
         self.img_height = self.height_spinbox.value()
-        self.img_file_path = self.file_path_editbox.text()
+        self.img_file_path = Path(self.file_path_editbox.text())
         self.transparent_bg = self.transparent_bg_checkbox.isChecked()
         self.accept()
