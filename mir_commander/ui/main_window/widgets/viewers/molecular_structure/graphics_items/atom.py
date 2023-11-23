@@ -45,8 +45,12 @@ class Atom(MeshItem):
         return super().shader
 
     def paint(self):
+        visible = self.visible
+        if self.atomic_num < 0:
+            self.visible = True
         if not self.cloaked:
             super().paint()
+        self.visible = visible
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:
