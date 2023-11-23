@@ -189,7 +189,7 @@ class Bond(Item):
         self._clear_bonds()
 
     def paint(self):
-        if self.visible:
+        if self.visible and self._atom_1.visible and self._atom_2.visible:
             for item in self._items + self._items_bonds_cap:
                 item.paint()
 

@@ -85,7 +85,7 @@ class Scene(BaseScene):
         direction.normalize()
         distance = None
         for atom in self._atom_items:
-            if atom.cross_with_line_test(point, direction):
+            if atom.visible and atom.cross_with_line_test(point, direction):
                 d = atom.position.distanceToPoint(point)
                 if distance is None or d < distance:
                     result = atom
