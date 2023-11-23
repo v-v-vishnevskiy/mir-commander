@@ -37,8 +37,9 @@ class Scene(BaseScene):
         # update items
         for atom in self._atom_items:
             atom.enabled = self.style["atoms.enabled"]
-            atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
-            atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
+            radius, color = self._get_atom_radius_and_color(atom.atomic_num)
+            atom.set_radius(radius)
+            atom.set_color(color)
             atom.set_smooth(self.style["quality.smooth"])
 
     def _apply_bonds_style(self, mesh_quality: int):
@@ -92,6 +93,16 @@ class Scene(BaseScene):
                     distance = d
         return result
 
+    def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
+        if atomic_num >= 0:
+            radius = self.style["atoms.radius"][atomic_num]
+            color = self.style["atoms.color"][atomic_num]
+        else:
+            radius = self.style["atoms.special.radius"][atomic_num]
+            color = self.style["atoms.special.color"][atomic_num]
+
+        return radius * self.style["atoms.scale_factor"], self.normalize_color(color)
+
     def _highlight_atom_under_cursor(self, x: int, y: int):
         atom = self._atom_under_cursor(x, y)
         if atom:
@@ -134,13 +145,7 @@ class Scene(BaseScene):
         super().clear(update)
 
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
-        if self.style["atoms.enabled"]:
-            radius = self.style["atoms.scale_factor"] * self.style["atoms.radius"][atomic_num]
-        else:
-            radius = self.style["bond.radius"]
-
-        color = self.normalize_color(self.style["atoms.color"][atomic_num])
-
+        radius, color = self._get_atom_radius_and_color(atomic_num)
         item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
         item.enabled = self.style["atoms.enabled"]
         item.set_smooth(self.style["quality.smooth"])

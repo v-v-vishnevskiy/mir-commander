@@ -45,7 +45,7 @@ class Atom(MeshItem):
         return super().shader
 
     def paint(self):
-        if self.enabled:
+        if self.enabled or self.atomic_num < 0:
             super().paint()
 
     def set_under_cursor(self, value: bool):

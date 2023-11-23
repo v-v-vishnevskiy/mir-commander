@@ -129,8 +129,12 @@ class MolecularStructure(Widget):
     def _build_bonds(self, ds: AtomicCoordinatesDS):
         geom_bond_tol = 0.15
         for i in range(len(ds.atomic_num)):
+            if ds.atomic_num[i] < 1:
+                continue
             crad_i = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[i]]
             for j in range(i):
+                if ds.atomic_num[j] < 1:
+                    continue
                 crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[ds.atomic_num[j]]
                 crad_sum = crad_i + crad_j
                 dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
