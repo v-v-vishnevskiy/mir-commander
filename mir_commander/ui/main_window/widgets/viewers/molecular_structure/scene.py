@@ -36,7 +36,7 @@ class Scene(BaseScene):
 
         # update items
         for atom in self._atom_items:
-            atom.enabled = self.style["atoms.enabled"]
+            atom.visible = self.style["atoms.visible"]
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_radius(radius)
             atom.set_color(color)
@@ -147,7 +147,7 @@ class Scene(BaseScene):
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
         item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
-        item.enabled = self.style["atoms.enabled"]
+        item.visible = self.style["atoms.visible"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 

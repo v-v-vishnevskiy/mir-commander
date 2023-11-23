@@ -2,4 +2,4 @@ name: Simple
 bond:
   color: "#888888"
 atoms:
-  enabled: true
+  visible: true
