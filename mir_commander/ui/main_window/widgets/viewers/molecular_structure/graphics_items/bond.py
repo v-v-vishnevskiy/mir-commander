@@ -83,7 +83,7 @@ class BondCapItem(MeshItem):
         return super().shader
 
     def paint(self):
-        if not self._atom.enabled:
+        if not self._atom.visible:
             super().paint()
 
     def set_transformation(self, direction: QVector3D, flip: bool, radius: float):
@@ -189,7 +189,7 @@ class Bond(Item):
         self._clear_bonds()
 
     def paint(self):
-        if self.visible and self._atom_1.visible and self._atom_2.visible:
+        if self.visible and not self._atom_1.cloaked and not self._atom_2.cloaked:
             for item in self._items + self._items_bonds_cap:
                 item.paint()
 

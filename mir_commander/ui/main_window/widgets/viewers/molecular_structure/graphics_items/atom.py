@@ -22,7 +22,7 @@ class Atom(MeshItem):
         self.radius = radius
         self.atomic_num = atomic_num
         self.selected_shader = selected_shader
-        self.enabled = True
+        self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self.selected = False
         self._under_cursor = False
 
@@ -45,7 +45,7 @@ class Atom(MeshItem):
         return super().shader
 
     def paint(self):
-        if self.enabled:
+        if not self.cloaked:
             super().paint()
 
     def set_under_cursor(self, value: bool):
@@ -62,7 +62,9 @@ class Atom(MeshItem):
         self._compute_transform()
 
     def cross_with_line_test(self, point: QVector3D, direction: QVector3D) -> bool:
-        return self.position.distanceToLine(point, direction) <= self.radius
+        if not self.cloaked:
+            return self.position.distanceToLine(point, direction) <= self.radius
+        return False
 
     def toggle_selection(self):
         self.selected = not self.selected

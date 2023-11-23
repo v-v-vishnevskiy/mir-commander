@@ -36,7 +36,7 @@ class Scene(BaseScene):
 
         # update items
         for atom in self._atom_items:
-            atom.enabled = self.style["atoms.enabled"]
+            atom.visible = self.style["atoms.visible"]
             atom.set_radius(self.style["atoms.scale_factor"] * self.style["atoms.radius"][atom.atomic_num])
             atom.set_color(self.normalize_color(self.style["atoms.color"][atom.atomic_num]))
             atom.set_smooth(self.style["quality.smooth"])
@@ -85,7 +85,7 @@ class Scene(BaseScene):
         direction.normalize()
         distance = None
         for atom in self._atom_items:
-            if atom.visible and atom.cross_with_line_test(point, direction):
+            if atom.cross_with_line_test(point, direction):
                 d = atom.position.distanceToPoint(point)
                 if distance is None or d < distance:
                     result = atom
@@ -134,7 +134,7 @@ class Scene(BaseScene):
         super().clear(update)
 
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
-        if self.style["atoms.enabled"]:
+        if self.style["atoms.visible"]:
             radius = self.style["atoms.scale_factor"] * self.style["atoms.radius"][atomic_num]
         else:
             radius = self.style["bond.radius"]
@@ -142,7 +142,7 @@ class Scene(BaseScene):
         color = self.normalize_color(self.style["atoms.color"][atomic_num])
 
         item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
-        item.enabled = self.style["atoms.enabled"]
+        item.visible = self.style["atoms.visible"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
