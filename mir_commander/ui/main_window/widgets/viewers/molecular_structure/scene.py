@@ -4,7 +4,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom, Bond
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.shaders import OUTLINE
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
-from mir_commander.ui.utils.opengl.mesh import Cylinder, Hemisphere, Sphere
+from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
@@ -16,7 +16,6 @@ class Scene(BaseScene):
 
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
-        self._bond_cap_mesh_data = Hemisphere(stacks=Hemisphere.min_stacks, slices=Hemisphere.min_slices, radius=1.0)
 
         self._atom_items: list[Atom] = []
         self._bond_items: list[Bond] = []
@@ -36,7 +35,6 @@ class Scene(BaseScene):
 
         # update items
         for atom in self._atom_items:
-            atom.visible = self.style["atoms.visible"]
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_radius(radius)
             atom.set_color(color)
@@ -55,16 +53,6 @@ class Scene(BaseScene):
             )
             self._bond_mesh_data.compute_vertex_normals()
             self._bond_mesh_data.compute_face_normals()
-
-        h_stacks, h_slices = Hemisphere.min_stacks * mesh_quality, Hemisphere.min_slices * mesh_quality
-        if (h_stacks, h_slices) != (self._bond_cap_mesh_data.stacks, self._bond_cap_mesh_data.slices):
-            self._bond_cap_mesh_data.generate_mesh(
-                stacks=h_stacks,
-                slices=h_slices,
-                radius=self._bond_cap_mesh_data.radius,
-            )
-            self._bond_cap_mesh_data.compute_vertex_normals()
-            self._bond_cap_mesh_data.compute_face_normals()
 
         # update items
         for bond in self._bond_items:
@@ -94,14 +82,24 @@ class Scene(BaseScene):
         return result
 
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
-        if atomic_num >= 0:
-            radius = self.style["atoms.radius"][atomic_num]
-            color = self.style["atoms.color"][atomic_num]
+        atoms_radius = self.style["atoms.radius"]
+        if atoms_radius == "atomic":
+            if atomic_num >= 0:
+                radius = self.style["atoms.atomic_radius"][atomic_num]
+            else:
+                radius = self.style["atoms.special_atoms.atomic_radius"][atomic_num]
+            radius *= self.style["atoms.scale_factor"]
+        elif atoms_radius == "bond":
+            radius = self.style["bond.radius"]
         else:
-            radius = self.style["atoms.special.radius"][atomic_num]
-            color = self.style["atoms.special.color"][atomic_num]
+            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self.style['name']}'")
 
-        return radius * self.style["atoms.scale_factor"], self.normalize_color(color)
+        if atomic_num >= 0:
+            color = self.style["atoms.atomic_color"][atomic_num]
+        else:
+            color = self.style["atoms.special_atoms.atomic_color"][atomic_num]
+
+        return radius, self.normalize_color(color)
 
     def _highlight_atom_under_cursor(self, x: int, y: int):
         atom = self._atom_under_cursor(x, y)
@@ -147,7 +145,6 @@ class Scene(BaseScene):
     def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
         item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
-        item.visible = self.style["atoms.visible"]
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
@@ -164,7 +161,6 @@ class Scene(BaseScene):
 
         item = Bond(
             self._bond_mesh_data,
-            self._bond_cap_mesh_data,
             atom_1,
             atom_2,
             self.style["bond.radius"],

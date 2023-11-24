@@ -1,9 +1,8 @@
-from OpenGL.GL import GLuint
 from PySide6.QtGui import QQuaternion, QVector3D
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh import Cylinder, Hemisphere
+from mir_commander.ui.utils.opengl.mesh import Cylinder
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 
@@ -43,65 +42,10 @@ class BondItem(MeshItem):
         self._compute_transform()
 
 
-class BondCapItem(MeshItem):
-    def __init__(
-        self,
-        mesh_data: Hemisphere,
-        atom: Atom,
-        direction: QVector3D,
-        flip: bool,
-        radius: float,
-    ):
-        super().__init__(mesh_data)
-        self._atom = atom
-        self._direction = direction
-        self._flip = flip
-        self._radius = radius
-
-        self._compute_transform()
-
-    def _compute_transform(self):
-        self.transform.setToIdentity()
-        self.transform.translate(self._atom.position)
-        self.transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, 1.0), self._direction))
-        if self._flip:
-            self.transform.rotate(180.0, 1.0, 0.0, 0.0)
-        self.transform.scale(self._radius, self._radius, self._radius)
-
-    @property
-    def color(self) -> Color4f:
-        return self._atom.color
-
-    @property
-    def flip(self) -> bool:
-        return self._flip
-
-    @property
-    def shader(self) -> GLuint:
-        if self._atom.selected:
-            return self._atom.shader
-        return super().shader
-
-    def paint(self):
-        if not self._atom.visible:
-            super().paint()
-
-    def set_transformation(self, direction: QVector3D, flip: bool, radius: float):
-        self._direction = direction
-        self._flip = flip
-        self._radius = radius
-        self._compute_transform()
-
-    def set_radius(self, radius: float):
-        self._radius = radius
-        self._compute_transform()
-
-
 class Bond(Item):
     def __init__(
         self,
         c_mesh_data: Cylinder,
-        h_mesh_data: Hemisphere,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
@@ -110,7 +54,6 @@ class Bond(Item):
     ):
         super().__init__()
         self._c_mesh_data = c_mesh_data
-        self._h_mesh_data = h_mesh_data
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
@@ -118,12 +61,10 @@ class Bond(Item):
         self._atoms_color = atoms_color
         self._color = color
         self._items: list[BondItem] = []
-        self._items_bonds_cap: list[BondCapItem] = []
 
         self._add_bonds()
-        self._add_hemispheres()
 
-    def _compute_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
+    def _build_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
         result = []
 
         length = (self._atom_1.position - self._atom_2.position).length()
@@ -145,57 +86,35 @@ class Bond(Item):
 
     def _add_bonds(self):
         self._clear_bonds()
-        bonds = self._compute_bonds()
+        bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
             self._items.append(BondItem(self._c_mesh_data, position, direction, self._radius, length, color))
-
-    def _add_hemispheres(self):
-        self._clear_bonds_cap()
-        self._items_bonds_cap.append(
-            BondCapItem(
-                self._h_mesh_data, self._atom_1, self._atom_2.position - self._atom_1.position, True, self._radius
-            )
-        )
-        self._items_bonds_cap.append(
-            BondCapItem(
-                self._h_mesh_data, self._atom_2, self._atom_2.position - self._atom_1.position, False, self._radius
-            )
-        )
 
     def _clear_bonds(self):
         for item in self._items:
             item.clear()
         self._items.clear()
 
-    def _clear_bonds_cap(self):
-        for item in self._items_bonds_cap:
-            item.clear()
-        self._items_bonds_cap.clear()
-
     def update_bonds(self):
-        bonds = self._compute_bonds()
+        bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for i, bond in enumerate(self._items):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
-        direction = self._atom_2.position - self._atom_1.position
-        for item in self._items_bonds_cap:
-            item.set_transformation(direction, item.flip, self._radius)
 
     def clear(self):
-        self._clear_bonds_cap()
         self._clear_bonds()
 
     def paint(self):
         if self.visible and not self._atom_1.cloaked and not self._atom_2.cloaked:
-            for item in self._items + self._items_bonds_cap:
+            for item in self._items:
                 item.paint()
 
     def set_radius(self, radius: float):
         self._radius = radius
-        for bond in self._items + self._items_bonds_cap:
+        for bond in self._items:
             bond.set_radius(radius)
 
     def set_atoms_color(self, value: bool):
@@ -214,5 +133,5 @@ class Bond(Item):
 
     def set_smooth(self, smooth: bool):
         self._smooth = smooth
-        for item in self._items + self._items_bonds_cap:
+        for item in self._items:
             item.set_smooth(smooth)
