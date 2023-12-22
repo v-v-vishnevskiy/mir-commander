@@ -194,8 +194,16 @@ class MolecularStructure(Widget):
 
             if save_flag:
                 image = self._scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
-                image.save(str(dlg.img_file_path))
-                self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
+                if image.save(str(dlg.img_file_path)):
+                    self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
+                else:
+                    QMessageBox.critical(
+                        self,
+                        self.tr("Save image"),
+                        self.tr("Could not save image:")
+                        + f"\n{dlg.img_file_path}\n"
+                        + self.tr("The path does not exist or is write-protected."),
+                    )
 
     def update_window_title(self):
         title = self._draw_item.text()
