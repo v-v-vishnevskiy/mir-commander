@@ -63,10 +63,12 @@ class SaveImageDialog(Dialog):
 
         file_path_layout = QHBoxLayout()
         self.file_path_editbox = QLineEdit()
-        # This was the old option, which resulted in invalid path if a single file was opened.
+        # TODO: Below was the old option, which resulted in an invalid path if a single file was opened.
+        # Currently we use CWD as the most optimal option.
+        # This needs to be implemented in a more advanced manner as the development of MirCMD progresses.
+        # For example, the CWD logic may work not optimal if a project is opened through a menu, not a console.
         # Molecule -> QMdiSubWindow -> QMdiArea -> MainWindow -> project.path
         # self.initial_file_path = self._main_window.project.path / f"{self.img_file_name_init}.png"
-        # It is better to use CWD here:
         self.initial_file_path = Path.cwd() / f"{self.img_file_name_init}.png"
         self.file_path_editbox.setText(str(self.initial_file_path))
         file_path_layout.addWidget(self.file_path_editbox)
