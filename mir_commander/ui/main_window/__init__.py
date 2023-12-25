@@ -14,11 +14,13 @@ from mir_commander.projects.base import Project
 from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.toolbar import ToolBar as ToolBarMolViewer
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
+    from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
     from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
 
 
@@ -37,7 +39,8 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
-        self.sub_windows_toolbars: list[SubWindowToolBar] = []  # All SubWindow's toolbars
+        self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
+        self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
 
         self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
 
@@ -112,19 +115,27 @@ class MainWindow(QMainWindow):
 
         # Here we collect classes of widgets, which create their own toolbars for the main window.
         # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.sub_windows_toolbars.append(ToolBarMolViewer(self))
+        self.sub_window_toolbars.append(MolStructToolBar(self))
 
-        for toolbar in self.sub_windows_toolbars:
+        for toolbar in self.sub_window_toolbars:
             self.addToolBar(toolbar)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
 
     def setup_menubar(self):
+        # Collect all additional menus from viewers.
+        # Here is the same logic as for toolbars of particular widgets.
+        self.sub_window_menus.append(MolStructMenu(self))
+
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())
         menubar.addMenu(self._setup_menubar_view())
         menubar.addMenu(self._setup_menubar_window())
+
+        for menu in self.sub_window_menus:
+            menubar.addMenu(menu)
+
         menubar.addMenu(self._setup_menubar_help())
 
     def _setup_menubar_file(self) -> Menu:
@@ -140,7 +151,7 @@ class MainWindow(QMainWindow):
         menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
         menu.addSeparator()
-        for toolbar in self.sub_windows_toolbars:
+        for toolbar in self.sub_window_toolbars:
             menu.addAction(toolbar.toggleViewAction())
         return menu
 
@@ -264,9 +275,12 @@ class MainWindow(QMainWindow):
         self._win_previous_act.setEnabled(has_mdi_child)
         self._win_separator_act.setVisible(has_mdi_child)
 
+        for menu in self.sub_window_menus:
+            menu.update_state(window)
+
     @Slot()
     def update_toolbars(self, window: None | QMdiSubWindow):
-        for toolbar in self.sub_windows_toolbars:
+        for toolbar in self.sub_window_toolbars:
             toolbar.update_state(window)
 
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
