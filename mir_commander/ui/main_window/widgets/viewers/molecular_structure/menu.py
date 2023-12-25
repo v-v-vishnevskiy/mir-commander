@@ -17,7 +17,7 @@ class Menu(SubWindowMenu):
 
     def __init__(self, parent: "MainWindow"):
         super().__init__(Menu.tr("Molecule"), parent)
-        self.setObjectName("Molecule")
+        self.setObjectName("Molecular Structure Menu")
 
     def setup_actions(self):
         save_img_action = Action(Action.tr("Save image..."), self.parent())
