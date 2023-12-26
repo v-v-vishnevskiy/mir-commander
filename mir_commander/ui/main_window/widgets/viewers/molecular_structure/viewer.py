@@ -31,6 +31,7 @@ class MolecularStructure(Widget):
 
         super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
+        # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
         self._scene: Scene
 
         self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
@@ -113,7 +114,7 @@ class MolecularStructure(Widget):
         # add atoms
         for i, atomic_num in enumerate(ds.atomic_num):
             position = QVector3D(ds.x[i], ds.y[i], ds.z[i])
-            atom = self._scene.add_atom(atomic_num, position)
+            atom = self._scene.add_atom(i, atomic_num, position)
 
             d = position.length() + atom.radius
             if longest_distance < d:

@@ -1,3 +1,4 @@
+from periodictable import elements
 from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
@@ -109,6 +110,7 @@ class Scene(BaseScene):
                     self._atom_index_under_cursor.set_under_cursor(False)
                 atom.set_under_cursor(True)
                 self.update()
+                self._gl_widget._main_window.status.showMessage(f"{atom.element_symbol}{atom.index_num+1}", 10000)
         elif self._atom_index_under_cursor:
             self._atom_index_under_cursor.set_under_cursor(False)
             self.update()
@@ -142,9 +144,19 @@ class Scene(BaseScene):
         self._bond_items.clear()
         super().clear(update)
 
-    def add_atom(self, atomic_num: int, position: QVector3D) -> Atom:
+    def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
-        item = Atom(self._atom_mesh_data, atomic_num, position, radius, color, selected_shader=self._edge_shader)
+        el_symbol = elements[atomic_num].symbol
+        item = Atom(
+            self._atom_mesh_data,
+            index_num,
+            atomic_num,
+            el_symbol,
+            position,
+            radius,
+            color,
+            selected_shader=self._edge_shader,
+        )
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 

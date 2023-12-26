@@ -11,7 +11,9 @@ class Atom(MeshItem):
     def __init__(
         self,
         mesh_data: Sphere,
+        index_num: int,
         atomic_num: int,
+        element_symbol: str,
         position: QVector3D,
         radius: float,
         color: Color4f,
@@ -20,7 +22,9 @@ class Atom(MeshItem):
         super().__init__(mesh_data, color=color)
         self.position = position
         self.radius = radius
+        self.index_num = index_num
         self.atomic_num = atomic_num
+        self.element_symbol = element_symbol
         self.selected_shader = selected_shader
         self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self.selected = False
