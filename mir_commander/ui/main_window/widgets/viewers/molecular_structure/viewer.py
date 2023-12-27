@@ -1,10 +1,12 @@
+import logging
 import math
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+from periodictable import elements
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QContextMenuEvent, QSurfaceFormat, QVector3D
-from PySide6.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
@@ -18,6 +20,8 @@ from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.utils.item import Item
+
+logger = logging.getLogger(__name__)
 
 
 class MolecularStructure(Widget):
@@ -205,6 +209,29 @@ class MolecularStructure(Widget):
                         + f"\n{dlg.img_file_path}\n"
                         + self.tr("The path does not exist or is write-protected."),
                     )
+
+    def cloak_atoms_by_atnum(self):
+        el_symbol, ok = QInputDialog.getText(
+            self, self.tr("Cloak atoms by type"), self.tr("Enter element symbol:"), QLineEdit.Normal, ""
+        )
+        if ok:
+            try:
+                # Convert here atomic symbol to atomic number
+                if el_symbol == "X":
+                    atomic_num = -1
+                elif el_symbol == "Q":
+                    atomic_num = -2
+                else:
+                    atomic_num = elements.symbol(el_symbol).number
+
+                self._scene.cloak_atoms_by_atnum(atomic_num)
+            except ValueError:
+                QMessageBox.critical(
+                    self,
+                    self.tr("Cloak atoms by type"),
+                    self.tr("Invalid element symbol!"),
+                    buttons=QMessageBox.StandardButton.Ok,
+                )
 
     def update_window_title(self):
         title = self._draw_item.text()

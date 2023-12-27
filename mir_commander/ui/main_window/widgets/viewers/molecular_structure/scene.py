@@ -146,7 +146,15 @@ class Scene(BaseScene):
 
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
-        el_symbol = elements[atomic_num].symbol
+        if atomic_num > 0:
+            el_symbol = elements[atomic_num].symbol
+        elif atomic_num == -1:
+            el_symbol = "X"
+        elif atomic_num == -2:
+            el_symbol = "Q"
+        else:
+            raise ValueError(f"Invalid atomic number {atomic_num}.")
+
         item = Atom(
             self._atom_mesh_data,
             index_num,
@@ -201,3 +209,38 @@ class Scene(BaseScene):
 
     def new_cursor_position(self, x: int, y: int):
         self._highlight_atom_under_cursor(x, y)
+
+    def cloak_selected_atoms(self):
+        for atom in self._atom_items:
+            if atom.selected:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_not_selected_atoms(self):
+        for atom in self._atom_items:
+            if not atom.selected:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_h_atoms(self):
+        for atom in self._atom_items:
+            if atom.atomic_num == 1:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_atoms_by_atnum(self, atomic_num: int):
+        for atom in self._atom_items:
+            if atom.atomic_num == atomic_num:
+                atom.cloaked = True
+        self.update()
+
+    def toggle_h_atoms(self):
+        for atom in self._atom_items:
+            if atom.atomic_num == 1:
+                atom.cloaked = not atom.cloaked
+        self.update()
+
+    def uncloak_all_atoms(self):
+        for atom in self._atom_items:
+            atom.cloaked = False
+        self.update()

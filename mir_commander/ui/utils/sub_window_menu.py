@@ -15,16 +15,6 @@ class SubWindowMenu(Menu):
         super().__init__(title, parent)
         self.mdi_area = parent.mdi_area
 
-        self.setup_actions()
-        self.set_enabled(False)
-
-    def setup_actions(self):
-        raise NotImplementedError()
-
-    def set_enabled(self, flag: bool):
-        for action in self.actions():
-            action.setEnabled(flag)
-
     def update_state(self, window: None | QMdiSubWindow):
         if window and type(window.widget()) == self.widget:
             self.set_enabled(True)
