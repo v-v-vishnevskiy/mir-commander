@@ -19,6 +19,17 @@ class MolStructMenu(SubWindowMenu):
         super().__init__(Menu.tr("&Molecule"), parent)
         self.setObjectName("Molecular Structure Menu")
 
+        selection_menu = Menu(Menu.tr("Selection"))
+        self.addMenu(selection_menu)
+
+        select_all_atoms_act = Action(Action.tr("Select all atoms"), self.parent())
+        select_all_atoms_act.triggered.connect(self.select_all_atoms_handler)
+        selection_menu.addAction(select_all_atoms_act)
+
+        unselect_all_atoms_act = Action(Action.tr("Unselect all atoms"), self.parent())
+        unselect_all_atoms_act.triggered.connect(self.unselect_all_atoms_handler)
+        selection_menu.addAction(unselect_all_atoms_act)
+
         cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
@@ -56,13 +67,22 @@ class MolStructMenu(SubWindowMenu):
 
         self.set_enabled(False)
 
+    # Note, callbacks are only triggered, when the respective action is enabled.
+    # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
+    # This method receives the window parameter, so it is possible to determine the currently active type
+    # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
+    # and we may call our respective action handler.
+
+    @Slot()
+    def select_all_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.select_all_atoms()
+
+    @Slot()
+    def unselect_all_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.unselect_all_atoms()
+
     @Slot()
     def save_img_action_handler(self):
-        # Note, this callback is only triggered, when the respective action is enabled.
-        # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
-        # This method receives the window parameter, so it is possible to determine the currently active type
-        # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
-        # and we may call save_img_action_handler().
         self.mdi_area.activeSubWindow().widget().save_img_action_handler()
 
     @Slot()

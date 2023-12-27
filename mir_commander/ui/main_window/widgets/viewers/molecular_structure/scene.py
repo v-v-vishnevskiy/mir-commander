@@ -210,6 +210,16 @@ class Scene(BaseScene):
     def new_cursor_position(self, x: int, y: int):
         self._highlight_atom_under_cursor(x, y)
 
+    def select_all_atoms(self):
+        for atom in self._atom_items:
+            atom.selected = True
+        self.update()
+
+    def unselect_all_atoms(self):
+        for atom in self._atom_items:
+            atom.selected = False
+        self.update()
+
     def cloak_selected_atoms(self):
         for atom in self._atom_items:
             if atom.selected:
