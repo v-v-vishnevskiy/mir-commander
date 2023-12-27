@@ -20,10 +20,19 @@ class ToolBar(SubWindowToolBar):
         self.setObjectName("Molecular viewer")
 
     def setup_actions(self):
-        save_img_action = Action(Action.tr("Save image..."), self.parent())
-        save_img_action.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        save_img_action.triggered.connect(self.save_img_action_handler)
-        self.addAction(save_img_action)
+        toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
+        toggle_h_atoms_act.setIcon(QIcon(":/icons/actions/hydrogen_symbol.png"))
+        toggle_h_atoms_act.triggered.connect(self.toggle_h_atoms_handler)
+        self.addAction(toggle_h_atoms_act)
+
+        save_img_act = Action(Action.tr("Save image..."), self.parent())
+        save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        save_img_act.triggered.connect(self.save_img_action_handler)
+        self.addAction(save_img_act)
+
+    @Slot()
+    def toggle_h_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.toggle_h_atoms()
 
     @Slot()
     def save_img_action_handler(self):

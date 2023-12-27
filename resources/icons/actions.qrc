@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
     <file>actions/saveimage.png</file>
+    <file>actions/hydrogen_symbol.png</file>
   </qresource>
 </RCC>
