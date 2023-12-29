@@ -77,6 +77,13 @@ class MolStructMenu(SubWindowMenu):
         calc_auto_parameter_act.triggered.connect(self.calc_auto_parameter_handler)
         calc_menu.addAction(calc_auto_parameter_act)
 
+        calc_sel_fragments_act = Action(Action.tr("Selected fragments"), self.parent())
+        calc_sel_fragments_act.setStatusTip(
+            Action.tr("Calculate all geometric parameters for fragments with selected atoms")
+        )
+        calc_sel_fragments_act.triggered.connect(self.calc_sel_fragments_handler)
+        calc_menu.addAction(calc_sel_fragments_act)
+
         cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
@@ -151,6 +158,10 @@ class MolStructMenu(SubWindowMenu):
     @Slot()
     def calc_auto_parameter_handler(self):
         self.mdi_area.activeSubWindow().widget().calc_auto_lastsel_atoms()
+
+    @Slot()
+    def calc_sel_fragments_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_all_parameters_selected_atoms()
 
     @Slot()
     def save_img_action_handler(self):

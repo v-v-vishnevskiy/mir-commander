@@ -99,35 +99,35 @@ def geom_oop_angle_xyz(
     and a vector defined by two points 1-3:
           n1 - o.o.p
           |
-          n3
+          n2
          /  \
-       n2    n4
+       n3    n4
     """
-    x23 = x2 - x3
-    y23 = y2 - y3
-    z23 = z2 - z3
+    x32 = x3 - x2
+    y32 = y3 - y2
+    z32 = z3 - z2
 
-    x43 = x4 - x3
-    y43 = y4 - y3
-    z43 = z4 - z3
+    x42 = x4 - x2
+    y42 = y4 - y2
+    z42 = z4 - z2
 
-    x13 = x1 - x3
-    y13 = y1 - y3
-    z13 = z1 - z3
+    x12 = x1 - x2
+    y12 = y1 - y2
+    z12 = z1 - z2
 
-    # t - vector of multiplication of vectors 23x43
-    xt = y23 * z43 - y43 * z23
-    yt = x43 * z23 - x23 * z43
-    zt = x23 * y43 - x43 * y23
+    # t - vector of multiplication of vectors 32x42
+    xt = y32 * z42 - y42 * z32
+    yt = x42 * z32 - x32 * z42
+    zt = x32 * y42 - x42 * y32
 
     rt2 = xt * xt + yt * yt + zt * zt
-    ru2 = x13 * x13 + y13 * y13 + z13 * z13
+    ru2 = x12 * x12 + y12 * y12 + z12 * z12
     rtru = math.sqrt(rt2 * ru2)
 
     if rtru < 1.0e-12:
         return 0.0
     else:
-        cosine = (xt * x13 + yt * y13 + zt * z13) / rtru
+        cosine = (xt * x12 + yt * y12 + zt * z12) / rtru
         cosine = min(1.0, max(-1.0, cosine))
         geometry = math.pi / 2.0 - math.acos(cosine)
 

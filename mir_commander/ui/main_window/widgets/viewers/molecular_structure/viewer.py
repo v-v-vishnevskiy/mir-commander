@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
@@ -23,6 +24,39 @@ if TYPE_CHECKING:
     from mir_commander.ui.utils.item import Item
 
 logger = logging.getLogger(__name__)
+
+
+class InteratomicDistance:
+    def __init__(self, atom1: Atom, atom2: Atom):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.value = 0.0
+
+
+class InteratomicAngle:
+    def __init__(self, atom1: Atom, atom2: Atom, atom3: Atom):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.atom3 = atom3
+        self.value = 0.0
+
+
+class InteratomicTorsion:
+    def __init__(self, atom1: Atom, atom2: Atom, atom3: Atom, atom4: Atom):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.atom3 = atom3
+        self.atom4 = atom4
+        self.value = 0.0
+
+
+class InteratomicOutOfPlane:
+    def __init__(self, atom1: Atom, atom2: Atom, atom3: Atom, atom4: Atom):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.atom3 = atom3
+        self.atom4 = atom4
+        self.value = 0.0
 
 
 class MolecularStructure(Widget):
@@ -182,6 +216,15 @@ class MolecularStructure(Widget):
         # Show the context menu
         self.context_menu.exec(event.globalPos())
 
+    def update_window_title(self):
+        title = self._draw_item.text()
+        parent_item = self._draw_item.parent()
+        while parent_item:
+            title = parent_item.text() + "/" + title
+            parent_item = parent_item.parent()
+        self.setWindowTitle(title)
+        self.setWindowIcon(self._draw_item.icon())
+
     @Slot()
     def save_img_action_handler(self):
         dlg = SaveImageDialog(self.size().width(), self.size().height(), self._draw_item.text(), self)
@@ -338,12 +381,12 @@ class MolecularStructure(Widget):
                 pos1.x(),
                 pos1.y(),
                 pos1.z(),
-                pos3.x(),
-                pos3.y(),
-                pos3.z(),
                 pos2.x(),
                 pos2.y(),
                 pos2.z(),
+                pos3.x(),
+                pos3.y(),
+                pos3.z(),
                 pos4.x(),
                 pos4.y(),
                 pos4.z(),
@@ -380,11 +423,214 @@ class MolecularStructure(Widget):
                 buttons=QMessageBox.StandardButton.Ok,
             )
 
-    def update_window_title(self):
-        title = self._draw_item.text()
-        parent_item = self._draw_item.parent()
-        while parent_item:
-            title = parent_item.text() + "/" + title
-            parent_item = parent_item.parent()
-        self.setWindowTitle(title)
-        self.setWindowIcon(self._draw_item.icon())
+    def calc_all_parameters_selected_atoms(self):
+        """
+        Calculate and print all parameters formed by all selected atoms
+        """
+        distances = []
+        angles = []
+        torsions = []
+        outofplanes = []
+
+        # Generate list of distances, which are bonds formed by selected atoms
+        for bond in self._scene._bond_items:
+            if bond._atom_1.selected and bond._atom_2.selected:
+                distances.append(InteratomicDistance(bond._atom_1, bond._atom_2))
+
+        # Calculate distances
+        for dist in distances:
+            dist.value = geom_distance_xyz(
+                dist.atom1.position.x(),
+                dist.atom1.position.y(),
+                dist.atom1.position.z(),
+                dist.atom2.position.x(),
+                dist.atom2.position.y(),
+                dist.atom2.position.z(),
+            )
+
+        # Generate list of angles
+        n = len(distances)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if distances[i].atom1 == distances[j].atom1:
+                    angles.append(InteratomicAngle(distances[i].atom2, distances[i].atom1, distances[j].atom2))
+                elif distances[i].atom2 == distances[j].atom1:
+                    angles.append(InteratomicAngle(distances[i].atom1, distances[i].atom2, distances[j].atom2))
+                elif distances[i].atom1 == distances[j].atom2:
+                    angles.append(InteratomicAngle(distances[i].atom2, distances[i].atom1, distances[j].atom1))
+                elif distances[i].atom2 == distances[j].atom2:
+                    angles.append(InteratomicAngle(distances[i].atom1, distances[i].atom2, distances[j].atom1))
+
+        # Calculate angles
+        for angle in angles:
+            angle.value = geom_angle_xyz(
+                angle.atom1.position.x(),
+                angle.atom1.position.y(),
+                angle.atom1.position.z(),
+                angle.atom2.position.x(),
+                angle.atom2.position.y(),
+                angle.atom2.position.z(),
+                angle.atom3.position.x(),
+                angle.atom3.position.y(),
+                angle.atom3.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Generate list of torsions
+        ndist = len(distances)
+        nang = len(angles)
+        for i in range(nang):
+            if angles[i].value >= 175.0:
+                continue
+            for j in range(ndist):
+                # If the bond is already a part of the angle
+                if (
+                    distances[j].atom1 == angles[i].atom1
+                    or distances[j].atom1 == angles[i].atom2
+                    or distances[j].atom1 == angles[i].atom3
+                ) and (
+                    distances[j].atom2 == angles[i].atom1
+                    or distances[j].atom2 == angles[i].atom2
+                    or distances[j].atom2 == angles[i].atom3
+                ):
+                    continue
+
+                torsion = None
+                if angles[i].atom1 == distances[j].atom1:
+                    torsion = InteratomicTorsion(distances[j].atom2, angles[i].atom1, angles[i].atom2, angles[i].atom3)
+                elif angles[i].atom1 == distances[j].atom2:
+                    torsion = InteratomicTorsion(distances[j].atom1, angles[i].atom1, angles[i].atom2, angles[i].atom3)
+                elif angles[i].atom3 == distances[j].atom1:
+                    torsion = InteratomicTorsion(angles[i].atom1, angles[i].atom2, angles[i].atom3, distances[j].atom2)
+                elif angles[i].atom3 == distances[j].atom2:
+                    torsion = InteratomicTorsion(angles[i].atom1, angles[i].atom2, angles[i].atom3, distances[j].atom1)
+
+                if torsion:
+                    # Check if this (or equivalent) torsion is already in the list
+                    exists = False
+                    for etors in torsions:
+                        if (
+                            etors.atom1 == torsion.atom1
+                            and etors.atom2 == torsion.atom2
+                            and etors.atom3 == torsion.atom3
+                            and etors.atom4 == torsion.atom4
+                        ) or (
+                            etors.atom1 == torsion.atom4
+                            and etors.atom2 == torsion.atom3
+                            and etors.atom3 == torsion.atom2
+                            and etors.atom4 == torsion.atom1
+                        ):
+                            exists = True
+                            break
+
+                    if not exists:
+                        torsions.append(torsion)
+
+        # Calculate torsions
+        for torsion in torsions:
+            torsion.value = geom_torsion_angle_xyz(
+                torsion.atom1.position.x(),
+                torsion.atom1.position.y(),
+                torsion.atom1.position.z(),
+                torsion.atom2.position.x(),
+                torsion.atom2.position.y(),
+                torsion.atom2.position.z(),
+                torsion.atom3.position.x(),
+                torsion.atom3.position.y(),
+                torsion.atom3.position.z(),
+                torsion.atom4.position.x(),
+                torsion.atom4.position.y(),
+                torsion.atom4.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Generate list of out-of-plane angles
+        for i in range(nang):
+            if angles[i].value >= 175.0:
+                continue
+            for j in range(ndist):
+                # If the bond is already a part of the angle
+                if (
+                    distances[j].atom1 == angles[i].atom1
+                    or distances[j].atom1 == angles[i].atom2
+                    or distances[j].atom1 == angles[i].atom3
+                ) and (
+                    distances[j].atom2 == angles[i].atom1
+                    or distances[j].atom2 == angles[i].atom2
+                    or distances[j].atom2 == angles[i].atom3
+                ):
+                    continue
+
+                outofplane = None
+                # If the bond is connected to the central (2nd) atom of the angle
+                if angles[i].atom2 == distances[j].atom1:
+                    outofplane = InteratomicOutOfPlane(
+                        distances[j].atom2, angles[i].atom2, angles[i].atom1, angles[i].atom3
+                    )
+                elif angles[i].atom2 == distances[j].atom2:
+                    outofplane = InteratomicOutOfPlane(
+                        distances[j].atom1, angles[i].atom2, angles[i].atom1, angles[i].atom3
+                    )
+
+                if outofplane:
+                    # Check if the first atom is terminal
+                    terminal = False
+                    # Iterate by bonds
+                    for k in range(ndist):
+                        if k != j and (
+                            distances[k].atom1 == outofplane.atom1 or distances[k].atom2 == outofplane.atom1
+                        ):
+                            terminal = True
+                            break
+
+                    if not terminal:
+                        outofplanes.append(outofplane)
+
+        # Calculate out-of-planes
+        for outofplane in outofplanes:
+            outofplane.value = geom_oop_angle_xyz(
+                outofplane.atom1.position.x(),
+                outofplane.atom1.position.y(),
+                outofplane.atom1.position.z(),
+                outofplane.atom2.position.x(),
+                outofplane.atom2.position.y(),
+                outofplane.atom2.position.z(),
+                outofplane.atom3.position.x(),
+                outofplane.atom3.position.y(),
+                outofplane.atom3.position.z(),
+                outofplane.atom4.position.x(),
+                outofplane.atom4.position.y(),
+                outofplane.atom4.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Print parameters
+        out_str = ""
+        for dist in distances:
+            out_str += (
+                f"r({dist.atom1.element_symbol}{dist.atom1.index_num+1}-"
+                f"{dist.atom2.element_symbol}{dist.atom2.index_num+1})={dist.value:.3f}, "
+            )
+
+        for angle in angles:
+            out_str += (
+                f"a({angle.atom1.element_symbol}{angle.atom1.index_num+1}-"
+                f"{angle.atom2.element_symbol}{angle.atom2.index_num+1}-"
+                f"{angle.atom3.element_symbol}{angle.atom3.index_num+1})={angle.value:.1f}, "
+            )
+
+        for torsion in torsions:
+            out_str += (
+                f"t({torsion.atom1.element_symbol}{torsion.atom1.index_num+1}-"
+                f"{torsion.atom2.element_symbol}{torsion.atom2.index_num+1}-"
+                f"{torsion.atom3.element_symbol}{torsion.atom3.index_num+1}-"
+                f"{torsion.atom4.element_symbol}{torsion.atom4.index_num+1})={torsion.value:.1f}, "
+            )
+
+        for outofplane in outofplanes:
+            if abs(outofplane.value) <= 10.0:
+                out_str += (
+                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index_num+1}-"
+                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index_num+1}<"
+                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index_num+1}/"
+                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num+1})={outofplane.value:.1f}, "
+                )
+
+        self._main_window.append_to_console(out_str.rstrip(", "))
