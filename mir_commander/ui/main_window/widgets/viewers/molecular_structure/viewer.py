@@ -16,7 +16,7 @@ from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style impo
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
-from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz
+from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
@@ -279,6 +279,84 @@ class MolecularStructure(Widget):
                 self,
                 self.tr("Angle"),
                 self.tr("At least three atoms must be selected!"),
+                buttons=QMessageBox.StandardButton.Ok,
+            )
+
+    def calc_torsion_last4sel_atoms(self):
+        """
+        Calculate and print torsion angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
+        """
+        if len(self._scene._selected_atom_items) >= 4:
+            atom1 = self._scene._selected_atom_items[-4]
+            atom2 = self._scene._selected_atom_items[-3]
+            atom3 = self._scene._selected_atom_items[-2]
+            atom4 = self._scene._selected_atom_items[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            pos4 = atom4.position
+            angle = geom_torsion_angle_xyz(
+                pos1.x(),
+                pos1.y(),
+                pos1.z(),
+                pos2.x(),
+                pos2.y(),
+                pos2.z(),
+                pos3.x(),
+                pos3.y(),
+                pos3.z(),
+                pos4.x(),
+                pos4.y(),
+                pos4.z(),
+            ) * (180.0 / math.pi)
+            self._main_window.append_to_console(
+                f"t({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
+                f"{atom3.element_symbol}{atom3.index_num+1}-{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
+            )
+        else:
+            QMessageBox.critical(
+                self,
+                self.tr("Torsion angle"),
+                self.tr("At least four atoms must be selected!"),
+                buttons=QMessageBox.StandardButton.Ok,
+            )
+
+    def calc_oop_last4sel_atoms(self):
+        """
+        Calculate and print out-of-plane angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
+        """
+        if len(self._scene._selected_atom_items) >= 4:
+            atom1 = self._scene._selected_atom_items[-4]
+            atom2 = self._scene._selected_atom_items[-3]
+            atom3 = self._scene._selected_atom_items[-2]
+            atom4 = self._scene._selected_atom_items[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            pos4 = atom4.position
+            angle = geom_oop_angle_xyz(
+                pos1.x(),
+                pos1.y(),
+                pos1.z(),
+                pos3.x(),
+                pos3.y(),
+                pos3.z(),
+                pos2.x(),
+                pos2.y(),
+                pos2.z(),
+                pos4.x(),
+                pos4.y(),
+                pos4.z(),
+            ) * (180.0 / math.pi)
+            self._main_window.append_to_console(
+                f"o({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}<"
+                f"{atom3.element_symbol}{atom3.index_num+1}/{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
+            )
+        else:
+            QMessageBox.critical(
+                self,
+                self.tr("Out-of-plane angle"),
+                self.tr("At least four atoms must be selected!"),
                 buttons=QMessageBox.StandardButton.Ok,
             )
 

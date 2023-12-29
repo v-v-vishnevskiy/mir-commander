@@ -34,12 +34,35 @@ class MolStructMenu(SubWindowMenu):
         self.addMenu(calc_menu)
 
         calc_interat_distance_act = Action(Action.tr("Interatomic distance"), self.parent())
+        calc_interat_distance_act.setStatusTip(Action.tr("Distance between last two selected atoms a1-a2"))
         calc_interat_distance_act.triggered.connect(self.calc_interat_distance_handler)
         calc_menu.addAction(calc_interat_distance_act)
 
         calc_interat_angle_act = Action(Action.tr("Interatomic angle"), self.parent())
+        calc_interat_angle_act.setStatusTip(
+            Action.tr("Angle between two lines formed by last three selected atoms a1-a2-a3")
+        )
         calc_interat_angle_act.triggered.connect(self.calc_interat_angle_handler)
         calc_menu.addAction(calc_interat_angle_act)
+
+        calc_torsion_angle_act = Action(Action.tr("Torsion angle"), self.parent())
+        calc_torsion_angle_act.setStatusTip(
+            Action.tr(
+                "Dihedral angle between two planes (a1-a2-a3) and (a2-a3-a4) "
+                "defined on the basis of last four selected atoms"
+            )
+        )
+        calc_torsion_angle_act.triggered.connect(self.calc_torsion_angle_handler)
+        calc_menu.addAction(calc_torsion_angle_act)
+
+        calc_oop_angle_act = Action(Action.tr("Out-of-plane angle"), self.parent())
+        calc_oop_angle_act.setStatusTip(
+            Action.tr(
+                "Angle between the vector (a1-a2) and plane (a3-a2-a4) defined on the basis of last four selected atoms"
+            )
+        )
+        calc_oop_angle_act.triggered.connect(self.calc_oop_angle_handler)
+        calc_menu.addAction(calc_oop_angle_act)
 
         cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
@@ -99,6 +122,14 @@ class MolStructMenu(SubWindowMenu):
     @Slot()
     def calc_interat_angle_handler(self):
         self.mdi_area.activeSubWindow().widget().calc_angle_last3sel_atoms()
+
+    @Slot()
+    def calc_torsion_angle_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_torsion_last4sel_atoms()
+
+    @Slot()
+    def calc_oop_angle_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_oop_last4sel_atoms()
 
     @Slot()
     def save_img_action_handler(self):
