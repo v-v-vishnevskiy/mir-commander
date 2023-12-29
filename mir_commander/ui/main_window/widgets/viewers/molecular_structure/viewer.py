@@ -360,6 +360,26 @@ class MolecularStructure(Widget):
                 buttons=QMessageBox.StandardButton.Ok,
             )
 
+    def calc_auto_lastsel_atoms(self):
+        """
+        Calculate and print internal geometrical parameter,
+        distance, angle or torsion angle, depending on the number of selected atoms.
+        """
+        num_selected = len(self._scene._selected_atom_items)
+        if num_selected == 2:
+            self.calc_distance_last2sel_atoms()
+        elif num_selected == 3:
+            self.calc_angle_last3sel_atoms()
+        elif num_selected == 4:
+            self.calc_torsion_last4sel_atoms()
+        else:
+            QMessageBox.critical(
+                self,
+                self.tr("Auto geometrical parameter"),
+                self.tr("Two, three or four atoms must be selected!"),
+                buttons=QMessageBox.StandardButton.Ok,
+            )
+
     def update_window_title(self):
         title = self._draw_item.text()
         parent_item = self._draw_item.parent()

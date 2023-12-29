@@ -2,5 +2,6 @@
   <qresource prefix="icons">
     <file>actions/saveimage.png</file>
     <file>actions/hydrogen_symbol.png</file>
+    <file>actions/triangular_ruler.png</file>
   </qresource>
 </RCC>

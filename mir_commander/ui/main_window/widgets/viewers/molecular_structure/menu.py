@@ -64,6 +64,14 @@ class MolStructMenu(SubWindowMenu):
         calc_oop_angle_act.triggered.connect(self.calc_oop_angle_handler)
         calc_menu.addAction(calc_oop_angle_act)
 
+        calc_auto_parameter_act = Action(Action.tr("Auto parameter"), self.parent())
+        calc_auto_parameter_act.setShortcut(QKeySequence("P"))
+        calc_auto_parameter_act.setStatusTip(
+            Action.tr("Interatomic distance, angle or torsion angle if two, three or four atoms are selected")
+        )
+        calc_auto_parameter_act.triggered.connect(self.calc_auto_parameter_handler)
+        calc_menu.addAction(calc_auto_parameter_act)
+
         cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
@@ -80,7 +88,7 @@ class MolStructMenu(SubWindowMenu):
         cloaking_menu.addAction(cloak_h_atoms_act)
 
         toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
-        toggle_h_atoms_act.setShortcut(QKeySequence("Ctrl+H"))
+        toggle_h_atoms_act.setShortcut(QKeySequence("H"))
         toggle_h_atoms_act.triggered.connect(self.toggle_h_atoms_handler)
         cloaking_menu.addAction(toggle_h_atoms_act)
 
@@ -130,6 +138,10 @@ class MolStructMenu(SubWindowMenu):
     @Slot()
     def calc_oop_angle_handler(self):
         self.mdi_area.activeSubWindow().widget().calc_oop_last4sel_atoms()
+
+    @Slot()
+    def calc_auto_parameter_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_auto_lastsel_atoms()
 
     @Slot()
     def save_img_action_handler(self):

@@ -25,6 +25,11 @@ class ToolBar(SubWindowToolBar):
         toggle_h_atoms_act.triggered.connect(self.toggle_h_atoms_handler)
         self.addAction(toggle_h_atoms_act)
 
+        calc_auto_parameter_act = Action(Action.tr("Auto calculate parameter"), self.parent())
+        calc_auto_parameter_act.setIcon(QIcon(":/icons/actions/triangular_ruler.png"))
+        calc_auto_parameter_act.triggered.connect(self.calc_auto_parameter_handler)
+        self.addAction(calc_auto_parameter_act)
+
         save_img_act = Action(Action.tr("Save image..."), self.parent())
         save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
         save_img_act.triggered.connect(self.save_img_action_handler)
@@ -33,6 +38,10 @@ class ToolBar(SubWindowToolBar):
     @Slot()
     def toggle_h_atoms_handler(self):
         self.mdi_area.activeSubWindow().widget()._scene.toggle_h_atoms()
+
+    @Slot()
+    def calc_auto_parameter_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_auto_lastsel_atoms()
 
     @Slot()
     def save_img_action_handler(self):
