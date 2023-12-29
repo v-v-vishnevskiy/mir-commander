@@ -20,10 +20,15 @@ class ToolBar(SubWindowToolBar):
         self.setObjectName("Molecular viewer")
 
     def setup_actions(self):
-        toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
-        toggle_h_atoms_act.setIcon(QIcon(":/icons/actions/hydrogen_symbol.png"))
-        toggle_h_atoms_act.triggered.connect(self.toggle_h_atoms_handler)
-        self.addAction(toggle_h_atoms_act)
+        cloak_toggle_h_atoms_act = Action(Action.tr("Toggle visibility of H atoms"), self.parent())
+        cloak_toggle_h_atoms_act.setIcon(QIcon(":/icons/actions/hydrogen_symbol.png"))
+        cloak_toggle_h_atoms_act.triggered.connect(self.cloak_toggle_h_atoms_handler)
+        self.addAction(cloak_toggle_h_atoms_act)
+
+        select_toggle_all_atoms_act = Action(Action.tr("Toggle selection of all atoms"), self.parent())
+        select_toggle_all_atoms_act.setIcon(QIcon(":/icons/actions/toggle_all_selection.png"))
+        select_toggle_all_atoms_act.triggered.connect(self.select_toggle_all_atoms_handler)
+        self.addAction(select_toggle_all_atoms_act)
 
         calc_auto_parameter_act = Action(Action.tr("Auto calculate parameter"), self.parent())
         calc_auto_parameter_act.setIcon(QIcon(":/icons/actions/triangular_ruler.png"))
@@ -36,8 +41,12 @@ class ToolBar(SubWindowToolBar):
         self.addAction(save_img_act)
 
     @Slot()
-    def toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.toggle_h_atoms()
+    def cloak_toggle_h_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.cloak_toggle_h_atoms()
+
+    @Slot()
+    def select_toggle_all_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):

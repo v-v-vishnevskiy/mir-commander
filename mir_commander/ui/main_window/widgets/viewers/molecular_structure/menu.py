@@ -30,6 +30,11 @@ class MolStructMenu(SubWindowMenu):
         unselect_all_atoms_act.triggered.connect(self.unselect_all_atoms_handler)
         selection_menu.addAction(unselect_all_atoms_act)
 
+        select_toggle_all_atoms_act = Action(Action.tr("Toggle all atoms"), self.parent())
+        select_toggle_all_atoms_act.setShortcut(QKeySequence("A"))
+        select_toggle_all_atoms_act.triggered.connect(self.select_toggle_all_atoms_handler)
+        selection_menu.addAction(select_toggle_all_atoms_act)
+
         calc_menu = Menu(Menu.tr("Calculate"))
         self.addMenu(calc_menu)
 
@@ -87,10 +92,10 @@ class MolStructMenu(SubWindowMenu):
         cloak_h_atoms_act.triggered.connect(self.cloak_h_atoms_handler)
         cloaking_menu.addAction(cloak_h_atoms_act)
 
-        toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
-        toggle_h_atoms_act.setShortcut(QKeySequence("H"))
-        toggle_h_atoms_act.triggered.connect(self.toggle_h_atoms_handler)
-        cloaking_menu.addAction(toggle_h_atoms_act)
+        cloak_toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
+        cloak_toggle_h_atoms_act.setShortcut(QKeySequence("H"))
+        cloak_toggle_h_atoms_act.triggered.connect(self.cloak_toggle_h_atoms_handler)
+        cloaking_menu.addAction(cloak_toggle_h_atoms_act)
 
         cloak_at_by_type_act = Action(Action.tr("Cloak atoms by type..."), self.parent())
         cloak_at_by_type_act.triggered.connect(self.cloak_atoms_by_type_handler)
@@ -122,6 +127,10 @@ class MolStructMenu(SubWindowMenu):
     @Slot()
     def unselect_all_atoms_handler(self):
         self.mdi_area.activeSubWindow().widget()._scene.unselect_all_atoms()
+
+    @Slot()
+    def select_toggle_all_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
@@ -160,8 +169,8 @@ class MolStructMenu(SubWindowMenu):
         self.mdi_area.activeSubWindow().widget()._scene.cloak_h_atoms()
 
     @Slot()
-    def toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.toggle_h_atoms()
+    def cloak_toggle_h_atoms_handler(self):
+        self.mdi_area.activeSubWindow().widget()._scene.cloak_toggle_h_atoms()
 
     @Slot()
     def cloak_atoms_by_type_handler(self):

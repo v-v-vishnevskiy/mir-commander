@@ -227,6 +227,16 @@ class Scene(BaseScene):
         self.update()
         self._selected_atom_items = []
 
+    def select_toggle_all_atoms(self):
+        """
+        Unselect all atoms if at least one atom selected,
+        otherwise select all.
+        """
+        if len(self._selected_atom_items) > 0:
+            self.unselect_all_atoms()
+        else:
+            self.select_all_atoms()
+
     def cloak_selected_atoms(self):
         for atom in self._atom_items:
             if atom.selected:
@@ -251,7 +261,7 @@ class Scene(BaseScene):
                 atom.cloaked = True
         self.update()
 
-    def toggle_h_atoms(self):
+    def cloak_toggle_h_atoms(self):
         for atom in self._atom_items:
             if atom.atomic_num == 1:
                 atom.cloaked = not atom.cloaked
