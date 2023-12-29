@@ -19,6 +19,7 @@ class Scene(BaseScene):
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
 
         self._atom_items: list[Atom] = []
+        self._selected_atom_items: list[Atom] = []
         self._bond_items: list[Bond] = []
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
 
@@ -119,8 +120,12 @@ class Scene(BaseScene):
     def toggle_atom_selection(self):
         atom = self._atom_under_cursor(*self.mouse_pos)
         if atom is not None:
-            atom.toggle_selection()
+            new_state = atom.toggle_selection()
             self.update()
+            if new_state:
+                self._selected_atom_items.append(atom)
+            else:
+                self._selected_atom_items.remove(atom)
 
     def initialize_gl(self):
         super().initialize_gl()
@@ -214,11 +219,13 @@ class Scene(BaseScene):
         for atom in self._atom_items:
             atom.selected = True
         self.update()
+        self._selected_atom_items = self._atom_items.copy()
 
     def unselect_all_atoms(self):
         for atom in self._atom_items:
             atom.selected = False
         self.update()
+        self._selected_atom_items = []
 
     def cloak_selected_atoms(self):
         for atom in self._atom_items:

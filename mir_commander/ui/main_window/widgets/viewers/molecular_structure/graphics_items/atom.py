@@ -72,3 +72,4 @@ class Atom(MeshItem):
 
     def toggle_selection(self):
         self.selected = not self.selected
+        return self.selected

@@ -51,6 +51,7 @@ class Widget(QOpenGLWidget):
         self._repeatable_actions_timer.timeout.connect(self._call_action_timer)
 
     def _init_actions(self):
+        # TODO: document why do we need such a complicated system for managing of actions
         self._actions["rotate_down"] = (True, self._scene.rotate, (1, 0))
         self._actions["rotate_left"] = (True, self._scene.rotate, (0, 1))
         self._actions["rotate_right"] = (True, self._scene.rotate, (0, -1))

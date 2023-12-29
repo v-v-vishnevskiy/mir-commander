@@ -30,6 +30,17 @@ class MolStructMenu(SubWindowMenu):
         unselect_all_atoms_act.triggered.connect(self.unselect_all_atoms_handler)
         selection_menu.addAction(unselect_all_atoms_act)
 
+        calc_menu = Menu(Menu.tr("Calculate"))
+        self.addMenu(calc_menu)
+
+        calc_interat_distance_act = Action(Action.tr("Interatomic distance"), self.parent())
+        calc_interat_distance_act.triggered.connect(self.calc_interat_distance_handler)
+        calc_menu.addAction(calc_interat_distance_act)
+
+        calc_interat_angle_act = Action(Action.tr("Interatomic angle"), self.parent())
+        calc_interat_angle_act.triggered.connect(self.calc_interat_angle_handler)
+        calc_menu.addAction(calc_interat_angle_act)
+
         cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
@@ -80,6 +91,14 @@ class MolStructMenu(SubWindowMenu):
     @Slot()
     def unselect_all_atoms_handler(self):
         self.mdi_area.activeSubWindow().widget()._scene.unselect_all_atoms()
+
+    @Slot()
+    def calc_interat_distance_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_distance_last2sel_atoms()
+
+    @Slot()
+    def calc_interat_angle_handler(self):
+        self.mdi_area.activeSubWindow().widget().calc_angle_last3sel_atoms()
 
     @Slot()
     def save_img_action_handler(self):

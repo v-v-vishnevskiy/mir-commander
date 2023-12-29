@@ -16,6 +16,7 @@ from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style impo
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
@@ -69,6 +70,7 @@ class MolecularStructure(Widget):
 
     def _init_actions(self):
         super()._init_actions()
+        # TODO: document why do we need such a complicated system for managing of actions
         self._actions["item_next"] = (False, self._draw_next_item, tuple())
         self._actions["item_prev"] = (False, self._draw_prev_item, tuple())
         self._actions["style_next"] = (False, self._set_next_style, tuple())
@@ -232,6 +234,53 @@ class MolecularStructure(Widget):
                     self.tr("Invalid element symbol!"),
                     buttons=QMessageBox.StandardButton.Ok,
                 )
+
+    def calc_distance_last2sel_atoms(self):
+        """
+        Calculate and print distance (in internal units) between last two selected atoms.
+        """
+        if len(self._scene._selected_atom_items) >= 2:
+            atom1 = self._scene._selected_atom_items[-2]
+            atom2 = self._scene._selected_atom_items[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
+            self._main_window.append_to_console(
+                f"r({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1})={distance:.3f}"
+            )
+        else:
+            QMessageBox.critical(
+                self,
+                self.tr("Interatomic distance"),
+                self.tr("At least two atoms must be selected!"),
+                buttons=QMessageBox.StandardButton.Ok,
+            )
+
+    def calc_angle_last3sel_atoms(self):
+        """
+        Calculate and print angle (in degrees) formed by last three selected atoms: a1-a2-a3
+        """
+        if len(self._scene._selected_atom_items) >= 3:
+            atom1 = self._scene._selected_atom_items[-3]
+            atom2 = self._scene._selected_atom_items[-2]
+            atom3 = self._scene._selected_atom_items[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            angle = geom_angle_xyz(
+                pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
+            ) * (180.0 / math.pi)
+            self._main_window.append_to_console(
+                f"a({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
+                f"{atom3.element_symbol}{atom3.index_num+1})={angle:.1f}"
+            )
+        else:
+            QMessageBox.critical(
+                self,
+                self.tr("Angle"),
+                self.tr("At least three atoms must be selected!"),
+                buttons=QMessageBox.StandardButton.Ok,
+            )
 
     def update_window_title(self):
         title = self._draw_item.text()
