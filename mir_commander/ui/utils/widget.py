@@ -224,11 +224,11 @@ class Menu(Widget, QMenu):
         self.__title = title
         super().setTitle(self._tr(title))
 
-    def set_enabled(self, flag: bool):
+    def set_enabled_actions(self, flag: bool):
         for action in self.actions():
             menu = action.menu()
             if menu:
-                menu.set_enabled(flag)
+                menu.set_enabled_actions(flag)
             action.setEnabled(flag)
 
     def retranslate_ui(self):

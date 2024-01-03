@@ -70,6 +70,6 @@ class Atom(MeshItem):
             return self.position.distanceToLine(point, direction) <= self.radius
         return False
 
-    def toggle_selection(self):
+    def toggle_selection(self) -> bool:
         self.selected = not self.selected
         return self.selected

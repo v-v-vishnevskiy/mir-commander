@@ -14,7 +14,7 @@ from mir_commander.projects.base import Project
 from mir_commander.ui.main_window.widgets import About
 from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
 from mir_commander.ui.main_window.widgets import dock_widget
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.menu import MolStructMenu
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
 

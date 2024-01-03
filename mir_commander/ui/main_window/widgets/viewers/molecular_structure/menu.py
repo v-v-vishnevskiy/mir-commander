@@ -6,20 +6,33 @@ from PySide6.QtWidgets import QWidget
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure
 from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
-from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.utils.widget import Action
+from mir_commander.ui.utils.widget import Menu as BaseMenu
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
 
 
-class MolStructMenu(SubWindowMenu):
+class Menu(SubWindowMenu):
     widget: QWidget = MolecularStructure
 
     def __init__(self, parent: "MainWindow"):
-        super().__init__(Menu.tr("&Molecule"), parent)
+        super().__init__(BaseMenu.tr("&Molecule"), parent)
         self.setObjectName("Molecular Structure Menu")
 
-        selection_menu = Menu(Menu.tr("Selection"))
+        self._init_selection_menu()
+        self._init_calculate_menu()
+        self._init_cloaking_menu()
+
+        save_img_act = Action(Action.tr("Save image..."), self.parent())
+        save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
+        save_img_act.triggered.connect(self.save_img_action_handler)
+        self.addAction(save_img_act)
+
+        self.set_enabled_actions(False)
+
+    def _init_selection_menu(self):
+        selection_menu = BaseMenu(BaseMenu.tr("Selection"))
         self.addMenu(selection_menu)
 
         select_all_atoms_act = Action(Action.tr("Select all atoms"), self.parent())
@@ -35,7 +48,8 @@ class MolStructMenu(SubWindowMenu):
         select_toggle_all_atoms_act.triggered.connect(self.select_toggle_all_atoms_handler)
         selection_menu.addAction(select_toggle_all_atoms_act)
 
-        calc_menu = Menu(Menu.tr("Calculate"))
+    def _init_calculate_menu(self):
+        calc_menu = BaseMenu(BaseMenu.tr("Calculate"))
         self.addMenu(calc_menu)
 
         calc_interat_distance_act = Action(Action.tr("Interatomic distance"), self.parent())
@@ -84,7 +98,8 @@ class MolStructMenu(SubWindowMenu):
         calc_sel_fragments_act.triggered.connect(self.calc_sel_fragments_handler)
         calc_menu.addAction(calc_sel_fragments_act)
 
-        cloaking_menu = Menu(Menu.tr("Cloaking"))
+    def _init_cloaking_menu(self):
+        cloaking_menu = BaseMenu(BaseMenu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
         cloak_selected_act = Action(Action.tr("Cloak selected"), self.parent())
@@ -113,13 +128,6 @@ class MolStructMenu(SubWindowMenu):
         uncloak_all_act = Action(Action.tr("Uncloak all"), self.parent())
         uncloak_all_act.triggered.connect(self.uncloak_all_handler)
         cloaking_menu.addAction(uncloak_all_act)
-
-        save_img_act = Action(Action.tr("Save image..."), self.parent())
-        save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        save_img_act.triggered.connect(self.save_img_action_handler)
-        self.addAction(save_img_act)
-
-        self.set_enabled(False)
 
     # Note, callbacks are only triggered, when the respective action is enabled.
     # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
