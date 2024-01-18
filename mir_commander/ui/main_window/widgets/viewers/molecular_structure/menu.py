@@ -137,15 +137,15 @@ class Menu(SubWindowMenu):
 
     @Slot()
     def select_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.select_all_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.select_all_atoms()
 
     @Slot()
     def unselect_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.unselect_all_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.unselect_all_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.select_toggle_all_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
@@ -177,19 +177,19 @@ class Menu(SubWindowMenu):
 
     @Slot()
     def cloak_selected_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.cloak_selected_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.cloak_selected_atoms()
 
     @Slot()
     def cloak_not_selected_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.cloak_not_selected_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.cloak_not_selected_atoms()
 
     @Slot()
     def cloak_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.cloak_h_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.cloak_h_atoms()
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.cloak_toggle_h_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.cloak_toggle_h_atoms()
 
     @Slot()
     def cloak_atoms_by_type_handler(self):
@@ -197,4 +197,4 @@ class Menu(SubWindowMenu):
 
     @Slot()
     def uncloak_all_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.uncloak_all_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.uncloak_all_atoms()

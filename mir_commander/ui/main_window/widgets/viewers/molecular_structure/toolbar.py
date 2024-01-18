@@ -42,11 +42,11 @@ class ToolBar(SubWindowToolBar):
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.cloak_toggle_h_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.cloak_toggle_h_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget()._scene.select_toggle_all_atoms()
+        self.mdi_area.activeSubWindow().widget().scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):

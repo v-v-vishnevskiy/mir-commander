@@ -71,7 +71,7 @@ class MolecularStructure(Widget):
         super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
         # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
-        self._scene: Scene
+        self.scene: Scene
 
         self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
         self.resize(self._config["size"][0], self._config["size"][1])
@@ -110,10 +110,10 @@ class MolecularStructure(Widget):
         self._actions["style_next"] = (False, self._set_next_style, tuple())
         self._actions["style_prev"] = (False, self._set_prev_style, tuple())
         self._actions["save_image"] = (False, self.save_img_action_handler, tuple())
-        self._actions["toggle_atom_selection"] = (False, self._scene.toggle_atom_selection, tuple())
+        self._actions["toggle_atom_selection"] = (False, self.scene.toggle_atom_selection, tuple())
 
     def _apply_style(self):
-        self._scene.apply_style()
+        self.scene.apply_style()
 
     def _atomic_coordinates_item(
         self, index: int, parent: "Item", counter: int = -1
@@ -154,7 +154,7 @@ class MolecularStructure(Widget):
         # add atoms
         for i, atomic_num in enumerate(ds.atomic_num):
             position = QVector3D(ds.x[i], ds.y[i], ds.z[i])
-            atom = self._scene.add_atom(i, atomic_num, position)
+            atom = self.scene.add_atom(i, atomic_num, position)
 
             d = position.length() + atom.radius
             if longest_distance < d:
@@ -164,8 +164,8 @@ class MolecularStructure(Widget):
         self._build_bonds(ds)
 
         center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
-        self._scene.set_center(center)
-        self._scene.set_camera_distance(longest_distance - center.length())
+        self.scene.set_center(center)
+        self.scene.set_camera_distance(longest_distance - center.length())
 
     def _build_bonds(self, ds: AtomicCoordinatesDS):
         geom_bond_tol = 0.15
@@ -180,7 +180,7 @@ class MolecularStructure(Widget):
                 crad_sum = crad_i + crad_j
                 dist_ij = math.sqrt((ds.x[i] - ds.x[j]) ** 2 + (ds.y[i] - ds.y[j]) ** 2 + (ds.z[i] - ds.z[j]) ** 2)
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tol):
-                    self._scene.add_bond(self._scene.atom(i), self._scene.atom(j))
+                    self.scene.add_bond(self.scene.atom(i), self.scene.atom(j))
 
     def _set_draw_item(self):
         _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
@@ -198,7 +198,7 @@ class MolecularStructure(Widget):
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self._scene.clear(update=False)
+            self.scene.clear(update=False)
             self._build_molecule()
             self.update()
 
@@ -208,7 +208,7 @@ class MolecularStructure(Widget):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self._scene.clear(update=False)
+            self.scene.clear(update=False)
             self._build_molecule()
             self.update()
 
@@ -243,7 +243,7 @@ class MolecularStructure(Widget):
                     save_flag = False
 
             if save_flag:
-                image = self._scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
+                image = self.scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
                 if image.save(str(dlg.img_file_path)):
                     self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
                 else:
@@ -269,7 +269,7 @@ class MolecularStructure(Widget):
                 else:
                     atomic_num = elements.symbol(el_symbol).number
 
-                self._scene.cloak_atoms_by_atnum(atomic_num)
+                self.scene.cloak_atoms_by_atnum(atomic_num)
             except ValueError:
                 QMessageBox.critical(
                     self,
@@ -282,9 +282,9 @@ class MolecularStructure(Widget):
         """
         Calculate and print distance (in internal units) between last two selected atoms.
         """
-        if len(self._scene._selected_atom_items) >= 2:
-            atom1 = self._scene._selected_atom_items[-2]
-            atom2 = self._scene._selected_atom_items[-1]
+        if len(self.scene.selected_atom_items) >= 2:
+            atom1 = self.scene.selected_atom_items[-2]
+            atom2 = self.scene.selected_atom_items[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
@@ -303,10 +303,10 @@ class MolecularStructure(Widget):
         """
         Calculate and print angle (in degrees) formed by last three selected atoms: a1-a2-a3
         """
-        if len(self._scene._selected_atom_items) >= 3:
-            atom1 = self._scene._selected_atom_items[-3]
-            atom2 = self._scene._selected_atom_items[-2]
-            atom3 = self._scene._selected_atom_items[-1]
+        if len(self.scene.selected_atom_items) >= 3:
+            atom1 = self.scene.selected_atom_items[-3]
+            atom2 = self.scene.selected_atom_items[-2]
+            atom3 = self.scene.selected_atom_items[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -329,11 +329,11 @@ class MolecularStructure(Widget):
         """
         Calculate and print torsion angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
-        if len(self._scene._selected_atom_items) >= 4:
-            atom1 = self._scene._selected_atom_items[-4]
-            atom2 = self._scene._selected_atom_items[-3]
-            atom3 = self._scene._selected_atom_items[-2]
-            atom4 = self._scene._selected_atom_items[-1]
+        if len(self.scene.selected_atom_items) >= 4:
+            atom1 = self.scene.selected_atom_items[-4]
+            atom2 = self.scene.selected_atom_items[-3]
+            atom3 = self.scene.selected_atom_items[-2]
+            atom4 = self.scene.selected_atom_items[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -368,11 +368,11 @@ class MolecularStructure(Widget):
         """
         Calculate and print out-of-plane angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
-        if len(self._scene._selected_atom_items) >= 4:
-            atom1 = self._scene._selected_atom_items[-4]
-            atom2 = self._scene._selected_atom_items[-3]
-            atom3 = self._scene._selected_atom_items[-2]
-            atom4 = self._scene._selected_atom_items[-1]
+        if len(self.scene.selected_atom_items) >= 4:
+            atom1 = self.scene.selected_atom_items[-4]
+            atom2 = self.scene.selected_atom_items[-3]
+            atom3 = self.scene.selected_atom_items[-2]
+            atom4 = self.scene.selected_atom_items[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -408,7 +408,7 @@ class MolecularStructure(Widget):
         Calculate and print internal geometrical parameter,
         distance, angle or torsion angle, depending on the number of selected atoms.
         """
-        num_selected = len(self._scene._selected_atom_items)
+        num_selected = len(self.scene.selected_atom_items)
         if num_selected == 2:
             self.calc_distance_last2sel_atoms()
         elif num_selected == 3:
@@ -433,7 +433,7 @@ class MolecularStructure(Widget):
         outofplanes = []
 
         # Generate list of distances, which are bonds formed by selected atoms
-        for bond in self._scene._bond_items:
+        for bond in self.scene.bond_items:
             if bond._atom_1.selected and bond._atom_2.selected:
                 distances.append(InteratomicDistance(bond._atom_1, bond._atom_2))
 

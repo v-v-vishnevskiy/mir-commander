@@ -19,8 +19,8 @@ class Scene(BaseScene):
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
 
         self._atom_items: list[Atom] = []
-        self._selected_atom_items: list[Atom] = []
-        self._bond_items: list[Bond] = []
+        self.selected_atom_items: list[Atom] = []
+        self.bond_items: list[Bond] = []
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
 
         self._atom_index_under_cursor: None | Atom = None
@@ -57,7 +57,7 @@ class Scene(BaseScene):
             self._bond_mesh_data.compute_face_normals()
 
         # update items
-        for bond in self._bond_items:
+        for bond in self.bond_items:
             bond.set_radius(self.style["bond.radius"])
 
             if self.style["bond.color"] == "atoms":
@@ -123,9 +123,9 @@ class Scene(BaseScene):
             new_state = atom.toggle_selection()
             self.update()
             if new_state:
-                self._selected_atom_items.append(atom)
+                self.selected_atom_items.append(atom)
             else:
-                self._selected_atom_items.remove(atom)
+                self.selected_atom_items.remove(atom)
 
     def initialize_gl(self):
         super().initialize_gl()
@@ -146,7 +146,7 @@ class Scene(BaseScene):
 
     def clear(self, update: bool = True):
         self._atom_items.clear()
-        self._bond_items.clear()
+        self.bond_items.clear()
         super().clear(update)
 
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
@@ -195,7 +195,7 @@ class Scene(BaseScene):
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
-        self._bond_items.append(item)
+        self.bond_items.append(item)
 
         return item
 
@@ -219,20 +219,20 @@ class Scene(BaseScene):
         for atom in self._atom_items:
             atom.selected = True
         self.update()
-        self._selected_atom_items = self._atom_items.copy()
+        self.selected_atom_items = self._atom_items.copy()
 
     def unselect_all_atoms(self):
         for atom in self._atom_items:
             atom.selected = False
         self.update()
-        self._selected_atom_items = []
+        self.selected_atom_items = []
 
     def select_toggle_all_atoms(self):
         """
         Unselect all atoms if at least one atom selected,
         otherwise select all.
         """
-        if len(self._selected_atom_items) > 0:
+        if len(self.selected_atom_items) > 0:
             self.unselect_all_atoms()
         else:
             self.select_all_atoms()
