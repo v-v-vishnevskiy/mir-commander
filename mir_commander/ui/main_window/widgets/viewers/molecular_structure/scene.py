@@ -1,4 +1,3 @@
-from periodictable import elements
 from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
@@ -9,6 +8,7 @@ from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.utils.chem import atomic_number_to_symbol
 
 
 class Scene(BaseScene):
@@ -120,12 +120,11 @@ class Scene(BaseScene):
     def toggle_atom_selection(self):
         atom = self._atom_under_cursor(*self.mouse_pos)
         if atom is not None:
-            new_state = atom.toggle_selection()
-            self.update()
-            if new_state:
+            if atom.toggle_selection():
                 self.selected_atom_items.append(atom)
             else:
                 self.selected_atom_items.remove(atom)
+            self.update()
 
     def initialize_gl(self):
         super().initialize_gl()
@@ -151,20 +150,12 @@ class Scene(BaseScene):
 
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
-        if atomic_num > 0:
-            el_symbol = elements[atomic_num].symbol
-        elif atomic_num == -1:
-            el_symbol = "X"
-        elif atomic_num == -2:
-            el_symbol = "Q"
-        else:
-            raise ValueError(f"Invalid atomic number {atomic_num}.")
 
         item = Atom(
             self._atom_mesh_data,
             index_num,
             atomic_num,
-            el_symbol,
+            atomic_number_to_symbol(atomic_num),
             position,
             radius,
             color,

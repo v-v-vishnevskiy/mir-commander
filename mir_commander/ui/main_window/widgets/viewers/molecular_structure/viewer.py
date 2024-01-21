@@ -3,7 +3,6 @@ import math
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-from periodictable import elements
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QContextMenuEvent, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
@@ -17,6 +16,7 @@ from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style impo
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 if TYPE_CHECKING:
@@ -261,15 +261,7 @@ class MolecularStructure(Widget):
         )
         if ok:
             try:
-                # Convert here atomic symbol to atomic number
-                if el_symbol == "X":
-                    atomic_num = -1
-                elif el_symbol == "Q":
-                    atomic_num = -2
-                else:
-                    atomic_num = elements.symbol(el_symbol).number
-
-                self.scene.cloak_atoms_by_atnum(atomic_num)
+                self.scene.cloak_atoms_by_atnum(symbol_to_atomic_number(el_symbol))
             except ValueError:
                 QMessageBox.critical(
                     self,

@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon, QKeySequence
-from PySide6.QtWidgets import QWidget
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure
 from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
@@ -13,11 +12,9 @@ if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
 
 
-class Menu(SubWindowMenu):
-    widget: QWidget = MolecularStructure
-
+class Menu(SubWindowMenu[MolecularStructure]):
     def __init__(self, parent: "MainWindow"):
-        super().__init__(BaseMenu.tr("&Molecule"), parent)
+        super().__init__(Menu.tr("&Molecule"), parent)
         self.setObjectName("Molecular Structure Menu")
 
         self._init_selection_menu()
@@ -132,69 +129,69 @@ class Menu(SubWindowMenu):
     # Note, callbacks are only triggered, when the respective action is enabled.
     # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
     # This method receives the window parameter, so it is possible to determine the currently active type
-    # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
+    # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
     # and we may call our respective action handler.
 
     @Slot()
     def select_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.select_all_atoms()
+        self.widget.scene.select_all_atoms()
 
     @Slot()
     def unselect_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.unselect_all_atoms()
+        self.widget.scene.unselect_all_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.select_toggle_all_atoms()
+        self.widget.scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_distance_last2sel_atoms()
+        self.widget.calc_distance_last2sel_atoms()
 
     @Slot()
     def calc_interat_angle_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_angle_last3sel_atoms()
+        self.widget.calc_angle_last3sel_atoms()
 
     @Slot()
     def calc_torsion_angle_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_torsion_last4sel_atoms()
+        self.widget.calc_torsion_last4sel_atoms()
 
     @Slot()
     def calc_oop_angle_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_oop_last4sel_atoms()
+        self.widget.calc_oop_last4sel_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_auto_lastsel_atoms()
+        self.widget.calc_auto_lastsel_atoms()
 
     @Slot()
     def calc_sel_fragments_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_all_parameters_selected_atoms()
+        self.widget.calc_all_parameters_selected_atoms()
 
     @Slot()
     def save_img_action_handler(self):
-        self.mdi_area.activeSubWindow().widget().save_img_action_handler()
+        self.widget.save_img_action_handler()
 
     @Slot()
     def cloak_selected_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.cloak_selected_atoms()
+        self.widget.scene.cloak_selected_atoms()
 
     @Slot()
     def cloak_not_selected_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.cloak_not_selected_atoms()
+        self.widget.scene.cloak_not_selected_atoms()
 
     @Slot()
     def cloak_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.cloak_h_atoms()
+        self.widget.scene.cloak_h_atoms()
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.cloak_toggle_h_atoms()
+        self.widget.scene.cloak_toggle_h_atoms()
 
     @Slot()
     def cloak_atoms_by_type_handler(self):
-        self.mdi_area.activeSubWindow().widget().cloak_atoms_by_atnum()
+        self.widget.cloak_atoms_by_atnum()
 
     @Slot()
     def uncloak_all_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.uncloak_all_atoms()
+        self.widget.scene.uncloak_all_atoms()

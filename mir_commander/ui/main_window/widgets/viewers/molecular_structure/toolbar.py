@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget
 
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure
 from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
@@ -12,12 +11,10 @@ if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
 
 
-class ToolBar(SubWindowToolBar):
-    widget: QWidget = MolecularStructure
-
+class ToolBar(SubWindowToolBar[MolecularStructure]):
     def __init__(self, parent: "MainWindow"):
         super().__init__(ToolBar.tr("Molecular viewer"), parent)
-        self.setObjectName("Molecular viewer")
+        self.setObjectName("Molecular Structure Toolbar")
 
     def setup_actions(self):
         cloak_toggle_h_atoms_act = Action(Action.tr("Toggle visibility of H atoms"), self.parent())
@@ -42,21 +39,21 @@ class ToolBar(SubWindowToolBar):
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.cloak_toggle_h_atoms()
+        self.widget.scene.cloak_toggle_h_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.mdi_area.activeSubWindow().widget().scene.select_toggle_all_atoms()
+        self.widget.scene.select_toggle_all_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):
-        self.mdi_area.activeSubWindow().widget().calc_auto_lastsel_atoms()
+        self.widget.calc_auto_lastsel_atoms()
 
     @Slot()
     def save_img_action_handler(self):
         # Note, this callback is only triggered, when the respective action is enabled.
         # Whether this is the case, is determined by the update_state method of the SubWindowToolBar class.
         # This method receives the window parameter, so it is possible to determine the currently active type
-        # of widget. Thus, it is guaranteed that mdi_area.activeSubWindow() is actually a MolViewer instance
+        # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
         # and we may call save_img_action_handler().
-        self.mdi_area.activeSubWindow().widget().save_img_action_handler()
+        self.widget.save_img_action_handler()
