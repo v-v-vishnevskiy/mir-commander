@@ -99,19 +99,23 @@ class Menu(SubWindowMenu[MolecularStructure]):
         cloaking_menu = BaseMenu(BaseMenu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
-        cloak_selected_act = Action(Action.tr("Cloak selected"), self.parent())
+        cloak_selected_act = Action(Action.tr("Cloak all selected"), self.parent())
         cloak_selected_act.triggered.connect(self.cloak_selected_handler)
         cloaking_menu.addAction(cloak_selected_act)
 
-        cloak_not_selected_act = Action(Action.tr("Cloak not selected"), self.parent())
+        cloak_not_selected_act = Action(Action.tr("Cloak all not selected"), self.parent())
         cloak_not_selected_act.triggered.connect(self.cloak_not_selected_handler)
         cloaking_menu.addAction(cloak_not_selected_act)
 
-        cloak_h_atoms_act = Action(Action.tr("Cloak H atoms"), self.parent())
+        cloak_h_atoms_act = Action(Action.tr("Cloak all H atoms"), self.parent())
         cloak_h_atoms_act.triggered.connect(self.cloak_h_atoms_handler)
         cloaking_menu.addAction(cloak_h_atoms_act)
 
-        cloak_toggle_h_atoms_act = Action(Action.tr("Toggle H atoms"), self.parent())
+        cloak_notsel_h_atoms_act = Action(Action.tr("Cloak not selected H atoms"), self.parent())
+        cloak_notsel_h_atoms_act.triggered.connect(self.cloak_notsel_h_atoms_handler)
+        cloaking_menu.addAction(cloak_notsel_h_atoms_act)
+
+        cloak_toggle_h_atoms_act = Action(Action.tr("Toggle all H atoms"), self.parent())
         cloak_toggle_h_atoms_act.setShortcut(QKeySequence("H"))
         cloak_toggle_h_atoms_act.triggered.connect(self.cloak_toggle_h_atoms_handler)
         cloaking_menu.addAction(cloak_toggle_h_atoms_act)
@@ -183,6 +187,10 @@ class Menu(SubWindowMenu[MolecularStructure]):
     @Slot()
     def cloak_h_atoms_handler(self):
         self.widget.scene.cloak_h_atoms()
+
+    @Slot()
+    def cloak_notsel_h_atoms_handler(self):
+        self.widget.scene.cloak_not_selected_h_atoms()
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):

@@ -246,6 +246,12 @@ class Scene(BaseScene):
                 atom.cloaked = True
         self.update()
 
+    def cloak_not_selected_h_atoms(self):
+        for atom in self._atom_items:
+            if atom.atomic_num == 1 and not atom.selected:
+                atom.cloaked = True
+        self.update()
+
     def cloak_atoms_by_atnum(self, atomic_num: int):
         for atom in self._atom_items:
             if atom.atomic_num == atomic_num:
