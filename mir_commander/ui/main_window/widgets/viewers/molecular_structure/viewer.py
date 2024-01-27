@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from PySide6.QtCore import Slot
-from PySide6.QtGui import QContextMenuEvent, QSurfaceFormat, QVector3D
+from PySide6.QtGui import QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
@@ -15,7 +15,7 @@ from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene impo
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+from mir_commander.ui.utils.widget import StatusBar
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
@@ -91,12 +91,12 @@ class MolecularStructure(Widget):
         self._set_draw_item()
 
         # Menus and actions specific for this particular widget
-        self.context_menu = Menu("", self)
-        save_img_action = Action(Action.tr("Save image..."), self)
-        self.context_menu.addAction(save_img_action)
-
+        # TODO: Removed "Save image". Context menu must be specific for particular object currently under mouse pointer
+        # self.context_menu = Menu("", self)
+        # save_img_action = Action(Action.tr("Save image..."), self)
+        # self.context_menu.addAction(save_img_action)
         # Connect the actions to methods
-        save_img_action.triggered.connect(self.save_img_action_handler)
+        # save_img_action.triggered.connect(self.save_img_action_handler)
 
         self.update_window_title()
 
@@ -212,9 +212,10 @@ class MolecularStructure(Widget):
             self._build_molecule()
             self.update()
 
-    def contextMenuEvent(self, event: QContextMenuEvent):
-        # Show the context menu
-        self.context_menu.exec(event.globalPos())
+    # TODO: uncomment when context menu is implemented
+    # def contextMenuEvent(self, event: QContextMenuEvent):
+    #    # Show the context menu
+    #    self.context_menu.exec(event.globalPos())
 
     def update_window_title(self):
         title = self._draw_item.text()
