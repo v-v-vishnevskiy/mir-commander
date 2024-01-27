@@ -29,7 +29,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         self.set_enabled_actions(False)
 
     def _init_selection_menu(self):
-        selection_menu = BaseMenu(BaseMenu.tr("Selection"))
+        selection_menu = BaseMenu(Menu.tr("Selection"))
         self.addMenu(selection_menu)
 
         select_all_atoms_act = Action(Action.tr("Select all atoms"), self.parent())
@@ -46,7 +46,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         selection_menu.addAction(select_toggle_all_atoms_act)
 
     def _init_calculate_menu(self):
-        calc_menu = BaseMenu(BaseMenu.tr("Calculate"))
+        calc_menu = BaseMenu(Menu.tr("Calculate"))
         self.addMenu(calc_menu)
 
         calc_interat_distance_act = Action(Action.tr("Interatomic distance"), self.parent())
@@ -96,7 +96,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         calc_menu.addAction(calc_sel_fragments_act)
 
     def _init_cloaking_menu(self):
-        cloaking_menu = BaseMenu(BaseMenu.tr("Cloaking"))
+        cloaking_menu = BaseMenu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
         cloak_selected_act = Action(Action.tr("Cloak all selected"), self.parent())
