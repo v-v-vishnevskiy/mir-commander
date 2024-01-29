@@ -26,7 +26,7 @@ class Widget(QOpenGLWidget):
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
-        self._scene = scene or Scene(self)
+        self.scene = scene or Scene(self)
         self._keymap = keymap or Keymap(
             id(self),
             {
@@ -51,13 +51,14 @@ class Widget(QOpenGLWidget):
         self._repeatable_actions_timer.timeout.connect(self._call_action_timer)
 
     def _init_actions(self):
-        self._actions["rotate_down"] = (True, self._scene.rotate, (1, 0))
-        self._actions["rotate_left"] = (True, self._scene.rotate, (0, 1))
-        self._actions["rotate_right"] = (True, self._scene.rotate, (0, -1))
-        self._actions["rotate_up"] = (True, self._scene.rotate, (-1, 0))
-        self._actions["toggle_projection"] = (False, self._scene.toggle_projection_mode, tuple())
-        self._actions["zoom_in"] = (True, self._scene.scale, (-0.015,))
-        self._actions["zoom_out"] = (True, self._scene.scale, (0.015,))
+        # TODO: document why do we need such a complicated system for managing of actions
+        self._actions["rotate_down"] = (True, self.scene.rotate, (1, 0))
+        self._actions["rotate_left"] = (True, self.scene.rotate, (0, 1))
+        self._actions["rotate_right"] = (True, self.scene.rotate, (0, -1))
+        self._actions["rotate_up"] = (True, self.scene.rotate, (-1, 0))
+        self._actions["toggle_projection"] = (False, self.scene.toggle_projection_mode, tuple())
+        self._actions["zoom_in"] = (True, self.scene.scale, (-0.015,))
+        self._actions["zoom_out"] = (True, self.scene.scale, (0.015,))
 
     def _call_action(self, event: QKeyEvent | QMouseEvent | str, match_fn: Callable):
         action = match_fn(event)
@@ -106,13 +107,13 @@ class Widget(QOpenGLWidget):
             super().setWindowIcon(icon)
 
     def initializeGL(self):
-        self._scene.initialize_gl()
+        self.scene.initialize_gl()
 
     def paintGL(self):
-        self._scene.paint()
+        self.scene.paint()
 
     def resizeGL(self, w: int, h: int):
-        self._scene.update_window_size()
+        self.scene.update_window_size()
 
     def keyPressEvent(self, event: QKeyEvent):
         self._call_action(event, self._keymap.match_key_event)
@@ -125,9 +126,9 @@ class Widget(QOpenGLWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
-                self._scene.rotate(diff.y(), -diff.x())
+                self.scene.rotate(diff.y(), -diff.x())
         else:
-            self._scene.new_cursor_position(pos.x(), pos.y())
+            self.scene.new_cursor_position(pos.x(), pos.y())
 
         self._cursor_pos = pos
 

@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
     <file>actions/saveimage.png</file>
+    <file>actions/hydrogen_symbol.png</file>
+    <file>actions/triangular_ruler.png</file>
+    <file>actions/toggle_all_selection.png</file>
   </qresource>
 </RCC>

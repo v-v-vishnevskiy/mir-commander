@@ -88,3 +88,4 @@ Other principles:
 - Prefer string interpolation `f"parameter={par}"` over string `format()` method.
 - Instead of `print()` you should obtain a `logger` by calling `logging.getLogger(__name__)` in the beginning of the module and then use the loggers methods `info()`, `debug()`, `warning()`, `error()` and `exception()`.
 - Use `pathlib.Path` instead of `os.path`.
+- Do not leave commented out code as an idea, information or a work for future. This just leads to littering of the project.
