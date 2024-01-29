@@ -90,14 +90,6 @@ class MolecularStructure(Widget):
         self._draw_item = None
         self._set_draw_item()
 
-        # Menus and actions specific for this particular widget
-        # TODO: Removed "Save image". Context menu must be specific for particular object currently under mouse pointer
-        # self.context_menu = Menu("", self)
-        # save_img_action = Action(Action.tr("Save image..."), self)
-        # self.context_menu.addAction(save_img_action)
-        # Connect the actions to methods
-        # save_img_action.triggered.connect(self.save_img_action_handler)
-
         self.update_window_title()
 
         self._build_molecule()
