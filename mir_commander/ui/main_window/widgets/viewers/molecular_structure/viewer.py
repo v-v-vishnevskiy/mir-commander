@@ -619,3 +619,21 @@ class MolecularStructure(Widget):
                 )
 
         self._main_window.append_to_console(out_str.rstrip(", "))
+
+    def toggle_bonds_for_selected_atoms(self):
+        """
+        Create and add or remove bonds between selected atoms.
+        """
+        n = len(self.scene.atom_items)
+        for i in range(n):
+            atom1 = self.scene.atom(i)
+            if atom1.selected:
+                for j in range(i + 1, n):
+                    atom2 = self.scene.atom(j)
+                    if atom2.selected:
+                        idx = self.scene.bond_idx(atom1, atom2)
+                        if idx < 0:
+                            self.scene.add_bond(atom1, atom2)
+                        else:
+                            self.scene.remove_bond(idx)
+        self.scene.update()

@@ -17,6 +17,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         super().__init__(Menu.tr("&Molecule"), parent)
         self.setObjectName("Molecular Structure Menu")
 
+        self._init_bonds_menu()
         self._init_selection_menu()
         self._init_calculate_menu()
         self._init_cloaking_menu()
@@ -27,6 +28,15 @@ class Menu(SubWindowMenu[MolecularStructure]):
         self.addAction(save_img_act)
 
         self.set_enabled_actions(False)
+
+    def _init_bonds_menu(self):
+        bonds_menu = BaseMenu(Menu.tr("Bonds"))
+        self.addMenu(bonds_menu)
+
+        toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
+        toggle_selected_act.setShortcut(QKeySequence("B"))
+        toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
+        bonds_menu.addAction(toggle_selected_act)
 
     def _init_selection_menu(self):
         selection_menu = BaseMenu(Menu.tr("Selection"))
@@ -135,6 +145,10 @@ class Menu(SubWindowMenu[MolecularStructure]):
     # This method receives the window parameter, so it is possible to determine the currently active type
     # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
     # and we may call our respective action handler.
+
+    @Slot()
+    def bonds_toggle_selected_handler(self):
+        self.widget.toggle_bonds_for_selected_atoms()
 
     @Slot()
     def select_all_atoms_handler(self):

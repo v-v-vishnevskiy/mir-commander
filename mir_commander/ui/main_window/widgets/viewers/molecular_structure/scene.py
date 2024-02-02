@@ -18,7 +18,7 @@ class Scene(BaseScene):
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
 
-        self._atom_items: list[Atom] = []
+        self.atom_items: list[Atom] = []
         self.selected_atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
@@ -36,7 +36,7 @@ class Scene(BaseScene):
             self._atom_mesh_data.compute_face_normals()
 
         # update items
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_radius(radius)
             atom.set_color(color)
@@ -68,14 +68,14 @@ class Scene(BaseScene):
             bond.set_smooth(self.style["quality.smooth"])
 
     def _atom_under_cursor(self, x: int, y: int) -> None | Atom:
-        if not self._atom_items:
+        if not self.atom_items:
             return None
 
         result = None
         point, direction = self.point_to_line(x, y)
         direction.normalize()
         distance = None
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.cross_with_line_test(point, direction):
                 d = atom.position.distanceToPoint(point)
                 if distance is None or d < distance:
@@ -144,7 +144,7 @@ class Scene(BaseScene):
         self.update()
 
     def clear(self, update: bool = True):
-        self._atom_items.clear()
+        self.atom_items.clear()
         self.bond_items.clear()
         super().clear(update)
 
@@ -164,7 +164,7 @@ class Scene(BaseScene):
         item.set_smooth(self.style["quality.smooth"])
         self.add_item(item)
 
-        self._atom_items.append(item)
+        self.atom_items.append(item)
 
         return item
 
@@ -190,8 +190,22 @@ class Scene(BaseScene):
 
         return item
 
+    def remove_bond(self, idx: int):
+        self.remove_item(self.bond_items[idx])
+        self.bond_items.pop(idx)
+
     def atom(self, index: int) -> Atom:
-        return self._atom_items[index]
+        return self.atom_items[index]
+
+    def bond_idx(self, atom1: Atom, atom2: Atom) -> int:
+        """
+        Check the list of bonds if there exists a bond between atoms atom1 and atom2.
+        Return the index of the bond in the list or -1 if no bond has been found.
+        """
+        for idx, bond in enumerate(self.bond_items):
+            if (bond._atom_1 == atom1 and bond._atom_2 == atom2) or (bond._atom_1 == atom2 and bond._atom_2 == atom1):
+                return idx
+        return -1
 
     def set_style(self, name: str):
         self.style.set_style(name)
@@ -207,13 +221,13 @@ class Scene(BaseScene):
         self._highlight_atom_under_cursor(x, y)
 
     def select_all_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             atom.selected = True
         self.update()
-        self.selected_atom_items = self._atom_items.copy()
+        self.selected_atom_items = self.atom_items.copy()
 
     def unselect_all_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             atom.selected = False
         self.update()
         self.selected_atom_items = []
@@ -229,42 +243,42 @@ class Scene(BaseScene):
             self.select_all_atoms()
 
     def cloak_selected_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.selected:
                 atom.cloaked = True
         self.update()
 
     def cloak_not_selected_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if not atom.selected:
                 atom.cloaked = True
         self.update()
 
     def cloak_h_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.atomic_num == 1:
                 atom.cloaked = True
         self.update()
 
     def cloak_not_selected_h_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.atomic_num == 1 and not atom.selected:
                 atom.cloaked = True
         self.update()
 
     def cloak_atoms_by_atnum(self, atomic_num: int):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.atomic_num == atomic_num:
                 atom.cloaked = True
         self.update()
 
     def cloak_toggle_h_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             if atom.atomic_num == 1:
                 atom.cloaked = not atom.cloaked
         self.update()
 
     def uncloak_all_atoms(self):
-        for atom in self._atom_items:
+        for atom in self.atom_items:
             atom.cloaked = False
         self.update()
