@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.build_bonds_dialog import BuildBondsDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
@@ -639,10 +640,31 @@ class MolecularStructure(Widget):
                             self.scene.remove_bond(idx)
         self.scene.update()
 
-    def rebuild_bonds(self):
+    def rebuild_bonds(self, tol: float = -2.0):
         """
         Delete all old bonds and generate new set of bonds
         """
+        if not self._draw_item:
+            return None
+
+        ds: AtomicCoordinatesDS = self._draw_item.data()
+
+        if tol < -1.0:
+            tol = self.geom_bond_tol
         self.scene.remove_bond_all()
-        self._build_bonds(self._draw_item.data(), self.geom_bond_tol)
+        self._build_bonds(ds, tol)
         self.scene.update()
+
+    def rebuild_bonds_default(self):
+        """
+        Delete all old bonds and generate new set of bonds using default settings
+        """
+        self.geom_bond_tol = self._config["geom_bond_tol"]
+        self.rebuild_bonds(self.geom_bond_tol)
+
+    def rebuild_bonds_dynamic(self):
+        dlg = BuildBondsDialog(self.geom_bond_tol, self)
+        if dlg.exec():
+            self.geom_bond_tol = dlg.current_tol
+        else:
+            self.rebuild_bonds(self.geom_bond_tol)

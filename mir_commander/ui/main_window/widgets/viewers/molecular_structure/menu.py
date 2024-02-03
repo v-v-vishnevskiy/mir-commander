@@ -39,10 +39,20 @@ class Menu(SubWindowMenu[MolecularStructure]):
         toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
         bonds_menu.addAction(toggle_selected_act)
 
+        build_dynamically_act = Action(Action.tr("Build dynamically"), self.parent())
+        build_dynamically_act.setStatusTip(Action.tr("Build bonds in dynamic mode adjusting settings"))
+        build_dynamically_act.triggered.connect(self.bonds_build_dynamically_handler)
+        bonds_menu.addAction(build_dynamically_act)
+
         rebuild_all_act = Action(Action.tr("Rebuild all"), self.parent())
         rebuild_all_act.setStatusTip(Action.tr("Remove all current bonds and automatically create a new set of bonds"))
         rebuild_all_act.triggered.connect(self.bonds_rebuild_all_handler)
         bonds_menu.addAction(rebuild_all_act)
+
+        rebuild_default_act = Action(Action.tr("Rebuild default"), self.parent())
+        rebuild_default_act.setStatusTip(Action.tr("Rebuild bonds automatically using default settings"))
+        rebuild_default_act.triggered.connect(self.bonds_rebuild_default_handler)
+        bonds_menu.addAction(rebuild_default_act)
 
     def _init_selection_menu(self):
         selection_menu = BaseMenu(Menu.tr("Selection"))
@@ -159,6 +169,14 @@ class Menu(SubWindowMenu[MolecularStructure]):
     @Slot()
     def bonds_rebuild_all_handler(self):
         self.widget.rebuild_bonds()
+
+    @Slot()
+    def bonds_rebuild_default_handler(self):
+        self.widget.rebuild_bonds_default()
+
+    @Slot()
+    def bonds_build_dynamically_handler(self):
+        self.widget.rebuild_bonds_dynamic()
 
     @Slot()
     def select_all_atoms_handler(self):
