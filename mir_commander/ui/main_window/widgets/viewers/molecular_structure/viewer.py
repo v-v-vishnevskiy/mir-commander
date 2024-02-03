@@ -68,6 +68,8 @@ class MolecularStructure(Widget):
         self._style = Style(project_id, self._config)
         keymap = Keymap(project_id, self._config["keymap"])
 
+        self.geom_bond_tol = self._config["geom_bond_tol"]
+
         super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
         # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
@@ -153,14 +155,13 @@ class MolecularStructure(Widget):
                 longest_distance = d
 
         # add bonds
-        self._build_bonds(ds)
+        self._build_bonds(ds, self.geom_bond_tol)
 
         center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
         self.scene.set_center(center)
         self.scene.set_camera_distance(longest_distance - center.length())
 
-    def _build_bonds(self, ds: AtomicCoordinatesDS):
-        geom_bond_tol = 0.15
+    def _build_bonds(self, ds: AtomicCoordinatesDS, geom_bond_tol: float):
         for i in range(len(ds.atomic_num)):
             if ds.atomic_num[i] < 1:
                 continue
@@ -636,4 +637,12 @@ class MolecularStructure(Widget):
                             self.scene.add_bond(atom1, atom2)
                         else:
                             self.scene.remove_bond(idx)
+        self.scene.update()
+
+    def rebuild_bonds(self):
+        """
+        Delete all old bonds and generate new set of bonds
+        """
+        self.scene.remove_bond_all()
+        self._build_bonds(self._draw_item.data(), self.geom_bond_tol)
         self.scene.update()

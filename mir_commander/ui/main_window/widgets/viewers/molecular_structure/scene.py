@@ -194,6 +194,11 @@ class Scene(BaseScene):
         self.remove_item(self.bond_items[idx])
         self.bond_items.pop(idx)
 
+    def remove_bond_all(self):
+        for bond in self.bond_items:
+            self.remove_item(bond)
+        self.bond_items.clear()
+
     def atom(self, index: int) -> Atom:
         return self.atom_items[index]
 

@@ -35,8 +35,14 @@ class Menu(SubWindowMenu[MolecularStructure]):
 
         toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
         toggle_selected_act.setShortcut(QKeySequence("B"))
+        toggle_selected_act.setStatusTip(Action.tr("Add or remove bonds between selected atoms"))
         toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
         bonds_menu.addAction(toggle_selected_act)
+
+        rebuild_all_act = Action(Action.tr("Rebuild all"), self.parent())
+        rebuild_all_act.setStatusTip(Action.tr("Remove all current bonds and automatically create a new set of bonds"))
+        rebuild_all_act.triggered.connect(self.bonds_rebuild_all_handler)
+        bonds_menu.addAction(rebuild_all_act)
 
     def _init_selection_menu(self):
         selection_menu = BaseMenu(Menu.tr("Selection"))
@@ -149,6 +155,10 @@ class Menu(SubWindowMenu[MolecularStructure]):
     @Slot()
     def bonds_toggle_selected_handler(self):
         self.widget.toggle_bonds_for_selected_atoms()
+
+    @Slot()
+    def bonds_rebuild_all_handler(self):
+        self.widget.rebuild_bonds()
 
     @Slot()
     def select_all_atoms_handler(self):
