@@ -33,14 +33,24 @@ class Menu(SubWindowMenu[MolecularStructure]):
         bonds_menu = BaseMenu(Menu.tr("Bonds"))
         self.addMenu(bonds_menu)
 
+        add_selected_act = Action(Action.tr("Add selected"), self.parent())
+        add_selected_act.setStatusTip(Action.tr("Add new bonds between selected atoms"))
+        add_selected_act.triggered.connect(self.bonds_add_selected_handler)
+        bonds_menu.addAction(add_selected_act)
+
+        remove_selected_act = Action(Action.tr("Remove selected"), self.parent())
+        remove_selected_act.setStatusTip(Action.tr("Remove existing bonds between selected atoms"))
+        remove_selected_act.triggered.connect(self.bonds_remove_selected_handler)
+        bonds_menu.addAction(remove_selected_act)
+
         toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
         toggle_selected_act.setShortcut(QKeySequence("B"))
-        toggle_selected_act.setStatusTip(Action.tr("Add or remove bonds between selected atoms"))
+        toggle_selected_act.setStatusTip(Action.tr("Add new or remove existing bonds between selected atoms"))
         toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
         bonds_menu.addAction(toggle_selected_act)
 
-        build_dynamically_act = Action(Action.tr("Build dynamically"), self.parent())
-        build_dynamically_act.setStatusTip(Action.tr("Build bonds in dynamic mode adjusting settings"))
+        build_dynamically_act = Action(Action.tr("Build dynamically..."), self.parent())
+        build_dynamically_act.setStatusTip(Action.tr("Build bonds in dynamic mode by adjusting settings"))
         build_dynamically_act.triggered.connect(self.bonds_build_dynamically_handler)
         bonds_menu.addAction(build_dynamically_act)
 
@@ -161,6 +171,14 @@ class Menu(SubWindowMenu[MolecularStructure]):
     # This method receives the window parameter, so it is possible to determine the currently active type
     # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
     # and we may call our respective action handler.
+
+    @Slot()
+    def bonds_add_selected_handler(self):
+        self.widget.add_bonds_for_selected_atoms()
+
+    @Slot()
+    def bonds_remove_selected_handler(self):
+        self.widget.remove_bonds_for_selected_atoms()
 
     @Slot()
     def bonds_toggle_selected_handler(self):

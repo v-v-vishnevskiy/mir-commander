@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QDialogButtonBox, QGridLayout, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDialogButtonBox, QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout, QWidget
 
 from mir_commander.ui.utils.widget import Dialog, Label
 
@@ -22,19 +22,27 @@ class BuildBondsDialog(Dialog):
         self.slider.setTickInterval(100)
         self.slider.valueChanged.connect(self.slider_value_changed_handler)
 
+        self.double_spinbox = QDoubleSpinBox()
+        self.double_spinbox.setRange(-1.00, 1.00)
+        self.double_spinbox.setSingleStep(0.05)
+        self.double_spinbox.setDecimals(2)
+        self.double_spinbox.setValue(self.current_tol)
+        self.double_spinbox.valueChanged.connect(self.double_spinbox_value_changed_handler)
+
         slider_layout = QGridLayout()
         label = Label(Label.tr("Threshold for bond detection:"), self)
         label.setAlignment(Qt.AlignCenter)
         slider_layout.addWidget(label, 0, 0, 1, 3)
         slider_layout.addWidget(self.slider, 1, 0, 1, 3)
-        label = Label("-100", self)
-        label.setAlignment(Qt.AlignLeft)
+        slider_layout.addWidget(self.double_spinbox, 1, 4)
+        label = Label("-1.0", self)
+        label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         slider_layout.addWidget(label, 2, 0)
-        label = Label("0", self)
-        label.setAlignment(Qt.AlignCenter)
+        label = Label("0.0", self)
+        label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         slider_layout.addWidget(label, 2, 1)
-        label = Label("100", self)
-        label.setAlignment(Qt.AlignRight)
+        label = Label("1.0", self)
+        label.setAlignment(Qt.AlignRight | Qt.AlignTop)
         slider_layout.addWidget(label, 2, 2)
 
         self.main_layout = QVBoxLayout()
@@ -51,4 +59,9 @@ class BuildBondsDialog(Dialog):
     @Slot()
     def slider_value_changed_handler(self, i: int):
         self.current_tol = float(i) / 100.0
+        self.double_spinbox.setValue(self.current_tol)
         self.viewer_widget.rebuild_bonds(tol=self.current_tol)
+
+    @Slot()
+    def double_spinbox_value_changed_handler(self, value: float):
+        self.slider.setValue(int(value * 100.0))

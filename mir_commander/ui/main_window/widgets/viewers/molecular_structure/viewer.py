@@ -640,6 +640,38 @@ class MolecularStructure(Widget):
                             self.scene.remove_bond(idx)
         self.scene.update()
 
+    def add_bonds_for_selected_atoms(self):
+        """
+        Create and add bonds between selected atoms.
+        """
+        n = len(self.scene.atom_items)
+        for i in range(n):
+            atom1 = self.scene.atom(i)
+            if atom1.selected:
+                for j in range(i + 1, n):
+                    atom2 = self.scene.atom(j)
+                    if atom2.selected:
+                        idx = self.scene.bond_idx(atom1, atom2)
+                        if idx < 0:
+                            self.scene.add_bond(atom1, atom2)
+        self.scene.update()
+
+    def remove_bonds_for_selected_atoms(self):
+        """
+        Remove bonds between selected atoms.
+        """
+        n = len(self.scene.atom_items)
+        for i in range(n):
+            atom1 = self.scene.atom(i)
+            if atom1.selected:
+                for j in range(i + 1, n):
+                    atom2 = self.scene.atom(j)
+                    if atom2.selected:
+                        idx = self.scene.bond_idx(atom1, atom2)
+                        if idx >= 0:
+                            self.scene.remove_bond(idx)
+        self.scene.update()
+
     def rebuild_bonds(self, tol: float = -2.0):
         """
         Delete all old bonds and generate new set of bonds
