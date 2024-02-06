@@ -102,10 +102,6 @@ class Scene:
         self._items.add(item)
 
     def remove_item(self, item: Item):
-        if not issubclass(type(item), Item):
-            logger.error(f"Invalid item type: {item.__class__.__name__}")
-            return
-
         self._items.remove(item)
 
     @property

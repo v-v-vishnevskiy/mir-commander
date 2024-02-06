@@ -190,9 +190,9 @@ class Scene(BaseScene):
 
         return item
 
-    def remove_bond(self, idx: int):
-        self.remove_item(self.bond_items[idx])
-        self.bond_items.pop(idx)
+    def remove_bond(self, index: int):
+        self.remove_item(self.bond_items[index])
+        self.bond_items.pop(index)
 
     def remove_bond_all(self):
         for bond in self.bond_items:
@@ -202,7 +202,7 @@ class Scene(BaseScene):
     def atom(self, index: int) -> Atom:
         return self.atom_items[index]
 
-    def bond_idx(self, atom1: Atom, atom2: Atom) -> int:
+    def bond_index(self, atom1: Atom, atom2: Atom) -> int:
         """
         Check the list of bonds if there exists a bond between atoms atom1 and atom2.
         Return the index of the bond in the list or -1 if no bond has been found.
