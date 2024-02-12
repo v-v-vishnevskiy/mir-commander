@@ -1,5 +1,6 @@
 import logging
 import math
+from itertools import combinations
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -627,16 +628,12 @@ class MolecularStructure(Widget):
         Create and add or remove bonds between selected atoms.
         """
         selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
-        n = len(selected_atoms)
-        for i in range(n):
-            atom1 = selected_atoms[i]
-            for j in range(i + 1, n):
-                atom2 = selected_atoms[j]
-                idx = self.scene.bond_index(atom1, atom2)
-                if idx < 0:
-                    self.scene.add_bond(atom1, atom2)
-                else:
-                    self.scene.remove_bond(idx)
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx < 0:
+                self.scene.add_bond(atom1, atom2)
+            else:
+                self.scene.remove_bond(idx)
         self.scene.update()
 
     def add_bonds_for_selected_atoms(self):
@@ -644,14 +641,10 @@ class MolecularStructure(Widget):
         Create and add bonds between selected atoms.
         """
         selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
-        n = len(selected_atoms)
-        for i in range(n):
-            atom1 = selected_atoms[i]
-            for j in range(i + 1, n):
-                atom2 = selected_atoms[j]
-                idx = self.scene.bond_index(atom1, atom2)
-                if idx < 0:
-                    self.scene.add_bond(atom1, atom2)
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx < 0:
+                self.scene.add_bond(atom1, atom2)
         self.scene.update()
 
     def remove_bonds_for_selected_atoms(self):
@@ -659,14 +652,10 @@ class MolecularStructure(Widget):
         Remove bonds between selected atoms.
         """
         selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
-        n = len(selected_atoms)
-        for i in range(n):
-            atom1 = selected_atoms[i]
-            for j in range(i + 1, n):
-                atom2 = selected_atoms[j]
-                idx = self.scene.bond_index(atom1, atom2)
-                if idx >= 0:
-                    self.scene.remove_bond(idx)
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx >= 0:
+                self.scene.remove_bond(idx)
         self.scene.update()
 
     def rebuild_bonds(self, tol: float = -2.0):
