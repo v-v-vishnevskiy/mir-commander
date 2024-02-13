@@ -1,5 +1,6 @@
 import logging
 import math
+from itertools import combinations
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.ui.main_window.widgets.viewers.molecular_structure.build_bonds_dialog import BuildBondsDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
 from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
@@ -67,6 +69,8 @@ class MolecularStructure(Widget):
         project_id = id(main_window.project)
         self._style = Style(project_id, self._config)
         keymap = Keymap(project_id, self._config["keymap"])
+
+        self.geom_bond_tol = self._config["geom_bond_tol"]
 
         super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
@@ -153,14 +157,13 @@ class MolecularStructure(Widget):
                 longest_distance = d
 
         # add bonds
-        self._build_bonds(ds)
+        self._build_bonds(ds, self.geom_bond_tol)
 
         center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
         self.scene.set_center(center)
         self.scene.set_camera_distance(longest_distance - center.length())
 
-    def _build_bonds(self, ds: AtomicCoordinatesDS):
-        geom_bond_tol = 0.15
+    def _build_bonds(self, ds: AtomicCoordinatesDS, geom_bond_tol: float):
         for i in range(len(ds.atomic_num)):
             if ds.atomic_num[i] < 1:
                 continue
@@ -619,3 +622,67 @@ class MolecularStructure(Widget):
                 )
 
         self._main_window.append_to_console(out_str.rstrip(", "))
+
+    def toggle_bonds_for_selected_atoms(self):
+        """
+        Create and add or remove bonds between selected atoms.
+        """
+        selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx < 0:
+                self.scene.add_bond(atom1, atom2)
+            else:
+                self.scene.remove_bond(idx)
+        self.scene.update()
+
+    def add_bonds_for_selected_atoms(self):
+        """
+        Create and add bonds between selected atoms.
+        """
+        selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx < 0:
+                self.scene.add_bond(atom1, atom2)
+        self.scene.update()
+
+    def remove_bonds_for_selected_atoms(self):
+        """
+        Remove bonds between selected atoms.
+        """
+        selected_atoms = list(filter(lambda x: x.selected, self.scene.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.scene.bond_index(atom1, atom2)
+            if idx >= 0:
+                self.scene.remove_bond(idx)
+        self.scene.update()
+
+    def rebuild_bonds(self, tol: float = -2.0):
+        """
+        Delete all old bonds and generate new a set of bonds
+        """
+        if not self._draw_item:
+            return None
+
+        ds: AtomicCoordinatesDS = self._draw_item.data()
+
+        if tol < -1.0:
+            tol = self.geom_bond_tol
+        self.scene.remove_bond_all()
+        self._build_bonds(ds, tol)
+        self.scene.update()
+
+    def rebuild_bonds_default(self):
+        """
+        Delete all old bonds and generate new set of bonds using default settings
+        """
+        self.geom_bond_tol = self._config["geom_bond_tol"]
+        self.rebuild_bonds(self.geom_bond_tol)
+
+    def rebuild_bonds_dynamic(self):
+        dlg = BuildBondsDialog(self.geom_bond_tol, self)
+        if dlg.exec():
+            self.geom_bond_tol = dlg.current_tol
+        else:
+            self.rebuild_bonds(self.geom_bond_tol)

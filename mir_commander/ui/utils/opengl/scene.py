@@ -101,6 +101,9 @@ class Scene:
 
         self._items.add(item)
 
+    def remove_item(self, item: Item):
+        self._items.remove(item)
+
     @property
     def mouse_pos(self) -> tuple[int, int]:
         return self._gl_widget.cursor_position

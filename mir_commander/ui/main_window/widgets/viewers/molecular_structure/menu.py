@@ -17,6 +17,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         super().__init__(Menu.tr("&Molecule"), parent)
         self.setObjectName("Molecular Structure Menu")
 
+        self._init_bonds_menu()
         self._init_selection_menu()
         self._init_calculate_menu()
         self._init_cloaking_menu()
@@ -27,6 +28,41 @@ class Menu(SubWindowMenu[MolecularStructure]):
         self.addAction(save_img_act)
 
         self.set_enabled_actions(False)
+
+    def _init_bonds_menu(self):
+        bonds_menu = BaseMenu(Menu.tr("Bonds"))
+        self.addMenu(bonds_menu)
+
+        add_selected_act = Action(Action.tr("Add selected"), self.parent())
+        add_selected_act.setStatusTip(Action.tr("Add new bonds between selected atoms"))
+        add_selected_act.triggered.connect(self.bonds_add_selected_handler)
+        bonds_menu.addAction(add_selected_act)
+
+        remove_selected_act = Action(Action.tr("Remove selected"), self.parent())
+        remove_selected_act.setStatusTip(Action.tr("Remove existing bonds between selected atoms"))
+        remove_selected_act.triggered.connect(self.bonds_remove_selected_handler)
+        bonds_menu.addAction(remove_selected_act)
+
+        toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
+        toggle_selected_act.setShortcut(QKeySequence("B"))
+        toggle_selected_act.setStatusTip(Action.tr("Add new or remove existing bonds between selected atoms"))
+        toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
+        bonds_menu.addAction(toggle_selected_act)
+
+        build_dynamically_act = Action(Action.tr("Build dynamically..."), self.parent())
+        build_dynamically_act.setStatusTip(Action.tr("Build bonds in dynamic mode by adjusting settings"))
+        build_dynamically_act.triggered.connect(self.bonds_build_dynamically_handler)
+        bonds_menu.addAction(build_dynamically_act)
+
+        rebuild_all_act = Action(Action.tr("Rebuild all"), self.parent())
+        rebuild_all_act.setStatusTip(Action.tr("Remove all current bonds and automatically create a new set of bonds"))
+        rebuild_all_act.triggered.connect(self.bonds_rebuild_all_handler)
+        bonds_menu.addAction(rebuild_all_act)
+
+        rebuild_default_act = Action(Action.tr("Rebuild default"), self.parent())
+        rebuild_default_act.setStatusTip(Action.tr("Rebuild bonds automatically using default settings"))
+        rebuild_default_act.triggered.connect(self.bonds_rebuild_default_handler)
+        bonds_menu.addAction(rebuild_default_act)
 
     def _init_selection_menu(self):
         selection_menu = BaseMenu(Menu.tr("Selection"))
@@ -135,6 +171,30 @@ class Menu(SubWindowMenu[MolecularStructure]):
     # This method receives the window parameter, so it is possible to determine the currently active type
     # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
     # and we may call our respective action handler.
+
+    @Slot()
+    def bonds_add_selected_handler(self):
+        self.widget.add_bonds_for_selected_atoms()
+
+    @Slot()
+    def bonds_remove_selected_handler(self):
+        self.widget.remove_bonds_for_selected_atoms()
+
+    @Slot()
+    def bonds_toggle_selected_handler(self):
+        self.widget.toggle_bonds_for_selected_atoms()
+
+    @Slot()
+    def bonds_rebuild_all_handler(self):
+        self.widget.rebuild_bonds()
+
+    @Slot()
+    def bonds_rebuild_default_handler(self):
+        self.widget.rebuild_bonds_default()
+
+    @Slot()
+    def bonds_build_dynamically_handler(self):
+        self.widget.rebuild_bonds_dynamic()
 
     @Slot()
     def select_all_atoms_handler(self):

@@ -88,119 +88,187 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/toolbar.py" line="35"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="24"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="25"/>
         <source>Save image...</source>
         <translation>Save image...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="35"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="36"/>
+        <source>Add selected</source>
+        <translation>Add selected</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="37"/>
+        <source>Add new bonds between selected atoms</source>
+        <translation>Add new bonds between selected atoms</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="41"/>
+        <source>Remove selected</source>
+        <translation>Remove selected</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="42"/>
+        <source>Remove existing bonds between selected atoms</source>
+        <translation>Remove existing bonds between selected atoms</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="46"/>
+        <source>Toggle selected</source>
+        <translation>Toggle selected</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="48"/>
+        <source>Add new or remove existing bonds between selected atoms</source>
+        <translation>Add new or remove existing bonds between selected atoms</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="52"/>
+        <source>Build dynamically...</source>
+        <translation>Build dynamically...</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="53"/>
+        <source>Build bonds in dynamic mode by adjusting settings</source>
+        <translation>Build bonds in dynamic mode by adjusting settings</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="57"/>
+        <source>Rebuild all</source>
+        <translation>Rebuild all</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="58"/>
+        <source>Remove all current bonds and automatically create a new set of bonds</source>
+        <translation>Remove all current bonds and automatically create a new set of bonds</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="62"/>
+        <source>Rebuild default</source>
+        <translation>Rebuild default</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="63"/>
+        <source>Rebuild bonds automatically using default settings</source>
+        <translation>Rebuild bonds automatically using default settings</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="71"/>
         <source>Select all atoms</source>
         <translation>Select all atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="39"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="75"/>
         <source>Unselect all atoms</source>
         <translation>Unselect all atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="43"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="79"/>
         <source>Toggle all atoms</source>
         <translation>Toggle all atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="52"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="88"/>
         <source>Interatomic distance</source>
         <translation>Interatomic distance</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="53"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="89"/>
         <source>Distance between last two selected atoms a1-a2</source>
         <translation>Distance between last two selected atoms a1-a2</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="57"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="93"/>
         <source>Interatomic angle</source>
         <translation>Interatomic angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="60"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="96"/>
         <source>Angle between two lines formed by last three selected atoms a1-a2-a3</source>
         <translation>Angle between two lines formed by last three selected atoms a1-a2-a3</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="64"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="100"/>
         <source>Torsion angle</source>
         <translation>Torsion angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="70"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="106"/>
         <source>Dihedral angle between two planes (a1-a2-a3) and (a2-a3-a4) defined on the basis of last four selected atoms</source>
         <translation>Dihedral angle between two planes (a1-a2-a3) and (a2-a3-a4) defined on the basis of last four selected atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="74"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="110"/>
         <source>Out-of-plane angle</source>
         <translation>Out-of-plane angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="79"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="115"/>
         <source>Angle between the vector (a1-a2) and plane (a3-a2-a4) defined on the basis of last four selected atoms</source>
         <translation>Angle between the vector (a1-a2) and plane (a3-a2-a4) defined on the basis of last four selected atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="83"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="119"/>
         <source>Auto parameter</source>
         <translation>Auto parameter</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="87"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="123"/>
         <source>Interatomic distance, angle or torsion angle if two, three or four atoms are selected</source>
         <translation>Interatomic distance, angle or torsion angle if two, three or four atoms are selected</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="91"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="127"/>
         <source>Selected fragments</source>
         <translation>Selected fragments</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="94"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="130"/>
         <source>Calculate all geometric parameters for fragments with selected atoms</source>
         <translation>Calculate all geometric parameters for fragments with selected atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="102"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="138"/>
         <source>Cloak all selected</source>
         <translation>Cloak all selected</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="106"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="142"/>
         <source>Cloak all not selected</source>
         <translation>Cloak all not selected</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="110"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="146"/>
         <source>Cloak all H atoms</source>
         <translation>Cloak all H atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="114"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="150"/>
         <source>Cloak not selected H atoms</source>
         <translation>Cloak not selected H atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="118"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="154"/>
         <source>Toggle all H atoms</source>
         <translation>Toggle all H atoms</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="123"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="159"/>
         <source>Cloak atoms by type...</source>
         <translation>Cloak atoms by type...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="129"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="165"/>
         <source>Uncloak all</source>
         <translation>Uncloak all</translation>
+    </message>
+</context>
+<context>
+    <name>BuildBondsDialog</name>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/build_bonds_dialog.py" line="14"/>
+        <source>Build bonds</source>
+        <translation>Build bonds</translation>
     </message>
 </context>
 <context>
@@ -277,6 +345,11 @@
         <source>Output file:</source>
         <translation>Output file:</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/build_bonds_dialog.py" line="33"/>
+        <source>Threshold for bond detection:</source>
+        <translation>Threshold for bond detection:</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -349,17 +422,22 @@
         <translation>&amp;Molecule</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="32"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="33"/>
+        <source>Bonds</source>
+        <translation>Bonds</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="68"/>
         <source>Selection</source>
         <translation>Selection</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="49"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="85"/>
         <source>Calculate</source>
         <translation>Calculate</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="99"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/menu.py" line="135"/>
         <source>Cloaking</source>
         <translation>Cloaking</translation>
     </message>
@@ -367,90 +445,90 @@
 <context>
     <name>MolecularStructure</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="237"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="253"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="232"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="248"/>
         <source>Save image</source>
         <translation>Save image</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="239"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="234"/>
         <source>The file already exists:</source>
         <translation>The file already exists:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="240"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="235"/>
         <source>Do you want to overwrite it?</source>
         <translation>Do you want to overwrite it?</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="255"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="250"/>
         <source>Could not save image:</source>
         <translation>Could not save image:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="256"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="251"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>The path does not exist or is write-protected.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="261"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="269"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="256"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="264"/>
         <source>Cloak atoms by type</source>
         <translation>Cloak atoms by type</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="261"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="256"/>
         <source>Enter element symbol:</source>
         <translation>Enter element symbol:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="270"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="265"/>
         <source>Invalid element symbol!</source>
         <translation>Invalid element symbol!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="290"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="285"/>
         <source>Interatomic distance</source>
         <translation>Interatomic distance</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="291"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="286"/>
         <source>At least two atoms must be selected!</source>
         <translation>At least two atoms must be selected!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="316"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="311"/>
         <source>Angle</source>
         <translation>Angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="317"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="312"/>
         <source>At least three atoms must be selected!</source>
         <translation>At least three atoms must be selected!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="355"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="350"/>
         <source>Torsion angle</source>
         <translation>Torsion angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="356"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="395"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="351"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="390"/>
         <source>At least four atoms must be selected!</source>
         <translation>At least four atoms must be selected!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="394"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="389"/>
         <source>Out-of-plane angle</source>
         <translation>Out-of-plane angle</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="414"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="409"/>
         <source>Auto geometrical parameter</source>
         <translation>Auto geometrical parameter</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="415"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="410"/>
         <source>Two, three or four atoms must be selected!</source>
         <translation>Two, three or four atoms must be selected!</translation>
     </message>
@@ -569,7 +647,7 @@
         <translation>Ready</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="249"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/viewer.py" line="244"/>
         <source>Image saved</source>
         <translation>Image saved</translation>
     </message>
