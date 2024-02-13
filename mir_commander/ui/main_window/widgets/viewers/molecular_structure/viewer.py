@@ -660,7 +660,7 @@ class MolecularStructure(Widget):
 
     def rebuild_bonds(self, tol: float = -2.0):
         """
-        Delete all old bonds and generate new set of bonds
+        Delete all old bonds and generate new a set of bonds
         """
         if not self._draw_item:
             return None
