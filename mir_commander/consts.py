@@ -1,5 +1,7 @@
 from pathlib import Path
 
+BOHR2ANGSTROM = 0.529177210903  # 2018 CODATA
+
 
 class DIR:
     APP = Path(__file__).parent.parent
