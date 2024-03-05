@@ -57,6 +57,10 @@ def import_file_xyz(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):
             if state == XyzParserState.INIT:
+                if len(line.strip()) == 0:
+                    # Silently exist the cycle early if empty line is found where number of atoms can be expected.
+                    # This may happen, for example, in case of empty line after the last set of Cartesian coordinates.
+                    break
                 try:
                     num_atoms = int(line.strip())
                 except ValueError:
