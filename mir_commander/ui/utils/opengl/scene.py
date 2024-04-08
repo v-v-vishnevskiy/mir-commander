@@ -17,7 +17,7 @@ from OpenGL.GL import (
     glViewport,
 )
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QImage, QMatrix4x4, QQuaternion, QVector3D
+from PySide6.QtGui import QImage, QMatrix4x4, QQuaternion, QVector3D, qAlpha, qBlue, qGreen, qRed
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
@@ -203,7 +203,9 @@ class Scene:
     def update(self):
         self._gl_widget.update()
 
-    def render_to_image(self, width: int, height: int, transparent_bg: bool = False) -> QImage:
+    def render_to_image(
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+    ) -> QImage:
         self._gl_widget.makeCurrent()
 
         fbo_format = QOpenGLFramebufferObjectFormat()
@@ -231,5 +233,16 @@ class Scene:
 
         if not transparent_bg:
             image = image.convertToFormat(QImage.Format_RGB32)
+
+        if crop_to_content:
+            for y in range(image.height()):
+                scanLine = image.constScanLine(y)
+                for x in range(image.width()):
+                    pixel = scanLine[x]
+                    print(
+                        "pixel at {},{} is r = {}, g = {}, b = {}, a = {}".format(
+                            x, y, qRed(pixel), qGreen(pixel), qBlue(pixel), qAlpha(pixel)
+                        )
+                    )
 
         return image

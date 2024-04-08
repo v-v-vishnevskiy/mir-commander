@@ -239,7 +239,9 @@ class MolecularStructure(Widget):
                     save_flag = False
 
             if save_flag:
-                image = self.scene.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg)
+                image = self.scene.render_to_image(
+                    dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
+                )
                 if image.save(str(dlg.img_file_path)):
                     self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
                 else:
