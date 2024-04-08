@@ -54,6 +54,7 @@ class SaveImageDialog(Dialog):
 
         self.transparent_bg_checkbox = CheckBox(CheckBox.tr("Transparent background"), options_group_box)
         self.transparent_bg_checkbox.setChecked(self.transparent_bg)
+        self.transparent_bg_checkbox.setChecked(True)
         options_group_box_layout.addWidget(self.transparent_bg_checkbox)
 
         self.main_layout = QVBoxLayout()
