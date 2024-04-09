@@ -17,7 +17,7 @@ from OpenGL.GL import (
     glViewport,
 )
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QImage, QMatrix4x4, QQuaternion, QVector3D, qAlpha, qBlue, qGreen, qRed
+from PySide6.QtGui import QColor, QImage, QMatrix4x4, QQuaternion, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
@@ -214,10 +214,12 @@ class Scene:
         fbo = QOpenGLFramebufferObject(width, height, fbo_format)
         fbo.bind()
 
-        bg_color = self._bg_color
+        bg_color_bak = self._bg_color
 
         if transparent_bg:
-            self._bg_color = bg_color[0], bg_color[1], bg_color[2], 0.0
+            self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
+
+        bg_color = QColor.fromRgbF(*self._bg_color)
 
         w = self._gl_widget.size().width()
         h = self._gl_widget.size().height()
@@ -225,7 +227,7 @@ class Scene:
         glViewport(0, 0, width, height)
         self.paint()
         glViewport(0, 0, w, h)
-        self._bg_color = bg_color
+        self._bg_color = bg_color_bak
 
         fbo.release()
 
@@ -235,14 +237,47 @@ class Scene:
             image = image.convertToFormat(QImage.Format_RGB32)
 
         if crop_to_content:
+            # Need this hack with the fake 1x1 image to take into account the format of our real image
+            # so we know the value of the background color as it is represented in the image.
+            bg_image = QImage(1, 1, image.format())
+            bg_image.setPixelColor(0, 0, bg_color)
+            bg_color_value = bg_image.pixel(0, 0)
+            xmin = ymin = xmax = ymax = -1
+
             for y in range(image.height()):
-                scanLine = image.constScanLine(y)
                 for x in range(image.width()):
-                    pixel = scanLine[x]
-                    print(
-                        "pixel at {},{} is r = {}, g = {}, b = {}, a = {}".format(
-                            x, y, qRed(pixel), qGreen(pixel), qBlue(pixel), qAlpha(pixel)
-                        )
-                    )
+                    if image.pixel(x, y) != bg_color_value:
+                        ymin = y
+                        break
+                if ymin >= 0:
+                    break
+
+            for y in reversed(range(image.height())):
+                for x in range(image.width()):
+                    if image.pixel(x, y) != bg_color_value:
+                        ymax = y
+                        break
+                if ymax >= 0:
+                    break
+
+            for x in range(image.width()):
+                for y in range(image.height()):
+                    if image.pixel(x, y) != bg_color_value:
+                        xmin = x
+                        break
+                if xmin >= 0:
+                    break
+
+            for x in reversed(range(image.width())):
+                for y in range(image.height()):
+                    if image.pixel(x, y) != bg_color_value:
+                        xmax = x
+                        break
+                if xmax >= 0:
+                    break
+
+            if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
+                crop_area = QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
+                image = image.copy(crop_area)
 
         return image
