@@ -274,14 +274,19 @@
 <context>
     <name>CheckBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="31"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="32"/>
         <source>Proportional size</source>
         <translation>Пропорциональный размер</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="55"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="56"/>
         <source>Transparent background</source>
         <translation>Прозрачный фон</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="60"/>
+        <source>Crop to content</source>
+        <translation>Обрезать до содержимого</translation>
     </message>
 </context>
 <context>
@@ -303,7 +308,7 @@
 <context>
     <name>GroupBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="29"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="30"/>
         <source>Options</source>
         <translation>Настройки</translation>
     </message>
@@ -331,17 +336,17 @@
         <translation>Язык:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="36"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="37"/>
         <source>Width:</source>
         <translation>Ширина:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="44"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="45"/>
         <source>Height:</source>
         <translation>Высота:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="61"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="66"/>
         <source>Output file:</source>
         <translation>Выходной файл:</translation>
     </message>
@@ -578,7 +583,7 @@
         <translation>Ок</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="75"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="80"/>
         <source>Choose...</source>
         <translation>Выбрать...</translation>
     </message>
@@ -599,12 +604,12 @@
 <context>
     <name>SaveImageDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="27"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="28"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="112"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="117"/>
         <source>Choose file</source>
         <translation>Выбор файла</translation>
     </message>
@@ -620,8 +625,8 @@
 <context>
     <name>SpinBox</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="38"/>
-        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="46"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="39"/>
+        <location filename="../../mir_commander/ui/main_window/widgets/viewers/molecular_structure/save_image_dialog.py" line="47"/>
         <source> pixels</source>
         <translation> пикселя</translation>
     </message>

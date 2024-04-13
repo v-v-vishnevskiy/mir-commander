@@ -17,7 +17,8 @@ class SaveImageDialog(Dialog):
         self.img_width = 0
         self.img_height = 0
         self.img_file_path = ""
-        self.transparent_bg = False
+        self.transparent_bg = True
+        self.crop_to_content = True
         self.img_file_name_init = self.sanitize_file_name(filename)
         self.img_width_init = img_width
         self.img_height_init = img_height
@@ -54,8 +55,11 @@ class SaveImageDialog(Dialog):
 
         self.transparent_bg_checkbox = CheckBox(CheckBox.tr("Transparent background"), options_group_box)
         self.transparent_bg_checkbox.setChecked(self.transparent_bg)
-        self.transparent_bg_checkbox.setChecked(True)
         options_group_box_layout.addWidget(self.transparent_bg_checkbox)
+
+        self.crop_to_content_checkbox = CheckBox(CheckBox.tr("Crop to content"), options_group_box)
+        self.crop_to_content_checkbox.setChecked(self.crop_to_content)
+        options_group_box_layout.addWidget(self.crop_to_content_checkbox)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(options_group_box)
@@ -132,4 +136,5 @@ class SaveImageDialog(Dialog):
         self.img_height = self.height_spinbox.value()
         self.img_file_path = Path(self.file_path_editbox.text())
         self.transparent_bg = self.transparent_bg_checkbox.isChecked()
+        self.crop_to_content = self.crop_to_content_checkbox.isChecked()
         self.accept()
