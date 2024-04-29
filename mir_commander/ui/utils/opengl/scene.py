@@ -2,6 +2,7 @@ import logging
 from enum import Enum
 from typing import TYPE_CHECKING
 
+import OpenGL.error
 from OpenGL.GL import (
     GL_COLOR_BUFFER_BIT,
     GL_DEPTH_BUFFER_BIT,
@@ -19,6 +20,7 @@ from OpenGL.GL import (
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QMatrix4x4, QQuaternion, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
+from PySide6.QtWidgets import QMessageBox
 
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.utils import Color4f
@@ -251,38 +253,49 @@ class Scene:
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
-    ) -> QImage:
-        self._gl_widget.makeCurrent()
+    ) -> QImage | None:
+        try:
+            self._gl_widget.makeCurrent()
 
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setSamples(16)
-        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
-        fbo.bind()
+            fbo_format = QOpenGLFramebufferObjectFormat()
+            fbo_format.setSamples(16)
+            fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+            fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+            fbo.bind()
 
-        bg_color_bak = self._bg_color
+            bg_color_bak = self._bg_color
 
-        if transparent_bg:
-            self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
+            if transparent_bg:
+                self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
 
-        bg_color = QColor.fromRgbF(*self._bg_color)
+            bg_color = QColor.fromRgbF(*self._bg_color)
 
-        w = self._gl_widget.size().width()
-        h = self._gl_widget.size().height()
+            w = self._gl_widget.size().width()
+            h = self._gl_widget.size().height()
 
-        glViewport(0, 0, width, height)
-        self.paint()
-        glViewport(0, 0, w, h)
-        self._bg_color = bg_color_bak
+            glViewport(0, 0, width, height)
+            self.paint()
+            glViewport(0, 0, w, h)
+            self._bg_color = bg_color_bak
 
-        fbo.release()
+            fbo.release()
 
-        image = fbo.toImage()
+            image = fbo.toImage()
 
-        if not transparent_bg:
-            image = image.convertToFormat(QImage.Format_RGB32)
+            if not transparent_bg:
+                image = image.convertToFormat(QImage.Format_RGB32)
 
-        if crop_to_content:
-            image = self.crop_image_to_content(image, bg_color)
+            if crop_to_content:
+                image = self.crop_image_to_content(image, bg_color)
 
-        return image
+            return image
+        except OpenGL.error.GLError as error:
+            message_box = QMessageBox(
+                QMessageBox.Critical,
+                QMessageBox.tr("Error image rendering"),
+                QMessageBox.tr("OpenGL cannot create image."),
+                QMessageBox.Close,
+            )
+            message_box.setDetailedText(str(error))
+            message_box.exec()
+            return None

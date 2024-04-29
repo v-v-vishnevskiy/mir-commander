@@ -242,16 +242,18 @@ class MolecularStructure(Widget):
                 image = self.scene.render_to_image(
                     dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
                 )
-                if image.save(str(dlg.img_file_path)):
-                    self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
-                else:
-                    QMessageBox.critical(
-                        self,
-                        self.tr("Save image"),
-                        self.tr("Could not save image:")
-                        + f"\n{dlg.img_file_path}\n"
-                        + self.tr("The path does not exist or is write-protected."),
-                    )
+
+                if image is not None:
+                    if image.save(str(dlg.img_file_path)):
+                        self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
+                    else:
+                        QMessageBox.critical(
+                            self,
+                            self.tr("Save image"),
+                            self.tr("Could not save image:")
+                            + f"\n{dlg.img_file_path}\n"
+                            + self.tr("The path does not exist or is write-protected."),
+                        )
 
     def cloak_atoms_by_atnum(self):
         el_symbol, ok = QInputDialog.getText(
