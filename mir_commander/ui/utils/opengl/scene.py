@@ -251,7 +251,7 @@ class Scene:
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
-    ) -> QImage | None:
+    ) -> QImage:
         self._gl_widget.makeCurrent()
 
         fbo_format = QOpenGLFramebufferObjectFormat()
