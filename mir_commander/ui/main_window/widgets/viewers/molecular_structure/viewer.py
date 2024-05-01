@@ -4,6 +4,7 @@ from itertools import combinations
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+import OpenGL.error
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
@@ -239,9 +240,20 @@ class MolecularStructure(Widget):
                     save_flag = False
 
             if save_flag:
-                image = self.scene.render_to_image(
-                    dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
-                )
+                image = None
+                try:
+                    image = self.scene.render_to_image(
+                        dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
+                    )
+                except OpenGL.error.GLError as error:
+                    message_box = QMessageBox(
+                        QMessageBox.Critical,
+                        self.tr("Error image rendering"),
+                        self.tr("OpenGL cannot create image."),
+                        QMessageBox.Close,
+                    )
+                    message_box.setDetailedText(str(error))
+                    message_box.exec()
 
                 if image is not None:
                     if image.save(str(dlg.img_file_path)):
