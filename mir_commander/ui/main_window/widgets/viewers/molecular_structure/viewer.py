@@ -4,6 +4,7 @@ from itertools import combinations
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+import OpenGL.error
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
@@ -239,19 +240,32 @@ class MolecularStructure(Widget):
                     save_flag = False
 
             if save_flag:
-                image = self.scene.render_to_image(
-                    dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
-                )
-                if image.save(str(dlg.img_file_path)):
-                    self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
-                else:
-                    QMessageBox.critical(
-                        self,
-                        self.tr("Save image"),
-                        self.tr("Could not save image:")
-                        + f"\n{dlg.img_file_path}\n"
-                        + self.tr("The path does not exist or is write-protected."),
+                image = None
+                try:
+                    image = self.scene.render_to_image(
+                        dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
                     )
+                except OpenGL.error.GLError as error:
+                    message_box = QMessageBox(
+                        QMessageBox.Critical,
+                        self.tr("Error image rendering"),
+                        self.tr("OpenGL cannot create image."),
+                        QMessageBox.Close,
+                    )
+                    message_box.setDetailedText(str(error))
+                    message_box.exec()
+
+                if image is not None:
+                    if image.save(str(dlg.img_file_path)):
+                        self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
+                    else:
+                        QMessageBox.critical(
+                            self,
+                            self.tr("Save image"),
+                            self.tr("Could not save image:")
+                            + f"\n{dlg.img_file_path}\n"
+                            + self.tr("The path does not exist or is write-protected."),
+                        )
 
     def cloak_atoms_by_atnum(self):
         el_symbol, ok = QInputDialog.getText(
