@@ -23,8 +23,6 @@ The development version of Mir Commander can now be started as
 ./mircmd
 ```
 
-In the following the `dev_run.sh` script can be used for fast starting of Mir Commander.
-
 ### Windows
 
 In Windows you may need first to install Python3 and Git.
