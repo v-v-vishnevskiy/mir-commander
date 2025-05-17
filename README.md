@@ -17,6 +17,12 @@ As a prerequisite you have to create a virtual environment and install the requi
 make init
 ```
 
+In case of problems with finding the default expected version of python you may want to indicate your version explicitly as,
+for example
+```shell
+PYTHON=python3.11 make init
+```
+
 The development version of Mir Commander can now be started as
 
 ```shell
