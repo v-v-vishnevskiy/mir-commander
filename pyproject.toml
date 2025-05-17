@@ -3,7 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "cclib>=1.8.1",
     "fastjsonschema>=2.21.1",
