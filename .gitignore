@@ -18,3 +18,4 @@ logs/
 resources/i18n/*.qm
 resources/icons/*.rcc
 *.pyproject*
+mircmd

@@ -39,7 +39,7 @@ class SubWindowToolBar(Generic[T], ToolBarWidget):
             action.setEnabled(flag)
 
     def update_state(self, window: None | QMdiSubWindow):
-        if window and type(window.widget()) == self._type_T:
+        if window and type(window.widget()) is self._type_T:
             self.set_enabled(True)
         else:
             self.set_enabled(False)

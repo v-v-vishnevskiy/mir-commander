@@ -11,7 +11,7 @@ def create_config_dir():
         shutil.copytree(DIR.DEFAULT_CONFIGS, DIR.CONFIG)
 
 
-if __name__ == "__main__":
+def run():
     create_config_dir()
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
@@ -21,3 +21,7 @@ if __name__ == "__main__":
     app = Application([])
     app.fix_palette()
     sys.exit(app.run(args.path))
+
+
+if __name__ == "__main__":
+    run()

@@ -26,7 +26,7 @@ class SubWindowMenu(Generic[T], Menu):
         return self._mdi_area.activeSubWindow().widget()
 
     def update_state(self, window: None | QMdiSubWindow):
-        if window and type(window.widget()) == self._type_T:
+        if window and type(window.widget()) is self._type_T:
             self.set_enabled_actions(True)
         else:
             self.set_enabled_actions(False)

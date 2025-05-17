@@ -1,31 +1,66 @@
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+- repo: local
   hooks:
   - id: trailing-whitespace
+    name: trim trailing whitespace
+    entry: trailing-whitespace-fixer
+    language: python
+    types: [text]
+    stages: [pre-commit, pre-push, manual]
+    minimum_pre_commit_version: 3.2.0
+
   - id: check-json
+    name: check json
+    entry: check-json
+    language: python
+    types: [json]
+
   - id: check-toml
+    name: check toml
+    entry: check-toml
+    language: python
+    types: [toml]
+
   - id: check-yaml
+    name: check yaml
+    entry: check-yaml
+    language: python
+    types: [yaml]
+
   - id: end-of-file-fixer
-  - id: requirements-txt-fixer
+    name: fix end of files
+    description: ensures that a file is either empty, or ends with one newline.
+    entry: end-of-file-fixer
+    language: python
+    types: [text]
+    stages: [pre-commit, pre-push, manual]
+    minimum_pre_commit_version: 3.2.0
 
-- repo: https://github.com/pycqa/flake8
-  rev: 6.1.0
-  hooks:
-  - id: flake8
+  - id: ruff-check
+    name: ruff check
+    entry: ruff check --force-exclude
+    language: python
+    types_or: [python, pyi, jupyter]
+    args: []
+    require_serial: true
+    additional_dependencies: []
+    minimum_pre_commit_version: 2.9.2
 
-- repo: https://github.com/psf/black
-  rev: 23.11.0
-  hooks:
-    - id: black
+  - id: ruff-format
+    name: ruff format
+    entry: ruff format --force-exclude
+    language: python
+    types_or: [python, pyi, jupyter]
+    args: []
+    require_serial: true
+    additional_dependencies: []
+    minimum_pre_commit_version: 2.9.2
 
-- repo: https://github.com/PyCQA/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
-      args: ["--profile", "black"]
-
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.7.0
-  hooks:
-    - id: mypy
+  - id: mypy
+    name: mypy
+    entry: mypy
+    require_serial: true
+    language: python
+    types_or: [python, pyi]
+    minimum_precommit_version: 3.2.0
+    exclude: ^tests.*
