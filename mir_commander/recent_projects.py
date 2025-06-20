@@ -1,35 +1,14 @@
 import logging
-from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-import fastjsonschema
 import yaml
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 logger = logging.getLogger(__name__)
 
 
-LIST_PROJECTS = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {"title": {"type": "string", "minLength": 1}, "path": {"type": "string", "minLength": 1}},
-        "required": ["title", "path"],
-    },
-    "minItems": 0,
-}
-
-
-CONFIG_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "properties": {"opened": LIST_PROJECTS, "recent": LIST_PROJECTS},
-}
-
-
-@dataclass
-class Project:
-    title: str
+class Project(BaseModel):
+    title: str = Field(min_length=1)
     path: Path
 
     @property
@@ -37,62 +16,46 @@ class Project:
         return self.path.exists()
 
 
-@dataclass
-class Config:
-    opened: list[Project] = field(default_factory=list)
-    recent: list[Project] = field(default_factory=list)
+class Config(BaseModel):
+    opened: list[Project] = []
+    recent: list[Project] = []
 
-    def to_dict(self) -> dict:
-        result = asdict(self)
-        for entity in ("opened", "recent"):
-            for item in result[entity]:
-                item["path"] = str(item["path"])
+    @field_validator("opened", "recent", mode="after")
+    @classmethod
+    def _check_exists(cls, v: list[Project]) -> list[Project]:
+        result = []
+        for p in v:
+            if p.exists:
+                result.append(p)
         return result
 
 
 class RecentProjects:
     def __init__(self, config_path: Path):
         self._config_path = config_path
-        self._config = Config()
-        self._validator = fastjsonschema.compile(CONFIG_SCHEMA)
-        self.load()
+        self._config = self.load()
+        self.dump()
 
-    def load(self):
-        is_modified = False
-        self._config = Config()
+    def load(self) -> Config:
         if self._config_path.exists():
             with self._config_path.open("r") as f:
                 data = f.read()
 
             try:
                 data = yaml.safe_load(data)
+                if data:
+                    return Config(**data)
             except yaml.YAMLError:
-                logger.error(f"Invalid YAML format for {self._config_path}")
-                return
-
-            try:
-                self._validator(data)
-            except fastjsonschema.JsonSchemaException:
-                logger.error(f"Invalid structure for {self._config_path}")
-                return
-
-            for project in data.get("opened", []):
-                project["path"] = Path(project["path"])
-                if project["path"].exists():
-                    self._config.opened.append(Project(**project))
-                else:
-                    is_modified = True
-
-            for project in data.get("recent", []):
-                project["path"] = Path(project["path"])
-                self._config.recent.append(Project(**project))
-
-        if is_modified:
-            self.dump()
+                logger.error("Invalid YAML format for %s", self._config_path)
+            except ValidationError:
+                logger.error("Invalid structure for %s", self._config_path)
+        return Config()
 
     def dump(self):
+        data = self._config.model_dump(exclude_defaults=True, mode="json")
+        raw_data = yaml.safe_dump(data, allow_unicode=True)
         with self._config_path.open("w") as f:
-            f.write(yaml.safe_dump(self._config.to_dict(), allow_unicode=True))
+            f.write(raw_data)
 
     @property
     def opened(self) -> list[Project]:
@@ -104,12 +67,12 @@ class RecentProjects:
 
     def add_opened(self, title: str, path: Path):
         self.remove_opened(path, dump=False)
-        self._config.opened.insert(0, Project(title, path))
+        self._config.opened.insert(0, Project(title=title, path=path))
         self.dump()
 
     def add_recent(self, title: str, path: Path):
         self.remove_recent(path, dump=False)
-        self._config.recent.insert(0, Project(title, path))
+        self._config.recent.insert(0, Project(title=title, path=path))
         self.dump()
 
     def remove_opened(self, path: Path, dump: bool = True):

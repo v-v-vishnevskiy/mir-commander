@@ -7,8 +7,8 @@ from mir_commander.ui.application import Application
 
 
 def create_config_dir():
-    if not DIR.CONFIG.exists():
-        shutil.copytree(DIR.DEFAULT_CONFIGS, DIR.CONFIG)
+    if not DIR.HOME_CONFIG.exists():
+        shutil.copytree(DIR.DEFAULT_CONFIGS, DIR.HOME_CONFIG)
 
 
 def run():

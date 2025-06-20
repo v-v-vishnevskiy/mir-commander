@@ -24,10 +24,10 @@ class Application(QApplication):
 
         self.register_resources()
 
-        self.config = Config(DIR.CONFIG / "config.yaml")
+        self.config = Config(DIR.HOME_CONFIG / "config.yaml")
         self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml", read_only=True))
         self.settings = Settings(self.config)
-        self.recent_projects = RecentProjects(DIR.CONFIG / "recent.yaml")
+        self.recent_projects = RecentProjects(DIR.HOME_CONFIG / "recent.yaml")
 
         self._projects: dict[int, MainWindow] = {}
         self._recent_projects_widget = RecentProjectsWidget(self)

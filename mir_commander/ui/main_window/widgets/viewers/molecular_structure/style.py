@@ -21,7 +21,7 @@ class Style:
         default_style = config.nested("style.default")
 
         styles = [default_style]
-        for file in (DIR.CONFIG / "styles" / "viewers" / "molecule").glob("*.yaml"):
+        for file in (DIR.HOME_CONFIG / "styles" / "viewers" / "molecule").glob("*.yaml"):
             style = Config(file)
             style.set_defaults(default_style)
             styles.append(style)

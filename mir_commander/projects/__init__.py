@@ -164,7 +164,7 @@ def import_file_xyz(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     messages.append("XYZ format.")
 
     moldata = ds_molecule.Molecule()
-    molitem = item.Molecule(path.parts[1], moldata)
+    molitem = item.Molecule(path.parts[-1], moldata)
     molitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
@@ -619,7 +619,7 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
             logger.error(f"{msg}: {config_path}")
             raise exceptions.LoadProject(msg, f"{msg}: {config_path}")
         # or if we are trying to open user config dir
-        elif config_path == consts.DIR.CONFIG / "config.yaml":
+        elif config_path == consts.DIR.HOME_CONFIG / "config.yaml":
             msg = "Mir Commander user configuration directory cannot contain project file(s)"
             logger.error(msg)
             raise exceptions.LoadProject(msg)
