@@ -26,26 +26,35 @@ check-venv:
 	fi
 
 .PHONY: install
-install: check-venv
+install: check-venv  ## Install dependencies
+	@echo "Installing dependencies..."
 	@VIRTUAL_ENV=$(VIRTUAL_ENV) $(VIRTUAL_ENV)/bin/uv sync --active --all-groups
 
+mircmd: check-venv
+	@if [ ! -f "mircmd" ]; then \
+		echo "Creating symlink for mircmd..."; \
+		ln -s $(VIRTUAL_ENV)/bin/mircmd ./mircmd; \
+	fi
+
 .PHONY: scripts
-scripts: check-venv
-	@ln -s $(VIRTUAL_ENV)/bin/mircmd ./mircmd
+scripts: mircmd
 
 .PHONY: lint
-lint: ## Run linters
+lint: check-venv  ## Run linters
+	@echo "Running linters..."
 	@echo Ruff...
 	@$(VIRTUAL_ENV)/bin/ruff check --force-exclude
 	@echo Mypy...
 	@$(VIRTUAL_ENV)/bin/mypy $(CODE)
 
 .PHONY: format
-format: ## Run formatters
+format: check-venv  ## Run formatters
+	@echo "Running formatters..."
 	@$(VIRTUAL_ENV)/bin/ruff format --force-exclude
 
 .PHONY: test
-test: ## Run tests
+test: check-venv  ## Run tests
+	@echo "Running tests..."
 	@$(VIRTUAL_ENV)/bin/pytest --cov-report term-missing --cov=mir_commander tests/
 
 .PHONY: pre-commit-install
@@ -61,8 +70,8 @@ init: venv install scripts  ## Initialize the project
 	@echo "Project initialized. Activate the virtual environment with 'source $(VIRTUAL_ENV)/bin/activate'"
 
 .PHONY: clean
-clean: ## Clean up the project
+clean:  ## Clean up the project
+	@echo "Cleaning up..."
 	@rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache .coverage .coverage.*
 	@rm -rf mircmd
 	@rm -rf $(VIRTUAL_ENV)
-	@echo "Cleaned up"
