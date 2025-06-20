@@ -164,7 +164,7 @@ def import_file_xyz(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     messages.append("XYZ format.")
 
     moldata = ds_molecule.Molecule()
-    molitem = item.Molecule(path.parts[1], moldata)
+    molitem = item.Molecule(path.parts[-1], moldata)
     molitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
