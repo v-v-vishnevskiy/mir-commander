@@ -10,7 +10,7 @@ import numpy as np
 from cclib.io import ccread
 from periodictable import elements
 
-from mir_commander import consts, exceptions
+from mir_commander import consts, errors
 from mir_commander.data_structures import molecule as ds_molecule
 from mir_commander.data_structures import unex
 from mir_commander.projects.base import ItemParametrized, Project
@@ -77,12 +77,12 @@ def import_file_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]
                 try:
                     num_atoms = int(line_items[0])
                 except ValueError:
-                    raise exceptions.LoadFile(f"Invalid control line {line_number + 1}, expected number of atoms.")
+                    raise errors.LoadFileError(f"Invalid control line {line_number + 1}, expected number of atoms.")
 
                 try:
                     num_bonds = int(line_items[1])
                 except ValueError:
-                    raise exceptions.LoadFile(f"Invalid control line {line_number + 1}, expected number of bonds.")
+                    raise errors.LoadFileError(f"Invalid control line {line_number + 1}, expected number of bonds.")
 
                 if num_atoms <= 0:
                     raise ValueError(f"Invalid number of atoms {num_atoms} defined in line {line_number+1}.")
@@ -410,7 +410,7 @@ def import_file_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     if data is None:
         msg = "cclib cannot determine the format of file"
         logger.error(f"{msg}: {path}")
-        raise exceptions.LoadFile(msg, f"{msg}: {path}")
+        raise errors.LoadFileError(msg, f"{msg}: {path}")
 
     if hasattr(data, "metadata"):
         messages.append(pprint.pformat(data.metadata, compact=True))
@@ -536,7 +536,7 @@ def import_file(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                         numat = int(numat_match.group(0))
                     else:
                         msg = "Invalid first string in XYZ file"
-                        raise exceptions.LoadFile(msg, f"line={line}")
+                        raise errors.LoadFileError(msg, f"line={line}")
                 else:
                     if "UNEX" in line and unexver_validator.match(line.split()[1]):
                         file_format = FileFormat.UNEX
@@ -558,7 +558,7 @@ def import_file(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                                 continue
                         else:
                             msg = "Invalid atom string in XYZ file"
-                            raise exceptions.LoadFile(msg, f"line={line}")
+                            raise errors.LoadFileError(msg, f"line={line}")
                 elif file_format == FileFormat.MDLMOL2000:
                     if line_number == 3:
                         if " V2000" in line:
@@ -566,7 +566,7 @@ def import_file(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                             break
                         else:
                             msg = "Invalid control string in MDLMOL2000 file"
-                            raise exceptions.LoadFile(msg, f"line={line}")
+                            raise errors.LoadFileError(msg, f"line={line}")
                 else:
                     if "<<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>" in line:
                         file_format = FileFormat.CFOUR
@@ -617,12 +617,12 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
         if not config_path.is_file():
             msg = "Config file does not exist"
             logger.error(f"{msg}: {config_path}")
-            raise exceptions.LoadProject(msg, f"{msg}: {config_path}")
+            raise errors.LoadProjectError(msg, f"{msg}: {config_path}")
         # or if we are trying to open user config dir
         elif config_path == consts.DIR.HOME_CONFIG / "config.yaml":
             msg = "Mir Commander user configuration directory cannot contain project file(s)"
             logger.error(msg)
-            raise exceptions.LoadProject(msg)
+            raise errors.LoadProjectError(msg)
 
         config = Config(config_path)
         project_type = config["type"]
@@ -631,11 +631,11 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
         else:
             msg = "Invalid project type"
             logger.error(f"{msg}: {project_type}")
-            raise exceptions.LoadProject(msg, f"{msg}: {project_type}")
+            raise errors.LoadProjectError(msg, f"{msg}: {project_type}")
     else:
         msg = "Invalid path"
         logger.error(f"{msg}: {path}")
-        raise exceptions.LoadProject(msg, f"{msg}: {path}")
+        raise errors.LoadProjectError(msg, f"{msg}: {path}")
 
 
 __all__ = ["import_file", "load_project"]
