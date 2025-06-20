@@ -400,7 +400,7 @@ class Config:
 
             try:
                 data = yaml.load(data, Loader=yaml.CLoader)
-                validator = Validator.model_validate(data, strict=True)
+                validator = Validator.model_validate(data, strict=False)
                 self._data = validator.model_dump()
             except yaml.YAMLError:
                 logger.error(f"Invalid YAML format: {self._path}")
