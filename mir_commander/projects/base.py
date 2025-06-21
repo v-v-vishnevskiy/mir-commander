@@ -1,21 +1,12 @@
-from dataclasses import dataclass
+import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
+from mir_commander.parsers import ItemParametrized
 from mir_commander.utils.config import Config
 from mir_commander.utils.settings import Settings
-
-if TYPE_CHECKING:
-    from mir_commander.ui.utils.item import Item
-
-
-@dataclass
-class ItemParametrized:
-    item: "Item"
-    parameters: dict
 
 
 class Project:

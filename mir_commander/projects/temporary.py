@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from mir_commander.projects.base import Project
 from mir_commander.utils.config import Config
+
+from .base import Project
 
 
 class Temporary(Project):

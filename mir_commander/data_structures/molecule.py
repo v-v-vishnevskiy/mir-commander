@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from mir_commander.data_structures.base import DataStructure
+from .base import DataStructure
 
 
 @dataclass
