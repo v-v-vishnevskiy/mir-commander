@@ -4,10 +4,11 @@ from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
 from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout
 
-from mir_commander.ui.main_window.widgets.settings.category import Category
-from mir_commander.ui.main_window.widgets.settings.general import General
-from mir_commander.ui.main_window.widgets.settings.project import Project
 from mir_commander.ui.utils.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
+
+from .category import Category
+from .general import General
+from .project import Project
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

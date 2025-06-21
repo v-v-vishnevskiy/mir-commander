@@ -10,18 +10,20 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
-from mir_commander.projects.base import Project
-from mir_commander.ui.main_window.widgets import About
-from mir_commander.ui.main_window.widgets import Settings as SettingsWidget
-from mir_commander.ui.main_window.widgets import dock_widget
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
-from mir_commander.ui.utils.widget import Action, Menu, StatusBar
+
+from .widgets import About
+from .widgets import Settings as SettingsWidget
+from .widgets import dock_widget
+from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
+from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
+from .utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
-    from mir_commander.ui.application import Application
-    from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
-    from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
+    from mir_commander.projects.base import Project
+    
+    from .application import Application
+    from .utils.sub_window_menu import SubWindowMenu
+    from .utils.sub_window_toolbar import SubWindowToolBar
 
 
 logger = logging.getLogger()
@@ -35,7 +37,7 @@ class DockWidgets:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
+    def __init__(self, app: "Application", project: "Project", init_msg: None | list[str] = None):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project

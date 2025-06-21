@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 import yaml
 
-from mir_commander import exceptions
+from mir_commander import errors
 from mir_commander.utils.config import Config
 
 BAD_KEYS = [1, None, ["a"], ("a",), "", ".", "b.", ".b", "b..c"]
@@ -104,7 +104,7 @@ def test__key(key: str, expected: str, config: Config):
 
 @pytest.mark.parametrize("key", BAD_KEYS)
 def test__key_bad(key: Any, config: Config):
-    with pytest.raises(exceptions.Config):
+    with pytest.raises(errors.ConfigError):
         config._key(key)
 
 
@@ -130,7 +130,7 @@ def test_contains_non_existent_key(key: str, config: Config):
 
 @pytest.mark.parametrize("key", BAD_KEYS)
 def test_contains_bad_key(key: Any, config: Config):
-    with pytest.raises(exceptions.Config):
+    with pytest.raises(errors.ConfigError):
         config.contains(key)
 
 
@@ -140,7 +140,7 @@ def test_set_defaults(config: Config):
 
 def test_set_defaults_nested(config: Config):
     nested_b = config.nested("b")
-    with pytest.raises(exceptions.Config):
+    with pytest.raises(errors.ConfigError):
         nested_b.set_defaults(Mock())
 
 

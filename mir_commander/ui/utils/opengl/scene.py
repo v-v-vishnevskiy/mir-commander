@@ -20,8 +20,8 @@ from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QMatrix4x4, QQuaternion, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from mir_commander.ui.utils.opengl.graphics_items.item import Item
-from mir_commander.ui.utils.opengl.utils import Color4f
+from .graphics_items.item import Item
+from .utils import Color4f
 
 logger = logging.getLogger(__name__)
 

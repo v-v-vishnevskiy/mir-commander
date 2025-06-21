@@ -2,21 +2,21 @@ class Error(Exception):
     pass
 
 
-class Config(Error):
+class ConfigError(Error):
     pass
 
 
-class ConfigKey(Config):
+class ConfigKeyError(ConfigError):
     pass
 
 
-class LoadProject(Error):
+class LoadProjectError(Error):
     def __init__(self, msg: str, details: str = ""):
         super().__init__(msg)
         self.details = details
 
 
-class LoadFile(Error):
+class LoadFileError(Error):
     def __init__(self, msg: str, details: str = ""):
         super().__init__(msg)
         self.details = details

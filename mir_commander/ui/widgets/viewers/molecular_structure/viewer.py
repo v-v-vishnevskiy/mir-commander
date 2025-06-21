@@ -11,16 +11,17 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.build_bonds_dialog import BuildBondsDialog
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.save_image_dialog import SaveImageDialog
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.scene import Scene
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import StatusBar
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
+
+from .build_bonds_dialog import BuildBondsDialog
+from .graphics_items import Atom
+from .save_image_dialog import SaveImageDialog
+from .scene import Scene
+from .style import Style
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtWidgets import QWidget
 
 if TYPE_CHECKING:
-    from mir_commander.ui.main_window.widgets.settings import Settings
+    from mir_commander.ui.widgets.settings import Settings
 
 
 class Category(QWidget):

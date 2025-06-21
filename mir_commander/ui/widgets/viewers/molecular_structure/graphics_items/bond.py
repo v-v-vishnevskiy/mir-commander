@@ -1,9 +1,10 @@
 from PySide6.QtGui import QQuaternion, QVector3D
 
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
 from mir_commander.ui.utils.opengl.mesh import Cylinder
 from mir_commander.ui.utils.opengl.utils import Color4f
+
+from .atom import Atom
 
 
 class BondItem(MeshItem):

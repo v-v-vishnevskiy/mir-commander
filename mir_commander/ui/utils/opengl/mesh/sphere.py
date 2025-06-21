@@ -1,6 +1,6 @@
 from math import cos, pi, sin
 
-from mir_commander.ui.utils.opengl.mesh.base import MeshData
+from .base import MeshData
 
 
 class Sphere(MeshData):

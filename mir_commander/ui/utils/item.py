@@ -5,8 +5,9 @@ from PySide6.QtGui import QIcon, QStandardItem, Qt
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.data_structures.base import DataStructure
-from mir_commander.ui.main_window.widgets import viewers
-from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.widgets import viewers
+
+from .widget import Action, Menu
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

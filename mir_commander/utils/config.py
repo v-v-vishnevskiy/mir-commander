@@ -5,7 +5,7 @@ from typing import Any, Literal, Optional
 import yaml
 from pydantic import BaseModel, Field
 
-from mir_commander import exceptions
+from mir_commander import errors
 
 logger = logging.getLogger(__name__)
 
@@ -374,15 +374,15 @@ class Config:
 
     def _key(self, key: str) -> list[str]:
         if not isinstance(key, str):
-            raise exceptions.ConfigKey(f"Invalid type: {type(key)}")
+            raise errors.ConfigKeyError(f"Invalid type: {type(key)}")
 
         if not key:
-            raise exceptions.ConfigKey("Empty")
+            raise errors.ConfigKeyError("Empty")
 
         parts = key.split(".")
         for part in parts:
             if not part:
-                raise exceptions.ConfigKey("Empty part")
+                raise errors.ConfigKeyError("Empty part")
 
         return parts
 
@@ -410,7 +410,7 @@ class Config:
         if self._parent is None:
             self._defaults = config
         else:
-            raise exceptions.Config("Can't set defaults for nested config")
+            raise errors.ConfigError("Can't set defaults for nested config")
 
     def dump(self) -> None:
         if self._parent is not None:

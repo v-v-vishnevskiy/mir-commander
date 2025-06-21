@@ -1,4 +1,4 @@
-from mir_commander.projects.base import Project
+from .base import Project
 
 
 class Molecule(Project):

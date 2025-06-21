@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, get_args
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
-from mir_commander.ui.utils.widget import ToolBar as ToolBarWidget
+from .widget import ToolBar as ToolBarWidget
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
