@@ -33,7 +33,7 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     messages.append("MDL Molfile V2000.")
 
     moldata = Molecule()
-    molitem = item.Molecule(path.parts[1], moldata)
+    molitem = item.Molecule(path.parts[-1], moldata)
     molitem.file_path = path
 
     title = ""

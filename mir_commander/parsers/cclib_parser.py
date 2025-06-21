@@ -50,7 +50,7 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
         moldata.charge = data.charge
     if hasattr(data, "mult"):
         moldata.multiplicity = data.mult
-    molitem = item.Molecule(path.parts[1], moldata)
+    molitem = item.Molecule(path.parts[-1], moldata)
     molitem.file_path = path
 
     # If we have coordinates of atoms.

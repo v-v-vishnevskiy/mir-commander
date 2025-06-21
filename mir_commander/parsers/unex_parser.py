@@ -23,7 +23,7 @@ def load_unex(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
     project_data = unex.Project()
-    rootitem = item.UnexProject(path.parts[1], project_data)
+    rootitem = item.UnexProject(path.parts[-1], project_data)
     rootitem.file_path = path
 
     flagged_items.append({"itempar": ItemParametrized(rootitem, {}), "expand": True})
