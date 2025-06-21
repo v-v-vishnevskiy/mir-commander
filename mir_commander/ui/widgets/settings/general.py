@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
 
-from mir_commander.ui.main_window.widgets.settings.category import Category
 from mir_commander.ui.utils.widget import ComboBox, Label
+
+from .category import Category
 
 
 class General(Category):

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
+from .base import DockWidget
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

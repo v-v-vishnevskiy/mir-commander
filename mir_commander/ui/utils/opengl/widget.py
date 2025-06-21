@@ -6,8 +6,8 @@ from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
-from mir_commander.ui.utils.opengl.keymap import Keymap
-from mir_commander.ui.utils.opengl.scene import Scene
+from .keymap import Keymap
+from .scene import Scene
 
 
 class ClickAndMoveMode(Enum):

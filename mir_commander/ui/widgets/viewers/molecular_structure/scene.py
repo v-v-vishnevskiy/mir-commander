@@ -1,14 +1,15 @@
 from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.graphics_items import Atom, Bond
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.shaders import OUTLINE
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.style import Style
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils.chem import atomic_number_to_symbol
+
+from .graphics_items import Atom, Bond
+from .shaders import OUTLINE
+from .style import Style
 
 
 class Scene(BaseScene):

@@ -18,10 +18,11 @@ from OpenGL.GL import (
 )
 
 from mir_commander.ui.utils.opengl.default_shaders import SHADED
-from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import MeshData
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
+
+from .item import Item
 
 
 class MeshItem(Item):

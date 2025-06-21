@@ -8,10 +8,11 @@ from mir_commander import errors
 from mir_commander.consts import DIR
 from mir_commander.projects import load_project
 from mir_commander.recent_projects import RecentProjects
-from mir_commander.ui.main_window import MainWindow
-from mir_commander.ui.recent_projects import RecentProjects as RecentProjectsWidget
 from mir_commander.utils.config import Config
 from mir_commander.utils.settings import Settings
+
+from .main_window import MainWindow
+from .recent_projects import RecentProjects as RecentProjectsWidget
 
 
 class Application(QApplication):

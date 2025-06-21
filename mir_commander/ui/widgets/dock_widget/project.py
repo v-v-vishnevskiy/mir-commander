@@ -5,8 +5,9 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
 from mir_commander.parsers.utils import ItemParametrized
-from mir_commander.ui.main_window.widgets.dock_widget.base import DockWidget
 from mir_commander.utils.config import Config
+
+from .base import DockWidget
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar, get_args
 
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
-from mir_commander.ui.utils.widget import Menu
+from .widget import Menu
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow

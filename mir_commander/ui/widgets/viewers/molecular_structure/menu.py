@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon, QKeySequence
 
-from mir_commander.ui.main_window.widgets.viewers.molecular_structure.viewer import MolecularStructure
 from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
 from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
+
+from .viewer import MolecularStructure
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
