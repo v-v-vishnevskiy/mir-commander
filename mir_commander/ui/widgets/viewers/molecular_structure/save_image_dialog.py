@@ -114,10 +114,10 @@ class SaveImageDialog(Dialog):
 
     @Slot()
     def file_path_button_handler(self):
-        fileDialog = QFileDialog(self, self.tr("Choose file"), self.initial_file_path)
+        fileDialog = QFileDialog(self, self.tr("Choose file"), str(self.initial_file_path))
         fileDialog.setAcceptMode(QFileDialog.AcceptSave)
         fileDialog.setFileMode(QFileDialog.AnyFile)
-        fileDialog.setDirectory(self.initial_file_path)
+        fileDialog.setDirectory(str(self.initial_file_path))
         mime_types = []
 
         for bf in QImageWriter.supportedMimeTypes():
