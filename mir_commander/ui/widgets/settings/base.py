@@ -1,12 +1,12 @@
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from PySide6.QtWidgets import QWidget
 
 if TYPE_CHECKING:
-    from mir_commander.ui.widgets.settings import Settings
+    from mir_commander.ui.widgets.settings.dialog import Settings
 
 
-class Category(QWidget):
+class BasePage(QWidget):
     """Basic class for each page in the settings dialog.
 
     The main purpose of this class is to implement the common
@@ -15,10 +15,12 @@ class Category(QWidget):
 
     def __init__(self, parent: "Settings"):
         super().__init__(parent)
-        self.global_settings = parent.global_settings  # type: ignore
-        self.project_settings = parent.project_settings  # type: ignore
+        self.app_config = parent.app_config
+        self.project_config = parent.project_config
+        self._backup: dict[str, Any] = {}
 
         layout = self.setup_ui()
+        self.backup_data()
         self.setup_data()
         self.post_init()
         self.setLayout(layout)
@@ -28,6 +30,19 @@ class Category(QWidget):
 
     def setup_ui(self):
         raise NotImplementedError()
+    
+    def backup_data(self):
+        pass
+
+    def restore_backup_data(self):
+        pass
 
     def setup_data(self):
+        pass
+
+    def cancel(self):
+        self.restore_backup_data()
+        self.setup_data()
+
+    def restore_defaults(self):
         pass

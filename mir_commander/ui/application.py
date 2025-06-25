@@ -7,12 +7,12 @@ from PySide6.QtWidgets import QApplication
 from mir_commander import errors
 from mir_commander.consts import DIR
 from mir_commander.projects import load_project
-from mir_commander.recent_projects import RecentProjects
-from mir_commander.utils.config import Config
-from mir_commander.utils.settings import Settings
 
+from .recent_projects.config import RecentProjectsConfig
+from .recent_projects.dialog import RecentProjectsDialog
+from .app_config import AppConfig
+from .config import ApplyCallbacks
 from .main_window import MainWindow
-from .recent_projects import RecentProjects as RecentProjectsWidget
 
 
 class Application(QApplication):
@@ -25,20 +25,18 @@ class Application(QApplication):
 
         self.register_resources()
 
-        self.config = Config(DIR.HOME_CONFIG / "config.yaml")
-        self.config.set_defaults(Config(DIR.DEFAULT_CONFIGS / "config.yaml", read_only=True))
-        self.settings = Settings(self.config)
-        self.recent_projects = RecentProjects(DIR.HOME_CONFIG / "recent.yaml")
+        self.apply_callbacks = ApplyCallbacks()
+        self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+        self.recent_projects_config = RecentProjectsConfig.load(DIR.HOME_CONFIG / "recent_projects.yaml")
 
-        self._projects: dict[int, MainWindow] = {}
-        self._recent_projects_widget = RecentProjectsWidget(self)
+        self._open_projects: dict[int, MainWindow] = {}
+        self._recent_projects_dialog = RecentProjectsDialog(self)
 
         self._translator_app = QTranslator(self)
         self._translator_qt = QTranslator(self)
         self._set_translation()
 
-        self.settings.set_default("language", "system")
-        self.settings.add_apply_callback("language", self._set_translation)
+        self.apply_callbacks.add(self._set_translation)
 
     def fix_palette(self):
         """
@@ -83,7 +81,7 @@ class Application(QApplication):
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
 
-        language = self.settings["language"]
+        language = self.config.language
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
@@ -112,31 +110,30 @@ class Application(QApplication):
         if project:
             messages.insert(0, f"{path}")
             main_window = MainWindow(self, project, messages)
-            self._projects[id(main_window)] = main_window
+            self._open_projects[id(main_window)] = main_window
             if not main_window.project.is_temporary:
-                self.recent_projects.add_opened(project.name, project.path)
-                self.recent_projects.add_recent(project.name, project.path)
+                self.recent_projects_config.add_opened(project.name, project.path)
+                self.recent_projects_config.add_recent(project.name, project.path)
             main_window.show()
             return True
         return False
 
     def close_project(self, main_window: MainWindow):
-        del self._projects[id(main_window)]
+        del self._open_projects[id(main_window)]
 
         main_window.project.config.dump()
 
         if not main_window.project.is_temporary:
-            self.recent_projects.add_recent(main_window.project.name, main_window.project.path)
+            self.recent_projects_config.add_recent(main_window.project.name, main_window.project.path)
             if not self._quitting:
-                self.recent_projects.remove_opened(main_window.project.path)
+                self.recent_projects_config.remove_opened(main_window.project.path)
 
-        if not self._projects:
-            self.recent_projects.load()  # reload
-            self._recent_projects_widget.show()
+        if not self._open_projects:
+            self._recent_projects_dialog.show()
 
     def quit(self):
         self._quitting = True
-        for value in list(self._projects.values()):
+        for value in list(self._open_projects.values()):
             value.close()
         super().quit()
 
@@ -145,9 +142,9 @@ class Application(QApplication):
             if not self.open_project(Path(projpath)):
                 return 1
         else:
-            if self.recent_projects.opened:
-                for item in self.recent_projects.opened:
+            if self.recent_projects_config.opened:
+                for item in self.recent_projects_config.opened:
                     self.open_project(item.path)
             else:
-                self._recent_projects_widget.show()
+                self._recent_projects_dialog.show()
         return self.exec()

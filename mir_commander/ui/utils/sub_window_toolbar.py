@@ -17,11 +17,11 @@ class SubWindowToolBar(Generic[T], ToolBarWidget):
     def __init_subclass__(cls) -> None:
         cls._type_T = get_args(cls.__orig_bases__[0])[0]
 
-    def __init__(self, title: str, parent: "MainWindow"):
-        super().__init__(title, parent)
-        self._mdi_area = parent.mdi_area
+    def __init__(self, title: str, main_window: "MainWindow"):
+        super().__init__(title, main_window)
+        self._mdi_area = main_window.mdi_area
 
-        icon_size = parent.app.config["widgets.toolbars.icon_size"]
+        icon_size = main_window.config.widgets.toolbars.icon_size
         self.setIconSize(QSize(icon_size, icon_size))
 
         self.setup_actions()

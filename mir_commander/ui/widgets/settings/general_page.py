@@ -1,12 +1,13 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
 
+from mir_commander.ui.app_config import AppConfig
 from mir_commander.ui.utils.widget import ComboBox, Label
 
-from .category import Category
+from .base import BasePage
 
 
-class General(Category):
+class General(BasePage):
     """The page with the general settings.
 
     At this point only implements choosing language.
@@ -19,6 +20,17 @@ class General(Category):
         layout.addStretch(1)
 
         return layout
+    
+    def backup_data(self):
+        self._backup["language"] = self.app_config.language
+
+    def restore_backup_data(self):
+        self.app_config.language = self._backup["language"]
+    
+    def restore_defaults(self):
+        app_config = AppConfig()
+        self.app_config.language = app_config.language
+        self.setup_data()
 
     def setup_data(self):
         self._setup_language_data()
@@ -43,9 +55,9 @@ class General(Category):
         return layout
 
     def _setup_language_data(self):
-        index = self.cb_language.findData(self.global_settings["language"])
+        index = self.cb_language.findData(self.app_config.language)
         self.cb_language.setCurrentIndex(index)
 
     @Slot()
     def _language_changed(self, index: int):
-        self.global_settings["language"] = self._languages[index][1]
+        self.app_config.language = self._languages[index][1]

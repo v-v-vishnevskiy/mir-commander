@@ -3,16 +3,22 @@ from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QVBoxLayout
 
 from mir_commander.ui.utils.widget import Label
 
-from .category import Category
+from .base import BasePage
 
 
-class Project(Category):
+class Project(BasePage):
     def setup_ui(self):
         layout = QVBoxLayout()
         layout.addLayout(self._project_name_ui)
         layout.addStretch(1)
 
         return layout
+    
+    def backup_data(self):
+        self._backup["project_name"] = self.project_config.name
+    
+    def restore_backup_data(self):
+        self.project_config.name = self._backup["project_name"]
 
     def setup_data(self):
         self._setup_project_name_data()
@@ -33,8 +39,8 @@ class Project(Category):
         return layout
 
     def _setup_project_name_data(self):
-        self.le_project_name.setText(self.project_settings["name"])
+        self.le_project_name.setText(self.project_config.name)
 
     @Slot()
     def _project_name_changed(self, text: str):
-        self.project_settings["name"] = text
+        self.project_config.name = text

@@ -5,31 +5,25 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
 from mir_commander.parsers.utils import ItemParametrized
-from mir_commander.utils.config import Config
 
-from .base import DockWidget
+from .base import BaseDock
+from .config import DocksConfig
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
 
 
 class TreeView(QTreeView):
-    def __init__(self, parent: DockWidget, config: Config):
+    def __init__(self, parent: BaseDock, config: DocksConfig):
         super().__init__(parent)
-        self._config = config
 
         self.setHeaderHidden(True)
         self.setExpandsOnDoubleClick(False)
-        self.setIconSize(self._icon_size())
+        icon_size = config.project.tree.icon_size
+        self.setIconSize(QSize(icon_size, icon_size))
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._showContextMenu)
         self.doubleClicked.connect(self._item_double_clicked)
-
-    def _icon_size(self) -> QSize:
-        value = self._config["icon_size"]
-        if value > 32 or value < 16:
-            value = 20
-        return QSize(value, value)
 
     def _showContextMenu(self, pos: QPoint):
         item = self.model().itemFromIndex(self.indexAt(pos))
@@ -46,18 +40,16 @@ class TreeView(QTreeView):
             self.setExpanded(index, not self.isExpanded(index))
 
 
-class Project(DockWidget):
+class ProjectDock(BaseDock):
     """The project dock widget.
 
     A single instance of this class is created
     for showing a tree widget with objects of the project.
     """
 
-    config_key: str = "widgets.docks.project"
-
     def __init__(self, parent: "MainWindow"):
         super().__init__(self.tr("Project"), parent)
-        self._tree = TreeView(self, self.config.nested("tree"))
+        self._tree = TreeView(self, self.docks_config)
         self.setWidget(self._tree)
 
     def set_model(self, model: QStandardItemModel):
