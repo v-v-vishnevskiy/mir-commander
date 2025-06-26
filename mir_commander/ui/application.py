@@ -9,7 +9,7 @@ from mir_commander.consts import DIR
 from mir_commander.projects import load_project
 
 from .recent_projects.config import RecentProjectsConfig
-from .recent_projects.dialog import RecentProjectsDialog
+from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 from .app_config import AppConfig
 from .config import ApplyCallbacks
 from .main_window import MainWindow

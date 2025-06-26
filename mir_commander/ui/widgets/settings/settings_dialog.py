@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
 
 
-class Settings(Dialog):
+class SettingsDialog(Dialog):
     """Main dialog of the setting window.
 
     Inherits Translator, since we have here UI elements,

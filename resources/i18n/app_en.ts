@@ -567,28 +567,28 @@
 <context>
     <name>PushButton</name>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/dialog.py" line="53"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="53"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/dialog.py" line="54"/>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="71"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="54"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="71"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="66"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="66"/>
         <source>Restore Defaults</source>
         <translation>Restore Defaults</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="68"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="68"/>
         <source>Apply</source>
         <translation>Apply</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="73"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="73"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -601,12 +601,12 @@
 <context>
     <name>RecentProjectsDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/dialog.py" line="98"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="98"/>
         <source>Open Project</source>
         <translation>Open Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/dialog.py" line="37"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="37"/>
         <source>Recent Projects</source>
         <translation>Recent Projects</translation>
     </message>
@@ -625,9 +625,9 @@
     </message>
 </context>
 <context>
-    <name>Settings</name>
+    <name>SettingsDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="36"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="36"/>
         <source>Settings</source>
         <translation>Settings</translation>
     </message>
@@ -644,12 +644,12 @@
 <context>
     <name>StandardItem</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="92"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="92"/>
         <source>Project</source>
         <translation>Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/dialog.py" line="93"/>
+        <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="93"/>
         <source>General</source>
         <translation>General</translation>
     </message>

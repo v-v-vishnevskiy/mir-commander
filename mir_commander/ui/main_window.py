@@ -14,7 +14,7 @@ from mir_commander import __version__
 from .config import ApplyCallbacks
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
-from .widgets.settings.dialog import Settings as SettingsDialog
+from .widgets.settings.settings_dialog import SettingsDialog as SettingsDialog
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from .utils.widget import Action, Menu, StatusBar

@@ -3,7 +3,7 @@ from typing import Any, TYPE_CHECKING
 from PySide6.QtWidgets import QWidget
 
 if TYPE_CHECKING:
-    from mir_commander.ui.widgets.settings.dialog import Settings
+    from mir_commander.ui.widgets.settings.settings_dialog import SettingsDialog
 
 
 class BasePage(QWidget):
@@ -13,7 +13,7 @@ class BasePage(QWidget):
     initialization method, see the code below.
     """
 
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "SettingsDialog"):
         super().__init__(parent)
         self.app_config = parent.app_config
         self.project_config = parent.project_config
