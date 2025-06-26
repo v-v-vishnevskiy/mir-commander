@@ -1,5 +1,6 @@
 from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from pydantic_extra_types.color import Color
 
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
@@ -41,7 +42,7 @@ class Scene(BaseScene):
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_radius(radius)
             atom.set_color(color)
-            atom.set_smooth(self.style["quality.smooth"])
+            atom.set_smooth(self.style.current.quality.smooth)
 
     def _apply_bonds_style(self, mesh_quality: int):
         # update mesh
@@ -59,14 +60,14 @@ class Scene(BaseScene):
 
         # update items
         for bond in self.bond_items:
-            bond.set_radius(self.style["bond.radius"])
+            bond.set_radius(self.style.current.bond.radius)
 
-            if self.style["bond.color"] == "atoms":
+            if self.style.current.bond.color == "atoms":
                 bond.set_atoms_color(True)
             else:
-                bond.set_color(self.normalize_color(self.style["bond.color"]))
+                bond.set_color(self.normalize_color(self.style.current.bond.color))
 
-            bond.set_smooth(self.style["quality.smooth"])
+            bond.set_smooth(self.style.current.quality.smooth)
 
     def _atom_under_cursor(self, x: int, y: int) -> None | Atom:
         if not self.atom_items:
@@ -85,22 +86,22 @@ class Scene(BaseScene):
         return result
 
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
-        atoms_radius = self.style["atoms.radius"]
+        atoms_radius = self.style.current.atoms.radius
         if atoms_radius == "atomic":
             if atomic_num >= 0:
-                radius = self.style["atoms.atomic_radius"][atomic_num]
+                radius = self.style.current.atoms.atomic_radius[atomic_num]
             else:
-                radius = self.style["atoms.special_atoms.atomic_radius"][atomic_num]
-            radius *= self.style["atoms.scale_factor"]
+                radius = self.style.current.atoms.special_atoms.atomic_radius[atomic_num]
+            radius *= self.style.current.atoms.scale_factor
         elif atoms_radius == "bond":
-            radius = self.style["bond.radius"]
+            radius = self.style.current.bond.radius
         else:
-            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self.style['name']}'")
+            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self.style.current.name}'")
 
         if atomic_num >= 0:
-            color = self.style["atoms.atomic_color"][atomic_num]
+            color = self.style.current.atoms.atomic_color[atomic_num]
         else:
-            color = self.style["atoms.special_atoms.atomic_color"][atomic_num]
+            color = self.style.current.atoms.special_atoms.atomic_color[atomic_num]
 
         return radius, self.normalize_color(color)
 
@@ -132,15 +133,15 @@ class Scene(BaseScene):
         self.apply_style()
 
     def apply_style(self):
-        mesh_quality = self.style["quality.mesh"]
+        mesh_quality = self.style.current.quality.mesh
         mesh_quality = max(min(mesh_quality, 100), 1)
         self._apply_atoms_style(mesh_quality)
         self._apply_bonds_style(mesh_quality)
 
-        self.set_background_color(self.normalize_color(self.style["background.color"]))
+        self.set_background_color(self.normalize_color(self.style.current.background.color))
 
-        self.set_projection_mode(self.style["projection.mode"])
-        self.set_fov(self.style["projection.fov"])
+        self.set_projection_mode(self.style.current.projection.mode)
+        self.set_fov(self.style.current.projection.fov)
 
         self.update()
 
@@ -162,7 +163,7 @@ class Scene(BaseScene):
             color,
             selected_shader=self._edge_shader,
         )
-        item.set_smooth(self.style["quality.smooth"])
+        item.set_smooth(self.style.current.quality.smooth)
         self.add_item(item)
 
         self.atom_items.append(item)
@@ -170,21 +171,21 @@ class Scene(BaseScene):
         return item
 
     def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
-        atoms_color = self.style["bond.color"] == "atoms"
+        atoms_color = self.style.current.bond.color == "atoms"
         if atoms_color:
             color = (0.5, 0.5, 0.5, 1.0)
         else:
-            color = self.normalize_color(self.style["bond.color"])
+            color = self.normalize_color(self.style.current.bond.color)
 
         item = Bond(
             self._bond_mesh_data,
             atom_1,
             atom_2,
-            self.style["bond.radius"],
+            self.style.current.bond.radius,
             atoms_color,
             color,
         )
-        item.set_smooth(self.style["quality.smooth"])
+        item.set_smooth(self.style.current.quality.smooth)
         self.add_item(item)
 
         self.bond_items.append(item)
@@ -214,14 +215,16 @@ class Scene(BaseScene):
         return -1
 
     def set_style(self, name: str):
-        self.style.set_style(name)
+        self.style.current.set_style(name)
         self.apply_style()
 
-    def normalize_color(self, value: str) -> Color4f:
+    def normalize_color(self, value: Color) -> Color4f:
         """
         Converts #RRGGBB string to tuple, where each component represented from 0.0 to 1.0
         """
-        return int(value[1:3], 16) / 255, int(value[3:5], 16) / 255, int(value[5:7], 16) / 255, 1.0
+
+        r, g, b = value.as_rgb_tuple()
+        return r / 255, g / 255, b / 255, 1.0
 
     def new_cursor_position(self, x: int, y: int):
         self._highlight_atom_under_cursor(x, y)

@@ -66,28 +66,28 @@ class InteratomicOutOfPlane:
 class MolecularStructure(Widget):
     def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
         self._main_window = main_window
-        self._config = main_window.project.config.nested("widgets.viewers.molecular_structure")
+        self._config = main_window.config.widgets.viewers.molecular_structure
 
         project_id = id(main_window.project)
-        self._style = Style(project_id, self._config)
-        keymap = Keymap(project_id, self._config["keymap"])
+        self._style = Style(self._config)
+        keymap = Keymap(project_id, self._config.keymap.model_dump())
 
-        self.geom_bond_tol = self._config["geom_bond_tol"]
+        self.geom_bond_tol = self._config.geom_bond_tol
 
         super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
 
         # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
         self.scene: Scene
 
-        self.setMinimumSize(self._config["min_size"][0], self._config["min_size"][1])
-        self.resize(self._config["size"][0], self._config["size"][1])
+        self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
+        self.resize(self._config.size[0], self._config.size[1])
 
         self.item = item
         self.all = all
 
-        self._keymap.load_from_config(self._config["keymap"])
+        self._keymap.load_from_config(self._config.keymap.model_dump())
 
-        if self._config["antialiasing"]:
+        if self._config.antialiasing:
             sf = QSurfaceFormat()
             sf.setSamples(16)
             self.setFormat(sf)
@@ -694,7 +694,7 @@ class MolecularStructure(Widget):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
-        self.geom_bond_tol = self._config["geom_bond_tol"]
+        self.geom_bond_tol = self._config.geom_bond_tol
         self.rebuild_bonds(self.geom_bond_tol)
 
     def rebuild_bonds_dynamic(self):

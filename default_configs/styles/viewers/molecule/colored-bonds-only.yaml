@@ -1,5 +1,0 @@
-name: Colored Bonds Only
-bond:
-  color: atoms
-atoms:
-  radius: bond

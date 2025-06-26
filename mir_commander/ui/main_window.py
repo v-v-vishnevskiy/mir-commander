@@ -11,9 +11,10 @@ from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 
-from .widgets import About
-from .widgets import Settings as SettingsWidget
-from .widgets import dock_widget
+from .config import ApplyCallbacks
+from .widgets.about import About
+from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
+from .widgets.settings.settings_dialog import SettingsDialog as SettingsDialog
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from .utils.widget import Action, Menu, StatusBar
@@ -30,10 +31,10 @@ logger = logging.getLogger()
 
 
 @dataclass
-class DockWidgets:
-    project: dock_widget.Project
-    object: dock_widget.Object
-    console: dock_widget.Console
+class Docks:
+    project: ProjectDock
+    object: ObjectDock
+    console: ConsoleDock
 
 
 class MainWindow(QMainWindow):
@@ -41,12 +42,12 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
+        self.config = self.app.config.main_window
         self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
         self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
+        self.apply_callbacks = ApplyCallbacks()
 
-        self.project.settings.add_apply_callback("name", self._set_mainwindow_title)
-
-        self._config = self.project.config.nested("widgets.main_window")
+        self.apply_callbacks.add(self._set_mainwindow_title)
 
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
@@ -105,7 +106,7 @@ class MainWindow(QMainWindow):
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = DockWidgets(dock_widget.Project(self), dock_widget.Object(self), dock_widget.Console(self))
+        self.docks = Docks(ProjectDock(self), ObjectDock(self), ConsoleDock(self))
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
@@ -178,7 +179,7 @@ class MainWindow(QMainWindow):
         action = Action(Action.tr("Settings..."), self)
         action.setMenuRole(Action.PreferencesRole)
         # Settings dialog is actually created here.
-        action.triggered.connect(SettingsWidget(self).show)
+        action.triggered.connect(SettingsDialog(self).show)
         return action
 
     def _quit_action(self) -> Action:
@@ -248,17 +249,17 @@ class MainWindow(QMainWindow):
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
-        self._config["state"] = self.saveState().toBase64().toStdString()
-        self._config["pos"] = [self.pos().x(), self.pos().y()]
-        self._config["size"] = [self.size().width(), self.size().height()]
+        self.config.state = self.saveState().toBase64().toStdString()
+        self.config.pos = [self.pos().x(), self.pos().y()]
+        self.config.size = [self.size().width(), self.size().height()]
 
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self._config["pos"] or [geometry.width() * 0.125, geometry.height() * 0.125]
-        size = self._config["size"] or [geometry.width() * 0.75, geometry.height() * 0.75]
+        pos = self.config.pos or [geometry.width() * 0.125, geometry.height() * 0.125]
+        size = self.config.size or [geometry.width() * 0.75, geometry.height() * 0.75]
         self.setGeometry(pos[0], pos[1], size[0], size[1])
-        if state := self._config["state"]:
+        if state := self.config.state:
             self.restoreState(base64.b64decode(state))
 
     def closeEvent(self, event: QCloseEvent):

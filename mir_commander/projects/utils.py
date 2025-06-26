@@ -1,12 +1,10 @@
 import logging
 from pathlib import Path
 
-from mir_commander import consts, errors
+from mir_commander import errors
 from mir_commander.parsers import load_file
-from mir_commander.utils.config import Config
 
 from .base import Project
-from .molecule import Molecule
 from .temporary import Temporary
 
 logger = logging.getLogger(__name__)
@@ -33,28 +31,6 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
                 project.mark_item_to_expand(fitem["itempar"])
 
         return project, messages
-    # If this is a directory, then we expect a Mir Commander project
-    elif path.is_dir():
-        config_path = path / ".mircmd" / "config.yaml"
-        # If config file does not exist in .mircmd
-        if not config_path.is_file():
-            msg = "Config file does not exist"
-            logger.error(f"{msg}: {config_path}")
-            raise errors.LoadProjectError(msg, f"{msg}: {config_path}")
-        # or if we are trying to open user config dir
-        elif config_path == consts.DIR.HOME_CONFIG / "config.yaml":
-            msg = "Mir Commander user configuration directory cannot contain project file(s)"
-            logger.error(msg)
-            raise errors.LoadProjectError(msg)
-
-        config = Config(config_path)
-        project_type = config["type"]
-        if project_type == "Molecule":
-            return Molecule(path, config), []
-        else:
-            msg = "Invalid project type"
-            logger.error(f"{msg}: {project_type}")
-            raise errors.LoadProjectError(msg, f"{msg}: {project_type}")
     else:
         msg = "Invalid path"
         logger.error(f"{msg}: {path}")

@@ -5,7 +5,7 @@ from PySide6.QtGui import QIcon, QStandardItem, Qt
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.data_structures.base import DataStructure
-from mir_commander.ui.widgets import viewers
+from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructure
 
 from .widget import Action, Menu
 
@@ -59,10 +59,10 @@ class Item(QStandardItem):
         return result
 
     def _view_structures_all(self):
-        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=True).show()
+        self._create_viewer_and_add_to_mdi(MolecularStructure, all=True).show()
 
     def _view_structures_child(self):
-        self._create_viewer_and_add_to_mdi(viewers.MolecularStructure, all=False).show()
+        self._create_viewer_and_add_to_mdi(MolecularStructure, all=False).show()
 
     def _create_viewer_and_add_to_mdi(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
         """
@@ -108,7 +108,7 @@ class UnexProject(Item):
 
 
 class AtomicCoordinatesGroup(Group):
-    default_viewer = viewers.MolecularStructure
+    default_viewer = MolecularStructure
 
     def __init__(self, title: str = "Atomic Coordinates", data: DataStructure | None = None):
         super().__init__(title, data)
@@ -118,7 +118,7 @@ class AtomicCoordinatesGroup(Group):
 
 
 class AtomicCoordinates(Item):
-    default_viewer = viewers.MolecularStructure
+    default_viewer = MolecularStructure
 
     def context_menu(self) -> Menu:
         return Menu()

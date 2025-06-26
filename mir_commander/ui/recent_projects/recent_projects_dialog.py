@@ -6,7 +6,7 @@ from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QMessageBox, QVBoxLayout
 
 from mir_commander import errors
-from mir_commander.ui.utils.widget import Dialog, PushButton
+from mir_commander.ui.utils.widget import Dialog as BaseDialog, PushButton
 
 if TYPE_CHECKING:
     from mir_commander.ui.application import Application
@@ -24,7 +24,7 @@ class ListView(QListView):
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
 
-class RecentProjects(Dialog):
+class RecentProjectsDialog(BaseDialog):
     """Dialog with information about the program."""
 
     def __init__(self, app: "Application"):
@@ -69,7 +69,7 @@ class RecentProjects(Dialog):
     def load_data(self):
         self.clear_data()
         root = self.recent.model().invisibleRootItem()
-        for project in self.app.recent_projects.recent:
+        for project in self.app.recent_projects_config.recent:
             msg = ""
             if not project.exists:
                 msg = " (unavailable)"
