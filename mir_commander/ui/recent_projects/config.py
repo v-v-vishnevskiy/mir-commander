@@ -1,10 +1,9 @@
 import logging
 from pathlib import Path
 
-import yaml
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, Field, field_validator
 
-from mir_commander.ui.base_config import BaseConfig
+from mir_commander.base_config import BaseConfig
 
 logger = logging.getLogger(__name__)
 

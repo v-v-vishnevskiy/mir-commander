@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
 
-from mir_commander.ui.app_config import AppConfig
+from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import ComboBox, Label
 
 from .base import BasePage
@@ -28,8 +28,7 @@ class General(BasePage):
         self.app_config.language = self._backup["language"]
     
     def restore_defaults(self):
-        app_config = AppConfig()
-        self.app_config.language = app_config.language
+        self.app_config.language = AppConfig().language
         self.setup_data()
 
     def setup_data(self):

@@ -6,16 +6,13 @@ import cclib
 import numpy as np
 from cclib.io import ccread
 
-from mir_commander import errors
-from mir_commander.data_structures.molecule import Molecule, AtomicCoordinates
-from mir_commander.ui.utils import item
-
-from .utils import ItemParametrized
+from ..errors import LoadFileError
+from ..models import AtomicCoordinates, AtomicCoordinatesGroup, Item, Molecule
 
 logger = logging.getLogger(__name__)
 
 
-def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
+def load_cclib(path: Path, logs: list) -> Molecule:
     """
     Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
@@ -23,8 +20,6 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     Whether this will be actually done is decided in the upper context.
     Also returned is a list of messages, which can be printed later.
     """
-    flagged_items = []
-    messages = []
 
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!
@@ -32,26 +27,27 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
     # lists of data from ccread.
     # So currently we just fill in our project tree as is, but in the future
     # we will split project to independent jobs.
-    messages.append("cclib {}".format(cclib.__version__))
+    logs.append(f"cclib {cclib.__version__}")
 
-    kwargs = {}
-    kwargs["future"] = True
+    kwargs = {"future": True}
     data = ccread(path, **kwargs)
     if data is None:
-        msg = "cclib cannot determine the format of file"
-        logger.error(f"{msg}: {path}")
-        raise errors.LoadFileError(msg, f"{msg}: {path}")
+        logger.error("cclib cannot determine the format of file: %s", path)
+        raise LoadFileError()
 
     if hasattr(data, "metadata"):
-        messages.append(pprint.pformat(data.metadata, compact=True))
+        logs.append(pprint.pformat(data.metadata, compact=True))
 
-    moldata = Molecule(data.natom, data.atomnos)
+    result = Item(
+        name=path.parts[-1], 
+        data=Molecule(n_atoms=data.natom, atomic_num=data.atomnos), 
+        metadata={"type": "cclib"},
+    )
+
     if hasattr(data, "charge"):
-        moldata.charge = data.charge
+        result.data.charge = data.charge
     if hasattr(data, "mult"):
-        moldata.multiplicity = data.mult
-    molitem = item.Molecule(path.parts[-1], moldata)
-    molitem.file_path = path
+        result.data.multiplicity= data.mult
 
     # If we have coordinates of atoms.
     # This is actually expected to be always true
@@ -59,10 +55,9 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
         cshape = np.shape(data.atomcoords)  # Number of structure sets is in cshape[0]
 
         if hasattr(data, "optdone"):
-            if (
-                len(data.optdone) > 0
-            ):  # optdone is here a list due to the experimental feature in cclib turned on by the future option above
-                # Take here the first converged structure
+            # optdone is here a list due to the experimental feature in cclib turned on by the future option above
+            # Take here the first converged structure
+            if (len(data.optdone) > 0):  
                 xyz_idx = data.optdone[0]
                 xyz_title = "Optimized XYZ"
             else:
@@ -77,28 +72,30 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
             xyz_title = "Final coordinates"
 
         # Add a set of representative Cartesian coordinates directly to the molecule
-        at_coord_data = AtomicCoordinates(
-            moldata.atomic_num,
-            data.atomcoords[xyz_idx][:, 0],
-            data.atomcoords[xyz_idx][:, 1],
-            data.atomcoords[xyz_idx][:, 2],
+        at_coord_item = Item(
+            name=xyz_title,
+            data=AtomicCoordinates(
+                atomic_num=result.data.atomic_num,
+                x=data.atomcoords[xyz_idx][:, 0],
+                y=data.atomcoords[xyz_idx][:, 1],
+                z=data.atomcoords[xyz_idx][:, 2],
+            ),
         )
-        at_coord_item = item.AtomicCoordinates(xyz_title, at_coord_data)
-        molitem.appendRow(at_coord_item)
-
-        flagged_items.append({"itempar": ItemParametrized(at_coord_item, {"maximize": True}), "view": True})
-        flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
+        result.items.append(at_coord_item)
 
         # If we have multiple sets of coordinates
         if cshape[0] > 1:
             # If this was an optimization
             if hasattr(data, "optstatus"):
-                optcg_item = item.AtomicCoordinatesGroup("Optimization")
-                molitem.appendRow(optcg_item)
+                optcg_item = Item(name="Optimization", data=AtomicCoordinatesGroup())
+                result.items.append(optcg_item)
                 # Adding sets of atomic coordinates to the group
                 for i in range(0, cshape[0]):
                     atcoods_data = AtomicCoordinates(
-                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                        atomic_num=result.data.atomic_num,
+                        x=data.atomcoords[i][:, 0], 
+                        y=data.atomcoords[i][:, 1], 
+                        z=data.atomcoords[i][:, 2],
                     )
                     csname = "Step {}".format(i + 1)
                     if data.optstatus[i] & data.OPT_NEW:
@@ -107,31 +104,37 @@ def load_cclib(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                         csname += ", done"
                     if data.optstatus[i] & data.OPT_UNCONVERGED:
                         csname += ", unconverged"
-                    optcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+                    optcg_item.items.append(Item(name=csname, data=atcoods_data))
             # Otherwise this is an undefined set of coordinates
             else:
-                molcg_item = item.AtomicCoordinatesGroup("Coordinates")
-                molitem.appendRow(molcg_item)
+                molcg_item = Item(name="Coordinates", data=AtomicCoordinatesGroup())
+                result.items.append(molcg_item)
                 # Adding sets of atomic coordinates to the group
                 for i in range(0, cshape[0]):
                     atcoods_data = AtomicCoordinates(
-                        moldata.atomic_num, data.atomcoords[i][:, 0], data.atomcoords[i][:, 1], data.atomcoords[i][:, 2]
+                        atomic_num=result.data.atomic_num, 
+                        x=data.atomcoords[i][:, 0], 
+                        y=data.atomcoords[i][:, 1], 
+                        z=data.atomcoords[i][:, 2],
                     )
                     csname = "Set {}".format(i + 1)
-                    molcg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+                    molcg_item.items.append(Item(name=csname, data=atcoods_data))
 
     # If there was an energy scan along some geometrical parameter(s)
     if hasattr(data, "scancoords"):
         cshape = np.shape(data.scancoords)  # Number of structure sets is in cshape[0]
         if cshape[0] > 0:
-            scancg_item = item.AtomicCoordinatesGroup("Scan")
-            molitem.appendRow(scancg_item)
+            scancg_item = Item(name="Scan", data=AtomicCoordinatesGroup())
+            result.items.append(scancg_item)
             # Adding sets of atomic coordinates to the group
             for i in range(0, cshape[0]):
                 atcoods_data = AtomicCoordinates(
-                    moldata.atomic_num, data.scancoords[i][:, 0], data.scancoords[i][:, 1], data.scancoords[i][:, 2]
+                    atomic_num=result.data.atomic_num, 
+                    x=data.scancoords[i][:, 0], 
+                    y=data.scancoords[i][:, 1], 
+                    z=data.scancoords[i][:, 2],
                 )
                 csname = "Step {}".format(i + 1)
-                scancg_item.appendRow(item.AtomicCoordinates(csname, atcoods_data))
+                scancg_item.items.append(Item(name=csname, data=atcoods_data))
 
-    return molitem, flagged_items, messages
+    return result

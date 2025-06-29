@@ -10,7 +10,7 @@ from PySide6.QtGui import QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
-from mir_commander.data_structures.molecule import AtomicCoordinates as AtomicCoordinatesDS
+from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
 from mir_commander.ui.utils.widget import StatusBar
@@ -25,7 +25,7 @@ from .style import Style
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
-    from mir_commander.ui.utils.item import Item
+    from mir_commander.ui.widgets.docks.project_dock.items import Item
 
 logger = logging.getLogger(__name__)
 
@@ -121,12 +121,12 @@ class MolecularStructure(Widget):
         """
         index = max(0, index)
         last_item = None
-        if not parent.hasChildren() and isinstance(parent.data(), AtomicCoordinatesDS):
+        if not parent.hasChildren() and isinstance(parent.data().data, AtomicCoordinates):
             return True, 0, parent
         else:
             for i in range(parent.rowCount()):
                 item = parent.child(i)
-                if isinstance(item.data(), AtomicCoordinatesDS):
+                if isinstance(item.data().data, AtomicCoordinates):
                     last_item = item
                     counter += 1
                     if index == counter:
@@ -145,7 +145,7 @@ class MolecularStructure(Widget):
         if not self._draw_item:
             return None
 
-        ds: AtomicCoordinatesDS = self._draw_item.data()
+        ds: AtomicCoordinates = self._draw_item.data().data
 
         longest_distance = 0
 
@@ -161,11 +161,11 @@ class MolecularStructure(Widget):
         # add bonds
         self._build_bonds(ds, self.geom_bond_tol)
 
-        center = QVector3D(np.sum(ds.x) / ds.x.size, np.sum(ds.y) / ds.y.size, np.sum(ds.z) / ds.z.size)
+        center = QVector3D(np.sum(ds.x) / len(ds.x), np.sum(ds.y) / len(ds.y), np.sum(ds.z) / len(ds.z))
         self.scene.set_center(center)
         self.scene.set_camera_distance(longest_distance - center.length())
 
-    def _build_bonds(self, ds: AtomicCoordinatesDS, geom_bond_tol: float):
+    def _build_bonds(self, ds: AtomicCoordinates, geom_bond_tol: float):
         for i in range(len(ds.atomic_num)):
             if ds.atomic_num[i] < 1:
                 continue
@@ -682,7 +682,7 @@ class MolecularStructure(Widget):
         if not self._draw_item:
             return None
 
-        ds: AtomicCoordinatesDS = self._draw_item.data()
+        ds: AtomicCoordinates = self._draw_item.data().data
 
         if tol < -1.0:
             tol = self.geom_bond_tol

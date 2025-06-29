@@ -4,14 +4,13 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
-from mir_commander import errors
 from mir_commander.consts import DIR
-from mir_commander.projects import load_project
+from mir_commander.core import load_project
+from mir_commander.core.errors import LoadProjectError
 
 from .recent_projects.config import RecentProjectsConfig
 from .recent_projects.recent_projects_dialog import RecentProjectsDialog
-from .app_config import AppConfig
-from .config import ApplyCallbacks
+from .config import AppConfig, ApplyCallbacks
 from .main_window import MainWindow
 
 
@@ -101,7 +100,7 @@ class Application(QApplication):
     def open_project(self, path: Path, raise_exc: bool = False) -> bool:
         try:
             project, messages = load_project(path)
-        except errors.LoadProjectError:
+        except LoadProjectError:
             if raise_exc:
                 raise
             # TODO: Show message from the exception
@@ -137,9 +136,9 @@ class Application(QApplication):
             value.close()
         super().quit()
 
-    def run(self, projpath: str) -> int:
-        if projpath:
-            if not self.open_project(Path(projpath)):
+    def run(self, project_path: Path) -> int:
+        if project_path:
+            if not self.open_project(project_path):
                 return 1
         else:
             if self.recent_projects_config.opened:
