@@ -26,8 +26,6 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
         # for fitem in flagged_items:
         #     if fitem.get("view"):
         #         project.mark_item_to_view(fitem["itempar"])
-        #     if fitem.get("expand"):
-        #         project.mark_item_to_expand(fitem["itempar"])
 
         return project, logs
     else:

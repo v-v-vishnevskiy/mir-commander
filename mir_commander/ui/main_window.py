@@ -109,8 +109,6 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
-        # self.docks.project.set_model(self.project.model)
-        # self.docks.project.expand_items(self.project.items_marked_to_expand)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.

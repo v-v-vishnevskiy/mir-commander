@@ -1,6 +1,7 @@
 import logging
 
 from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt
+from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView, QWidget
 
 from mir_commander.core import models
@@ -24,6 +25,7 @@ class TreeView(QTreeView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._showContextMenu)
         self.doubleClicked.connect(self._item_double_clicked)
+        self.setModel(QStandardItemModel(parent=self))
 
     def _showContextMenu(self, pos: QPoint):
         item = self.model().itemFromIndex(self.indexAt(pos))
@@ -39,16 +41,20 @@ class TreeView(QTreeView):
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
-    def load_data(self):
+    def load_data(self, expand: bool = False):
         root_item = self.model().invisibleRootItem()
         for item in self._data.items:
             if type(item.data) is models.AtomicCoordinates:
-                root_item.appendRow(AtomicCoordinates(item))
+                tree_item = AtomicCoordinates(item)
             elif type(item.data) is models.AtomicCoordinatesGroup:
-                root_item.appendRow(AtomicCoordinatesGroup(item))
+                tree_item = AtomicCoordinatesGroup(item)
             elif type(item.data) is models.Molecule:
-                root_item.appendRow(Molecule(item))
+                tree_item = Molecule(item)
             elif type(item.data) is models.Unex:
-                root_item.appendRow(Unex(item))
+                tree_item = Unex(item)
             else:
-                root_item.appendRow(Container(item))
+                tree_item = Container(item)
+
+            root_item.appendRow(tree_item)
+
+            self.setExpanded(self.model().indexFromItem(tree_item), expand)
