@@ -9,9 +9,13 @@ from .xyz_parser import is_xyz, load_xyz
 
 
 def load_file(path: Path, logs: list[str]) -> Item:
+    lines = []
     line_number_limit = 10
     with path.open("r") as input_file:
-        lines = [next(input_file) for _ in range(line_number_limit)]
+        for i, line in enumerate(input_file):
+            lines.append(line)
+            if i >= line_number_limit:
+                break
 
     if is_unex(lines):
         return load_unex(path, logs)
