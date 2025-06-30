@@ -1,5 +1,5 @@
 from time import monotonic
-from typing import Any
+from typing import Any, Self
 
 from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtGui import QAction, QStandardItem
@@ -24,8 +24,8 @@ from PySide6.QtWidgets import (
 class TrString(str):
     format_args = tuple()
     format_kwargs = dict()
-    
-    def format(self, *args, **kwargs):
+
+    def format(self, *args: Any, **kwargs: Any) -> Self:
         self.format_args = args
         self.format_kwargs = kwargs
         return self
