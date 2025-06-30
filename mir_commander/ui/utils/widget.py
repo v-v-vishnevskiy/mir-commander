@@ -1,5 +1,5 @@
 from time import monotonic
-from typing import Any
+from typing import Any, Self
 
 from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtGui import QAction, QStandardItem
@@ -22,7 +22,13 @@ from PySide6.QtWidgets import (
 
 
 class TrString(str):
-    pass
+    format_args = tuple()
+    format_kwargs = dict()
+
+    def format(self, *args: Any, **kwargs: Any) -> Self:
+        self.format_args = args
+        self.format_kwargs = kwargs
+        return self
 
 
 class Translator:
@@ -37,9 +43,9 @@ class Translator:
         return TrString(value)
 
     def _tr(self, text: str) -> str:
-        if not text:
+        if not text or type(text) is str:
             return text
-        return QCoreApplication.translate(self.__class__.__name__, text) if isinstance(text, TrString) else text
+        return QCoreApplication.translate(self.__class__.__name__, text).format(*text.format_args, **text.format_kwargs)
 
 
 class Widget(Translator):

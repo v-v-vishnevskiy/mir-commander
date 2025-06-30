@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
 
         self.update_menus(None)
 
-        self.append_to_console(self.tr("Started") + f" Mir Commander {__version__}")
+        self.append_to_console(self.tr("Started {name} {version}").format(name="Mir Commander", version=__version__))
         if init_msg:
             for msg in init_msg:
                 self.append_to_console(msg)
