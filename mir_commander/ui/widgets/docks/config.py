@@ -1,13 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-
-class Tree(BaseModel):
-    icon_size: int = Field(default=20, ge=16, le=32, description="Icon size in pixels")
-
-
-class ProjectDock(BaseModel):
-    tree: Tree = Tree()
+from .project_dock.config import ProjectDockConfig
 
 
 class DocksConfig(BaseModel):
-    project: ProjectDock = ProjectDock()
+    project: ProjectDockConfig = ProjectDockConfig()

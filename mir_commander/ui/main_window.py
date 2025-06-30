@@ -10,6 +10,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
+from mir_commander.core import Project
 
 from .config import ApplyCallbacks
 from .widgets.about import About
@@ -20,8 +21,6 @@ from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToo
 from .utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
-    from mir_commander.projects.base import Project
-    
     from .application import Application
     from .utils.sub_window_menu import SubWindowMenu
     from .utils.sub_window_toolbar import SubWindowToolBar
@@ -38,7 +37,7 @@ class Docks:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", project: "Project", init_msg: None | list[str] = None):
+    def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
@@ -81,8 +80,6 @@ class MainWindow(QMainWindow):
 
         self._fix_window_composition()
 
-        self.view_items_marked_to_view()
-
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
 
     def append_to_console(self, text: str):
@@ -106,12 +103,10 @@ class MainWindow(QMainWindow):
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = Docks(ProjectDock(self), ObjectDock(self), ConsoleDock(self))
+        self.docks = Docks(ProjectDock(self, self.project), ObjectDock(self), ConsoleDock(self))
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
-        self.docks.project.set_model(self.project.model)
-        self.docks.project.expand_items(self.project.items_marked_to_expand)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.
@@ -239,13 +234,6 @@ class MainWindow(QMainWindow):
 
         self._win_separator_act = Action("", self)
         self._win_separator_act.setSeparator(True)
-
-    def view_items_marked_to_view(self):
-        for config_item in self.project.items_marked_to_view:
-            maximize_flag = config_item.parameters.get("maximize", False)
-            item = config_item.item
-            if item.view(maximize_flag) is None:
-                logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
         """Save parameters of main window to settings."""

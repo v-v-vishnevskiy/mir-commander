@@ -12,62 +12,64 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="174"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="173"/>
         <source>Close Project</source>
         <translation>Закрыть проект</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="179"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="178"/>
         <source>Settings...</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="186"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="185"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="193"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="192"/>
         <source>About</source>
         <translation>О Mir Commander</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="200"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="199"/>
         <source>Cl&amp;ose</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="207"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="206"/>
         <source>Close &amp;All</source>
         <translation>Закрыть все</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="214"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="213"/>
         <source>&amp;Tile</source>
         <translation>Замостить</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="218"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="217"/>
         <source>&amp;Cascade</source>
         <translation>Каскадировать</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="225"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="224"/>
         <source>Ne&amp;xt</source>
         <translation>Следующее</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="233"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="232"/>
         <source>Pre&amp;vious</source>
         <translation>Предыдущее</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/utils/item.py" line="54"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="55"/>
         <source>VS_All</source>
         <translation>Все</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/utils/item.py" line="51"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="52"/>
         <source>VS_Child</source>
         <translation>Дочерние</translation>
     </message>
@@ -292,7 +294,7 @@
 <context>
     <name>ComboBox</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/general_page.py" line="45"/>
+        <location filename="../../mir_commander/ui/widgets/settings/general_page.py" line="44"/>
         <source>System</source>
         <translation>Системный</translation>
     </message>
@@ -331,7 +333,7 @@
         <translation>Имя проекта:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/settings/general_page.py" line="50"/>
+        <location filename="../../mir_commander/ui/widgets/settings/general_page.py" line="49"/>
         <source>Language:</source>
         <translation>Язык:</translation>
     </message>
@@ -359,37 +361,37 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="77"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="76"/>
         <source>Started</source>
         <translation>Запущен</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="202"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="201"/>
         <source>Close the active window</source>
         <translation>Закрыть активное окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="209"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="208"/>
         <source>Close all the windows</source>
         <translation>Закрыть все окна</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="214"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="213"/>
         <source>Tile the windows</source>
         <translation>Расположить все окна замощением</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="220"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="219"/>
         <source>Cascade the windows</source>
         <translation>Расположить все окна каскадно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="228"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="227"/>
         <source>Move the focus to the next window</source>
         <translation>Переместить фокус на следующее окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="236"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="235"/>
         <source>Move the focus to the previous window</source>
         <translation>Переместить фокус на предыдущее окно</translation>
     </message>
@@ -397,27 +399,28 @@
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="145"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="144"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="152"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="151"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="163"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="162"/>
         <source>&amp;Window</source>
         <translation>Окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="169"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="168"/>
         <source>Help</source>
         <translation>Помощь</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/utils/item.py" line="49"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="50"/>
         <source>View Structures</source>
         <translation>Показать структуры</translation>
     </message>
@@ -559,7 +562,7 @@
 <context>
     <name>ProjectDock</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock.py" line="51"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/project_dock.py" line="24"/>
         <source>Project</source>
         <translation>Проект</translation>
     </message>
@@ -657,7 +660,7 @@
 <context>
     <name>StatusBar</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="86"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="85"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>

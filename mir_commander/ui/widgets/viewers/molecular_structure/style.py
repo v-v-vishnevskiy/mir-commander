@@ -1,6 +1,5 @@
 from typing import Any
 
-from mir_commander.ui.app_config import AppConfig
 from .config import MolecularStructureViewerConfig
 
 

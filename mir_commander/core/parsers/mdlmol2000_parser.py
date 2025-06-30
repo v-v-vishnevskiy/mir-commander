@@ -2,14 +2,12 @@ import logging
 from enum import Enum
 from pathlib import Path
 
-import numpy as np
 from periodictable import elements
 
-from mir_commander import errors
-from mir_commander.data_structures.molecule import Molecule, AtomicCoordinates
-from mir_commander.ui.utils import item
+from ..errors import LoadFileError
+from ..models import AtomicCoordinates, Item, Molecule
+from .consts import babushka_priehala
 
-from .utils import ItemParametrized
 
 logger = logging.getLogger(__name__)
 
@@ -21,24 +19,22 @@ class MDLMolV2000ParserState(Enum):
     BOND = 3
 
 
-def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
+def is_mdlmol2000(lines: list[str]) -> bool:
+    return " V2000" in lines[3]
+
+
+def load_mdlmol2000(path: Path, logs: list) -> Item:
     """
     Import data from MDL Mol V2000 file, build and populate a respective tree of items.
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
-    flagged_items: list[dict] = []
-    messages: list[str] = []
 
-    messages.append("MDL Molfile V2000.")
+    logs.append("MDL Molfile V2000.")
 
-    moldata = Molecule()
-    molitem = item.Molecule(path.parts[-1], moldata)
-    molitem.file_path = path
+    result = Item(name=path.name, data=Molecule(), metadata={"type": "mdlmol2000"})
 
     title = ""
-
-    flagged_items.append({"itempar": ItemParametrized(molitem, {}), "expand": True})
 
     state = MDLMolV2000ParserState.INIT
     at_coord_item = None
@@ -55,18 +51,22 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                 try:
                     num_atoms = int(line_items[0])
                 except ValueError:
-                    raise errors.LoadFileError(f"Invalid control line {line_number + 1}, expected number of atoms.")
+                    logger.error("Invalid control line %d, expected number of atoms.", line_number + 1)
+                    raise LoadFileError()
 
                 try:
                     num_bonds = int(line_items[1])
                 except ValueError:
-                    raise errors.LoadFileError(f"Invalid control line {line_number + 1}, expected number of bonds.")
+                    logger.error("Invalid control line %d, expected number of bonds.", line_number + 1)
+                    raise LoadFileError()
 
                 if num_atoms <= 0:
-                    raise ValueError(f"Invalid number of atoms {num_atoms} defined in line {line_number+1}.")
+                    logger.error("Invalid number of atoms %d defined in line %d.", num_atoms, line_number + 1)
+                    raise LoadFileError()
 
                 if num_bonds < 0:
-                    raise ValueError(f"Invalid number of bonds {num_atoms} defined in line {line_number+1}.")
+                    logger.error("Invalid number of bonds %d defined in line %d.", num_atoms, line_number + 1)
+                    raise LoadFileError()
 
                 num_read_at_cards = 0
                 atom_atomic_num = []
@@ -83,8 +83,8 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                     coord_z = float(line_items[2])
                 except ValueError:
                     # Something is wrong with format
-                    logger.info(f"Invalid atom coordinate value(s) at line {line_number + 1}.")
-                    raise
+                    logger.error("Invalid atom coordinate value(s) at line %d.", line_number + 1)
+                    raise LoadFileError()
 
                 try:
                     # Convert here atomic symbol to atomic number
@@ -95,8 +95,8 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                     else:
                         atomic_num = elements.symbol(line_items[3]).number
                 except ValueError:
-                    logger.info(f"Invalid atom symbol at line {line_number + 1}.")
-                    raise
+                    logger.error("Invalid atom symbol at line %d.", line_number + 1)
+                    raise LoadFileError()
 
                 num_read_at_cards += 1
                 atom_atomic_num.append(atomic_num)
@@ -105,17 +105,19 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                 atom_coord_z.append(coord_z)
 
                 if num_read_at_cards == num_atoms:
-                    # Add the set of Cartesian coordinates directly to the molecule
-                    at_coord_data = AtomicCoordinates(
-                        np.array(atom_atomic_num, dtype="int16"),
-                        np.array(atom_coord_x, dtype="float64"),
-                        np.array(atom_coord_y, dtype="float64"),
-                        np.array(atom_coord_z, dtype="float64"),
-                    )
-                    if len(title) == 0:
+                    if not title:
                         title = path.name
-                    at_coord_item = item.AtomicCoordinates(title, at_coord_data)
-                    molitem.appendRow(at_coord_item)
+
+                    at_coord_item = Item(
+                        name=title,
+                        data=AtomicCoordinates(
+                            atomic_num=atom_atomic_num, 
+                            x=atom_coord_x, 
+                            y=atom_coord_y, 
+                            z=atom_coord_z,
+                        ),
+                    )
+                    result.items.append(at_coord_item)
 
                     state = MDLMolV2000ParserState.BOND
             elif state == MDLMolV2000ParserState.BOND:
@@ -123,8 +125,7 @@ def load_mdlmol2000(path: Path) -> tuple[item.Item, list[dict], list[str]]:
                 # so that the bonds are not necessarily autogenerated.
                 break
 
-    # Autoview last set of coordinates
-    if at_coord_item:
-        flagged_items.append({"itempar": ItemParametrized(at_coord_item, {"maximize": True}), "view": True})
+    if result.items:
+        result.items[-1].metadata[babushka_priehala] = True
 
-    return molitem, flagged_items, messages
+    return result

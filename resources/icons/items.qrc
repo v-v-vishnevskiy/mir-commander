@@ -5,6 +5,6 @@
     <file>items/folder.png</file>
     <file>items/molecule.png</file>
     <file>items/item.png</file>
-    <file>items/unexproject.png</file>
+    <file>items/unex.png</file>
   </qresource>
 </RCC>

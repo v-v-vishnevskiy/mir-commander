@@ -1,6 +1,5 @@
 import abc
 from pathlib import Path
-from typing import Callable
 
 import yaml
 from pydantic import BaseModel, Field
