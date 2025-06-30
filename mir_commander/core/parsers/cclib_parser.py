@@ -40,7 +40,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
         logs.append(pprint.pformat(data.metadata, compact=True))
 
     result = Item(
-        name=path.parts[-1], 
+        name=path.name, 
         data=Molecule(n_atoms=data.natom, atomic_num=data.atomnos), 
         metadata={"type": "cclib"},
     )

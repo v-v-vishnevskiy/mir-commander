@@ -42,7 +42,7 @@ class TreeView(QTreeView):
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
-    def load_data(self, expand: bool = False):
+    def load_data(self):
         root_item = self.model().invisibleRootItem()
         for item in self._data.items:
             if type(item.data) is models.AtomicCoordinates:
@@ -55,10 +55,12 @@ class TreeView(QTreeView):
                 tree_item = Unex(item)
             else:
                 tree_item = Container(item)
-
             root_item.appendRow(tree_item)
 
-            self.setExpanded(self.model().indexFromItem(tree_item), expand)
+    def expand_top_items(self):
+        root_item = self.model().invisibleRootItem()
+        for i in range(root_item.rowCount()):
+            self.setExpanded(self.model().indexFromItem(root_item.child(i)), True)
 
     def view_babushka(self):
         self._view_babushka(self.model().invisibleRootItem())

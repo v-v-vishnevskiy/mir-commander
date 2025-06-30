@@ -22,7 +22,7 @@ def load_cfour(path: Path, logs: list) -> Item:
 
     logs.append("Cfour format.")
 
-    result = Item(name=path.parts[-1], data=Molecule(), metadata={"type": "cfour"})
+    result = Item(name=path.name, data=Molecule(), metadata={"type": "cfour"})
 
     cart_set_number = 0
     with path.open("r") as input_file:

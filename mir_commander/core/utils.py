@@ -21,11 +21,7 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
         logs: list[str] = []
         project = Project()
         project.data.items.append(load_file(path, logs))
-        project.config.name = path.stem
-
-        # for fitem in flagged_items:
-        #     if fitem.get("view"):
-        #         project.mark_item_to_view(fitem["itempar"])
+        project.config.name = path.name
 
         return project, logs
     else:

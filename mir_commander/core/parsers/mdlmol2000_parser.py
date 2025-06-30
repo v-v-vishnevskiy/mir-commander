@@ -32,7 +32,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
 
     logs.append("MDL Molfile V2000.")
 
-    result = Item(name=path.parts[-1], data=Molecule(), metadata={"type": "mdlmol2000"})
+    result = Item(name=path.name, data=Molecule(), metadata={"type": "mdlmol2000"})
 
     title = ""
 

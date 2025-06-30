@@ -20,7 +20,7 @@ def load_unex(path: Path, logs: list) -> Item:
     Additionally return a list of messages, which can be printed later.
     """
 
-    result = Item(name=path.parts[-1], data=Unex(), metadata={"type": "unex"})
+    result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
 
     molecules: dict[str, Item] = {}
     mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates

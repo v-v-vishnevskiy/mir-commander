@@ -44,7 +44,7 @@ def load_xyz(path: Path, logs: list) -> Item:
     """
     logs.append("XYZ format.")
 
-    result = Item(name=path.parts[-1], data=Molecule(), metadata={"type": "xyz"})
+    result = Item(name=path.name, data=Molecule(), metadata={"type": "xyz"})
 
     state = ParserState.INIT
     at_coord_item = None
