@@ -8,9 +8,7 @@ from .unex_parser import is_unex, load_unex
 from .xyz_parser import is_xyz, load_xyz
 
 
-def load_file(path: Path, logs: None | list = None) -> Item:
-    logs = logs or []
-
+def load_file(path: Path, logs: list[str]) -> Item:
     line_number_limit = 10
     with path.open("r") as input_file:
         lines = [next(input_file) for _ in range(line_number_limit)]

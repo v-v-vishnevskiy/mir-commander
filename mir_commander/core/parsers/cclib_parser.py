@@ -8,6 +8,7 @@ from cclib.io import ccread
 
 from ..errors import LoadFileError
 from ..models import AtomicCoordinates, AtomicCoordinatesGroup, Item, Molecule
+from .consts import babushka_priehala
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
                 y=data.atomcoords[xyz_idx][:, 1],
                 z=data.atomcoords[xyz_idx][:, 2],
             ),
+            metadata={babushka_priehala: True}
         )
         result.items.append(at_coord_item)
 

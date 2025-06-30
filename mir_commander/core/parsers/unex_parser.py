@@ -3,6 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from ..models import AtomicCoordinates, Item, Molecule, Unex
+from .consts import babushka_priehala
 
 
 version_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
@@ -68,5 +69,9 @@ def load_unex(path: Path, logs: list) -> Item:
                     ),
                 )
                 molecule.items.append(at_coord_data)
+    
+    for item in result.items:
+        if item.items:
+            item.items[-1].metadata[babushka_priehala] = True
 
     return result

@@ -5,6 +5,7 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView, QWidget
 
 from mir_commander.core import models
+from mir_commander.core.parsers.consts import babushka_priehala
 
 from .config import ProjectDockConfig
 from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Molecule, Unex
@@ -58,3 +59,13 @@ class TreeView(QTreeView):
             root_item.appendRow(tree_item)
 
             self.setExpanded(self.model().indexFromItem(tree_item), expand)
+
+    def view_babushka(self):
+        self._view_babushka(self.model().invisibleRootItem())
+
+    def _view_babushka(self, item):
+        data = item.data()
+        if data is not None and data.metadata.get(babushka_priehala, False):
+            item.view()
+        for i in range(item.rowCount()):
+            self._view_babushka(item.child(i))

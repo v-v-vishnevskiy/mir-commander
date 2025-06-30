@@ -7,6 +7,7 @@ from periodictable import elements
 
 from ..errors import LoadFileError
 from ..models import AtomicCoordinates, Item, Molecule
+from .consts import babushka_priehala
 
 logger = logging.getLogger(__name__)
 
@@ -118,5 +119,8 @@ def load_xyz(path: Path, logs: list) -> Item:
                     result.items.append(at_coord_item)
 
                     state = ParserState.INIT
+
+    if result.items:
+        result.items[-1].metadata[babushka_priehala] = True
 
     return result

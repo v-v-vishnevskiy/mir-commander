@@ -3,6 +3,7 @@ from pathlib import Path
 from mir_commander import consts
 
 from ..models import AtomicCoordinates, Item, Molecule
+from .consts import babushka_priehala
 
 
 def is_cfour(lines: list[str]) -> bool:
@@ -60,5 +61,8 @@ def load_cfour(path: Path, logs: list) -> Item:
                     ),
                 )
                 result.items.append(at_coord_item)
+
+    if result.items:
+        result.items[-1].metadata[babushka_priehala] = True
 
     return result

@@ -80,8 +80,6 @@ class MainWindow(QMainWindow):
 
         self._fix_window_composition()
 
-        # self.view_items_marked_to_view()
-
         self.status.showMessage(StatusBar.tr("Ready"), 10000)
 
     def append_to_console(self, text: str):
@@ -236,13 +234,6 @@ class MainWindow(QMainWindow):
 
         self._win_separator_act = Action("", self)
         self._win_separator_act.setSeparator(True)
-
-    def view_items_marked_to_view(self):
-        for config_item in self.project.items_marked_to_view:
-            maximize_flag = config_item.parameters.get("maximize", False)
-            item = config_item.item
-            if item.view(maximize_flag) is None:
-                logger.warning(f"No viewer for `{item.__class__.__name__}` item")
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
