@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
@@ -6,12 +7,14 @@ from PySide6.QtWidgets import QApplication
 
 from mir_commander.consts import DIR
 from mir_commander.core import load_project
-from mir_commander.core.errors import LoadProjectError
+from mir_commander.core.errors import LoadFileError, LoadProjectError
 
 from .recent_projects.config import RecentProjectsConfig
 from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 from .config import AppConfig, ApplyCallbacks
 from .main_window import MainWindow
+
+logger = logging.getLogger("Application")
 
 
 class Application(QApplication):
@@ -98,24 +101,26 @@ class Application(QApplication):
             self._translator_qt = translator
 
     def open_project(self, path: Path, raise_exc: bool = False) -> bool:
+        t = "file" if path.is_file() else "project"
+        logger.debug(f"Loading {t}: {path}")
         try:
             project, messages = load_project(path)
-        except LoadProjectError:
+        except (LoadFileError, LoadProjectError) as e:
+            logger.error(f"Invalid load {t}: {str(e)}")
             if raise_exc:
                 raise
-            # TODO: Show message from the exception
             return False
 
-        if project:
-            messages.insert(0, f"{path}")
-            main_window = MainWindow(self, project, messages)
-            self._open_projects[id(main_window)] = main_window
-            if not main_window.project.is_temporary:
-                self.recent_projects_config.add_opened(project.name, project.path)
-                self.recent_projects_config.add_recent(project.name, project.path)
-            main_window.show()
-            return True
-        return False
+        logger.debug(f"Loading {t} completed")
+
+        messages.insert(0, f"{path}")
+        main_window = MainWindow(self, project, messages)
+        self._open_projects[id(main_window)] = main_window
+        if not main_window.project.is_temporary:
+            self.recent_projects_config.add_opened(project.name, project.path)
+            self.recent_projects_config.add_recent(project.name, project.path)
+        main_window.show()
+        return True
 
     def close_project(self, main_window: MainWindow):
         del self._open_projects[id(main_window)]

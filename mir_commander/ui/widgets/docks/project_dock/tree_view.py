@@ -10,7 +10,7 @@ from mir_commander.core.parsers.consts import babushka_priehala
 from .config import ProjectDockConfig
 from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Molecule, Unex
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ProjectDock.TreeView")
 
 
 class TreeView(QTreeView):
@@ -43,6 +43,7 @@ class TreeView(QTreeView):
             self.setExpanded(index, not self.isExpanded(index))
 
     def load_data(self):
+        logger.debug("Loading data...")
         root_item = self.model().invisibleRootItem()
         for item in self._data.items:
             if type(item.data) is models.AtomicCoordinates:
@@ -58,11 +59,13 @@ class TreeView(QTreeView):
             root_item.appendRow(tree_item)
 
     def expand_top_items(self):
+        logger.debug("Expanding top items...")
         root_item = self.model().invisibleRootItem()
         for i in range(root_item.rowCount()):
             self.setExpanded(self.model().indexFromItem(root_item.child(i)), True)
 
     def view_babushka(self):
+        logger.debug("Opening items in their viewers...")
         self._view_babushka(self.model().invisibleRootItem())
 
     def _view_babushka(self, item):

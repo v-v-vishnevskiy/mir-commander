@@ -10,7 +10,7 @@ from ..errors import LoadFileError
 from ..models import AtomicCoordinates, AtomicCoordinatesGroup, Item, Molecule
 from .consts import babushka_priehala
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("Parsers.CCLibParser")
 
 
 def load_cclib(path: Path, logs: list) -> Molecule:
@@ -21,6 +21,8 @@ def load_cclib(path: Path, logs: list) -> Molecule:
     Whether this will be actually done is decided in the upper context.
     Also returned is a list of messages, which can be printed later.
     """
+
+    logger.debug("Loading file through CCLib...")
 
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!
@@ -33,8 +35,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
     kwargs = {"future": True}
     data = ccread(path, **kwargs)
     if data is None:
-        logger.error("cclib cannot determine the format of file: %s", path)
-        raise LoadFileError()
+        raise LoadFileError(f"cclib cannot determine the format of file: {path}")
 
     if hasattr(data, "metadata"):
         logs.append(pprint.pformat(data.metadata, compact=True))

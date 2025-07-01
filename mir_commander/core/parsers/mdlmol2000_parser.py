@@ -8,9 +8,7 @@ from ..errors import LoadFileError
 from ..models import AtomicCoordinates, Item, Molecule
 from .consts import babushka_priehala
 
-
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("Parsers.MDLMol2000Parser")
 
 class MDLMolV2000ParserState(Enum):
     INIT = 0
@@ -29,6 +27,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
+    logger.debug("Loading MDLMol2000 file...")
 
     logs.append("MDL Molfile V2000.")
 
@@ -51,22 +50,18 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                 try:
                     num_atoms = int(line_items[0])
                 except ValueError:
-                    logger.error("Invalid control line %d, expected number of atoms.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid control line {line_number + 1}, expected number of atoms.")
 
                 try:
                     num_bonds = int(line_items[1])
                 except ValueError:
-                    logger.error("Invalid control line %d, expected number of bonds.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid control line {line_number + 1}, expected number of bonds.")
 
                 if num_atoms <= 0:
-                    logger.error("Invalid number of atoms %d defined in line %d.", num_atoms, line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid number of atoms {num_atoms} defined in line {line_number + 1}.")
 
                 if num_bonds < 0:
-                    logger.error("Invalid number of bonds %d defined in line %d.", num_atoms, line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid number of bonds {num_atoms} defined in line {line_number + 1}.")
 
                 num_read_at_cards = 0
                 atom_atomic_num = []
@@ -83,8 +78,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                     coord_z = float(line_items[2])
                 except ValueError:
                     # Something is wrong with format
-                    logger.error("Invalid atom coordinate value(s) at line %d.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid atom coordinate value(s) at line {line_number + 1}.")
 
                 try:
                     # Convert here atomic symbol to atomic number
@@ -95,8 +89,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                     else:
                         atomic_num = elements.symbol(line_items[3]).number
                 except ValueError:
-                    logger.error("Invalid atom symbol at line %d.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid atom symbol at line {line_number + 1}.")
 
                 num_read_at_cards += 1
                 atom_atomic_num.append(atomic_num)

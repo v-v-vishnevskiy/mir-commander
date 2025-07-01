@@ -9,8 +9,7 @@ from ..errors import LoadFileError
 from ..models import AtomicCoordinates, Item, Molecule
 from .consts import babushka_priehala
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("Parsers.XYZParser")
 int_validator = re.compile(r"^[1-9][0-9]*$")  # For example 15
 card_validator = re.compile(
     r"^([A-Z][a-z]?|[0-9]+)([\s]+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?){3}$"  # For example Ca 1.0 -2.0 +0.1e-01
@@ -42,6 +41,7 @@ def load_xyz(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
+    logger.debug("Loading XYZ file...")
     logs.append("XYZ format.")
 
     result = Item(name=path.name, data=Molecule(), metadata={"type": "xyz"})
@@ -58,11 +58,9 @@ def load_xyz(path: Path, logs: list) -> Item:
                 try:
                     num_atoms = int(line.strip())
                 except ValueError:
-                    logger.error("Invalid line %d, expected number of atoms.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid line {line_number + 1}, expected number of atoms.")
                 if num_atoms <= 0:
-                    logger.error("Invalid number of atoms %d at line %d.", num_atoms, line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid number of atoms {num_atoms} at line {line_number + 1}.")
                 state = ParserState.COMMENT
             elif state == ParserState.COMMENT:
                 title = line.strip()
@@ -88,16 +86,14 @@ def load_xyz(path: Path, logs: list) -> Item:
                         else:
                             atomic_num = elements.symbol(line_items[0]).number
                     except ValueError:
-                        logger.error("Invalid atom at line %d.", line_number + 1)
-                        raise LoadFileError()
+                        raise LoadFileError(f"Invalid atom at line {line_number + 1}.")
                 try:
                     coord_x = float(line_items[1])
                     coord_y = float(line_items[2])
                     coord_z = float(line_items[3])
                 except ValueError:
                     # Something is wrong with format
-                    logger.error("Invalid coordinate value(s) at line %d.", line_number + 1)
-                    raise LoadFileError()
+                    raise LoadFileError(f"Invalid coordinate value(s) at line {line_number + 1}.")
 
                 num_read_cards += 1
                 atom_atomic_num.append(atomic_num)

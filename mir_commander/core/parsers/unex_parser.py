@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -5,7 +6,7 @@ from pathlib import Path
 from ..models import AtomicCoordinates, Item, Molecule, Unex
 from .consts import babushka_priehala
 
-
+logger = logging.getLogger("Parsers.UnexParser")
 version_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
 
 
@@ -19,6 +20,7 @@ def load_unex(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
+    logger.debug("Loading Unex file...")
 
     result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
 
