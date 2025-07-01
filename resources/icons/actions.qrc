@@ -6,5 +6,7 @@
     <file>actions/toggle_all_selection.png</file>
     <file>actions/next-atomic-coordinates.png</file>
     <file>actions/prev-atomic-coordinates.png</file>
+    <file>actions/next-style.png</file>
+    <file>actions/prev-style.png</file>
   </qresource>
 </RCC>

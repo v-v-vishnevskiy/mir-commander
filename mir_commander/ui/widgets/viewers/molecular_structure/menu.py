@@ -24,6 +24,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         self._init_calculate_menu()
         self._init_cloaking_menu()
         self._switch_atomic_coordinates_menu()
+        self._style_menu()
 
         projection_act = Action(Action.tr("Toggle projection"), self.parent())
         projection_act.setShortcut(QKeySequence(self._keymap.toggle_projection))
@@ -179,15 +180,29 @@ class Menu(SubWindowMenu[MolecularStructure]):
         menu = BaseMenu(Menu.tr("Switch atomic coordinates"))
         self.addMenu(menu)
 
-        next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
+        next_atomic_coordinates_act = Action(Action.tr("Menu – Next atomic coordinates"), self.parent())
         next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
         next_atomic_coordinates_act.triggered.connect(self.next_atomic_coordinates_handler)
         menu.addAction(next_atomic_coordinates_act)
 
-        prev_atomic_coordinates_act = Action(Action.tr("Prev"), self.parent())
+        prev_atomic_coordinates_act = Action(Action.tr("Menu – Prev atomic coordinates"), self.parent())
         prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
         prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_handler)
         menu.addAction(prev_atomic_coordinates_act)
+
+    def _style_menu(self):
+        menu = BaseMenu(Menu.tr("Style"))
+        self.addMenu(menu)
+
+        next_style_act = Action(Action.tr("Menu – Next style"), self.parent())
+        next_style_act.setShortcut(QKeySequence(self._keymap.next_style))
+        next_style_act.triggered.connect(self.next_style_handler)
+        menu.addAction(next_style_act)
+
+        prev_style_act = Action(Action.tr("Menu – Prev style"), self.parent())
+        prev_style_act.setShortcut(QKeySequence(self._keymap.prev_style))
+        prev_style_act.triggered.connect(self.prev_style_handler)
+        menu.addAction(prev_style_act)
 
     # Note, callbacks are only triggered, when the respective action is enabled.
     # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
@@ -298,3 +313,11 @@ class Menu(SubWindowMenu[MolecularStructure]):
     @Slot()
     def prev_atomic_coordinates_handler(self):
         self.widget.set_prev_atomic_coordinates()
+
+    @Slot()
+    def next_style_handler(self):
+        self.widget.set_next_style()
+
+    @Slot()
+    def prev_style_handler(self):
+        self.widget.set_prev_style()

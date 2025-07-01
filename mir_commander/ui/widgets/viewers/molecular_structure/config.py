@@ -296,6 +296,8 @@ class MenuKeymap(BaseModel):
     cloak_toggle_h_atoms: str = "h"
     next_atomic_coordinates: str = "ctrl+right"
     prev_atomic_coordinates: str = "ctrl+left"
+    next_style: str = "ctrl+down"
+    prev_style: str = "ctrl+up"
 
 
 class ViewerKeymap(BaseModel):
@@ -306,8 +308,6 @@ class ViewerKeymap(BaseModel):
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
     toggle_atom_selection: list[str] = ["mb_1"]
-    style_next: list[str] = ["ctrl+down"]
-    style_prev: list[str] = ["ctrl+up"]
 
 
 class Keymap(BaseModel):

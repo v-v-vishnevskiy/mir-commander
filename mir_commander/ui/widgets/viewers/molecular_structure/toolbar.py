@@ -45,6 +45,16 @@ class ToolBar(SubWindowToolBar[MolecularStructure]):
         prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_action_handler)
         self.addAction(prev_atomic_coordinates_act)
 
+        next_style_act = Action(Action.tr("Next style"), self.parent())
+        next_style_act.setIcon(QIcon(":/icons/actions/next-style.png"))
+        next_style_act.triggered.connect(self.next_style_action_handler)
+        self.addAction(next_style_act)
+
+        prev_style_act = Action(Action.tr("Prev style"), self.parent())
+        prev_style_act.setIcon(QIcon(":/icons/actions/prev-style.png"))
+        prev_style_act.triggered.connect(self.prev_style_action_handler)
+        self.addAction(prev_style_act)
+
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
         self.widget.scene.cloak_toggle_h_atoms()
@@ -73,3 +83,11 @@ class ToolBar(SubWindowToolBar[MolecularStructure]):
     @Slot()
     def prev_atomic_coordinates_action_handler(self):
         self.widget.set_prev_atomic_coordinates()
+
+    @Slot()
+    def next_style_action_handler(self):
+        self.widget.set_next_style()
+
+    @Slot()
+    def prev_style_action_handler(self):
+        self.widget.set_prev_style()
