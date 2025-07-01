@@ -15,9 +15,9 @@ class BaseConfig(BaseModel, abc.ABC):
 
     @classmethod
     def load(cls, path: Path) -> "BaseConfig":
-        logger.debug(f"Loading config from {path}...")
+        logger.debug(f"Loading config from {path} ...")
         if not path.exists():
-            logger.debug("File doesn't exists. Loading defaults...")
+            logger.debug("File does not exist. Loading defaults ...")
             return cls(path=path)
 
         if path.is_dir():
@@ -37,9 +37,9 @@ class BaseConfig(BaseModel, abc.ABC):
         return cls.model_validate(parsed_data | {"path": path}, strict=True)
 
     def dump(self) -> None:
-        logger.debug(f"Dumping config to {self.path}...")
+        logger.debug(f"Dumping config to {self.path} ...")
         if self.path is None:
-            logger.debug("The path is not set")
+            logger.debug("No path has been set")
             return
 
         if not self.path.exists():

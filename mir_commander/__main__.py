@@ -16,7 +16,7 @@ def run():
     args = parser.parse_args()
 
     init_logging()
-    logger.debug("Starting Mir Commander...")
+    logger.debug("Starting Mir Commander ...")
 
     app = Application([])
     app.fix_palette()

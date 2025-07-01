@@ -38,7 +38,7 @@ class Docks:
 
 class MainWindow(QMainWindow):
     def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
-        logger.debug("Inintializing main window...")
+        logger.debug("Initializing main window ...")
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
