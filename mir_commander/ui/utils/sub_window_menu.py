@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, get_args
+from typing import Any, Generic, TypeVar, get_args
 
-from PySide6.QtWidgets import QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from .widget import Menu
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 T = TypeVar("T", bound=QWidget)
@@ -17,9 +14,9 @@ class SubWindowMenu(Generic[T], Menu):
     def __init_subclass__(cls) -> None:
         cls._type_T = get_args(cls.__orig_bases__[0])[0]
 
-    def __init__(self, title: str, parent: "MainWindow"):
+    def __init__(self, title: str, parent: QWidget, mdi_area: QMdiArea):
         super().__init__(title, parent)
-        self._mdi_area = parent.mdi_area
+        self._mdi_area = mdi_area
 
     @property
     def widget(self) -> T:

@@ -2,28 +2,37 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon, QKeySequence
+from PySide6.QtWidgets import QMdiArea, QWidget
 
 from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
 from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
+from .config import Keymap
 from .viewer import MolecularStructure
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class Menu(SubWindowMenu[MolecularStructure]):
-    def __init__(self, parent: "MainWindow"):
-        super().__init__(Menu.tr("&Molecule"), parent)
+    def __init__(self, parent: QWidget, mdi_area: QMdiArea, keymap: Keymap):
+        super().__init__(Menu.tr("&Molecule"), parent, mdi_area)
         self.setObjectName("Molecular Structure Menu")
+
+        self._keymap = keymap.menu
 
         self._init_bonds_menu()
         self._init_selection_menu()
         self._init_calculate_menu()
         self._init_cloaking_menu()
+        self._switch_atomic_coordinates_menu()
+        self._style_menu()
+
+        projection_act = Action(Action.tr("Toggle projection"), self.parent())
+        projection_act.setShortcut(QKeySequence(self._keymap.toggle_projection))
+        projection_act.triggered.connect(self.toggle_projection_action_handler)
+        self.addAction(projection_act)
 
         save_img_act = Action(Action.tr("Save image..."), self.parent())
+        save_img_act.setShortcut(QKeySequence(self._keymap.save_image))
         save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
         save_img_act.triggered.connect(self.save_img_action_handler)
         self.addAction(save_img_act)
@@ -45,7 +54,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         bonds_menu.addAction(remove_selected_act)
 
         toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
-        toggle_selected_act.setShortcut(QKeySequence("B"))
+        toggle_selected_act.setShortcut(QKeySequence(self._keymap.toggle_selected))
         toggle_selected_act.setStatusTip(Action.tr("Add new or remove existing bonds between selected atoms"))
         toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
         bonds_menu.addAction(toggle_selected_act)
@@ -78,7 +87,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         selection_menu.addAction(unselect_all_atoms_act)
 
         select_toggle_all_atoms_act = Action(Action.tr("Toggle all atoms"), self.parent())
-        select_toggle_all_atoms_act.setShortcut(QKeySequence("A"))
+        select_toggle_all_atoms_act.setShortcut(QKeySequence(self._keymap.select_toggle_all))
         select_toggle_all_atoms_act.triggered.connect(self.select_toggle_all_atoms_handler)
         selection_menu.addAction(select_toggle_all_atoms_act)
 
@@ -118,7 +127,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         calc_menu.addAction(calc_oop_angle_act)
 
         calc_auto_parameter_act = Action(Action.tr("Auto parameter"), self.parent())
-        calc_auto_parameter_act.setShortcut(QKeySequence("P"))
+        calc_auto_parameter_act.setShortcut(QKeySequence(self._keymap.calc_auto_parameter))
         calc_auto_parameter_act.setStatusTip(
             Action.tr("Interatomic distance, angle or torsion angle if two, three or four atoms are selected")
         )
@@ -153,7 +162,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         cloaking_menu.addAction(cloak_notsel_h_atoms_act)
 
         cloak_toggle_h_atoms_act = Action(Action.tr("Toggle all H atoms"), self.parent())
-        cloak_toggle_h_atoms_act.setShortcut(QKeySequence("H"))
+        cloak_toggle_h_atoms_act.setShortcut(QKeySequence(self._keymap.cloak_toggle_h_atoms))
         cloak_toggle_h_atoms_act.triggered.connect(self.cloak_toggle_h_atoms_handler)
         cloaking_menu.addAction(cloak_toggle_h_atoms_act)
 
@@ -166,12 +175,48 @@ class Menu(SubWindowMenu[MolecularStructure]):
         uncloak_all_act = Action(Action.tr("Uncloak all"), self.parent())
         uncloak_all_act.triggered.connect(self.uncloak_all_handler)
         cloaking_menu.addAction(uncloak_all_act)
+    
+    def _switch_atomic_coordinates_menu(self):
+        menu = BaseMenu(Menu.tr("Coordinates set"))
+        self.addMenu(menu)
+
+        next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
+        next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
+        next_atomic_coordinates_act.triggered.connect(self.next_atomic_coordinates_handler)
+        menu.addAction(next_atomic_coordinates_act)
+
+        prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
+        prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
+        prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_handler)
+        menu.addAction(prev_atomic_coordinates_act)
+
+    def _style_menu(self):
+        menu = BaseMenu(Menu.tr("Style"))
+        self.addMenu(menu)
+
+        next_style_act = Action(Action.tr("Next"), self.parent())
+        next_style_act.setShortcut(QKeySequence(self._keymap.next_style))
+        next_style_act.triggered.connect(self.next_style_handler)
+        menu.addAction(next_style_act)
+
+        prev_style_act = Action(Action.tr("Previous"), self.parent())
+        prev_style_act.setShortcut(QKeySequence(self._keymap.prev_style))
+        prev_style_act.triggered.connect(self.prev_style_handler)
+        menu.addAction(prev_style_act)
 
     # Note, callbacks are only triggered, when the respective action is enabled.
     # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
     # This method receives the window parameter, so it is possible to determine the currently active type
     # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
     # and we may call our respective action handler.
+
+    @Slot()
+    def toggle_projection_action_handler(self):
+        self.widget.toggle_projection_action_handler()
+
+    @Slot()
+    def save_img_action_handler(self):
+        self.widget.save_img_action_handler()
 
     @Slot()
     def bonds_add_selected_handler(self):
@@ -234,10 +279,6 @@ class Menu(SubWindowMenu[MolecularStructure]):
         self.widget.calc_all_parameters_selected_atoms()
 
     @Slot()
-    def save_img_action_handler(self):
-        self.widget.save_img_action_handler()
-
-    @Slot()
     def cloak_selected_handler(self):
         self.widget.scene.cloak_selected_atoms()
 
@@ -264,3 +305,19 @@ class Menu(SubWindowMenu[MolecularStructure]):
     @Slot()
     def uncloak_all_handler(self):
         self.widget.scene.uncloak_all_atoms()
+
+    @Slot()
+    def next_atomic_coordinates_handler(self):
+        self.widget.set_next_atomic_coordinates()
+
+    @Slot()
+    def prev_atomic_coordinates_handler(self):
+        self.widget.set_prev_atomic_coordinates()
+
+    @Slot()
+    def next_style_handler(self):
+        self.widget.set_next_style()
+
+    @Slot()
+    def prev_style_handler(self):
+        self.widget.set_prev_style()

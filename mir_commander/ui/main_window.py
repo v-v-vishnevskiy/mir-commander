@@ -113,7 +113,13 @@ class MainWindow(QMainWindow):
 
         # Here we collect classes of widgets, which create their own toolbars for the main window.
         # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.sub_window_toolbars.append(MolStructToolBar(self))
+        self.sub_window_toolbars.append(
+            MolStructToolBar(
+                parent=self, 
+                mdi_area=self.mdi_area,
+                config=self.config.widgets.toolbars,
+            )
+        )
 
         for toolbar in self.sub_window_toolbars:
             self.addToolBar(toolbar)
@@ -124,7 +130,13 @@ class MainWindow(QMainWindow):
     def setup_menubar(self):
         # Collect all additional menus from viewers.
         # Here is the same logic as for toolbars of particular widgets.
-        self.sub_window_menus.append(MolStructMenu(self))
+        self.sub_window_menus.append(
+            MolStructMenu(
+                parent=self, 
+                mdi_area=self.mdi_area, 
+                keymap=self.config.widgets.viewers.molecular_structure.keymap,
+            )
+        )
 
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())

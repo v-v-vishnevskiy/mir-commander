@@ -1,27 +1,26 @@
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, get_args
+from typing import Any, Generic, TypeVar, get_args
 
 from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
-from .widget import ToolBar as ToolBarWidget
+from mir_commander.ui.config import Toolbars
 
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
+from .widget import ToolBar
 
 T = TypeVar("T", bound=QWidget)
 
 
-class SubWindowToolBar(Generic[T], ToolBarWidget):
+class SubWindowToolBar(Generic[T], ToolBar):
     _type_T: Any
 
     def __init_subclass__(cls) -> None:
         cls._type_T = get_args(cls.__orig_bases__[0])[0]
 
-    def __init__(self, title: str, main_window: "MainWindow"):
-        super().__init__(title, main_window)
-        self._mdi_area = main_window.mdi_area
+    def __init__(self, title: str, parent: QWidget, mdi_area: QMdiArea, config: Toolbars):
+        super().__init__(title, parent)
+        self._mdi_area = mdi_area
 
-        icon_size = main_window.config.widgets.toolbars.icon_size
+        icon_size = config.icon_size
         self.setIconSize(QSize(icon_size, icon_size))
 
         self.setup_actions()

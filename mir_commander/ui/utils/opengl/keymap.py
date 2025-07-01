@@ -4,7 +4,7 @@ from PySide6.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 class Keymap:
     _instances: dict[int, "Keymap"] = {}
 
-    def __new__(cls, key: int, config: None | dict[str, str] = None) -> "Keymap":
+    def __new__(cls, key: int, config: None | dict[str, list[str]] = None) -> "Keymap":
         """
         This function is required to prevent re-reading config files when each new window is created.
         :param key: unique value
