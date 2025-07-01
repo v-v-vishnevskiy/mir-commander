@@ -124,7 +124,13 @@ class MainWindow(QMainWindow):
     def setup_menubar(self):
         # Collect all additional menus from viewers.
         # Here is the same logic as for toolbars of particular widgets.
-        self.sub_window_menus.append(MolStructMenu(self))
+        self.sub_window_menus.append(
+            MolStructMenu(
+                parent=self, 
+                mdi_area=self.mdi_area, 
+                keymap=self.config.widgets.viewers.molecular_structure.keymap
+            )
+        )
 
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())

@@ -287,20 +287,28 @@ class Style(BaseModel):
     quality: Quality = Quality()
 
 
-class Keymap(BaseModel):
-    item_next: list[str] = ["ctrl+right"]
-    item_prev: list[str] = ["ctrl+left"]
-    style_next: list[str] = ["ctrl+down"]
-    style_prev: list[str] = ["ctrl+up"]
+class ViewerKeymap(BaseModel):
     rotate_down: list[str] = ["down"]
     rotate_left: list[str] = ["left"]
     rotate_right: list[str] = ["right"]
     rotate_up: list[str] = ["up"]
-    save_image: list[str] = ["s"]
-    toggle_atom_selection: list[str] = ["mb_1"]
-    toggle_projection: list[str] = ["p"]
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
+    toggle_atom_selection: list[str] = ["mb_1"]
+
+
+class Keymap(BaseModel):
+    item_next: str = "ctrl+right"
+    item_prev: str = "ctrl+left"
+    style_next: str = "ctrl+down"
+    style_prev: str = "ctrl+up"
+    save_image: str = "s"
+    toggle_projection: str = "ctrl+p"
+    toggle_selected: str = "b"
+    select_toggle_all: str = "a"
+    calc_auto_parameter: str = "p"
+    cloak_toggle_h_atoms: str = "h"
+    viewer: ViewerKeymap = ViewerKeymap()
 
 
 class MolecularStructureViewerConfig(BaseModel):

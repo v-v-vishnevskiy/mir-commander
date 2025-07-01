@@ -85,7 +85,7 @@ class MolecularStructure(Widget):
         self.item = item
         self.all = all
 
-        self._keymap.load_from_config(self._config.keymap.model_dump())
+        self._keymap.load_from_config(self._config.keymap.viewer.model_dump())
 
         if self._config.antialiasing:
             sf = QSurfaceFormat()
@@ -222,6 +222,9 @@ class MolecularStructure(Widget):
             parent_item = parent_item.parent()
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
+
+    def toggle_projection_action_handler(self):
+        self.scene.toggle_projection_mode()
 
     @Slot()
     def save_img_action_handler(self):

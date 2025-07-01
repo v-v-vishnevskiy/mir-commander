@@ -34,7 +34,6 @@ class Widget(QOpenGLWidget):
                 "rotate_left": ["left"],
                 "rotate_right": ["right"],
                 "rotate_up": ["up"],
-                "toggle_projection": ["p"],
                 "zoom_in": ["wheel_up", "="],
                 "zoom_out": ["wheel_down", "-"],
             },
@@ -56,7 +55,6 @@ class Widget(QOpenGLWidget):
         self._actions["rotate_left"] = (True, self.scene.rotate, (0, 1))
         self._actions["rotate_right"] = (True, self.scene.rotate, (0, -1))
         self._actions["rotate_up"] = (True, self.scene.rotate, (-1, 0))
-        self._actions["toggle_projection"] = (False, self.scene.toggle_projection_mode, tuple())
         self._actions["zoom_in"] = (True, self.scene.scale, (-0.015,))
         self._actions["zoom_out"] = (True, self.scene.scale, (0.015,))
 
