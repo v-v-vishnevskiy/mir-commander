@@ -287,6 +287,15 @@ class Style(BaseModel):
     quality: Quality = Quality()
 
 
+class MenuKeymap(BaseModel):
+    save_image: str = "s"
+    toggle_projection: str = "ctrl+p"
+    toggle_selected: str = "b"
+    select_toggle_all: str = "a"
+    calc_auto_parameter: str = "p"
+    cloak_toggle_h_atoms: str = "h"
+
+
 class ViewerKeymap(BaseModel):
     rotate_down: list[str] = ["down"]
     rotate_left: list[str] = ["left"]
@@ -295,19 +304,14 @@ class ViewerKeymap(BaseModel):
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
     toggle_atom_selection: list[str] = ["mb_1"]
+    item_next: list[str] = ["ctrl+right"]
+    item_prev: list[str] = ["ctrl+left"]
+    style_next: list[str] = ["ctrl+down"]
+    style_prev: list[str] = ["ctrl+up"]
 
 
 class Keymap(BaseModel):
-    item_next: str = "ctrl+right"
-    item_prev: str = "ctrl+left"
-    style_next: str = "ctrl+down"
-    style_prev: str = "ctrl+up"
-    save_image: str = "s"
-    toggle_projection: str = "ctrl+p"
-    toggle_selected: str = "b"
-    select_toggle_all: str = "a"
-    calc_auto_parameter: str = "p"
-    cloak_toggle_h_atoms: str = "h"
+    menu: MenuKeymap = MenuKeymap()
     viewer: ViewerKeymap = ViewerKeymap()
 
 

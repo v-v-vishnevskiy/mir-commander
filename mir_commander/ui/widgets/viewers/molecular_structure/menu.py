@@ -17,7 +17,7 @@ class Menu(SubWindowMenu[MolecularStructure]):
         super().__init__(Menu.tr("&Molecule"), parent, mdi_area)
         self.setObjectName("Molecular Structure Menu")
 
-        self._keymap = keymap
+        self._keymap = keymap.menu
 
         self._init_bonds_menu()
         self._init_selection_menu()
