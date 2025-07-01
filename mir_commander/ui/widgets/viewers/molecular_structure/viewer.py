@@ -103,11 +103,8 @@ class MolecularStructure(Widget):
     def _init_actions(self):
         super()._init_actions()
         # TODO: document why do we need such a complicated system for managing of actions
-        self._actions["item_next"] = (False, self._draw_next_item, tuple())
-        self._actions["item_prev"] = (False, self._draw_prev_item, tuple())
         self._actions["style_next"] = (False, self._set_next_style, tuple())
         self._actions["style_prev"] = (False, self._set_prev_style, tuple())
-        self._actions["save_image"] = (False, self.save_img_action_handler, tuple())
         self._actions["toggle_atom_selection"] = (False, self.scene.toggle_atom_selection, tuple())
 
     def _apply_style(self):
@@ -190,7 +187,7 @@ class MolecularStructure(Widget):
         if self._style.set_next_style():
             self._apply_style()
 
-    def _draw_prev_item(self):
+    def set_prev_atomic_coordinates(self):
         if self._molecule_index > 0:
             self._molecule_index -= 1
             self._set_draw_item()
@@ -199,7 +196,7 @@ class MolecularStructure(Widget):
             self._build_molecule()
             self.update()
 
-    def _draw_next_item(self):
+    def set_next_atomic_coordinates(self):
         self._molecule_index += 1
         item = self._draw_item
         self._set_draw_item()
