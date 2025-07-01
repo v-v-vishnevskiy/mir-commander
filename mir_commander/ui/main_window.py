@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from .utils.sub_window_toolbar import SubWindowToolBar
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("MainWindow")
 
 
 @dataclass
@@ -38,6 +38,7 @@ class Docks:
 
 class MainWindow(QMainWindow):
     def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
+        logger.debug("Initializing main window ...")
         super().__init__(None)
         self.app: "Application" = app
         self.project = project

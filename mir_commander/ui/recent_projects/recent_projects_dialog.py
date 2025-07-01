@@ -5,7 +5,7 @@ from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
 from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QMessageBox, QVBoxLayout
 
-from mir_commander import errors
+from mir_commander.core.errors import LoadProjectError
 from mir_commander.ui.utils.widget import Dialog as BaseDialog, PushButton
 
 if TYPE_CHECKING:
@@ -104,7 +104,7 @@ class RecentProjectsDialog(BaseDialog):
         try:
             self.app.open_project(path, raise_exc=True)
             self.hide()
-        except errors.LoadProjectError as e:
+        except LoadProjectError as e:
             self.error.setText(str(e))
             self.error.setInformativeText(e.details)
             self.error.show()

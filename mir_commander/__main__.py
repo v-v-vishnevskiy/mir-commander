@@ -1,14 +1,22 @@
 import argparse
+import logging
 import sys
 from pathlib import Path
 
 from mir_commander.ui.application import Application
+
+from .logging import init_logging
+
+logger = logging.getLogger("main")
 
 
 def run():
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument("path", type=str, default="", nargs="?", help="Path to input file or project directory")
     args = parser.parse_args()
+
+    init_logging()
+    logger.debug("Starting Mir Commander ...")
 
     app = Application([])
     app.fix_palette()

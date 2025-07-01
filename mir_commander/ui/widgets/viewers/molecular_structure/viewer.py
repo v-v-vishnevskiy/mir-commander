@@ -1,4 +1,3 @@
-import logging
 import math
 from itertools import combinations
 from typing import TYPE_CHECKING, Optional
@@ -26,8 +25,6 @@ from .style import Style
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
     from mir_commander.ui.widgets.docks.project_dock.items import Item
-
-logger = logging.getLogger(__name__)
 
 
 class InteratomicDistance:

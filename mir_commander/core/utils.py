@@ -1,11 +1,8 @@
-import logging
 from pathlib import Path
 
 from .errors import LoadProjectError
 from .parsers import load_file
 from .project import Project
-
-logger = logging.getLogger(__name__)
 
 
 def load_project(path: Path) -> tuple[Project, list[str]]:
@@ -25,6 +22,4 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
 
         return project, logs
     else:
-        msg = "Invalid path"
-        logger.error(f"{msg}: {path}")
-        raise LoadProjectError(msg, f"{msg}: {path}")
+        raise LoadProjectError(f"Invalid path: {path}")

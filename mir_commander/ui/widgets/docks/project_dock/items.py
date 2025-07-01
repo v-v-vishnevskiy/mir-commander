@@ -1,5 +1,4 @@
-import logging
-from typing import Any, TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Type
 
 from PySide6.QtGui import QIcon, QStandardItem, Qt
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
@@ -10,8 +9,6 @@ from mir_commander.ui.utils.widget import Action, Menu
 
 if TYPE_CHECKING:
     from mir_commander.ui.main_window import MainWindow
-
-logger = logging.getLogger(__name__)
 
 
 class Item(QStandardItem):

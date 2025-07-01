@@ -1,11 +1,8 @@
-import logging
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
 from mir_commander.base_config import BaseConfig
-
-logger = logging.getLogger(__name__)
 
 
 class Project(BaseModel):

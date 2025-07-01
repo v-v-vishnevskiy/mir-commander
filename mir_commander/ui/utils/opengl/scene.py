@@ -23,7 +23,7 @@ from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectF
 from .graphics_items.item import Item
 from .utils import Color4f
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("OpenGL.Scene")
 
 
 if TYPE_CHECKING:

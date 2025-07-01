@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 
 from mir_commander import consts
 
 from ..models import AtomicCoordinates, Item, Molecule
 from .consts import babushka_priehala
+
+logger = logging.getLogger("Parsers.CFourParser")
 
 
 def is_cfour(lines: list[str]) -> bool:
@@ -19,6 +22,7 @@ def load_cfour(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
+    logger.debug("Loading CFour file ...")
 
     logs.append("Cfour format.")
 
