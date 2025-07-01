@@ -180,12 +180,12 @@ class Menu(SubWindowMenu[MolecularStructure]):
         menu = BaseMenu(Menu.tr("Coordinates set"))
         self.addMenu(menu)
 
-        next_atomic_coordinates_act = Action(Action.tr("Menu – Next coordinates set"), self.parent())
+        next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
         next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
         next_atomic_coordinates_act.triggered.connect(self.next_atomic_coordinates_handler)
         menu.addAction(next_atomic_coordinates_act)
 
-        prev_atomic_coordinates_act = Action(Action.tr("Menu – Previous coordinates set"), self.parent())
+        prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
         prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
         prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_handler)
         menu.addAction(prev_atomic_coordinates_act)
@@ -194,12 +194,12 @@ class Menu(SubWindowMenu[MolecularStructure]):
         menu = BaseMenu(Menu.tr("Style"))
         self.addMenu(menu)
 
-        next_style_act = Action(Action.tr("Menu – Next style"), self.parent())
+        next_style_act = Action(Action.tr("Next"), self.parent())
         next_style_act.setShortcut(QKeySequence(self._keymap.next_style))
         next_style_act.triggered.connect(self.next_style_handler)
         menu.addAction(next_style_act)
 
-        prev_style_act = Action(Action.tr("Menu – Previous style"), self.parent())
+        prev_style_act = Action(Action.tr("Previous"), self.parent())
         prev_style_act.setShortcut(QKeySequence(self._keymap.prev_style))
         prev_style_act.triggered.connect(self.prev_style_handler)
         menu.addAction(prev_style_act)

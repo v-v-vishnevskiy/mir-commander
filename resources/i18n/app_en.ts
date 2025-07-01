@@ -281,22 +281,14 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="183"/>
-        <source>Menu – Next coordinates set</source>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="197"/>
+        <source>Next</source>
         <translation>Next</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="188"/>
-        <source>Menu – Previous coordinates set</source>
-        <translation>Previous</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="197"/>
-        <source>Menu – Next style</source>
-        <translation>Next</translation>
-    </message>
-    <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="202"/>
-        <source>Menu – Previous style</source>
+        <source>Previous</source>
         <translation>Previous</translation>
     </message>
     <message>
