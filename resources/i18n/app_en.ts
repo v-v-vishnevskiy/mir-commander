@@ -90,13 +90,13 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="38"/>
-        <source>Next atomic coordinates</source>
-        <translation>Next atomic coordinates</translation>
+        <source>Next coordinates set</source>
+        <translation>Next coordinates set</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="43"/>
-        <source>Prev atomic coordinates</source>
-        <translation>Prev atomic coordinates</translation>
+        <source>Previous coordinates set</source>
+        <translation>Previous coordinates set</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="29"/>
@@ -281,13 +281,13 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="183"/>
-        <source>Menu – Next atomic coordinates</source>
+        <source>Menu – Next coordinates set</source>
         <translation>Next</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="188"/>
-        <source>Menu – Prev atomic coordinates</source>
-        <translation>Prev</translation>
+        <source>Menu – Previous coordinates set</source>
+        <translation>Previous</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="197"/>
@@ -296,8 +296,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="202"/>
-        <source>Menu – Prev style</source>
-        <translation>Prev</translation>
+        <source>Menu – Previous style</source>
+        <translation>Previous</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="48"/>
@@ -306,8 +306,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="53"/>
-        <source>Prev style</source>
-        <translation>Prev style</translation>
+        <source>Previous style</source>
+        <translation>Previous style</translation>
     </message>
 </context>
 <context>
@@ -496,8 +496,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="180"/>
-        <source>Switch atomic coordinates</source>
-        <translation>Switch atomic coordinates</translation>
+        <source>Coordinates set</source>
+        <translation>Coordinates set</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="194"/>

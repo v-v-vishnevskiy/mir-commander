@@ -90,12 +90,12 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="38"/>
-        <source>Next atomic coordinates</source>
+        <source>Next coordinates set</source>
         <translation>Следующие атомные координаты</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="43"/>
-        <source>Prev atomic coordinates</source>
+        <source>Previous coordinates set</source>
         <translation>Предыдущие атомные координаты</translation>
     </message>
     <message>
@@ -281,12 +281,12 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="183"/>
-        <source>Menu – Next atomic coordinates</source>
+        <source>Menu – Next coordinates set</source>
         <translation>Следующие</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="188"/>
-        <source>Menu – Prev atomic coordinates</source>
+        <source>Menu – Previous coordinates set</source>
         <translation>Предыдущие</translation>
     </message>
     <message>
@@ -296,7 +296,7 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="202"/>
-        <source>Menu – Prev style</source>
+        <source>Menu – Previous style</source>
         <translation>Предыдущий</translation>
     </message>
     <message>
@@ -306,7 +306,7 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/toolbar.py" line="53"/>
-        <source>Prev style</source>
+        <source>Previous style</source>
         <translation>Предыдущий стиль</translation>
     </message>
 </context>
@@ -492,12 +492,12 @@
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="145"/>
         <source>Cloaking</source>
-        <translation>Скрыть</translation>
+        <translation>Видимость</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="180"/>
-        <source>Switch atomic coordinates</source>
-        <translation>Переключение атомных координат</translation>
+        <source>Coordinates set</source>
+        <translation>Набор координат</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/menu.py" line="194"/>

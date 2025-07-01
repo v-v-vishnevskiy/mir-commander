@@ -35,13 +35,13 @@ class ToolBar(SubWindowToolBar[MolecularStructure]):
         save_img_act.triggered.connect(self.save_img_action_handler)
         self.addAction(save_img_act)
 
-        next_atomic_coordinates_act = Action(Action.tr("Next atomic coordinates"), self.parent())
-        next_atomic_coordinates_act.setIcon(QIcon(":/icons/actions/next-atomic-coordinates.png"))
+        next_atomic_coordinates_act = Action(Action.tr("Next coordinates set"), self.parent())
+        next_atomic_coordinates_act.setIcon(QIcon(":/icons/actions/next-coordinates-set.png"))
         next_atomic_coordinates_act.triggered.connect(self.next_atomic_coordinates_action_handler)
         self.addAction(next_atomic_coordinates_act)
 
-        prev_atomic_coordinates_act = Action(Action.tr("Prev atomic coordinates"), self.parent())
-        prev_atomic_coordinates_act.setIcon(QIcon(":/icons/actions/prev-atomic-coordinates.png"))
+        prev_atomic_coordinates_act = Action(Action.tr("Previous coordinates set"), self.parent())
+        prev_atomic_coordinates_act.setIcon(QIcon(":/icons/actions/prev-coordinates-set.png"))
         prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_action_handler)
         self.addAction(prev_atomic_coordinates_act)
 
@@ -50,7 +50,7 @@ class ToolBar(SubWindowToolBar[MolecularStructure]):
         next_style_act.triggered.connect(self.next_style_action_handler)
         self.addAction(next_style_act)
 
-        prev_style_act = Action(Action.tr("Prev style"), self.parent())
+        prev_style_act = Action(Action.tr("Previous style"), self.parent())
         prev_style_act.setIcon(QIcon(":/icons/actions/prev-style.png"))
         prev_style_act.triggered.connect(self.prev_style_action_handler)
         self.addAction(prev_style_act)
