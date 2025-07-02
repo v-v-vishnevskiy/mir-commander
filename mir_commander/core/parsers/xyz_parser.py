@@ -41,7 +41,9 @@ def load_xyz(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
-    logger.info("Loading XYZ file ...")
+
+    logger.info("Parsing XYZ file ...")
+
     logs.append("XYZ format.")
 
     result = Item(name=path.name, data=Molecule(), metadata={"type": "xyz"})

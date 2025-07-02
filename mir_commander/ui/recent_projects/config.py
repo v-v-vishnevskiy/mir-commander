@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
-from mir_commander.base_config import BaseConfig
+from mir_commander.utils.config import BaseConfig
 from mir_commander.core import Project
 
 

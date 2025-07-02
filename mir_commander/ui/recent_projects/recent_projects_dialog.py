@@ -1,18 +1,13 @@
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QDir, QModelIndex, Qt, Slot
+from PySide6.QtCore import QDir, QModelIndex, Qt, Signal, Slot
 from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QMessageBox, QVBoxLayout
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout
 
-from mir_commander.consts import DIR
-from mir_commander.core.errors import LoadProjectError
-from mir_commander.ui.utils.widget import Dialog as BaseDialog, PushButton
+from mir_commander.utils.consts import DIR
+from ..utils.widget import Dialog as BaseDialog, PushButton
 
 from .config import ProjectConfig, RecentProjectsConfig
-
-if TYPE_CHECKING:
-    from mir_commander.ui.application import Application
 
 
 class ListView(QListView):
@@ -30,16 +25,15 @@ class ListView(QListView):
 class RecentProjectsDialog(BaseDialog):
     """Dialog with information about the program."""
 
-    def __init__(self, app: "Application"):
+    open_project = Signal(Path, bool)
+
+    def __init__(self):
         super().__init__(None)
-        self.app = app
         self._config: RecentProjectsConfig = RecentProjectsConfig.load(DIR.HOME_CONFIG / "recent_projects.yaml")
         self.add_opened = self._config.add_opened
         self.add_recent = self._config.add_recent
         self.remove_opened = self._config.remove_opened
         self.remove_recent = self._config.remove_recent
-
-        self._error = QMessageBox(self)
 
         self._setup_ui()
         self._setup_signals()
@@ -47,8 +41,6 @@ class RecentProjectsDialog(BaseDialog):
         self.setWindowTitle(self.tr("Recent Projects"))
 
     def _setup_ui(self):
-        self._error.setIcon(QMessageBox.Icon.Critical)
-
         layout = QVBoxLayout()
 
         self.setLayout(layout)
@@ -104,7 +96,7 @@ class RecentProjectsDialog(BaseDialog):
     def _recent_open(self, index: QModelIndex):
         item = self._recent.model().itemFromIndex(index)
         if item.isEnabled():
-            self._open_project(item.project_path)
+            self.open_project.emit(item.project_path, True)
 
     @Slot()
     def _pb_open_clicked(self, *args, **kwargs):
@@ -112,12 +104,3 @@ class RecentProjectsDialog(BaseDialog):
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
             self._open_project(Path(dialog.selectedFiles()[0]))
-
-    def _open_project(self, path: Path):
-        try:
-            self.app.open_project(path, raise_exc=True)
-            self.hide()
-        except LoadProjectError as e:
-            self._error.setText(e.__class__.__name__)
-            self._error.setInformativeText(str(e))
-            self._error.show()

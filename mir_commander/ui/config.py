@@ -2,7 +2,7 @@ from typing import Any, Callable, Literal
 
 from pydantic import BaseModel, Field
 
-from mir_commander.base_config import BaseConfig
+from mir_commander.utils.config import BaseConfig
 
 from .widgets.docks.config import DocksConfig
 from .widgets.settings.config import SettingsConfig

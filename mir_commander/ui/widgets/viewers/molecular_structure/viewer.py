@@ -8,7 +8,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QStandardItem, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
-from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
+from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget

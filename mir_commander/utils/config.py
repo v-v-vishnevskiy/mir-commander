@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field
 
-from mir_commander import errors
+from .errors import ConfigError
 
 logger = logging.getLogger("BaseConfig")
 
@@ -21,7 +21,7 @@ class BaseConfig(BaseModel, abc.ABC):
             return cls(path=path)
 
         if path.is_dir():
-            raise errors.ConfigError(f"Trying to load directory: {path}")
+            raise ConfigError(f"Trying to load directory: {path}")
 
         with path.open("r") as f:
             data = f.read()
@@ -32,7 +32,7 @@ class BaseConfig(BaseModel, abc.ABC):
         try:
             parsed_data = yaml.load(data, Loader=yaml.CLoader)
         except yaml.YAMLError:
-            raise errors.ConfigError(f"Invalid YAML format: {path}")
+            raise ConfigError(f"Invalid YAML format: {path}")
 
         return cls.model_validate(parsed_data | {"path": path}, strict=True)
 

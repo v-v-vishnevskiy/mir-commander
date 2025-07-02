@@ -3,13 +3,12 @@ from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.consts import DIR
+from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 
-from .recent_projects.config import RecentProjectsConfig
 from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 from .config import AppConfig, ApplyCallbacks
 from .main_window import MainWindow
@@ -31,11 +30,15 @@ class Application(QApplication):
         self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
 
         self._open_projects: dict[int, MainWindow] = {}
-        self._recent_projects_dialog = RecentProjectsDialog(self)
+        self._recent_projects_dialog = RecentProjectsDialog()
+        self._recent_projects_dialog.open_project.connect(self.open_project)
 
         self._translator_app = QTranslator(self)
         self._translator_qt = QTranslator(self)
         self._set_translation()
+
+        self._error = QMessageBox()
+        self._error.setIcon(QMessageBox.Icon.Critical)
 
         self.apply_callbacks.add(self._set_translation)
 
@@ -106,8 +109,9 @@ class Application(QApplication):
             project, messages = load_project(path)
         except (LoadFileError, LoadProjectError) as e:
             logger.error(str(e))
-            if raise_exc:
-                raise
+            self._error.setText(e.__class__.__name__)
+            self._error.setInformativeText(str(e))
+            self._error.show()
             return False
 
         logger.info("Loading %s completed", t)
@@ -125,6 +129,7 @@ class Application(QApplication):
         if not main_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project)
             self._recent_projects_dialog.add_recent(project)
+        self._recent_projects_dialog.hide()
         main_window.show()
         return True
 
@@ -149,8 +154,7 @@ class Application(QApplication):
 
     def run(self, project_path: Path) -> int:
         if project_path != Path(""):
-            if not self.open_project(project_path):
-                return 1
+            self.open_project(project_path)
         else:
             if self._recent_projects_dialog.opened:
                 for item in self._recent_projects_dialog.opened:
