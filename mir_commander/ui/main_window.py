@@ -2,9 +2,8 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
@@ -22,9 +21,6 @@ from .utils.sub_window_menu import SubWindowMenu
 from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
 
-if TYPE_CHECKING:
-    from .application import Application
-
 
 logger = logging.getLogger("MainWindow")
 
@@ -37,10 +33,12 @@ class Docks:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
+    close_project = Signal(QMainWindow)
+    quit_application = Signal()
+
+    def __init__(self, app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
         logger.debug("Initializing main window ...")
         super().__init__(None)
-        self.app: "Application" = app
         self.project = project
         self.app_config = app_config
         self.config = app_config.main_window
@@ -166,8 +164,8 @@ class MainWindow(QMainWindow):
 
     def _setup_menubar_file(self) -> Menu:
         menu = Menu(Menu.tr("File"), self)
-        menu.addAction(self._close_project_action())
         menu.addAction(self._settings_action())
+        menu.addAction(self._close_project_action())
         menu.addAction(self._quit_action())
         return menu
 
@@ -216,7 +214,7 @@ class MainWindow(QMainWindow):
         action = Action(Action.tr("Quit"), self)
         action.setMenuRole(Action.QuitRole)
         action.setShortcut(QKeySequence.Quit)
-        action.triggered.connect(self.app.quit)
+        action.triggered.connect(self.quit_application.emit)
         return action
 
     def _about_action(self) -> Action:
@@ -286,8 +284,9 @@ class MainWindow(QMainWindow):
             self.restoreState(base64.b64decode(state))
 
     def closeEvent(self, event: QCloseEvent):
+        logger.info("Closing %s project ...", self.project.name)
         self._save_settings()
-        self.app.close_project(self)
+        self.close_project.emit(self)
         event.accept()
 
     @Slot()

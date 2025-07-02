@@ -102,25 +102,26 @@ class Application(QApplication):
 
     def open_project(self, path: Path, raise_exc: bool = False) -> bool:
         t = "file" if path.is_file() else "project"
-        logger.debug(f"Loading {t}: {path}")
+        logger.debug("Loading %s: %s", t, path)
         try:
             project, messages = load_project(path)
         except (LoadFileError, LoadProjectError) as e:
-            logger.error(f"Invalid load {t}: {str(e)}")
+            logger.error("Invalid load %s: %s", t, e)
             if raise_exc:
                 raise
             return False
 
-        logger.debug(f"Loading {t} completed")
+        logger.debug("Loading %s completed", t)
 
         messages.insert(0, f"{path}")
         main_window = MainWindow(
-            app=self, 
             app_config=self.config, 
             app_apply_callbacks=self.apply_callbacks, 
             project=project, 
             init_msg=messages,
         )
+        main_window.close_project.connect(self.close_project)
+        main_window.quit_application.connect(self.quit)
         self._open_projects[id(main_window)] = main_window
         if not main_window.project.is_temporary:
             self.recent_projects_config.add_opened(project.name, project.path)
