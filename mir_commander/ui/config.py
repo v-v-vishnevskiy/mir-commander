@@ -19,7 +19,7 @@ class Widgets(BaseModel):
     viewers: ViewersConfig = ViewersConfig()
 
 
-class MainWindowConfig(BaseModel):
+class ProjectWindowConfig(BaseModel):
     state: None | str = None
     pos: None | list[int] = Field(default=None, min_length=2, max_length=2, description="x, y coordinates")
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
@@ -28,7 +28,7 @@ class MainWindowConfig(BaseModel):
 
 class AppConfig(BaseConfig):
     language: Literal["system", "en", "ru"] = "system"
-    main_window: MainWindowConfig = MainWindowConfig()
+    project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
 
 

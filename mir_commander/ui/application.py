@@ -10,7 +10,7 @@ from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 
 from .config import AppConfig, ApplyCallbacks
-from .main_window import MainWindow
+from .project_window import ProjectWindow
 from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 
 logger = logging.getLogger("Application")
@@ -29,7 +29,7 @@ class Application(QApplication):
         self.apply_callbacks = ApplyCallbacks()
         self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
 
-        self._open_projects: dict[int, MainWindow] = {}
+        self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
         self._recent_projects_dialog.open_project.connect(self.open_project)
 
@@ -117,31 +117,31 @@ class Application(QApplication):
         logger.info("Loading %s completed", t)
 
         messages.insert(0, f"{path}")
-        main_window = MainWindow(
+        project_window = ProjectWindow(
             app_config=self.config, 
             app_apply_callbacks=self.apply_callbacks, 
             project=project, 
             init_msg=messages,
         )
-        main_window.close_project.connect(self.close_project)
-        main_window.quit_application.connect(self.quit)
-        self._open_projects[id(main_window)] = main_window
-        if not main_window.project.is_temporary:
+        project_window.close_project.connect(self.close_project)
+        project_window.quit_application.connect(self.quit)
+        self._open_projects[id(project_window)] = project_window
+        if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project)
             self._recent_projects_dialog.add_recent(project)
         self._recent_projects_dialog.hide()
-        main_window.show()
+        project_window.show()
         return True
 
-    def close_project(self, main_window: MainWindow):
-        del self._open_projects[id(main_window)]
+    def close_project(self, project_window: ProjectWindow):
+        del self._open_projects[id(project_window)]
 
-        main_window.project.config.dump()
+        project_window.project.config.dump()
 
-        if not main_window.project.is_temporary:
-            self._recent_projects_dialog.add_recent(main_window.project)
+        if not project_window.project.is_temporary:
+            self._recent_projects_dialog.add_recent(project_window.project)
             if not self._quitting:
-                self._recent_projects_dialog.remove_opened(main_window.project)
+                self._recent_projects_dialog.remove_opened(project_window.project)
 
         if not self._open_projects:
             self._recent_projects_dialog.show()

@@ -22,9 +22,7 @@ from .utils.sub_window_menu import SubWindowMenu
 from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
 
-
-
-logger = logging.getLogger("MainWindow")
+logger = logging.getLogger("ProjectWindow")
 
 
 @dataclass
@@ -34,7 +32,7 @@ class Docks:
     console: ConsoleDock
 
 
-class MainWindow(QMainWindow):
+class ProjectWindow(QMainWindow):
     close_project = Signal(QMainWindow)
     quit_application = Signal()
 
@@ -43,7 +41,7 @@ class MainWindow(QMainWindow):
         super().__init__(None)
         self.project = project
         self.app_config = app_config
-        self.config = app_config.main_window
+        self.config = app_config.project_window
         self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
         self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
         self.app_apply_callbacks = app_apply_callbacks
