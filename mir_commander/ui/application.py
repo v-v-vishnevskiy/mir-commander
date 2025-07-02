@@ -29,7 +29,6 @@ class Application(QApplication):
 
         self.apply_callbacks = ApplyCallbacks()
         self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
-        self.recent_projects_config = RecentProjectsConfig.load(DIR.HOME_CONFIG / "recent_projects.yaml")
 
         self._open_projects: dict[int, MainWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog(self)
@@ -102,16 +101,16 @@ class Application(QApplication):
 
     def open_project(self, path: Path, raise_exc: bool = False) -> bool:
         t = "file" if path.is_file() else "project"
-        logger.debug("Loading %s: %s", t, path)
+        logger.info("Loading %s: %s", t, path)
         try:
             project, messages = load_project(path)
         except (LoadFileError, LoadProjectError) as e:
-            logger.error("Invalid load %s: %s", t, e)
+            logger.error(str(e))
             if raise_exc:
                 raise
             return False
 
-        logger.debug("Loading %s completed", t)
+        logger.info("Loading %s completed", t)
 
         messages.insert(0, f"{path}")
         main_window = MainWindow(
@@ -124,8 +123,8 @@ class Application(QApplication):
         main_window.quit_application.connect(self.quit)
         self._open_projects[id(main_window)] = main_window
         if not main_window.project.is_temporary:
-            self.recent_projects_config.add_opened(project.name, project.path)
-            self.recent_projects_config.add_recent(project.name, project.path)
+            self._recent_projects_dialog.add_opened(project)
+            self._recent_projects_dialog.add_recent(project)
         main_window.show()
         return True
 
@@ -135,9 +134,9 @@ class Application(QApplication):
         main_window.project.config.dump()
 
         if not main_window.project.is_temporary:
-            self.recent_projects_config.add_recent(main_window.project.name, main_window.project.path)
+            self._recent_projects_dialog.add_recent(main_window.project)
             if not self._quitting:
-                self.recent_projects_config.remove_opened(main_window.project.path)
+                self._recent_projects_dialog.remove_opened(main_window.project)
 
         if not self._open_projects:
             self._recent_projects_dialog.show()
@@ -149,13 +148,13 @@ class Application(QApplication):
         super().quit()
 
     def run(self, project_path: Path) -> int:
-        if project_path:
+        if project_path != Path(""):
             if not self.open_project(project_path):
                 return 1
         else:
-            if self.recent_projects_config.opened:
-                for item in self.recent_projects_config.opened:
+            if self._recent_projects_dialog.opened:
+                for item in self._recent_projects_dialog.opened:
                     self.open_project(item.path)
-            else:
+            if not self._open_projects:
                 self._recent_projects_dialog.show()
         return self.exec()
