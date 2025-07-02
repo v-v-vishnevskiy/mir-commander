@@ -6,7 +6,6 @@ from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QMessageBox, QVBoxLayout
 
 from mir_commander.consts import DIR
-from mir_commander.core import Project
 from mir_commander.core.errors import LoadProjectError
 from mir_commander.ui.utils.widget import Dialog as BaseDialog, PushButton
 
@@ -40,14 +39,15 @@ class RecentProjectsDialog(BaseDialog):
         self.remove_opened = self._config.remove_opened
         self.remove_recent = self._config.remove_recent
 
-        self.setup_ui()
-        self.setup_signals()
+        self._error = QMessageBox(self)
+
+        self._setup_ui()
+        self._setup_signals()
 
         self.setWindowTitle(self.tr("Recent Projects"))
 
-    def setup_ui(self):
-        self.error = QMessageBox(self)
-        self.error.setIcon(QMessageBox.Icon.Critical)
+    def _setup_ui(self):
+        self._error.setIcon(QMessageBox.Icon.Critical)
 
         layout = QVBoxLayout()
 
@@ -55,29 +55,25 @@ class RecentProjectsDialog(BaseDialog):
         self.setMinimumWidth(600)
         self.setMinimumHeight(450)
 
-        self.recent = ListView(self)
-        self.recent.setMouseTracking(True)
-        self.recent.setModel(QStandardItemModel(self))
+        self._recent = ListView(self)
+        self._recent.setMouseTracking(True)
+        self._recent.setModel(QStandardItemModel(self))
 
-        self.pb_open_project = PushButton(PushButton.tr("Open"), self)
-        self.pb_cancel = PushButton(PushButton.tr("Cancel"), self)
+        self._pb_open_project = PushButton(PushButton.tr("Open"), self)
+        self._pb_cancel = PushButton(PushButton.tr("Cancel"), self)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)
-        buttons.addWidget(self.pb_open_project)
-        buttons.addWidget(self.pb_cancel)
+        buttons.addWidget(self._pb_open_project)
+        buttons.addWidget(self._pb_cancel)
 
-        layout.addWidget(self.recent)
+        layout.addWidget(self._recent)
         layout.addLayout(buttons)
         self.setLayout(layout)
 
-    def show(self):
-        self.load_data()
-        super().show()
-
-    def load_data(self):
-        self.clear_data()
-        root = self.recent.model().invisibleRootItem()
+    def _load_data(self):
+        self._clear_data()
+        root = self._recent.model().invisibleRootItem()
         for project in self._config.recent:
             msg = ""
             if not project.exists:
@@ -87,27 +83,31 @@ class RecentProjectsDialog(BaseDialog):
             item.setEditable(False)
             root.appendRow(item)
 
-    def clear_data(self):
-        root = self.recent.model().invisibleRootItem()
+    def _clear_data(self):
+        root = self._recent.model().invisibleRootItem()
         root.removeRows(0, root.rowCount())
 
-    def setup_signals(self):
-        self.recent.clicked.connect(self.recent_open)
-        self.pb_open_project.clicked.connect(self.pb_open_clicked)
-        self.pb_cancel.clicked.connect(self.reject)
+    def _setup_signals(self):
+        self._recent.clicked.connect(self._recent_open)
+        self._pb_open_project.clicked.connect(self._pb_open_clicked)
+        self._pb_cancel.clicked.connect(self.reject)
+
+    def show(self):
+        self._load_data()
+        super().show()
 
     @property
     def opened(self) -> list[ProjectConfig]:
         return self._config.opened
 
     @Slot()
-    def recent_open(self, index: QModelIndex):
-        item = self.recent.model().itemFromIndex(index)
+    def _recent_open(self, index: QModelIndex):
+        item = self._recent.model().itemFromIndex(index)
         if item.isEnabled():
             self._open_project(item.project_path)
 
     @Slot()
-    def pb_open_clicked(self, *args, **kwargs):
+    def _pb_open_clicked(self, *args, **kwargs):
         dialog = QFileDialog(self, self.tr("Open Project"), QDir.homePath())
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
@@ -118,6 +118,6 @@ class RecentProjectsDialog(BaseDialog):
             self.app.open_project(path, raise_exc=True)
             self.hide()
         except LoadProjectError as e:
-            self.error.setText(e.__class__.__name__)
-            self.error.setInformativeText(str(e))
-            self.error.show()
+            self._error.setText(e.__class__.__name__)
+            self._error.setInformativeText(str(e))
+            self._error.show()
