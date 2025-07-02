@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 import numpy as np
 import OpenGL.error
 from PySide6.QtCore import Slot
-from PySide6.QtGui import QSurfaceFormat, QVector3D
+from PySide6.QtGui import QStandardItem, QSurfaceFormat, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
@@ -23,8 +23,7 @@ from .scene import Scene
 from .style import Style
 
 if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
-    from mir_commander.ui.widgets.docks.project_dock.items import Item
+    from ..config import ViewersConfig
 
 
 class InteratomicDistance:
@@ -61,17 +60,17 @@ class InteratomicOutOfPlane:
 
 
 class MolecularStructure(Widget):
-    def __init__(self, parent: QWidget, item: "Item", main_window: "MainWindow", all: bool = False):
-        self._main_window = main_window
-        self._config = main_window.config.widgets.viewers.molecular_structure
+    def __init__(self, parent: QWidget, config: "ViewersConfig", item: QStandardItem, console_dock, status_bar: StatusBar, all: bool = False):
+        self._config = config.molecular_structure
+        self._console_dock = console_dock
+        self._status_bar = status_bar
 
-        project_id = id(main_window.project)
         self._style = Style(self._config)
-        keymap = Keymap(project_id, self._config.keymap.model_dump())
+        keymap = Keymap(self._config.keymap.model_dump())
 
         self.geom_bond_tol = self._config.geom_bond_tol
 
-        super().__init__(scene=Scene(self, self._style), keymap=keymap, parent=parent)
+        super().__init__(parent=parent, scene=Scene(self, style=self._style, status_bar=status_bar), keymap=keymap)
 
         # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
         self.scene: Scene
@@ -106,8 +105,8 @@ class MolecularStructure(Widget):
         self.scene.apply_style()
 
     def _atomic_coordinates_item(
-        self, index: int, parent: "Item", counter: int = -1
-    ) -> tuple[bool, int, Optional["Item"]]:
+        self, index: int, parent: QStandardItem, counter: int = -1
+    ) -> tuple[bool, int, Optional[QStandardItem]]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
@@ -253,7 +252,7 @@ class MolecularStructure(Widget):
 
                 if image is not None:
                     if image.save(str(dlg.img_file_path)):
-                        self._main_window.status.showMessage(StatusBar.tr("Image saved"), 10000)
+                        self._status_bar.showMessage(StatusBar.tr("Image saved"), 10000)
                     else:
                         QMessageBox.critical(
                             self,
@@ -288,7 +287,7 @@ class MolecularStructure(Widget):
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
-            self._main_window.append_to_console(
+            self._console_dock.append(
                 f"r({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1})={distance:.3f}"
             )
         else:
@@ -313,7 +312,7 @@ class MolecularStructure(Widget):
             angle = geom_angle_xyz(
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
-            self._main_window.append_to_console(
+            self._console_dock.append(
                 f"a({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1})={angle:.1f}"
             )
@@ -352,7 +351,7 @@ class MolecularStructure(Widget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self._main_window.append_to_console(
+            self._console_dock.append(
                 f"t({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1}-{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -391,7 +390,7 @@ class MolecularStructure(Widget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self._main_window.append_to_console(
+            self._console_dock.append(
                 f"o({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}<"
                 f"{atom3.element_symbol}{atom3.index_num+1}/{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -633,7 +632,7 @@ class MolecularStructure(Widget):
                     f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num+1})={outofplane.value:.1f}, "
                 )
 
-        self._main_window.append_to_console(out_str.rstrip(", "))
+        self._console_dock.append(out_str.rstrip(", "))
 
     def toggle_bonds_for_selected_atoms(self):
         """

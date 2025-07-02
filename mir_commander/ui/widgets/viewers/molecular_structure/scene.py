@@ -6,6 +6,7 @@ from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.scene import Scene as BaseScene
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.utils.widget import StatusBar
 from mir_commander.utils.chem import atomic_number_to_symbol
 
 from .graphics_items import Atom, Bond
@@ -14,7 +15,7 @@ from .style import Style
 
 
 class Scene(BaseScene):
-    def __init__(self, widget: QOpenGLWidget, style: Style):
+    def __init__(self, widget: QOpenGLWidget, style: Style, status_bar: StatusBar):
         super().__init__(widget)
 
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
@@ -28,6 +29,7 @@ class Scene(BaseScene):
         self._atom_index_under_cursor: None | Atom = None
 
         self.style = style
+        self._status_bar = status_bar
 
     def _apply_atoms_style(self, mesh_quality: int):
         # update mesh
@@ -113,7 +115,7 @@ class Scene(BaseScene):
                     self._atom_index_under_cursor.set_under_cursor(False)
                 atom.set_under_cursor(True)
                 self.update()
-                self._gl_widget._main_window.status.showMessage(f"{atom.element_symbol}{atom.index_num+1}", 10000)
+                self._status_bar.showMessage(f"{atom.element_symbol}{atom.index_num+1}", 10000)
         elif self._atom_index_under_cursor:
             self._atom_index_under_cursor.set_under_cursor(False)
             self.update()

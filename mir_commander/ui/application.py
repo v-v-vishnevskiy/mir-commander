@@ -114,7 +114,13 @@ class Application(QApplication):
         logger.debug(f"Loading {t} completed")
 
         messages.insert(0, f"{path}")
-        main_window = MainWindow(self, project, messages)
+        main_window = MainWindow(
+            app=self, 
+            app_config=self.config, 
+            app_apply_callbacks=self.apply_callbacks, 
+            project=project, 
+            init_msg=messages,
+        )
         self._open_projects[id(main_window)] = main_window
         if not main_window.project.is_temporary:
             self.recent_projects_config.add_opened(project.name, project.path)

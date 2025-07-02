@@ -21,12 +21,12 @@ class WheelMode(Enum):
 
 
 class Widget(QOpenGLWidget):
-    def __init__(self, scene: None | Scene = None, keymap: None | Keymap = None, parent: None | QWidget = None):
+    def __init__(self, parent: QWidget, scene: Scene, keymap: None | Keymap = None):
         super().__init__(parent)
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
-        self.scene = scene or Scene(self)
+        self.scene = scene
         self._keymap = keymap or Keymap(
             id(self),
             {

@@ -1,4 +1,4 @@
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 from pydantic import BaseModel, Field
 
@@ -6,21 +6,17 @@ from mir_commander.base_config import BaseConfig
 
 from .widgets.docks.config import DocksConfig
 from .widgets.settings.config import SettingsConfig
-from .widgets.viewers.molecular_structure.config import MolecularStructureViewerConfig
+from .widgets.viewers.config import ViewersConfig
 
 
 class Toolbars(BaseModel):
     icon_size: int = Field(default=20, ge=16, le=32, description="Icon size in pixels")
 
 
-class Viewers(BaseModel):
-    molecular_structure: MolecularStructureViewerConfig = MolecularStructureViewerConfig()
-
-
 class Widgets(BaseModel):
     toolbars: Toolbars = Toolbars()
     docks: DocksConfig = DocksConfig()
-    viewers: Viewers = Viewers()
+    viewers: ViewersConfig = ViewersConfig()
 
 
 class MainWindowConfig(BaseModel):
@@ -37,12 +33,12 @@ class AppConfig(BaseConfig):
 
 
 class ApplyCallbacks(BaseModel):
-    functions: list[Callable] = Field(
+    functions: list[Callable[[], Any]] = Field(
         default_factory=list, 
         description="List of functions to call when applying config changes"
     )
 
-    def add(self, fn: Callable):
+    def add(self, fn: Callable[[], Any]):
         """Add a function to the list of apply callbacks."""
         self.functions.append(fn)
     

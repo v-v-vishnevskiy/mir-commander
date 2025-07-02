@@ -68,7 +68,15 @@ class Item(QStandardItem):
         """
         sub_window = QMdiSubWindow(self._mdi_area)
         sub_window.setAttribute(Qt.WA_DeleteOnClose)
-        viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
+        viewer = cls(
+            parent=sub_window,
+            config=self._main_window.config.widgets.viewers,
+            item=self, 
+            console_dock=self._main_window.docks.console,
+            status_bar=self._main_window.status_bar, 
+            *args, 
+            **kwargs,
+        )
         sub_window.setWidget(viewer)
         self._mdi_area.addSubWindow(sub_window)
         if maximize:

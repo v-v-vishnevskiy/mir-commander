@@ -20,9 +20,10 @@ class ProjectDock(BaseDock):
         self._project = project
         self._tree = TreeView(self, project.data, config)
         self._tree.load_data()
-
-        if project.is_temporary:
-            self._tree.expand_top_items()
-            self._tree.view_babushka()
-
         self.setWidget(self._tree)
+
+    def expand_top_items(self):
+        self._tree.expand_top_items()
+
+    def view_babushka(self):
+        self._tree.view_babushka()

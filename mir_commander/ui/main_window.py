@@ -12,18 +12,18 @@ from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
 from mir_commander import __version__
 from mir_commander.core import Project
 
-from .config import ApplyCallbacks
+from .config import AppConfig, ApplyCallbacks
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
 from .widgets.settings.settings_dialog import SettingsDialog
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
+from .utils.sub_window_menu import SubWindowMenu
+from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
 
 if TYPE_CHECKING:
     from .application import Application
-    from .utils.sub_window_menu import SubWindowMenu
-    from .utils.sub_window_toolbar import SubWindowToolBar
 
 
 logger = logging.getLogger("MainWindow")
@@ -37,14 +37,16 @@ class Docks:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
+    def __init__(self, app: "Application", app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
         logger.debug("Initializing main window ...")
         super().__init__(None)
         self.app: "Application" = app
         self.project = project
-        self.config = self.app.config.main_window
+        self.app_config = app_config
+        self.config = app_config.main_window
         self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
         self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
+        self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
         self.apply_callbacks.add(self._set_mainwindow_title)
@@ -64,8 +66,8 @@ class MainWindow(QMainWindow):
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
-        self.status = StatusBar(self)
-        self.setStatusBar(self.status)
+        self.status_bar = StatusBar(self)
+        self.setStatusBar(self.status_bar)
 
         self._set_mainwindow_title()
 
@@ -81,7 +83,11 @@ class MainWindow(QMainWindow):
 
         self._fix_window_composition()
 
-        self.status.showMessage(StatusBar.tr("Ready"), 10000)
+        self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
+
+        if project.is_temporary:
+            self.docks.project.expand_top_items()
+            self.docks.project.view_babushka()
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
@@ -110,9 +116,9 @@ class MainWindow(QMainWindow):
                 mdi_area=self.mdi_area, 
                 config=self.config.widgets.docks.project, 
                 project=self.project,
-            ), 
-            ObjectDock(parent=self, mdi_area=self.mdi_area), 
-            ConsoleDock(parent=self, mdi_area=self.mdi_area)
+            ),
+            ObjectDock(parent=self, mdi_area=self.mdi_area),
+            ConsoleDock(parent=self, mdi_area=self.mdi_area),
         )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
@@ -198,9 +204,9 @@ class MainWindow(QMainWindow):
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
             parent=self, 
-            app_apply_callbacks=self.app.apply_callbacks, 
+            app_apply_callbacks=self.app_apply_callbacks, 
             mw_apply_callbacks=self.apply_callbacks, 
-            app_config=self.app.config, 
+            app_config=self.app_config, 
             project_config=self.project.config,
         )
         action.triggered.connect(settings_dialog.show)
