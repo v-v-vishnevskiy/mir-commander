@@ -1,12 +1,10 @@
-from typing import TYPE_CHECKING
+from PySide6.QtWidgets import QMdiArea, QWidget
 
 from mir_commander.core import Project
 
 from ..base import BaseDock
+from .config import ProjectDockConfig
 from .tree_view import TreeView
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class ProjectDock(BaseDock):
@@ -17,10 +15,10 @@ class ProjectDock(BaseDock):
     for showing a tree widget with objects of the project.
     """
 
-    def __init__(self, parent: "MainWindow", project: Project):
-        super().__init__(self.tr("Project"), parent)
+    def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: ProjectDockConfig, project: Project):
+        super().__init__(self.tr("Project"), parent, mdi_area)
         self._project = project
-        self._tree = TreeView(self, project.data, self.docks_config.project)
+        self._tree = TreeView(self, project.data, config)
         self._tree.load_data()
 
         if project.is_temporary:

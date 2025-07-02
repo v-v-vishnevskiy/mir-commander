@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon, QKeySequence
 from PySide6.QtWidgets import QMdiArea, QWidget

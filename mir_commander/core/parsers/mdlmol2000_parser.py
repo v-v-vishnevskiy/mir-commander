@@ -27,7 +27,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
-    logger.debug("Loading MDLMol2000 file ...")
+    logger.info("Loading MDLMol2000 file ...")
 
     logs.append("MDL Molfile V2000.")
 

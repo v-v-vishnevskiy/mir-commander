@@ -22,7 +22,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
     Also returned is a list of messages, which can be printed later.
     """
 
-    logger.debug("Loading file through CCLib ...")
+    logger.info("Loading file through CCLib ...")
 
     # Use here cclib for parsing files
     # Note, we do not handle multijob files explicitly!

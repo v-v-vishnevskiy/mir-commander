@@ -15,7 +15,7 @@ from mir_commander.core import Project
 from .config import ApplyCallbacks
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
-from .widgets.settings.settings_dialog import SettingsDialog as SettingsDialog
+from .widgets.settings.settings_dialog import SettingsDialog
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from .utils.widget import Action, Menu, StatusBar
@@ -104,7 +104,16 @@ class MainWindow(QMainWindow):
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = Docks(ProjectDock(self, self.project), ObjectDock(self), ConsoleDock(self))
+        self.docks = Docks(
+            ProjectDock(
+                parent=self, 
+                mdi_area=self.mdi_area, 
+                config=self.config.widgets.docks.project, 
+                project=self.project,
+            ), 
+            ObjectDock(parent=self, mdi_area=self.mdi_area), 
+            ConsoleDock(parent=self, mdi_area=self.mdi_area)
+        )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
@@ -187,7 +196,14 @@ class MainWindow(QMainWindow):
         action = Action(Action.tr("Settings..."), self)
         action.setMenuRole(Action.PreferencesRole)
         # Settings dialog is actually created here.
-        action.triggered.connect(SettingsDialog(self).show)
+        settings_dialog = SettingsDialog(
+            parent=self, 
+            app_apply_callbacks=self.app.apply_callbacks, 
+            mw_apply_callbacks=self.apply_callbacks, 
+            app_config=self.app.config, 
+            project_config=self.project.config,
+        )
+        action.triggered.connect(settings_dialog.show)
         return action
 
     def _quit_action(self) -> Action:

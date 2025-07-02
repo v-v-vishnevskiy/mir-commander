@@ -22,7 +22,7 @@ def load_cfour(path: Path, logs: list) -> Item:
     Also return a list of flagged items.
     Additionally return a list of messages, which can be printed later.
     """
-    logger.debug("Loading CFour file ...")
+    logger.info("Loading CFour file ...")
 
     logs.append("Cfour format.")
 

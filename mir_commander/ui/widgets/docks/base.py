@@ -1,11 +1,7 @@
-from typing import TYPE_CHECKING
-
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMdiArea, QWidget
 
 from mir_commander.ui.utils.widget import DockWidget as BaseDockWidget
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class BaseDock(BaseDockWidget):
@@ -15,10 +11,9 @@ class BaseDock(BaseDockWidget):
     for simple handling of translation.
     """
 
-    def __init__(self, title: str, main_window: "MainWindow"):
-        super().__init__(title, main_window)
-        self.mdi_area = main_window.mdi_area
-        self.docks_config = main_window.app.config.main_window.widgets.docks
+    def __init__(self, title: str, parent: QWidget, mdi_area: QMdiArea):
+        super().__init__(title, parent)
+        self.mdi_area = mdi_area
 
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea
