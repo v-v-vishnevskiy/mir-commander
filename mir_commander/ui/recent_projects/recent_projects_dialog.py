@@ -96,7 +96,7 @@ class RecentProjectsDialog(BaseDialog):
     def _recent_open(self, index: QModelIndex):
         item = self._recent.model().itemFromIndex(index)
         if item.isEnabled():
-            self.open_project.emit(item.project_path, True)
+            self.open_project.emit(item.project_path)
 
     @Slot()
     def _pb_open_clicked(self, *args, **kwargs):

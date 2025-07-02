@@ -12,52 +12,52 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="197"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="195"/>
         <source>Close Project</source>
         <translation>Закрыть проект</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="202"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="200"/>
         <source>Settings...</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="216"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="214"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="223"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="221"/>
         <source>About</source>
         <translation>О Mir Commander</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="230"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="228"/>
         <source>Cl&amp;ose</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="237"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="235"/>
         <source>Close &amp;All</source>
         <translation>Закрыть все</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="244"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="242"/>
         <source>&amp;Tile</source>
         <translation>Замостить</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="248"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="246"/>
         <source>&amp;Cascade</source>
         <translation>Каскадировать</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="255"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="253"/>
         <source>Ne&amp;xt</source>
         <translation>Следующее</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="263"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="261"/>
         <source>Pre&amp;vious</source>
         <translation>Предыдущее</translation>
     </message>
@@ -396,37 +396,37 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="79"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="77"/>
         <source>Started {name} {version}</source>
         <translation>Запущен {name} {version}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="232"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="230"/>
         <source>Close the active window</source>
         <translation>Закрыть активное окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="239"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="237"/>
         <source>Close all the windows</source>
         <translation>Закрыть все окна</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="244"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="242"/>
         <source>Tile the windows</source>
         <translation>Расположить все окна замощением</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="250"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="248"/>
         <source>Cascade the windows</source>
         <translation>Расположить все окна каскадно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="258"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="256"/>
         <source>Move the focus to the next window</source>
         <translation>Переместить фокус на следующее окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="266"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="264"/>
         <source>Move the focus to the previous window</source>
         <translation>Переместить фокус на предыдущее окно</translation>
     </message>
@@ -434,22 +434,22 @@
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="168"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="166"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="175"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="173"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="186"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="184"/>
         <source>&amp;Window</source>
         <translation>Окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="192"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="190"/>
         <source>Help</source>
         <translation>Помощь</translation>
     </message>
@@ -497,100 +497,100 @@
 <context>
     <name>MolecularStructure</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="228"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="259"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="233"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="264"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="230"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="235"/>
         <source>The file already exists:</source>
         <translation>Файл уже существует:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="231"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="236"/>
         <source>Do you want to overwrite it?</source>
         <translation>Вы хотите его перезаписать?</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="246"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="251"/>
         <source>Error image rendering</source>
         <translation>Ошибка создания изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="247"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="252"/>
         <source>OpenGL cannot create image.</source>
         <translation>OpenGL не может создать изображение.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="261"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="266"/>
         <source>Could not save image:</source>
         <translation>Изображение не было сохранено:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="262"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="267"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>Путь к файлу не существует или защищен от записи.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="267"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="275"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="272"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="280"/>
         <source>Cloak atoms by type</source>
         <translation>Скрыть атомы по типу</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="267"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="272"/>
         <source>Enter element symbol:</source>
         <translation>Введите символ элемента:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="276"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="281"/>
         <source>Invalid element symbol!</source>
         <translation>Некорректный символ элемента!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="296"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="301"/>
         <source>Interatomic distance</source>
         <translation>Межатомное расстояние</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="297"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="302"/>
         <source>At least two atoms must be selected!</source>
         <translation>По крайней мере два атома должны быть выделены!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="322"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="327"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="323"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="328"/>
         <source>At least three atoms must be selected!</source>
         <translation>По крайней мере три атома должны быть выделены!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="361"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="366"/>
         <source>Torsion angle</source>
         <translation>Торсионный угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="362"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="401"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="367"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="406"/>
         <source>At least four atoms must be selected!</source>
         <translation>По крайней мере четыре атома должны быть выделены!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="400"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="405"/>
         <source>Out-of-plane angle</source>
         <translation>Угол выхода из плоскости</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="420"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="425"/>
         <source>Auto geometrical parameter</source>
         <translation>Автоматический геометрический параметр</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="421"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="426"/>
         <source>Two, three or four atoms must be selected!</source>
         <translation>Два, три или четыре атома должны быть выделены!</translation>
     </message>
@@ -614,12 +614,12 @@
 <context>
     <name>PushButton</name>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="53"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="54"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="54"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="55"/>
         <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="68"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
@@ -648,12 +648,12 @@
 <context>
     <name>RecentProjectsDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="98"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="103"/>
         <source>Open Project</source>
         <translation>Открыть проект</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="37"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="41"/>
         <source>Recent Projects</source>
         <translation>Недавние проекты</translation>
     </message>
@@ -704,12 +704,15 @@
 <context>
     <name>StatusBar</name>
     <message>
-        <location filename="../../mir_commander/ui/main_window.py" line="86"/>
+        <location filename="../../mir_commander/ui/main_window.py" line="84"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
+</context>
+<context>
+    <name>TR</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="255"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="260"/>
         <source>Image saved</source>
         <translation>Изображение сохранено</translation>
     </message>

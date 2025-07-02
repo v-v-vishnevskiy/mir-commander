@@ -12,9 +12,11 @@ from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.widget import Widget
-from mir_commander.ui.utils.widget import StatusBar
+from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
+
+from ..base import BaseViewer
 
 from .build_bonds_dialog import BuildBondsDialog
 from .graphics_items import Atom
@@ -59,18 +61,21 @@ class InteratomicOutOfPlane:
         self.value = 0.0
 
 
-class MolecularStructure(Widget):
-    def __init__(self, parent: QWidget, config: "ViewersConfig", item: QStandardItem, console_dock, status_bar: StatusBar, all: bool = False):
+class MolecularStructure(Widget, BaseViewer):
+    def __init__(self, parent: QWidget, config: "ViewersConfig", item: QStandardItem, all: bool = False):
         self._config = config.molecular_structure
-        self._console_dock = console_dock
-        self._status_bar = status_bar
 
         self._style = Style(self._config)
         keymap = Keymap(self._config.keymap.model_dump())
 
         self.geom_bond_tol = self._config.geom_bond_tol
 
-        super().__init__(parent=parent, scene=Scene(self, style=self._style, status_bar=status_bar), keymap=keymap)
+        atom_highlighted = lambda symbol, num: self.short_msg.emit(f"{symbol}{num}")
+        super().__init__(
+            parent=parent,
+            scene=Scene(self, style=self._style, atom_highlighted=atom_highlighted),
+            keymap=keymap,
+        )
 
         # Define explicitly, otherwise mypy will complain about undefined attributes like "atom" etc.
         self.scene: Scene
@@ -252,7 +257,7 @@ class MolecularStructure(Widget):
 
                 if image is not None:
                     if image.save(str(dlg.img_file_path)):
-                        self._status_bar.showMessage(StatusBar.tr("Image saved"), 10000)
+                        self.short_msg.emit(TR.tr("Image saved"))
                     else:
                         QMessageBox.critical(
                             self,
@@ -287,7 +292,7 @@ class MolecularStructure(Widget):
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
-            self._console_dock.append(
+            self.long_msg.emit(
                 f"r({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1})={distance:.3f}"
             )
         else:
@@ -312,7 +317,7 @@ class MolecularStructure(Widget):
             angle = geom_angle_xyz(
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
-            self._console_dock.append(
+            self.long_msg.emit(
                 f"a({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1})={angle:.1f}"
             )
@@ -351,7 +356,7 @@ class MolecularStructure(Widget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self._console_dock.append(
+            self.long_msg.emit(
                 f"t({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1}-{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -390,7 +395,7 @@ class MolecularStructure(Widget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self._console_dock.append(
+            self.long_msg.emit(
                 f"o({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}<"
                 f"{atom3.element_symbol}{atom3.index_num+1}/{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -632,7 +637,7 @@ class MolecularStructure(Widget):
                     f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num+1})={outofplane.value:.1f}, "
                 )
 
-        self._console_dock.append(out_str.rstrip(", "))
+        self.long_msg.emit(out_str.rstrip(", "))
 
     def toggle_bonds_for_selected_atoms(self):
         """

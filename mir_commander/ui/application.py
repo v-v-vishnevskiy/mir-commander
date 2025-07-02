@@ -9,9 +9,9 @@ from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 
-from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 from .config import AppConfig, ApplyCallbacks
 from .main_window import MainWindow
+from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 
 logger = logging.getLogger("Application")
 
@@ -102,7 +102,7 @@ class Application(QApplication):
             self.installTranslator(translator)
             self._translator_qt = translator
 
-    def open_project(self, path: Path, raise_exc: bool = False) -> bool:
+    def open_project(self, path: Path) -> bool:
         t = "file" if path.is_file() else "project"
         logger.info("Loading %s: %s", t, path)
         try:

@@ -66,17 +66,17 @@ class Item(QStandardItem):
         """
         Create viewer instance and add it to MDI area and return this viewer instance
         """
-        sub_window = QMdiSubWindow(self._mdi_area)
+        sub_window = QMdiSubWindow(parent=self._mdi_area)
         sub_window.setAttribute(Qt.WA_DeleteOnClose)
         viewer = cls(
             parent=sub_window,
             config=self._main_window.config.widgets.viewers,
-            item=self, 
-            console_dock=self._main_window.docks.console,
-            status_bar=self._main_window.status_bar, 
+            item=self,
             *args, 
             **kwargs,
         )
+        viewer.short_msg.connect(self._main_window.status_bar.showMessage)
+        viewer.long_msg.connect(self._main_window.docks.console.append)
         sub_window.setWidget(viewer)
         self._mdi_area.addSubWindow(sub_window)
         if maximize:
