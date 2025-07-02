@@ -6,12 +6,13 @@ from functools import partial
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.core import Project
 
 from .config import AppConfig, ApplyCallbacks
+from .mdi_area import MdiArea
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
 from .widgets.settings.settings_dialog import SettingsDialog
@@ -20,6 +21,7 @@ from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToo
 from .utils.sub_window_menu import SubWindowMenu
 from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
+
 
 
 logger = logging.getLogger("MainWindow")
@@ -51,14 +53,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
-        # Mdi area as a central widget
-        self.mdi_area = QMdiArea(self)
-        self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
-        self.setCentralWidget(self.mdi_area)
-
+        self.setup_mdi_area()
         self.setup_toolbars()  # Note, we create toolbars before menus
         self.setup_docks()  # Create docks before menus
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
@@ -84,8 +79,8 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
 
         if project.is_temporary:
-            self.docks.project.expand_top_items()
-            self.docks.project.view_babushka()
+            self.docks.project.tree.expand_top_items()
+            self.docks.project.tree.view_babushka()
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
@@ -101,6 +96,12 @@ class MainWindow(QMainWindow):
         if self.__fix_sub_window:
             self.mdi_area.removeSubWindow(self.__fix_sub_window)
             self.__fix_sub_window = None
+
+    def setup_mdi_area(self):
+        self.mdi_area = MdiArea(parent=self, viewers_config=self.config.widgets.viewers)
+        self.mdi_area.subWindowActivated.connect(self.update_menus)
+        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
+        self.setCentralWidget(self.mdi_area)
 
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -121,6 +122,8 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
+
+        self.docks.project.tree.open_viewer.connect(self.mdi_area.open_viewer)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.

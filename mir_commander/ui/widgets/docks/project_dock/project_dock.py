@@ -18,12 +18,6 @@ class ProjectDock(BaseDock):
     def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: ProjectDockConfig, project: Project):
         super().__init__(self.tr("Project"), parent, mdi_area)
         self._project = project
-        self._tree = TreeView(self, project.data, config)
-        self._tree.load_data()
-        self.setWidget(self._tree)
-
-    def expand_top_items(self):
-        self._tree.expand_top_items()
-
-    def view_babushka(self):
-        self._tree.view_babushka()
+        self.tree = TreeView(self, project.data, config)
+        self.tree.load_data()
+        self.setWidget(self.tree)
