@@ -14,7 +14,7 @@ class Item(QStandardItem):
         self.setData(data)
         self.setEditable(False)
         self._set_icon()
-        self.load_data()
+        self._load_data()
 
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
@@ -28,7 +28,7 @@ class Item(QStandardItem):
         else:
             return part
 
-    def load_data(self):
+    def _load_data(self):
         data: models.Item = self.data()
 
         for item in data.items:

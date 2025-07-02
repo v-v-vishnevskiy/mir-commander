@@ -1,6 +1,6 @@
 from typing import Any
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
@@ -8,6 +8,8 @@ from .widgets.viewers.config import ViewersConfig
 
 
 class MdiArea(QMdiArea):
+    added_viewer = Signal(Any)
+
     def __init__(self, parent: QWidget, viewers_config: ViewersConfig):
         super().__init__(parent)
         self._viewers_config = viewers_config
@@ -25,11 +27,8 @@ class MdiArea(QMdiArea):
         else:
             sub_window = QMdiSubWindow(self)
             sub_window.setAttribute(Qt.WA_DeleteOnClose)
-
             viewer = viewer_cls(parent=sub_window, config=self._viewers_config, item=item, **kwargs)
-            # viewer.short_msg.connect(self._main_window.status_bar.showMessage)
-            # viewer.long_msg.connect(self._main_window.docks.console.append)
-
+            self.added_viewer.emit(viewer)
             sub_window.setWidget(viewer)
             self.addSubWindow(sub_window)
         viewer.showNormal()

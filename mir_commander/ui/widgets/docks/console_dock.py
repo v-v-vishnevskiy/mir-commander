@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMdiArea, QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
 from .base import BaseDock
 
@@ -20,8 +20,8 @@ class ConsoleDock(BaseDock):
     Contains an instance of the Text widget for showing text information.
     """
 
-    def __init__(self, parent: QWidget, mdi_area: QMdiArea):
-        super().__init__(self.tr("Console output"), parent, mdi_area)
+    def __init__(self, parent: QWidget):
+        super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
         self.setWidget(self.text)
 

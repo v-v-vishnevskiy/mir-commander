@@ -17,7 +17,7 @@ logger = logging.getLogger("ProjectDock.TreeView")
 
 
 class TreeView(QTreeView):
-    open_viewer = Signal(QStandardItem, Any, dict)
+    view_item = Signal(QStandardItem, Any, dict)
 
     def __init__(self, parent: QWidget, data: models.Data, config: ProjectDockConfig):
         super().__init__(parent)
@@ -47,14 +47,14 @@ class TreeView(QTreeView):
             Action(
                 text=Action.tr("VS_Child"), 
                 parent=view_structures_menu, 
-                triggered=lambda: self.open_viewer.emit(item, MolecularStructure, {"all": False}),
+                triggered=lambda: self.view_item.emit(item, MolecularStructure, {"all": False}),
             )
         )
         view_structures_menu.addAction(
             Action(
                 text=Action.tr("VS_All"), 
                 parent=view_structures_menu, 
-                triggered=lambda: self.open_viewer.emit(item, MolecularStructure, {"all": True}),
+                triggered=lambda: self.view_item.emit(item, MolecularStructure, {"all": True}),
             )
         )
         view_structures_menu.addSeparator()
@@ -65,7 +65,7 @@ class TreeView(QTreeView):
     def _item_double_clicked(self, index: QModelIndex):
         item = self.model().itemFromIndex(index)
         if item.default_viewer:
-            self.open_viewer.emit(item, item.default_viewer, {})
+            self.view_item.emit(item, item.default_viewer, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
@@ -99,6 +99,6 @@ class TreeView(QTreeView):
         data = item.data()
         if data is not None and data.metadata.get(babushka_priehala, False):
             if item.default_viewer:
-                self.open_viewer.emit(item, item.default_viewer, {})
+                self.view_item.emit(item, item.default_viewer, {})
         for i in range(item.rowCount()):
             self._view_babushka(item.child(i))

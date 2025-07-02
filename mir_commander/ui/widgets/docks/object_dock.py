@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMdiArea, QWidget
+from PySide6.QtWidgets import QWidget
 
 from .base import BaseDock
 
@@ -10,5 +10,5 @@ class ObjectDock(BaseDock):
     with settings for the currently chosen object in the project tree.
     """
 
-    def __init__(self, parent: QWidget, mdi_area: QMdiArea):
-        super().__init__(self.tr("Object"), parent, mdi_area)
+    def __init__(self, parent: QWidget):
+        super().__init__(self.tr("Object"), parent)

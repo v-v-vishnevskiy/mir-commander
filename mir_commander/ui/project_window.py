@@ -96,9 +96,14 @@ class ProjectWindow(QMainWindow):
             self.__fix_sub_window = None
 
     def setup_mdi_area(self):
+        def added_viewer_slot(viewer):
+            viewer.short_msg.connect(self.status_bar.showMessage)
+            viewer.long_msg.connect(self.docks.console.append)
+
         self.mdi_area = MdiArea(parent=self, viewers_config=self.config.widgets.viewers)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
+        self.mdi_area.added_viewer.connect(added_viewer_slot)
         self.setCentralWidget(self.mdi_area)
 
     def setup_docks(self):
@@ -110,18 +115,17 @@ class ProjectWindow(QMainWindow):
         self.docks = Docks(
             ProjectDock(
                 parent=self, 
-                mdi_area=self.mdi_area, 
                 config=self.config.widgets.docks.project, 
                 project=self.project,
             ),
-            ObjectDock(parent=self, mdi_area=self.mdi_area),
-            ConsoleDock(parent=self, mdi_area=self.mdi_area),
+            ObjectDock(parent=self),
+            ConsoleDock(parent=self),
         )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
 
-        self.docks.project.tree.open_viewer.connect(self.mdi_area.open_viewer)
+        self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.

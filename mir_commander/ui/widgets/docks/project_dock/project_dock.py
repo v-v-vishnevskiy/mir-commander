@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMdiArea, QWidget
+from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import Project
 
@@ -15,8 +15,8 @@ class ProjectDock(BaseDock):
     for showing a tree widget with objects of the project.
     """
 
-    def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: ProjectDockConfig, project: Project):
-        super().__init__(self.tr("Project"), parent, mdi_area)
+    def __init__(self, parent: QWidget, config: ProjectDockConfig, project: Project):
+        super().__init__(self.tr("Project"), parent)
         self._project = project
         self.tree = TreeView(self, project.data, config)
         self.tree.load_data()
