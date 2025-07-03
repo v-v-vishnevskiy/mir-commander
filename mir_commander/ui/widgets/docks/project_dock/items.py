@@ -2,7 +2,7 @@ from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import models
-from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructure
+from mir_commander.ui.widgets.viewers.molecular_structure import MolecularStructureViewer
 
 
 class Item(QStandardItem):
@@ -58,14 +58,14 @@ class Unex(Item):
 
 
 class AtomicCoordinatesGroup(Item):
-    default_viewer = MolecularStructure
+    default_viewer = MolecularStructureViewer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
 
 
 class AtomicCoordinates(Item):
-    default_viewer = MolecularStructure
+    default_viewer = MolecularStructureViewer
     context_menu: bool = False
 
     def _set_icon(self):

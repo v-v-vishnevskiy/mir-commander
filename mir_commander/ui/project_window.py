@@ -16,6 +16,7 @@ from .mdi_area import MdiArea
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
 from .widgets.settings.settings_dialog import SettingsDialog
+from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 from .utils.sub_window_menu import SubWindowMenu
@@ -33,8 +34,8 @@ class Docks:
 
 
 class ProjectWindow(QMainWindow):
-    close_project = Signal(QMainWindow)
-    quit_application = Signal()
+    close_project_signal = Signal(QMainWindow)
+    quit_application_signal = Signal()
 
     def __init__(self, app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
         logger.debug("Initializing main window ...")
@@ -96,14 +97,14 @@ class ProjectWindow(QMainWindow):
             self.__fix_sub_window = None
 
     def setup_mdi_area(self):
-        def added_viewer_slot(viewer):
-            viewer.short_msg.connect(self.status_bar.showMessage)
-            viewer.long_msg.connect(self.docks.console.append)
+        def added_viewer_slot(viewer: BaseViewer):
+            viewer.short_msg_signal.connect(self.status_bar.showMessage)
+            viewer.long_msg_signal.connect(self.docks.console.append)
 
         self.mdi_area = MdiArea(parent=self, viewers_config=self.config.widgets.viewers)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
-        self.mdi_area.added_viewer.connect(added_viewer_slot)
+        self.mdi_area.added_viewer_signal.connect(added_viewer_slot)
         self.setCentralWidget(self.mdi_area)
 
     def setup_docks(self):
@@ -219,7 +220,7 @@ class ProjectWindow(QMainWindow):
         action = Action(Action.tr("Quit"), self)
         action.setMenuRole(Action.QuitRole)
         action.setShortcut(QKeySequence.Quit)
-        action.triggered.connect(self.quit_application.emit)
+        action.triggered.connect(self.quit_application_signal.emit)
         return action
 
     def _about_action(self) -> Action:
@@ -291,7 +292,7 @@ class ProjectWindow(QMainWindow):
     def closeEvent(self, event: QCloseEvent):
         logger.info("Closing %s project ...", self.project.name)
         self._save_settings()
-        self.close_project.emit(self)
+        self.close_project_signal.emit(self)
         event.accept()
 
     @Slot()

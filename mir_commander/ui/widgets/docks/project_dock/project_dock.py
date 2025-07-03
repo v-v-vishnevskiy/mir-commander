@@ -18,6 +18,6 @@ class ProjectDock(BaseDock):
     def __init__(self, parent: QWidget, config: ProjectDockConfig, project: Project):
         super().__init__(self.tr("Project"), parent)
         self._project = project
-        self.tree = TreeView(self, project.data, config)
+        self.tree = TreeView(self, project.data, config.tree)
         self.tree.load_data()
         self.setWidget(self.tree)

@@ -7,10 +7,10 @@ from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
 from .config import Keymap
-from .viewer import MolecularStructure
+from .viewer import MolecularStructureViewer
 
 
-class Menu(SubWindowMenu[MolecularStructure]):
+class Menu(SubWindowMenu[MolecularStructureViewer]):
     def __init__(self, parent: QWidget, mdi_area: QMdiArea, keymap: Keymap):
         super().__init__(Menu.tr("&Molecule"), parent, mdi_area)
         self.setObjectName("Molecular Structure Menu")

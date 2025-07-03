@@ -25,7 +25,7 @@ class ListView(QListView):
 class RecentProjectsDialog(BaseDialog):
     """Dialog with information about the program."""
 
-    open_project = Signal(Path, bool)
+    open_project_signal = Signal(Path, bool)
 
     def __init__(self):
         super().__init__(None)
@@ -96,7 +96,7 @@ class RecentProjectsDialog(BaseDialog):
     def _recent_open(self, index: QModelIndex):
         item = self._recent.model().itemFromIndex(index)
         if item.isEnabled():
-            self.open_project.emit(item.project_path)
+            self.open_project_signal.emit(item.project_path)
 
     @Slot()
     def _pb_open_clicked(self, *args, **kwargs):

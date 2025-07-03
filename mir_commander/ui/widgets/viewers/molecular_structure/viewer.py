@@ -1,6 +1,6 @@
 import math
 from itertools import combinations
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 import numpy as np
 import OpenGL.error
@@ -19,13 +19,11 @@ from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop
 from ..base import BaseViewer
 
 from .build_bonds_dialog import BuildBondsDialog
+from .config import MolecularStructureViewerConfig
 from .graphics_items import Atom
 from .save_image_dialog import SaveImageDialog
 from .scene import Scene
 from .style import Style
-
-if TYPE_CHECKING:
-    from ..config import ViewersConfig
 
 
 class InteratomicDistance:
@@ -61,16 +59,16 @@ class InteratomicOutOfPlane:
         self.value = 0.0
 
 
-class MolecularStructure(Widget, BaseViewer):
-    def __init__(self, parent: QWidget, config: "ViewersConfig", item: QStandardItem, all: bool = False):
-        self._config = config.molecular_structure
+class MolecularStructureViewer(Widget, BaseViewer):
+    def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
+        self._config = config
 
         self._style = Style(self._config)
         keymap = Keymap(self._config.keymap.model_dump())
 
         self.geom_bond_tol = self._config.geom_bond_tol
 
-        atom_highlighted = lambda symbol, num: self.short_msg.emit(f"{symbol}{num}")
+        atom_highlighted = lambda symbol, num: self.short_msg_signal.emit(f"{symbol}{num}")
         super().__init__(
             parent=parent,
             scene=Scene(self, style=self._style, atom_highlighted=atom_highlighted),
@@ -257,7 +255,7 @@ class MolecularStructure(Widget, BaseViewer):
 
                 if image is not None:
                     if image.save(str(dlg.img_file_path)):
-                        self.short_msg.emit(TR.tr("Image saved"))
+                        self.short_msg_signal.emit(TR.tr("Image saved"))
                     else:
                         QMessageBox.critical(
                             self,
@@ -292,7 +290,7 @@ class MolecularStructure(Widget, BaseViewer):
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
-            self.long_msg.emit(
+            self.long_msg_signal.emit(
                 f"r({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1})={distance:.3f}"
             )
         else:
@@ -317,7 +315,7 @@ class MolecularStructure(Widget, BaseViewer):
             angle = geom_angle_xyz(
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
-            self.long_msg.emit(
+            self.long_msg_signal.emit(
                 f"a({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1})={angle:.1f}"
             )
@@ -356,7 +354,7 @@ class MolecularStructure(Widget, BaseViewer):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self.long_msg.emit(
+            self.long_msg_signal.emit(
                 f"t({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
                 f"{atom3.element_symbol}{atom3.index_num+1}-{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -395,7 +393,7 @@ class MolecularStructure(Widget, BaseViewer):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self.long_msg.emit(
+            self.long_msg_signal.emit(
                 f"o({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}<"
                 f"{atom3.element_symbol}{atom3.index_num+1}/{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
             )
@@ -637,7 +635,7 @@ class MolecularStructure(Widget, BaseViewer):
                     f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num+1})={outofplane.value:.1f}, "
                 )
 
-        self.long_msg.emit(out_str.rstrip(", "))
+        self.long_msg_signal.emit(out_str.rstrip(", "))
 
     def toggle_bonds_for_selected_atoms(self):
         """

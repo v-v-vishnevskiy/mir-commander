@@ -1,6 +1,5 @@
 from typing import Callable
 
-from PySide6.QtCore import Signal
 from PySide6.QtGui import QVector3D
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from pydantic_extra_types.color import Color
@@ -17,8 +16,6 @@ from .style import Style
 
 
 class Scene(BaseScene):
-    short_msg = Signal(str)
-
     def __init__(self, widget: QOpenGLWidget, style: Style, atom_highlighted: Callable[[str, int], None]):
         super().__init__(widget)
 

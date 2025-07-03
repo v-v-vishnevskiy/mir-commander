@@ -1,20 +1,21 @@
 import abc
 import logging
 from pathlib import Path
+from typing import Self
 
 import yaml
 from pydantic import BaseModel, Field
 
 from .errors import ConfigError
 
-logger = logging.getLogger("BaseConfig")
+logger = logging.getLogger("Config")
 
 
 class BaseConfig(BaseModel, abc.ABC):
     path: None | Path = Field(default=None, exclude=True)
 
     @classmethod
-    def load(cls, path: Path) -> "BaseConfig":
+    def load(cls, path: Path) -> Self:
         logger.debug(f"Loading config from {path} ...")
         if not path.exists():
             logger.debug("File does not exist. Loading defaults ...")

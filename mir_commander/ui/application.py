@@ -31,7 +31,7 @@ class Application(QApplication):
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
-        self._recent_projects_dialog.open_project.connect(self.open_project)
+        self._recent_projects_dialog.open_project_signal.connect(self.open_project)
 
         self._translator_app = QTranslator(self)
         self._translator_qt = QTranslator(self)
@@ -123,8 +123,8 @@ class Application(QApplication):
             project=project, 
             init_msg=messages,
         )
-        project_window.close_project.connect(self.close_project)
-        project_window.quit_application.connect(self.quit)
+        project_window.close_project_signal.connect(self.close_project)
+        project_window.quit_application_signal.connect(self.quit)
         self._open_projects[id(project_window)] = project_window
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project)
