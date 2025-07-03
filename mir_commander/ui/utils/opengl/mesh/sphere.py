@@ -4,8 +4,8 @@ from .base import MeshData
 
 
 class Sphere(MeshData):
-    min_stacks = 2
-    min_slices = 3
+    min_stacks = 8
+    min_slices = 12
     min_radius = 0.001
 
     def __init__(self, stacks: int = 10, slices: int = 10, radius: float = 1.0):

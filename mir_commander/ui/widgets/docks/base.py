@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import DockWidget as BaseDockWidget
+from mir_commander.ui.utils.widget import DockWidget
 
 
-class BaseDock(BaseDockWidget):
+class BaseDock(DockWidget):
     """The basic class for dockable widgets.
 
     Has been created as a wrapper of QDockWidget

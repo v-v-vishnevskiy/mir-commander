@@ -5,7 +5,7 @@ from .base import MeshData
 
 class Cylinder(MeshData):
     min_stacks = 1
-    min_slices = 3
+    min_slices = 10
     min_radius = 0.001
     min_length = 0.001
 
