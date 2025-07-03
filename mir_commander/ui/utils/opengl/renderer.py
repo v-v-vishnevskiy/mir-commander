@@ -22,7 +22,7 @@ class Renderer:
         self._bg_color = color
 
     def paint(self):
-        glLoadMatrixf(self._camera.translation_matrix.data())
+        glLoadMatrixf(self._camera.transform.data())
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self._scene.paint()
@@ -30,15 +30,19 @@ class Renderer:
     def point_to_line(self, x: int, y: int, width: int, height: int) -> tuple[QVector3D, QVector3D]:
         viewport = QRect(0, 0, width, height)
         y = height - y  # opengl computes from left-bottom corner
+
+        # Combine camera matrix with scene transform matrix
+        combined_matrix = self._camera.transform * self._scene.transform
+
         return (
             QVector3D(x, y, -1.0).unproject(
-                self._camera.translation_matrix, 
-                self._camera.projection_matrix, 
+                combined_matrix, 
+                self._camera.projection, 
                 viewport
             ),
             QVector3D(x, y, 1.0).unproject(
-                self._camera.translation_matrix, 
-                self._camera.projection_matrix, 
+                combined_matrix, 
+                self._camera.projection, 
                 viewport
             ),
         )

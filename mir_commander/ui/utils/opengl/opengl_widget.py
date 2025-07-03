@@ -60,6 +60,7 @@ class OpenGLWidget(QOpenGLWidget):
         return self._cursor_pos.x(), self._cursor_pos.y()
 
     def initializeGL(self):
+        self.makeCurrent()
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.camera.setup_translation_matrix()
         glEnable(GL_DEPTH_TEST)
@@ -73,6 +74,7 @@ class OpenGLWidget(QOpenGLWidget):
             super().resize(w, h)
 
     def resizeGL(self, w: int, h: int):
+        self.makeCurrent()
         self.camera.setup_projection_matrix(w, h)
         self.update()
 
@@ -126,17 +128,20 @@ class OpenGLWidget(QOpenGLWidget):
         for event in events:
             self.action_handler.call_action(event, self.action_handler.keymap.match_wheel_event)
 
-    def set_projection_mode(self, mode: ProjectionMode | str):
+    def set_camera_projection_mode(self, mode: ProjectionMode | str):
+        self.makeCurrent()
         self.camera.set_projection_mode(mode)
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.update()
 
-    def toggle_projection_mode(self):
+    def toggle_camera_projection_mode(self):
+        self.makeCurrent()
         self.camera.toggle_projection_mode()
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.update()
 
-    def set_fov(self, value: float):
+    def set_camera_fov(self, value: float):
+        self.makeCurrent()
         self.camera.set_fov(value)
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.update()
@@ -146,6 +151,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_camera_distance(self, distance: float):
+        self.makeCurrent()
         self.camera.set_camera_distance(distance)
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.update()

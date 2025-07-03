@@ -11,8 +11,8 @@ logger = logging.getLogger("OpenGL.Scene")
 
 class Scene:
     def __init__(self):
+        self.transform = QMatrix4x4()
         self._items: Set[Item] = set()
-        self._transform = QMatrix4x4()
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
         self._translation = QVector3D(0.0, 0.0, 0.0)
@@ -66,15 +66,15 @@ class Scene:
         self._update_transform()
 
     def _update_transform(self):
-        self._transform = QMatrix4x4()
+        self.transform = QMatrix4x4()
 
-        self._transform.translate(self._translation)
-        self._transform.rotate(self._rotation)
-        self._transform.scale(self._scale)
+        self.transform.translate(self._translation)
+        self.transform.rotate(self._rotation)
+        self.transform.scale(self._scale)
 
     def paint(self):
         glPushMatrix()
-        glMultMatrixf(self._transform.data())
+        glMultMatrixf(self.transform.data())
         for item in self._items:
             if item.visible:
                 item.paint()

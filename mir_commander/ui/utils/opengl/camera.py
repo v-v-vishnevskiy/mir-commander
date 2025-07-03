@@ -1,3 +1,5 @@
+import logging
+
 from OpenGL.GL import (
     GL_MODELVIEW,
     GL_PROJECTION,
@@ -9,11 +11,14 @@ from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
 from .enums import ProjectionMode
 
+logger = logging.getLogger("OpenGL.Camera")
+
 
 class Camera:
     def __init__(self):
-        self._translation_matrix = QMatrix4x4()
-        self._projection_matrix = QMatrix4x4()
+        self.transform = QMatrix4x4()
+        self.projection = QMatrix4x4()
+
         self._projection_mode = ProjectionMode.Orthographic
         self._fov = 45.0
         self._near_plane = 0.001
@@ -24,25 +29,26 @@ class Camera:
 
     def setup_projection_matrix(self, width: int, height: int):
         glViewport(0, 0, width, height)
-        self._projection_matrix.setToIdentity()
+        self.projection.setToIdentity()
 
         if self._projection_mode == ProjectionMode.Orthographic:
             cd = self._camera_distance * 1.3
             if width <= height:
-                self._projection_matrix.ortho(-cd, cd, -cd * (height / width), cd * (height / width), -cd * 10, cd * 10)
+                self.projection.ortho(-cd, cd, -cd * (height / width), cd * (height / width), -cd * 10, cd * 10)
             else:
-                self._projection_matrix.ortho(-cd * (width / height), cd * (width / height), -cd, cd, -cd * 10, cd * 10)
+                self.projection.ortho(-cd * (width / height), cd * (width / height), -cd, cd, -cd * 10, cd * 10)
         elif self._projection_mode == ProjectionMode.Perspective:
-            self._projection_matrix.perspective(self._fov, width / height, self._near_plane, self._far_plane)
+            self.projection.perspective(self._fov, width / height, self._near_plane, self._far_plane)
         else:
-            raise RuntimeError("Invalid projection mode")
+            logger.error("Invalid projection mode: %s", self._projection_mode.name)
+            return
 
         glMatrixMode(GL_PROJECTION)
-        glLoadMatrixf(self._projection_matrix.data())
+        glLoadMatrixf(self.projection.data())
         glMatrixMode(GL_MODELVIEW)
 
     def setup_translation_matrix(self):
-        matrix = self._translation_matrix
+        matrix = self.transform
         matrix.setToIdentity()
         matrix.translate(0.0, 0.0, -self._camera_distance * 3.6)
         matrix.rotate(self._rotation)
@@ -55,7 +61,10 @@ class Camera:
             elif mode == "orthographic":
                 mode = ProjectionMode.Orthographic
             else:
-                raise RuntimeError(f"Invalid projection mode: {mode}")
+                logger.error("Invalid projection mode: %s", mode)
+                return
+
+        logger.debug("Setting projection mode to %s", mode.name)
         self._projection_mode = mode
 
     def toggle_projection_mode(self):
@@ -87,11 +96,3 @@ class Camera:
     def scale(self, factor: float, scale_speed: float = 1.0):
         self._camera_distance += (factor * scale_speed) * self._camera_distance
         self.setup_translation_matrix()
-
-    @property
-    def translation_matrix(self) -> QMatrix4x4:
-        return self._translation_matrix
-
-    @property
-    def projection_matrix(self) -> QMatrix4x4:
-        return self._projection_matrix

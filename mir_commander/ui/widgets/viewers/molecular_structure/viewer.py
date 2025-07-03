@@ -113,8 +113,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.set_background_color(self.normalize_color(self._style.current.background.color))
 
-        self.set_projection_mode(self._style.current.projection.mode)
-        self.set_fov(self._style.current.projection.fov)
+        self.set_camera_projection_mode(self._style.current.projection.mode)
+        self.set_camera_fov(self._style.current.projection.fov)
 
         self.update()
 
@@ -468,9 +468,6 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             parent_item = parent_item.parent()
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
-
-    def toggle_projection_action_handler(self):
-        self.toggle_projection_mode()
 
     @Slot()
     def save_img_action_handler(self):
