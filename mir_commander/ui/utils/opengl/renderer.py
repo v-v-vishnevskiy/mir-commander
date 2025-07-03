@@ -8,6 +8,7 @@ from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectF
 from .camera import Camera
 from .utils import Color4f
 from .scene import Scene
+from .enums import ProjectionMode
 
 logger = logging.getLogger("OpenGL.Renderer")
 
@@ -34,18 +35,30 @@ class Renderer:
         # Combine camera matrix with scene transform matrix
         combined_matrix = self._camera.transform * self._scene.transform
 
-        return (
-            QVector3D(x, y, -1.0).unproject(
-                combined_matrix, 
-                self._camera.projection, 
-                viewport
-            ),
-            QVector3D(x, y, 1.0).unproject(
-                combined_matrix, 
-                self._camera.projection, 
-                viewport
-            ),
-        )
+        # For orthographic projection, we need to handle the unprojection differently
+        # because the near and far planes are at different depths
+
+        if self._camera._projection_mode == ProjectionMode.Orthographic:
+            # For orthographic projection, use the actual near and far plane values
+            # that were used when setting up the projection matrix
+            # We need to calculate the same values as in camera.setup_projection_matrix
+            # For orthographic projection, the near and far planes are at -cd*10 and cd*10
+            # where cd = camera_distance * 1.3
+            camera_distance = self._camera.get_camera_distance()
+            cd = camera_distance * 1.3
+            near_plane = -cd * 10
+            far_plane = cd * 10
+
+            near_point = QVector3D(x, y, near_plane).unproject(combined_matrix, self._camera.projection, viewport)
+            far_point = QVector3D(x, y, far_plane).unproject(combined_matrix, self._camera.projection, viewport)
+        else:
+            # For perspective projection, use the standard approach
+            near_point = QVector3D(x, y, -1.0).unproject(combined_matrix, self._camera.projection, viewport)
+            far_point = QVector3D(x, y, 1.0).unproject(combined_matrix, self._camera.projection, viewport)
+
+        # Return the near point and the direction vector from near to far
+        direction = far_point - near_point
+        return near_point, direction
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
         # Need this hack with the fake 1x1 image to take into account the format of our real image

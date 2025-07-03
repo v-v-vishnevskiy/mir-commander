@@ -87,6 +87,9 @@ class Camera:
         self._camera_distance = distance
         self.setup_translation_matrix()
 
+    def get_camera_distance(self) -> float:
+        return self._camera_distance
+
     def rotate(self, pitch: float, yaw: float, roll: float = 0.0, rotation_speed: float = 1.0):
         r = QQuaternion.fromEulerAngles(pitch * rotation_speed, -yaw * rotation_speed, roll * rotation_speed)
         r *= self._rotation
