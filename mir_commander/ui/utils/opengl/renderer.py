@@ -6,31 +6,17 @@ from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from .camera import Camera
-from .graphics_items.item import Item
 from .utils import Color4f
+from .scene import Scene
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
-    def __init__(self, camera: Camera):
+    def __init__(self, camera: Camera, scene: Scene):
         self._camera = camera
-        self._items: set[Item] = set()
+        self._scene = scene
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
-
-    def add_item(self, item: Item):
-        if not issubclass(type(item), Item):
-            logger.error("Invalid item type: %s", item.__class__.__name__)
-            return
-        self._items.add(item)
-
-    def remove_item(self, item: Item):
-        self._items.remove(item)
-
-    def clear(self):
-        for item in self._items:
-            item.clear()
-        self._items.clear()
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -39,9 +25,7 @@ class Renderer:
         glLoadMatrixf(self._camera.translation_matrix.data())
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-
-        for item in self._items:
-            item.paint()
+        self._scene.paint()
 
     def point_to_line(self, x: int, y: int, width: int, height: int) -> tuple[QVector3D, QVector3D]:
         viewport = QRect(0, 0, width, height)

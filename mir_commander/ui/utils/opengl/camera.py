@@ -70,7 +70,7 @@ class Camera:
     def set_far_plane(self, value: float):
         self._far_plane = max(500.0, value)
 
-    def set_center(self, point: QVector3D):
+    def set_position(self, point: QVector3D):
         self._center = point
         self.setup_translation_matrix()
 

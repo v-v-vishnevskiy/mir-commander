@@ -172,7 +172,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             selected_shader=self._edge_shader,
         )
         item.set_smooth(self._style.current.quality.smooth)
-        self.renderer.add_item(item)
+        self.scene.add_item(item)
 
         self.atom_items.append(item)
 
@@ -194,19 +194,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             color,
         )
         item.set_smooth(self._style.current.quality.smooth)
-        self.renderer.add_item(item)
+        self.scene.add_item(item)
 
         self.bond_items.append(item)
 
         return item
 
     def remove_bond(self, index: int):
-        self.renderer.remove_item(self.bond_items[index])
+        self.scene.remove_item(self.bond_items[index])
         self.bond_items.pop(index)
 
     def remove_bond_all(self):
         for bond in self.bond_items:
-            self.renderer.remove_item(bond)
+            self.scene.remove_item(bond)
         self.bond_items.clear()
 
     def atom(self, index: int) -> Atom:
@@ -408,7 +408,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._build_bonds(ds, self._current_geom_bond_tol)
 
         center = QVector3D(np.sum(ds.x) / len(ds.x), np.sum(ds.y) / len(ds.y), np.sum(ds.z) / len(ds.z))
-        self.set_center(center)
+        self.set_camera_position(center)
         self.set_camera_distance(longest_distance - center.length())
 
     def _build_bonds(self, ds: AtomicCoordinates, geom_bond_tol: float):

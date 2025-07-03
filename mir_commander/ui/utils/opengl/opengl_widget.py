@@ -10,6 +10,7 @@ from .camera import Camera
 from .enums import ClickAndMoveMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .renderer import Renderer
+from .scene import Scene
 from .utils import Color4f
 
 logger = logging.getLogger("OpenGL.Widget")
@@ -26,9 +27,10 @@ class OpenGLWidget(QOpenGLWidget):
         self._scale_speed = 1.0
 
         # Initialize components
-        self.camera = Camera()
         self.action_handler = ActionHandler(keymap)
-        self.renderer = Renderer(self.camera)
+        self.camera = Camera()
+        self.scene = Scene()
+        self.renderer = Renderer(self.camera, self.scene)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -37,21 +39,21 @@ class OpenGLWidget(QOpenGLWidget):
             sf = QSurfaceFormat()
             sf.setSamples(16)
             self.setFormat(sf)
-        
+
         self._init_actions()
 
     def clear(self, update: bool = True):
-        self.renderer.clear()
+        self.scene.clear()
         if update:
             self.update()
 
     def _init_actions(self):
-        self.action_handler.add_action("rotate_down", True, self.rotate, 1, 0)
-        self.action_handler.add_action("rotate_left", True, self.rotate, 0, 1)
-        self.action_handler.add_action("rotate_right", True, self.rotate, 0, -1)
-        self.action_handler.add_action("rotate_up", True, self.rotate, -1, 0)
-        self.action_handler.add_action("zoom_in", True, self.scale, -0.015)
-        self.action_handler.add_action("zoom_out", True, self.scale, 0.015)
+        self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
+        self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
+        self.action_handler.add_action("rotate_right", True, self.rotate_scene, 0, 1)
+        self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
+        self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
+        self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
     @property
     def cursor_position(self) -> tuple[int, int]:
@@ -95,7 +97,7 @@ class OpenGLWidget(QOpenGLWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
-                self.rotate(diff.y(), -diff.x())
+                self.rotate_scene(diff.y(), diff.x())
         else:
             self.new_cursor_position(pos.x(), pos.y())
 
@@ -139,13 +141,8 @@ class OpenGLWidget(QOpenGLWidget):
         self.camera.setup_projection_matrix(self.size().width(), self.size().height())
         self.update()
 
-    def set_far_plane(self, value: float):
-        self.camera.set_far_plane(value)
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
-        self.update()
-
-    def set_center(self, point: QVector3D):
-        self.camera.set_center(point)
+    def set_camera_position(self, point: QVector3D):
+        self.camera.set_position(point)
         self.update()
 
     def set_camera_distance(self, distance: float):
@@ -157,13 +154,20 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer.set_background_color(color)
         self.update()
 
-    def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
-        self.camera.rotate(pitch, yaw, roll, self._rotation_speed)
+    def rotate_scene(self, pitch: float, yaw: float, roll: float = 0.0):
+        self.scene.rotate(pitch, yaw, roll)
         self.update()
 
-    def scale(self, factor: float):
-        self.camera.scale(factor, self._scale_speed)
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
+    def scale_scene(self, factor: float):
+        self.scene.scale(factor)
+        self.update()
+
+    def translate_scene(self, x: float, y: float, z: float):
+        self.scene.translate(x, y, z)
+        self.update()
+
+    def reset_scene_transform(self):
+        self.scene.reset_transform()
         self.update()
 
     def new_cursor_position(self, x: int, y: int):

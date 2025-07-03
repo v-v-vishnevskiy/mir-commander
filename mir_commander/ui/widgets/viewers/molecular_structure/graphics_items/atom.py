@@ -73,3 +73,6 @@ class Atom(MeshItem):
     def toggle_selection(self) -> bool:
         self.selected = not self.selected
         return self.selected
+
+    def __repr__(self) -> str:
+        return f"Atom(atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"

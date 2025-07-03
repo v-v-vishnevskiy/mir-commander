@@ -11,3 +11,6 @@ class Item:
 
     def paint(self):
         raise NotImplementedError()
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__
