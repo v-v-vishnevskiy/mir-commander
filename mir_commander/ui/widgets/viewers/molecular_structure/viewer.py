@@ -93,15 +93,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
+        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection)
+
         self.update_window_title()
 
         self.apply_style()
 
         self._build_molecule()
-
-    def _init_actions(self):
-        super()._init_actions()
-        self._actions["toggle_atom_selection"] = (False, self.toggle_atom_selection, tuple())
 
     def clear(self, update: bool = True):
         self.atom_items.clear()
@@ -174,7 +172,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             selected_shader=self._edge_shader,
         )
         item.set_smooth(self._style.current.quality.smooth)
-        self.add_item(item)
+        self.renderer.add_item(item)
 
         self.atom_items.append(item)
 
@@ -196,19 +194,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             color,
         )
         item.set_smooth(self._style.current.quality.smooth)
-        self.add_item(item)
+        self.renderer.add_item(item)
 
         self.bond_items.append(item)
 
         return item
 
     def remove_bond(self, index: int):
-        self.remove_item(self.bond_items[index])
+        self.renderer.remove_item(self.bond_items[index])
         self.bond_items.pop(index)
 
     def remove_bond_all(self):
         for bond in self.bond_items:
-            self.remove_item(bond)
+            self.renderer.remove_item(bond)
         self.bond_items.clear()
 
     def atom(self, index: int) -> Atom:
