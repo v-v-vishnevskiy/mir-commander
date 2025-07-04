@@ -6,6 +6,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from .action_handler import ActionHandler
+from .camera import Camera
 from .enums import ClickAndMoveMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .projection import ProjectionManager
@@ -28,6 +29,7 @@ class OpenGLWidget(QOpenGLWidget):
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
+        self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene()
         self.renderer = Renderer(self.projection_manager, self.scene)
