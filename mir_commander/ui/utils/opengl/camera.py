@@ -24,6 +24,8 @@ class Camera:
         self._near_plane = 0.001
         self._far_plane = 10000.0
         self._camera_distance = 10.0
+        self._orthographic_scale_factor = 1.3
+        self._orthographic_depth_factor = 10.0
         self._center = QVector3D()
         self._rotation = QQuaternion()
 
@@ -32,11 +34,7 @@ class Camera:
         self.projection.setToIdentity()
 
         if self._projection_mode == ProjectionMode.Orthographic:
-            cd = self._camera_distance * 1.3
-            if width <= height:
-                self.projection.ortho(-cd, cd, -cd * (height / width), cd * (height / width), -cd * 10, cd * 10)
-            else:
-                self.projection.ortho(-cd * (width / height), cd * (width / height), -cd, cd, -cd * 10, cd * 10)
+            self._setup_orthographic_projection(width, height)
         elif self._projection_mode == ProjectionMode.Perspective:
             self.projection.perspective(self._fov, width / height, self._near_plane, self._far_plane)
         else:
@@ -46,6 +44,31 @@ class Camera:
         glMatrixMode(GL_PROJECTION)
         glLoadMatrixf(self.projection.data())
         glMatrixMode(GL_MODELVIEW)
+
+    def _setup_orthographic_projection(self, width: int, height: int):
+        """Setup orthographic projection matrix with proper aspect ratio handling."""
+        # Calculate view bounds based on camera distance and scale factor
+        view_bounds = self._camera_distance * self._orthographic_scale_factor
+
+        # Calculate depth range for near/far planes
+        depth_range = view_bounds * self._orthographic_depth_factor
+
+        # Handle aspect ratio to maintain proper proportions
+        if width <= height:
+            # Portrait or square viewport
+            left = -view_bounds
+            right = view_bounds
+            bottom = -view_bounds * (height / width)
+            top = view_bounds * (height / width)
+        else:
+            # Landscape viewport
+            left = -view_bounds * (width / height)
+            right = view_bounds * (width / height)
+            bottom = -view_bounds
+            top = view_bounds
+        
+        # Set up orthographic projection
+        self.projection.ortho(left, right, bottom, top, -depth_range, depth_range)
 
     def setup_translation_matrix(self):
         matrix = self.transform
@@ -89,13 +112,3 @@ class Camera:
 
     def get_camera_distance(self) -> float:
         return self._camera_distance
-
-    def rotate(self, pitch: float, yaw: float, roll: float = 0.0, rotation_speed: float = 1.0):
-        r = QQuaternion.fromEulerAngles(pitch * rotation_speed, -yaw * rotation_speed, roll * rotation_speed)
-        r *= self._rotation
-        self._rotation = r
-        self.setup_translation_matrix()
-
-    def scale(self, factor: float, scale_speed: float = 1.0):
-        self._camera_distance += (factor * scale_speed) * self._camera_distance
-        self.setup_translation_matrix()
