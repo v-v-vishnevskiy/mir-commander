@@ -210,7 +210,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def toggle_projection_action_handler(self):
-        self.widget.toggle_camera_projection_mode()
+        self.widget.toggle_projection_mode()
 
     @Slot()
     def save_img_action_handler(self):

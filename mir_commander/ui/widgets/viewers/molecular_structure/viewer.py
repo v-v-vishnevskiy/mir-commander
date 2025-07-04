@@ -113,8 +113,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.set_background_color(self.normalize_color(self._style.current.background.color))
 
-        self.set_camera_projection_mode(self._style.current.projection.mode)
-        self.set_camera_fov(self._style.current.projection.fov)
+        self.set_projection_mode(self._style.current.projection.mode)
+        self.set_perspective_projection_fov(self._style.current.projection.perspective.fov)
 
         self.update()
 
@@ -408,8 +408,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._build_bonds(ds, self._current_geom_bond_tol)
 
         center = QVector3D(np.sum(ds.x) / len(ds.x), np.sum(ds.y) / len(ds.y), np.sum(ds.z) / len(ds.z))
-        self.set_camera_position(center)
-        self.set_camera_distance(longest_distance - center.length())
+        self.set_scene_translate(-center)
+        self.set_scene_translate(QVector3D(0, 0, (-longest_distance - center.length()) * 3.6))
 
     def _build_bonds(self, ds: AtomicCoordinates, geom_bond_tol: float):
         for i in range(len(ds.atomic_num)):

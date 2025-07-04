@@ -55,8 +55,12 @@ class Scene:
         self._scale *= factor
         self._update_transform()
 
-    def translate(self, x: float, y: float, z: float):
-        self._translation += QVector3D(x, y, z)
+    def translate(self, vector: QVector3D):
+        self._translation += vector
+        self._update_transform()
+
+    def set_position(self, point: QVector3D):
+        self._translation = point
         self._update_transform()
 
     def reset_transform(self):
@@ -66,7 +70,7 @@ class Scene:
         self._update_transform()
 
     def _update_transform(self):
-        self.transform = QMatrix4x4()
+        self.transform.setToIdentity()
 
         self.transform.translate(self._translation)
         self.transform.rotate(self._rotation)

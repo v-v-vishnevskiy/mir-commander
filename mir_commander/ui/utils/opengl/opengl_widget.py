@@ -6,9 +6,9 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from .action_handler import ActionHandler
-from .camera import Camera
 from .enums import ClickAndMoveMode, ProjectionMode, WheelMode
 from .keymap import Keymap
+from .projection import ProjectionManager
 from .renderer import Renderer
 from .scene import Scene
 from .utils import Color4f
@@ -28,9 +28,9 @@ class OpenGLWidget(QOpenGLWidget):
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
-        self.camera = Camera()
+        self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene()
-        self.renderer = Renderer(self.camera, self.scene)
+        self.renderer = Renderer(self.projection_manager, self.scene)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -61,8 +61,7 @@ class OpenGLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         self.makeCurrent()
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
-        self.camera.setup_translation_matrix()
+        self.projection_manager.build_projections(self.size().width(), self.size().height())
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_MULTISAMPLE)
 
@@ -75,7 +74,7 @@ class OpenGLWidget(QOpenGLWidget):
 
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
-        self.camera.setup_projection_matrix(w, h)
+        self.projection_manager.build_projections(w, h)
         self.update()
 
     def paintGL(self):
@@ -128,32 +127,28 @@ class OpenGLWidget(QOpenGLWidget):
         for event in events:
             self.action_handler.call_action(event, self.action_handler.keymap.match_wheel_event)
 
-    def set_camera_projection_mode(self, mode: ProjectionMode | str):
+    def set_projection_mode(self, mode: ProjectionMode | str):
         self.makeCurrent()
-        self.camera.set_projection_mode(mode)
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
+        self.projection_manager.set_projection_mode(mode)
         self.update()
 
-    def toggle_camera_projection_mode(self):
+    def toggle_projection_mode(self):
         self.makeCurrent()
-        self.camera.toggle_projection_mode()
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
+        self.projection_manager.toggle_projection_mode()
         self.update()
 
-    def set_camera_fov(self, value: float):
+    def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
-        self.camera.set_fov(value)
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
+        self.projection_manager.perspective_projection.set_fov(value)
+        self.projection_manager.build_projections(self.size().width(), self.size().height())
         self.update()
 
-    def set_camera_position(self, point: QVector3D):
-        self.camera.set_position(point)
+    def set_scene_position(self, point: QVector3D):
+        self.scene.set_position(point)
         self.update()
 
-    def set_camera_distance(self, distance: float):
-        self.makeCurrent()
-        self.camera.set_camera_distance(distance)
-        self.camera.setup_projection_matrix(self.size().width(), self.size().height())
+    def set_scene_translate(self, vector: QVector3D):
+        self.scene.translate(vector)
         self.update()
 
     def set_background_color(self, color: Color4f):
@@ -168,10 +163,6 @@ class OpenGLWidget(QOpenGLWidget):
         self.scene.scale(factor)
         self.update()
 
-    def translate_scene(self, x: float, y: float, z: float):
-        self.scene.translate(x, y, z)
-        self.update()
-
     def reset_scene_transform(self):
         self.scene.reset_transform()
         self.update()
@@ -180,7 +171,7 @@ class OpenGLWidget(QOpenGLWidget):
         pass
 
     def point_to_line(self, x: int, y: int):
-        return self.renderer.point_to_line(x, y, self.size().width(), self.size().height())
+        return self.projection_manager.point_to_line(QPoint(x, y), self.scene.transform)
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False

@@ -1,21 +1,20 @@
 import logging
 
-from OpenGL.GL import glClear, glClearColor, glLoadMatrixf, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT
+from OpenGL.GL import glClear, glClearColor, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glLoadIdentity
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from .camera import Camera
+from .projection import ProjectionManager
 from .utils import Color4f
 from .scene import Scene
-from .enums import ProjectionMode
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
-    def __init__(self, camera: Camera, scene: Scene):
-        self._camera = camera
+    def __init__(self, projection_manager: ProjectionManager, scene: Scene):
+        self._projection_manager = projection_manager
         self._scene = scene
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
 
@@ -23,7 +22,7 @@ class Renderer:
         self._bg_color = color
 
     def paint(self):
-        glLoadMatrixf(self._camera.transform.data())
+        glLoadIdentity()
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self._scene.paint()
@@ -32,29 +31,12 @@ class Renderer:
         viewport = QRect(0, 0, width, height)
         y = height - y  # opengl computes from left-bottom corner
 
-        # Combine camera matrix with scene transform matrix
-        combined_matrix = self._camera.transform * self._scene.transform
+        # Get near and far plane values for unprojection calculations
+        near_plane, far_plane = self._projection_manager.active_projection._get_near_far_planes()
 
-        # For orthographic projection, we need to handle the unprojection differently
-        # because the near and far planes are at different depths
-
-        if self._camera._projection_mode == ProjectionMode.Orthographic:
-            # For orthographic projection, use the actual near and far plane values
-            # that were used when setting up the projection matrix
-            # We need to calculate the same values as in camera.setup_projection_matrix
-            # For orthographic projection, the near and far planes are at -cd*10 and cd*10
-            # where cd = camera_distance * 1.3
-            camera_distance = self._camera.get_camera_distance()
-            cd = camera_distance * 1.3
-            near_plane = -cd * 10
-            far_plane = cd * 10
-
-            near_point = QVector3D(x, y, near_plane).unproject(combined_matrix, self._camera.projection, viewport)
-            far_point = QVector3D(x, y, far_plane).unproject(combined_matrix, self._camera.projection, viewport)
-        else:
-            # For perspective projection, use the standard approach
-            near_point = QVector3D(x, y, -1.0).unproject(combined_matrix, self._camera.projection, viewport)
-            far_point = QVector3D(x, y, 1.0).unproject(combined_matrix, self._camera.projection, viewport)
+        projection_matrix = self._projection_manager.active_projection.matrix
+        near_point = QVector3D(x, y, near_plane).unproject(self._scene.transform, projection_matrix, viewport)
+        far_point = QVector3D(x, y, far_plane).unproject(self._scene.transform, projection_matrix, viewport)
 
         # Return the near point and the direction vector from near to far
         direction = far_point - near_point

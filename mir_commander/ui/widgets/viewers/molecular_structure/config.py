@@ -3,12 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
-
-class Projection(BaseModel):
-    mode: Literal["perspective", "orthographic"] = "perspective"
-    fov: float = Field(
-        default=45.0, ge=35.0, le=90.0, description="works with perspective mode only"
-    )
+from mir_commander.ui.utils.opengl.config import ProjectionConfig
 
 
 class Background(BaseModel):
@@ -280,7 +275,7 @@ class Quality(BaseModel):
 
 class Style(BaseModel):
     name: str
-    projection: Projection = Projection()
+    projection: ProjectionConfig = ProjectionConfig()
     background: Background = Background()
     bond: Bond = Bond()
     atoms: Atoms = Atoms()
