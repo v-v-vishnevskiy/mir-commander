@@ -1,6 +1,6 @@
 import logging
 
-from OpenGL.GL import glClear, glClearColor, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glLoadIdentity
+from OpenGL.GL import glClear, glClearColor, glLoadMatrixf, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
@@ -22,9 +22,9 @@ class Renderer:
         self._bg_color = color
 
     def paint(self):
-        glLoadIdentity()
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+        glLoadMatrixf(self._scene.transform.data())
         self._scene.paint()
 
     def point_to_line(self, x: int, y: int, width: int, height: int) -> tuple[QVector3D, QVector3D]:

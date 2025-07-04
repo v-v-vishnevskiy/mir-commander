@@ -163,10 +163,6 @@ class OpenGLWidget(QOpenGLWidget):
         self.scene.scale(factor)
         self.update()
 
-    def reset_scene_transform(self):
-        self.scene.reset_transform()
-        self.update()
-
     def new_cursor_position(self, x: int, y: int):
         pass
 

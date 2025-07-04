@@ -55,7 +55,7 @@ class MeshItem(Item):
     def color(self) -> Color4f:
         return self._color
 
-    def paint(self):
+    def paint_self(self):
         if not self.visible:
             return
 
