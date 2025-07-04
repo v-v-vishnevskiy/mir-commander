@@ -27,20 +27,12 @@ class AbstractProjection(ABC):
         """Implementation specific projection matrix setup."""
         pass
 
-    @abstractmethod
-    def _get_near_far_planes(self) -> tuple[float, float]:
-        """Get near and far plane values for unprojection calculations."""
-        pass
-
     def point_to_line(self, point: QPoint, viewport: QRect, model_view: QMatrix4x4) -> tuple[QVector3D, QVector3D]:
         x = point.x()
         y = viewport.height() - point.y()  # opengl computes from left-bottom corner
 
-        # Get near and far plane values for unprojection calculations
-        near_plane, far_plane = self._get_near_far_planes()
-
-        near_point = QVector3D(x, y, near_plane).unproject(model_view, self.matrix, viewport)
-        far_point = QVector3D(x, y, far_plane).unproject(model_view, self.matrix, viewport)
+        near_point = QVector3D(x, y, -1).unproject(model_view, self.matrix, viewport)
+        far_point = QVector3D(x, y, 1).unproject(model_view, self.matrix, viewport)
 
         # Return the near point and the direction vector from near to far
         return near_point, far_point - near_point
@@ -52,10 +44,6 @@ class PerspectiveProjection(AbstractProjection):
         self._fov = fov
         self._near_plane = near_plane
         self._far_plane = far_plane
-
-    def _get_near_far_planes(self) -> tuple[float, float]:
-        """Get near and far planes for perspective projection."""
-        return -1.0, 1.0
 
     def setup_projection(self, width: int, height: int):
         """Setup perspective projection matrix."""
@@ -71,10 +59,6 @@ class OrthographicProjection(AbstractProjection):
         super().__init__()
         self._view_bounds = view_bounds
         self._orthographic_depth_factor = max(500.0, depth_factor)
-
-    def _get_near_far_planes(self) -> tuple[float, float]:
-        depth_range = self._view_bounds * self._orthographic_depth_factor
-        return -depth_range, depth_range
 
     def setup_projection(self, width: int, height: int):
         """Setup orthographic projection matrix with proper aspect ratio handling."""
