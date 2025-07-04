@@ -31,7 +31,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler = ActionHandler(keymap)
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.scene = Scene()
+        self.scene = Scene(self.camera)
         self.renderer = Renderer(self.projection_manager, self.scene, self.camera)
 
         self.setMouseTracking(True)
@@ -50,10 +50,10 @@ class OpenGLWidget(QOpenGLWidget):
             self.update()
 
     def _init_actions(self):
-        self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
+        self.action_handler.add_action("rotate_up", True, self.rotate_scene, 1, 0)
+        self.action_handler.add_action("rotate_down", True, self.rotate_scene, -1, 0)
         self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
         self.action_handler.add_action("rotate_right", True, self.rotate_scene, 0, 1)
-        self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
@@ -100,7 +100,7 @@ class OpenGLWidget(QOpenGLWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
-                self.rotate_scene(diff.y(), diff.x())
+                self.rotate_scene(-diff.y(), diff.x())
         else:
             self.new_cursor_position(pos.x(), pos.y())
 
@@ -169,7 +169,7 @@ class OpenGLWidget(QOpenGLWidget):
         pass
 
     def point_to_line(self, x: int, y: int):
-        combined_matrix = self.scene.transform * self.camera.view_matrix
+        combined_matrix = self.scene._transform * self.camera.view_matrix
         return self.projection_manager.point_to_line(QPoint(x, y), combined_matrix)
 
     def render_to_image(

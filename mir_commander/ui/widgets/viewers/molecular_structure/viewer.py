@@ -408,8 +408,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._build_bonds(ds, self._current_geom_bond_tol)
 
         center = QVector3D(np.sum(ds.x) / len(ds.x), np.sum(ds.y) / len(ds.y), np.sum(ds.z) / len(ds.z))
-        self.set_scene_translate(-center)
-        self.set_scene_translate(QVector3D(0, 0, (-longest_distance - center.length()) * 3.6))
+        self.camera.look_at(position=QVector3D(0, 0, (-longest_distance - center.length()) * 3.6), target=center)
 
     def _build_bonds(self, ds: AtomicCoordinates, geom_bond_tol: float):
         for i in range(len(ds.atomic_num)):

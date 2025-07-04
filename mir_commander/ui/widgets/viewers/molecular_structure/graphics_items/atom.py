@@ -33,14 +33,14 @@ class Atom(MeshItem):
         self._compute_transform()
 
     def _compute_transform(self):
-        self.transform.setToIdentity()
-        self.transform.translate(self.position)
+        self._transform.setToIdentity()
+        self._transform.translate(self.position)
 
         radius = self.radius
         if self._under_cursor:
             radius *= 1.15
 
-        self.transform.scale(radius, radius, radius)
+        self._transform.scale(radius, radius, radius)
 
     @property
     def shader(self) -> GLuint:

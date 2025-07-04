@@ -1,6 +1,7 @@
 import logging
 from typing import Self
 
+from OpenGL.GL import glLoadMatrixf
 from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
 
 logger = logging.getLogger("OpenGL.Item")
@@ -9,7 +10,7 @@ logger = logging.getLogger("OpenGL.Item")
 class Item:
     def __init__(self):
         self.visible = True
-        self.transform = QMatrix4x4()
+        self._transform = QMatrix4x4()
 
         self.children: list[Self] = []
         self.parent: None | Self = None
@@ -17,6 +18,12 @@ class Item:
         self._translation = QVector3D(0.0, 0.0, 0.0)
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
+
+    @property
+    def get_transform(self) -> QMatrix4x4:
+        if self.parent is not None:
+            return self.parent.get_transform * self._transform
+        return self._transform
 
     def add_child(self, child: Self) -> bool:
         if not isinstance(child, Item):
@@ -73,10 +80,10 @@ class Item:
         self._update_transform()
 
     def _update_transform(self):
-        self.transform.setToIdentity()
-        self.transform.translate(self._translation)
-        self.transform.rotate(self._rotation)
-        self.transform.scale(self._scale)
+        self._transform.setToIdentity()
+        self._transform.translate(self._translation)
+        self._transform.rotate(self._rotation)
+        self._transform.scale(self._scale)
 
     def clear(self):
         self.clear_children()
@@ -86,6 +93,7 @@ class Item:
         if not self.visible:
             return
 
+        glLoadMatrixf(self.get_transform.data())
         self.paint_self()
 
         for child in self.children:

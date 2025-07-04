@@ -1,6 +1,5 @@
 import logging
 import math
-from typing import Optional
 
 from PySide6.QtGui import QMatrix4x4, QVector3D
 
@@ -17,7 +16,7 @@ class Camera:
     - up_vector: up direction for camera orientation
     """
     
-    def __init__(self, position: QVector3D = None, target: QVector3D = None, up_vector: QVector3D = None):
+    def __init__(self, position: None | QVector3D = None, target: None | QVector3D = None, up_vector: None | QVector3D = None):
         """
         Initialize camera with position, target and up vector.
         
@@ -54,7 +53,7 @@ class Camera:
         self._up_vector = up_vector.normalized()
         self._update_view_matrix()
     
-    def look_at(self, position: QVector3D, target: QVector3D, up_vector: Optional[QVector3D] = None):
+    def look_at(self, position: QVector3D, target: QVector3D, up_vector: None | QVector3D = None):
         """
         Set camera to look at a specific target from a specific position.
         

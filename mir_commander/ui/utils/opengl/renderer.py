@@ -1,6 +1,6 @@
 import logging
 
-from OpenGL.GL import glClear, glClearColor, glLoadMatrixf, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT
+from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
@@ -27,9 +27,6 @@ class Renderer:
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        # Apply camera view matrix first, then scene transform
-        combined_matrix = self._scene.transform * self._camera.view_matrix
-        glLoadMatrixf(combined_matrix.data())
         self._scene.paint()
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
@@ -102,7 +99,6 @@ class Renderer:
 
         bg_color = QColor.fromRgbF(*self._bg_color)
 
-        from OpenGL.GL import glViewport
         glViewport(0, 0, width, height)
         self.paint()
         self._bg_color = bg_color_bak

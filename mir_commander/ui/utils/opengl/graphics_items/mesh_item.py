@@ -59,9 +59,6 @@ class MeshItem(Item):
         if not self.visible:
             return
 
-        glPushMatrix()
-        glMultMatrixf(self.transform.data())
-
         glUseProgram(self.shader)
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self._mesh_data.vertices)
@@ -76,8 +73,6 @@ class MeshItem(Item):
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
         glUseProgram(0)
-
-        glPopMatrix()
 
     @property
     def shader(self) -> GLuint:
