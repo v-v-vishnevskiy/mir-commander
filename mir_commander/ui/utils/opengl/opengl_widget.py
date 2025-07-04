@@ -32,7 +32,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene()
-        self.renderer = Renderer(self.projection_manager, self.scene)
+        self.renderer = Renderer(self.projection_manager, self.scene, self.camera)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -169,7 +169,8 @@ class OpenGLWidget(QOpenGLWidget):
         pass
 
     def point_to_line(self, x: int, y: int):
-        return self.projection_manager.point_to_line(QPoint(x, y), self.scene.transform)
+        combined_matrix = self.scene.transform * self.camera.view_matrix
+        return self.projection_manager.point_to_line(QPoint(x, y), combined_matrix)
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False

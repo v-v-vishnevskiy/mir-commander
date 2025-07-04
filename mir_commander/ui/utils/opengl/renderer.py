@@ -2,20 +2,22 @@ import logging
 
 from OpenGL.GL import glClear, glClearColor, glLoadMatrixf, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QColor, QImage, QVector3D
+from PySide6.QtGui import QColor, QImage
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from .projection import ProjectionManager
 from .utils import Color4f
 from .scene import Scene
+from .camera import Camera
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: Scene):
+    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera):
         self._projection_manager = projection_manager
         self._scene = scene
+        self._camera = camera
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
 
     def set_background_color(self, color: Color4f):
@@ -24,23 +26,11 @@ class Renderer:
     def paint(self):
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-        glLoadMatrixf(self._scene.transform.data())
+
+        # Apply camera view matrix first, then scene transform
+        combined_matrix = self._scene.transform * self._camera.view_matrix
+        glLoadMatrixf(combined_matrix.data())
         self._scene.paint()
-
-    def point_to_line(self, x: int, y: int, width: int, height: int) -> tuple[QVector3D, QVector3D]:
-        viewport = QRect(0, 0, width, height)
-        y = height - y  # opengl computes from left-bottom corner
-
-        # Get near and far plane values for unprojection calculations
-        near_plane, far_plane = self._projection_manager.active_projection._get_near_far_planes()
-
-        projection_matrix = self._projection_manager.active_projection.matrix
-        near_point = QVector3D(x, y, near_plane).unproject(self._scene.transform, projection_matrix, viewport)
-        far_point = QVector3D(x, y, far_plane).unproject(self._scene.transform, projection_matrix, viewport)
-
-        # Return the near point and the direction vector from near to far
-        direction = far_point - near_point
-        return near_point, direction
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
         # Need this hack with the fake 1x1 image to take into account the format of our real image
