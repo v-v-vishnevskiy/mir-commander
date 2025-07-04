@@ -81,9 +81,9 @@ class Item:
 
     def _update_transform(self):
         self._transform.setToIdentity()
-        self._transform.translate(self._translation)
-        self._transform.rotate(self._rotation)
         self._transform.scale(self._scale)
+        self._transform.rotate(self._rotation)
+        self._transform.translate(self._translation)
 
     def clear(self):
         self.clear_children()
