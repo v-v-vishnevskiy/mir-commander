@@ -49,8 +49,8 @@ class OpenGLWidget(QOpenGLWidget):
         self.scene.clear()
 
     def _init_actions(self):
-        self.action_handler.add_action("rotate_up", True, self.rotate_scene, 1, 0)
-        self.action_handler.add_action("rotate_down", True, self.rotate_scene, -1, 0)
+        self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
+        self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
         self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
         self.action_handler.add_action("rotate_right", True, self.rotate_scene, 0, 1)
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
@@ -99,7 +99,7 @@ class OpenGLWidget(QOpenGLWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
-                self.rotate_scene(-diff.y(), diff.x())
+                self.rotate_scene(diff.y(), diff.x())
         else:
             self.new_cursor_position(pos.x(), pos.y())
 
