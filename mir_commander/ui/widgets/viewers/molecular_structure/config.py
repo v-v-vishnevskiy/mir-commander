@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
-from mir_commander.ui.utils.opengl.config import ProjectionConfig
+from mir_commander.ui.utils.opengl.config import ProjectionConfig, TextOverlayConfig
 
 
 class Background(BaseModel):
@@ -280,6 +280,10 @@ class Style(BaseModel):
     bond: Bond = Bond()
     atoms: Atoms = Atoms()
     quality: Quality = Quality()
+    under_cursor_text_overlay: TextOverlayConfig = TextOverlayConfig(
+        alignment=["center"],
+        background_color=Color("#44444499"),
+    )
 
 
 class MenuKeymap(BaseModel):

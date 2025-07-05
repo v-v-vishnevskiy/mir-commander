@@ -15,6 +15,9 @@ def normalize_color(value: Color) -> Color4f:
     r, g, b = value.as_rgb_tuple()
     return r / 255, g / 255, b / 255, 1.0
 
+def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
+    r, g, b, a = value.as_rgb_tuple(alpha=True)
+    return QColor(r, g, b, a * 255 if alpha else 255)
 
 def id_to_color(obj_id: int) -> Color4f:
     # Supports up to 256³ = 16,777,216 objects
