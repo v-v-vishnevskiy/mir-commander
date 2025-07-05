@@ -9,10 +9,7 @@ from OpenGL.GL import (
     glDisableClientState,
     glDrawArrays,
     glEnableClientState,
-    glMultMatrixf,
     glNormalPointer,
-    glPopMatrix,
-    glPushMatrix,
     glUseProgram,
     glVertexPointer,
 )
