@@ -242,15 +242,15 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def select_all_atoms_handler(self):
-        self.widget.scene.select_all_atoms()
+        self.widget.select_all_atoms()
 
     @Slot()
     def unselect_all_atoms_handler(self):
-        self.widget.scene.unselect_all_atoms()
+        self.widget.unselect_all_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.widget.scene.select_toggle_all_atoms()
+        self.widget.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
@@ -278,23 +278,23 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def cloak_selected_handler(self):
-        self.widget.scene.cloak_selected_atoms()
+        self.widget.cloak_selected_atoms()
 
     @Slot()
     def cloak_not_selected_handler(self):
-        self.widget.scene.cloak_not_selected_atoms()
+        self.widget.cloak_not_selected_atoms()
 
     @Slot()
     def cloak_h_atoms_handler(self):
-        self.widget.scene.cloak_h_atoms()
+        self.widget.cloak_h_atoms()
 
     @Slot()
     def cloak_notsel_h_atoms_handler(self):
-        self.widget.scene.cloak_not_selected_h_atoms()
+        self.widget.cloak_not_selected_h_atoms()
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.widget.scene.cloak_toggle_h_atoms()
+        self.widget.cloak_toggle_h_atoms()
 
     @Slot()
     def cloak_atoms_by_type_handler(self):
@@ -302,7 +302,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def uncloak_all_handler(self):
-        self.widget.scene.uncloak_all_atoms()
+        self.widget.uncloak_all_atoms()
 
     @Slot()
     def next_atomic_coordinates_handler(self):

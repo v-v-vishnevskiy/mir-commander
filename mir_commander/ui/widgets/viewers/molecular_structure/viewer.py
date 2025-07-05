@@ -78,7 +78,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
-        # self.action_handler.add_action("toggle_atom_selection", False, self._molecule.toggle_atom_selection)
+        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
 
         self.update_window_title()
 
@@ -86,11 +86,33 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.set_projection_mode(self._molecule._style.current.projection.mode)
         self.set_perspective_projection_fov(self._molecule._style.current.projection.perspective.fov)
 
-        self._molecule.build(item.data().data)
+        self._molecule.build(self._draw_item.data().data)
+
+    def toggle_atom_selection_under_cursor(self):
+        if item := self.item_under_cursor():
+            if isinstance(item, Atom):
+                if item.toggle_selection():
+                    self._molecule.selected_atom_items.append(item)
+                else:
+                    self._molecule.selected_atom_items.remove(item)
+                self.update()
 
     def new_cursor_position(self, x: int, y: int):
-        # self._molecule.highlight_atom_under_cursor(x, y)
-        pass
+        item = self.item_under_cursor()
+        if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
+            self.update()
+        if isinstance(item, Atom):
+            self.short_msg_signal.emit(f"{item.element_symbol}{item.index_num + 1}")
+
+    def set_next_style(self):
+        if self._molecule._style.set_next_style():
+            self._molecule.apply_style()
+            self.update()
+
+    def set_prev_style(self):
+        if self._molecule._style.set_prev_style():
+            self._molecule.apply_style()
+            self.update()
 
     def _atomic_coordinates_item(
         self, index: int, parent: QStandardItem, counter: int = -1
@@ -125,8 +147,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.clear(update=False)
-            self._build_molecule()
+            self._molecule.clear()
+            self._molecule.build(self._draw_item.data().data)
             self.update()
 
     def set_next_atomic_coordinates(self):
@@ -135,8 +157,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self.clear(update=False)
-            self._build_molecule()
+            self._molecule.clear()
+            self._molecule.build(self._draw_item.data().data)
             self.update()
 
     # TODO: uncomment when context menu is implemented
@@ -197,6 +219,47 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
                             + f"\n{dlg.img_file_path}\n"
                             + self.tr("The path does not exist or is write-protected."),
                         )
+
+    def cloak_selected_atoms(self):
+        for atom in self._molecule.atom_items:
+            if atom.selected:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_not_selected_atoms(self):
+        for atom in self._molecule.atom_items:
+            if not atom.selected:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_h_atoms(self):
+        for atom in self._molecule.atom_items:
+            if atom.atomic_num == 1:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_not_selected_h_atoms(self):
+        for atom in self._molecule.atom_items:
+            if atom.atomic_num == 1 and not atom.selected:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_atoms_by_atnum(self, atomic_num: int):
+        for atom in self._molecule.atom_items:
+            if atom.atomic_num == atomic_num:
+                atom.cloaked = True
+        self.update()
+
+    def cloak_toggle_h_atoms(self):
+        for atom in self._molecule.atom_items:
+            if atom.atomic_num == 1:
+                atom.cloaked = not atom.cloaked
+        self.update()
+
+    def uncloak_all_atoms(self):
+        for atom in self._molecule.atom_items:
+            atom.cloaked = False
+        self.update()
 
     def cloak_atoms_by_atnum(self):
         el_symbol, ok = QInputDialog.getText(
@@ -615,7 +678,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         ds: AtomicCoordinates = self._draw_item.data().data
 
         if tol < -1.0:
-            tol = self._molecule._current_geom_bond_tol
+            tol = self._molecule.current_geom_bond_tol
         self._molecule.remove_bond_all()
         self._molecule.build_bonds(ds, tol)
         self.update()
@@ -624,12 +687,12 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
-        self._molecule._current_geom_bond_tol = self._config.geom_bond_tol
-        self.rebuild_bonds(self._molecule._current_geom_bond_tol)
+        self._molecule.current_geom_bond_tol = self._config.geom_bond_tol
+        self.rebuild_bonds(self._molecule.current_geom_bond_tol)
 
     def rebuild_bonds_dynamic(self):
-        dlg = BuildBondsDialog(self._molecule._current_geom_bond_tol, self)
+        dlg = BuildBondsDialog(self._molecule.current_geom_bond_tol, self)
         if dlg.exec():
-            self._molecule._current_geom_bond_tol = dlg.current_tol
+            self._molecule.current_geom_bond_tol = dlg.current_tol
         else:
-            self.rebuild_bonds(self._molecule._current_geom_bond_tol)
+            self.rebuild_bonds(self._molecule.current_geom_bond_tol)

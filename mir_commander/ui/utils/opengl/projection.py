@@ -8,8 +8,7 @@ from OpenGL.GL import (
     glMatrixMode,
     glViewport,
 )
-from PySide6.QtCore import QRect, QPoint
-from PySide6.QtGui import QMatrix4x4, QVector3D
+from PySide6.QtGui import QMatrix4x4
 
 from .enums import ProjectionMode
 

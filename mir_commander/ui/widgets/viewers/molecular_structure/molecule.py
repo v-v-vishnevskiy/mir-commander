@@ -4,6 +4,7 @@ import numpy as np
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
@@ -21,6 +22,7 @@ from .style import Style
 class Molecule(Item):
     def __init__(self, config: MolecularStructureViewerConfig):
         super().__init__()
+        self.picking_visible = False
 
         self._config = config
         self._style = Style(config)
@@ -29,18 +31,15 @@ class Molecule(Item):
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
         self._atom_index_under_cursor: None | Atom = None
-        self._current_geom_bond_tol = self._config.geom_bond_tol
 
+        self.current_geom_bond_tol = self._config.geom_bond_tol
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
         self.selected_atom_items: list[Atom] = []
 
         self.apply_style()
 
-    def update(self):
-        print("update")
-
-    def paint_self(self):
+    def paint_self(self, mode: PaintMode):
         pass
 
     def build(self, atomic_coordinates: AtomicCoordinates):
@@ -60,7 +59,7 @@ class Molecule(Item):
                 longest_distance = d
 
         # add bonds
-        self.build_bonds(atomic_coordinates, self._current_geom_bond_tol)
+        self.build_bonds(atomic_coordinates, self.current_geom_bond_tol)
 
         self.center = QVector3D(
             x=np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
@@ -72,20 +71,6 @@ class Molecule(Item):
         mesh_quality = self._style.current.quality.mesh
         self._apply_atoms_style(mesh_quality)
         self._apply_bonds_style(mesh_quality)
-
-        self.update()
-
-    def set_style(self, name: str):
-        self._style.set_style(name)
-        self.apply_style()
-
-    def set_next_style(self):
-        if self._style.set_next_style():
-            self.apply_style()
-
-    def set_prev_style(self):
-        if self._style.set_prev_style():
-            self.apply_style()
 
     def _apply_atoms_style(self, mesh_quality: int):
         # update mesh
@@ -231,13 +216,11 @@ class Molecule(Item):
     def select_all_atoms(self):
         for atom in self.atom_items:
             atom.selected = True
-        self.update()
         self.selected_atom_items = self.atom_items.copy()
 
     def unselect_all_atoms(self):
         for atom in self.atom_items:
             atom.selected = False
-        self.update()
         self.selected_atom_items = []
 
     def select_toggle_all_atoms(self):
@@ -250,28 +233,19 @@ class Molecule(Item):
         else:
             self.select_all_atoms()
 
-    def toggle_atom_selection(self, x: int, y: int):
-        atom = self._atom_under_cursor(x, y)
-        if atom is not None:
-            if atom.toggle_selection():
-                self.selected_atom_items.append(atom)
-            else:
-                self.selected_atom_items.remove(atom)
-            self.update()
-
-    def highlight_atom_under_cursor(self, x: int, y: int):
-        atom = self._atom_under_cursor(x, y)
-        if atom:
-            if atom != self._atom_index_under_cursor:
-                if self._atom_index_under_cursor is not None:
-                    self._atom_index_under_cursor.set_under_cursor(False)
-                atom.set_under_cursor(True)
-                self.update()
-                self.short_msg_signal.emit(f"{atom.element_symbol}{atom.index_num + 1}")
-        elif self._atom_index_under_cursor:
-            self._atom_index_under_cursor.set_under_cursor(False)
-            self.update()
+    def highlight_atom_under_cursor(self, atom: None | Atom) -> bool:
+        old_atom = self._atom_index_under_cursor
         self._atom_index_under_cursor = atom
+        if atom:
+            if atom != old_atom:
+                if old_atom is not None:
+                    old_atom.set_under_cursor(False)
+                atom.set_under_cursor(True)
+                return True
+        elif old_atom:
+            old_atom.set_under_cursor(False)
+            return True
+        return False
 
     def _atom_under_cursor(self, x: int, y: int) -> None | Atom:
         if not self.atom_items:
@@ -288,44 +262,3 @@ class Molecule(Item):
                     result = atom
                     distance = d
         return result
-
-    def cloak_selected_atoms(self):
-        for atom in self.atom_items:
-            if atom.selected:
-                atom.cloaked = True
-        self.update()
-
-    def cloak_not_selected_atoms(self):
-        for atom in self.atom_items:
-            if not atom.selected:
-                atom.cloaked = True
-        self.update()
-
-    def cloak_h_atoms(self):
-        for atom in self.atom_items:
-            if atom.atomic_num == 1:
-                atom.cloaked = True
-        self.update()
-
-    def cloak_not_selected_h_atoms(self):
-        for atom in self.atom_items:
-            if atom.atomic_num == 1 and not atom.selected:
-                atom.cloaked = True
-        self.update()
-
-    def cloak_atoms_by_atnum(self, atomic_num: int):
-        for atom in self.atom_items:
-            if atom.atomic_num == atomic_num:
-                atom.cloaked = True
-        self.update()
-
-    def cloak_toggle_h_atoms(self):
-        for atom in self.atom_items:
-            if atom.atomic_num == 1:
-                atom.cloaked = not atom.cloaked
-        self.update()
-
-    def uncloak_all_atoms(self):
-        for atom in self.atom_items:
-            atom.cloaked = False
-        self.update()

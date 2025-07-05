@@ -45,10 +45,8 @@ class OpenGLWidget(QOpenGLWidget):
 
         self._init_actions()
 
-    def clear(self, update: bool = True):
+    def clear(self):
         self.scene.clear()
-        if update:
-            self.update()
 
     def _init_actions(self):
         self.action_handler.add_action("rotate_up", True, self.rotate_scene, 1, 0)
