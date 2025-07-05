@@ -7,12 +7,13 @@ from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from .action_handler import ActionHandler
 from .camera import Camera
+from .graphics_items.item import Item
 from .enums import ClickAndMoveMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .projection import ProjectionManager
 from .renderer import Renderer
 from .scene import Scene
-from .utils import Color4f
+from .utils import Color4f, color_to_id
 
 logger = logging.getLogger("OpenGL.Widget")
 
@@ -168,13 +169,19 @@ class OpenGLWidget(QOpenGLWidget):
     def new_cursor_position(self, x: int, y: int):
         pass
 
-    def point_to_line(self, x: int, y: int):
-        combined_matrix = self.scene._transform * self.camera.view_matrix
-        return self.projection_manager.point_to_line(QPoint(x, y), combined_matrix)
+    def render_to_image(self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False):
+        self.makeCurrent()
+        return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def render_to_image(
-        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
-    ):
-        return self.renderer.render_to_image(
-            width, height, transparent_bg, crop_to_content, self.makeCurrent
-        )
+    def item_under_cursor(self) -> None | Item:
+        self.makeCurrent()
+        image = self.renderer.picking_image(self.size().width(), self.size().height())
+
+        x = self._cursor_pos.x()
+        y = self._cursor_pos.y()
+
+        color = image.pixelColor(x, y)
+        obj_id = color_to_id(color)
+
+        return self.scene.find_item_by_id(obj_id)
+

@@ -5,10 +5,11 @@ from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from .projection import ProjectionManager
-from .utils import Color4f
-from .scene import Scene
 from .camera import Camera
+from .enums import PaintMode
+from .projection import ProjectionManager
+from .scene import Scene
+from .utils import Color4f
 
 logger = logging.getLogger("OpenGL.Renderer")
 
@@ -19,6 +20,8 @@ class Renderer:
         self._scene = scene
         self._camera = camera
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
+        self._picking_image: None | QImage = None
+        self._has_new_image = False
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -27,7 +30,8 @@ class Renderer:
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        self._scene.paint()
+        self._scene.paint(PaintMode.Normal)
+        self._has_new_image = False
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
         # Need this hack with the fake 1x1 image to take into account the format of our real image
@@ -114,3 +118,26 @@ class Renderer:
             image = self.crop_image_to_content(image, bg_color)
 
         return image
+
+    def picking_image(self, width: int, height: int) -> QImage:
+        if self._has_new_image:
+            return self._picking_image
+
+        fbo_format = QOpenGLFramebufferObjectFormat()
+        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+        fbo.bind()
+
+        glViewport(0, 0, width, height)
+
+        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        self._scene.paint(PaintMode.Picking)
+
+        fbo.release()
+
+        self._picking_image = fbo.toImage()
+        self._has_new_image = True
+
+        return self._picking_image

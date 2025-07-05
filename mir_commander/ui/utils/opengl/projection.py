@@ -27,16 +27,6 @@ class AbstractProjection(ABC):
         """Implementation specific projection matrix setup."""
         pass
 
-    def point_to_line(self, point: QPoint, viewport: QRect, model_view: QMatrix4x4) -> tuple[QVector3D, QVector3D]:
-        x = point.x()
-        y = viewport.height() - point.y()  # opengl computes from left-bottom corner
-
-        near_point = QVector3D(x, y, -1).unproject(model_view, self.matrix, viewport)
-        far_point = QVector3D(x, y, 1).unproject(model_view, self.matrix, viewport)
-
-        # Return the near point and the direction vector from near to far
-        return near_point, far_point - near_point
-
 
 class PerspectiveProjection(AbstractProjection):
     def __init__(self, fov: float = 45.0, near_plane: float = 0.001, far_plane: float = 10000.0):
@@ -132,10 +122,3 @@ class ProjectionManager:
             self.set_projection_mode(ProjectionMode.Perspective)
         else:
             self.set_projection_mode(ProjectionMode.Orthographic)
-
-    def point_to_line(self, point: QPoint, model_view: QMatrix4x4) -> tuple[QVector3D, QVector3D]:
-        return self.active_projection.point_to_line(
-            point=point, 
-            viewport=QRect(0, 0, self._width, self._height), 
-            model_view=model_view
-        )

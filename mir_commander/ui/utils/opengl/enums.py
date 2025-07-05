@@ -14,3 +14,8 @@ class WheelMode(Enum):
 class ProjectionMode(Enum):
     Orthographic = 1
     Perspective = 2
+
+
+class PaintMode(Enum):
+    Normal = 1
+    Picking = 2

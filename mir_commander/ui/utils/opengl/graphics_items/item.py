@@ -4,13 +4,23 @@ from typing import Self
 from OpenGL.GL import glLoadMatrixf
 from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
 
+from ..enums import PaintMode
+from ..utils import id_to_color
+
 logger = logging.getLogger("OpenGL.Item")
 
 
 class Item:
+    _id_counter = 1
+
     def __init__(self):
         self.visible = True
+        self.picking_visible = True
+
         self._transform = QMatrix4x4()
+        self._id = Item._id_counter
+        Item._id_counter += 1
+        self._picking_color = id_to_color(self._id)
 
         self.children: list[Self] = []
         self.parent: None | Self = None
@@ -46,9 +56,14 @@ class Item:
             return True
         return False
 
-    def clear_children(self):
-        for child in self.children[:]:
-            self.remove_child(child)
+    def find_item_by_id(self, obj_id: int) -> Self | None:
+        if self._id == obj_id:
+            return self
+        for child in self.children:
+            item = child.find_item_by_id(obj_id)
+            if item is not None:
+                return item
+        return None
 
     def set_position(self, position: QVector3D):
         self._translation = position
@@ -86,20 +101,22 @@ class Item:
         self._transform.translate(self._translation)
 
     def clear(self):
-        self.clear_children()
+        for child in self.children[:]:
+            self.remove_child(child)
         logger.debug("Cleared item: %s", self)
 
-    def paint(self):
+    def paint(self, mode: PaintMode = PaintMode.Normal):
         if not self.visible:
             return
 
-        glLoadMatrixf(self.get_transform.data())
-        self.paint_self()
+        if mode == PaintMode.Normal or self.picking_visible:
+            glLoadMatrixf(self.get_transform.data())
+            self.paint_self(mode)
 
         for child in self.children:
-            child.paint()
+            child.paint(mode)
 
-    def paint_self(self):
+    def paint_self(self, mode: PaintMode):
         raise NotImplementedError()
 
     def __repr__(self) -> str:
