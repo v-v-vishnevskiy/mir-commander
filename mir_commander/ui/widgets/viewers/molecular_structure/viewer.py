@@ -683,7 +683,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         ds: AtomicCoordinates = self._draw_item.data().data
 
         if tol < -1.0:
-            tol = self._molecule.current_geom_bond_tol
+            tol = self._molecule.current_geom_bond_tolerance
         self._molecule.remove_bond_all()
         self._molecule.build_bonds(ds, tol)
         self.update()
@@ -692,12 +692,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
-        self._molecule.current_geom_bond_tol = self._config.geom_bond_tol
-        self.rebuild_bonds(self._molecule.current_geom_bond_tol)
+        self._molecule.current_geom_bond_tolerance = self._config.geom_bond_tolerance
+        self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
 
     def rebuild_bonds_dynamic(self):
-        dlg = BuildBondsDialog(self._molecule.current_geom_bond_tol, self)
+        dlg = BuildBondsDialog(self._molecule.current_geom_bond_tolerance, self)
         if dlg.exec():
-            self._molecule.current_geom_bond_tol = dlg.current_tol
+            self._molecule.current_geom_bond_tolerance = dlg.current_tol
         else:
-            self.rebuild_bonds(self._molecule.current_geom_bond_tol)
+            self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
+

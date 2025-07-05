@@ -269,7 +269,7 @@ class Atoms(BaseModel):
 
 
 class Quality(BaseModel):
-    mesh: int = Field(default=10, ge=1, le=100)
+    mesh: float = Field(default=8, ge=1, le=100)
     smooth: bool = True
 
 
@@ -312,7 +312,7 @@ class Keymap(BaseModel):
 
 class MolecularStructureViewerConfig(BaseModel):
     keymap: Keymap = Keymap()
-    geom_bond_tol: float = 0.15
+    geom_bond_tolerance: float = 0.15
     antialiasing: bool = True
     size: tuple[int, int] = (500, 500)
     min_size: tuple[int, int] = (150, 150)

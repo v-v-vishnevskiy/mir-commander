@@ -33,7 +33,7 @@ class Molecule(Item):
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
         self._atom_index_under_cursor: None | Atom = None
 
-        self.current_geom_bond_tol = self._config.geom_bond_tol
+        self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
         self.selected_atom_items: list[Atom] = []
@@ -60,7 +60,7 @@ class Molecule(Item):
                 self.radius = d
 
         # add bonds
-        self.build_bonds(atomic_coordinates, self.current_geom_bond_tol)
+        self.build_bonds(atomic_coordinates, self.current_geom_bond_tolerance)
 
         self.center = QVector3D(
             np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
@@ -78,7 +78,7 @@ class Molecule(Item):
         # update mesh
         s_stacks, s_slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
         if (s_stacks, s_slices) != (self._atom_mesh_data.stacks, self._atom_mesh_data.slices):
-            self._atom_mesh_data.generate_mesh(stacks=s_stacks, slices=s_slices, radius=self._atom_mesh_data.radius)
+            self._atom_mesh_data.generate_mesh(stacks=int(s_stacks), slices=int(s_slices), radius=self._atom_mesh_data.radius)
             self._atom_mesh_data.compute_vertex_normals()
             self._atom_mesh_data.compute_face_normals()
 
@@ -111,11 +111,11 @@ class Molecule(Item):
 
     def _apply_bonds_style(self, mesh_quality: int):
         # update mesh
-        c_slices = Cylinder.min_slices * mesh_quality
+        c_slices = Cylinder.min_slices * (mesh_quality / 2)
         if c_slices != self._bond_mesh_data.slices:
             self._bond_mesh_data.generate_mesh(
                 stacks=self._bond_mesh_data.stacks,
-                slices=c_slices,
+                slices=int(c_slices),
                 radius=self._bond_mesh_data.radius,
                 length=self._bond_mesh_data.length,
                 caps=self._bond_mesh_data.caps,
