@@ -89,7 +89,7 @@ class Camera:
         direction = (self._target - self._position).normalized()
         translation = direction * distance * self._movement_speed
         self.translate(translation)
-    
+
     def move_right(self, distance: float):
         """
         Move camera right relative to its orientation.

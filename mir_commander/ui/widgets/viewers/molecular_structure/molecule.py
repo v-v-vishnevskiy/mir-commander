@@ -27,6 +27,7 @@ class Molecule(Item):
         self._config = config
         self._style = Style(config)
         self.center = QVector3D(0, 0, 0)
+        self.radius = 0
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
         self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
@@ -47,7 +48,7 @@ class Molecule(Item):
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
 
-        longest_distance = 0
+        self.radius = 0
 
         # add atoms
         for i, atomic_num in enumerate(atomic_coordinates.atomic_num):
@@ -55,17 +56,18 @@ class Molecule(Item):
             atom = self.add_atom(i, atomic_num, position)
 
             d = position.length() + atom.radius
-            if longest_distance < d:
-                longest_distance = d
+            if self.radius < d:
+                self.radius = d
 
         # add bonds
         self.build_bonds(atomic_coordinates, self.current_geom_bond_tol)
 
         self.center = QVector3D(
-            x=np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
-            y=np.sum(atomic_coordinates.y) / len(atomic_coordinates.y), 
-            z=np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
+            np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
+            np.sum(atomic_coordinates.y) / len(atomic_coordinates.y), 
+            np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
         )
+        self.set_position(-self.center)
 
     def apply_style(self):
         mesh_quality = self._style.current.quality.mesh

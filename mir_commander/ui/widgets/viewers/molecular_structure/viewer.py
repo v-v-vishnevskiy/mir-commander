@@ -86,7 +86,12 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.set_projection_mode(self._molecule._style.current.projection.mode)
         self.set_perspective_projection_fov(self._molecule._style.current.projection.perspective.fov)
 
+        self.build_molecule()
+
+    def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
+        self.camera.reset_to_default()
+        self.camera.move_forward(-self._molecule.radius * 1.5)
 
     def toggle_atom_selection_under_cursor(self):
         if item := self.item_under_cursor():
@@ -148,7 +153,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             self._set_draw_item()
             self.update_window_title()
             self._molecule.clear()
-            self._molecule.build(self._draw_item.data().data)
+            self.build_molecule()
             self.update()
 
     def set_next_atomic_coordinates(self):
@@ -158,7 +163,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         if id(item) != id(self._draw_item):
             self.update_window_title()
             self._molecule.clear()
-            self._molecule.build(self._draw_item.data().data)
+            self.build_molecule()
             self.update()
 
     # TODO: uncomment when context menu is implemented
