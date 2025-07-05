@@ -1,17 +1,14 @@
-from typing import TYPE_CHECKING
-
 from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
-from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout
+from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout, QWidget
 
+from mir_commander.core.config import ProjectConfig
+from mir_commander.ui.config import AppConfig, ApplyCallbacks
 from mir_commander.ui.utils.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
 
 from .base import BasePage
 from .general_page import General
 from .project_page import Project
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class SettingsDialog(Dialog):
@@ -21,14 +18,14 @@ class SettingsDialog(Dialog):
     which may be translated on the fly.
     """
 
-    def __init__(self, main_window: "MainWindow"):
-        super().__init__(main_window)
+    def __init__(self, parent: QWidget, app_apply_callbacks: ApplyCallbacks, mw_apply_callbacks: ApplyCallbacks, app_config: AppConfig, project_config: ProjectConfig):
+        super().__init__(parent)
 
-        self.app_apply_callbacks = main_window.app.apply_callbacks
-        self.mw_apply_callbacks = main_window.apply_callbacks
+        self.app_apply_callbacks = app_apply_callbacks
+        self.mw_apply_callbacks = mw_apply_callbacks
 
-        self.app_config = main_window.app.config
-        self.project_config = main_window.project.config
+        self.app_config = app_config
+        self.project_config = project_config
 
         self._config = self.app_config.settings
         self._pages: list[BasePage] = []
@@ -105,7 +102,7 @@ class SettingsDialog(Dialog):
             tabwidget = TabWidget()
             tabwidget.setTabBarAutoHide(True)
             for tab in section["tabs"]:
-                page = tab[0](self)
+                page = tab[0](parent=self, app_config=self.app_config, project_config=self.project_config)
                 self._pages.append(page)
                 tabwidget.addTab(page, tab[1])
             self.area.addWidget(tabwidget)

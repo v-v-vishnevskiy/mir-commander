@@ -1,4 +1,4 @@
-from mir_commander.base_config import BaseConfig
+from mir_commander.utils.config import BaseConfig
 
 
 class ProjectConfig(BaseConfig):

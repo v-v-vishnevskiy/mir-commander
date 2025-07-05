@@ -1,27 +1,28 @@
 import abc
 import logging
 from pathlib import Path
+from typing import Self
 
 import yaml
 from pydantic import BaseModel, Field
 
-from mir_commander import errors
+from .errors import ConfigError
 
-logger = logging.getLogger("BaseConfig")
+logger = logging.getLogger("Config")
 
 
 class BaseConfig(BaseModel, abc.ABC):
     path: None | Path = Field(default=None, exclude=True)
 
     @classmethod
-    def load(cls, path: Path) -> "BaseConfig":
+    def load(cls, path: Path) -> Self:
         logger.debug(f"Loading config from {path} ...")
         if not path.exists():
             logger.debug("File does not exist. Loading defaults ...")
             return cls(path=path)
 
         if path.is_dir():
-            raise errors.ConfigError(f"Trying to load directory: {path}")
+            raise ConfigError(f"Trying to load directory: {path}")
 
         with path.open("r") as f:
             data = f.read()
@@ -32,7 +33,7 @@ class BaseConfig(BaseModel, abc.ABC):
         try:
             parsed_data = yaml.load(data, Loader=yaml.CLoader)
         except yaml.YAMLError:
-            raise errors.ConfigError(f"Invalid YAML format: {path}")
+            raise ConfigError(f"Invalid YAML format: {path}")
 
         return cls.model_validate(parsed_data | {"path": path}, strict=True)
 

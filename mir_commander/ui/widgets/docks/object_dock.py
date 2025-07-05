@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
+from PySide6.QtWidgets import QWidget
 
 from .base import BaseDock
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class ObjectDock(BaseDock):
@@ -13,5 +10,5 @@ class ObjectDock(BaseDock):
     with settings for the currently chosen object in the project tree.
     """
 
-    def __init__(self, parent: "MainWindow"):
+    def __init__(self, parent: QWidget):
         super().__init__(self.tr("Object"), parent)

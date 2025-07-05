@@ -2,19 +2,7 @@ from PySide6.QtGui import QKeyEvent, QKeySequence, QMouseEvent
 
 
 class Keymap:
-    _instances: dict[int, "Keymap"] = {}
-
-    def __new__(cls, key: int, config: None | dict[str, list[str]] = None) -> "Keymap":
-        """
-        This function is required to prevent re-reading config files when each new window is created.
-        :param key: unique value
-        :param config:
-        """
-        if key not in cls._instances:
-            cls._instances[key] = super().__new__(cls)
-        return cls._instances[key]
-
-    def __init__(self, key: int, config: None | dict[str, list[str]] = None):
+    def __init__(self, config: None | dict[str, list[str]] = None):
         self._map: dict[str, str] = {}
 
         if config is not None:

@@ -1,11 +1,6 @@
-from typing import TYPE_CHECKING
-
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
 from .base import BaseDock
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
 
 
 class Text(QPlainTextEdit):
@@ -25,7 +20,7 @@ class ConsoleDock(BaseDock):
     Contains an instance of the Text widget for showing text information.
     """
 
-    def __init__(self, parent: "MainWindow"):
+    def __init__(self, parent: QWidget):
         super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
         self.setWidget(self.text)

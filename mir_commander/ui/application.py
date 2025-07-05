@@ -3,16 +3,15 @@ from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.consts import DIR
+from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 
-from .recent_projects.config import RecentProjectsConfig
-from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 from .config import AppConfig, ApplyCallbacks
-from .main_window import MainWindow
+from .project_window import ProjectWindow
+from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 
 logger = logging.getLogger("Application")
 
@@ -29,14 +28,17 @@ class Application(QApplication):
 
         self.apply_callbacks = ApplyCallbacks()
         self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
-        self.recent_projects_config = RecentProjectsConfig.load(DIR.HOME_CONFIG / "recent_projects.yaml")
 
-        self._open_projects: dict[int, MainWindow] = {}
-        self._recent_projects_dialog = RecentProjectsDialog(self)
+        self._open_projects: dict[int, ProjectWindow] = {}
+        self._recent_projects_dialog = RecentProjectsDialog()
+        self._recent_projects_dialog.open_project_signal.connect(self.open_project)
 
         self._translator_app = QTranslator(self)
         self._translator_qt = QTranslator(self)
         self._set_translation()
+
+        self._error = QMessageBox()
+        self._error.setIcon(QMessageBox.Icon.Critical)
 
         self.apply_callbacks.add(self._set_translation)
 
@@ -100,37 +102,46 @@ class Application(QApplication):
             self.installTranslator(translator)
             self._translator_qt = translator
 
-    def open_project(self, path: Path, raise_exc: bool = False) -> bool:
+    def open_project(self, path: Path) -> bool:
         t = "file" if path.is_file() else "project"
-        logger.debug(f"Loading {t}: {path}")
+        logger.info("Loading %s: %s", t, path)
         try:
             project, messages = load_project(path)
         except (LoadFileError, LoadProjectError) as e:
-            logger.error(f"Invalid load {t}: {str(e)}")
-            if raise_exc:
-                raise
+            logger.error(str(e))
+            self._error.setText(e.__class__.__name__)
+            self._error.setInformativeText(str(e))
+            self._error.show()
             return False
 
-        logger.debug(f"Loading {t} completed")
+        logger.info("Loading %s completed", t)
 
         messages.insert(0, f"{path}")
-        main_window = MainWindow(self, project, messages)
-        self._open_projects[id(main_window)] = main_window
-        if not main_window.project.is_temporary:
-            self.recent_projects_config.add_opened(project.name, project.path)
-            self.recent_projects_config.add_recent(project.name, project.path)
-        main_window.show()
+        project_window = ProjectWindow(
+            app_config=self.config, 
+            app_apply_callbacks=self.apply_callbacks, 
+            project=project, 
+            init_msg=messages,
+        )
+        project_window.close_project_signal.connect(self.close_project)
+        project_window.quit_application_signal.connect(self.quit)
+        self._open_projects[id(project_window)] = project_window
+        if not project_window.project.is_temporary:
+            self._recent_projects_dialog.add_opened(project)
+            self._recent_projects_dialog.add_recent(project)
+        self._recent_projects_dialog.hide()
+        project_window.show()
         return True
 
-    def close_project(self, main_window: MainWindow):
-        del self._open_projects[id(main_window)]
+    def close_project(self, project_window: ProjectWindow):
+        del self._open_projects[id(project_window)]
 
-        main_window.project.config.dump()
+        project_window.project.config.dump()
 
-        if not main_window.project.is_temporary:
-            self.recent_projects_config.add_recent(main_window.project.name, main_window.project.path)
+        if not project_window.project.is_temporary:
+            self._recent_projects_dialog.add_recent(project_window.project)
             if not self._quitting:
-                self.recent_projects_config.remove_opened(main_window.project.path)
+                self._recent_projects_dialog.remove_opened(project_window.project)
 
         if not self._open_projects:
             self._recent_projects_dialog.show()
@@ -142,13 +153,12 @@ class Application(QApplication):
         super().quit()
 
     def run(self, project_path: Path) -> int:
-        if project_path:
-            if not self.open_project(project_path):
-                return 1
+        if project_path != Path(""):
+            self.open_project(project_path)
         else:
-            if self.recent_projects_config.opened:
-                for item in self.recent_projects_config.opened:
+            if self._recent_projects_dialog.opened:
+                for item in self._recent_projects_dialog.opened:
                     self.open_project(item.path)
-            else:
+            if not self._open_projects:
                 self._recent_projects_dialog.show()
         return self.exec()

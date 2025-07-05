@@ -1,33 +1,20 @@
-from typing import TYPE_CHECKING, Type
-
-from PySide6.QtGui import QIcon, QStandardItem, Qt
-from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
+from PySide6.QtGui import QIcon, QStandardItem
+from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import models
-from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructure
-from mir_commander.ui.utils.widget import Action, Menu
-
-if TYPE_CHECKING:
-    from mir_commander.ui.main_window import MainWindow
+from mir_commander.ui.widgets.viewers.molecular_structure import MolecularStructureViewer
 
 
 class Item(QStandardItem):
-    default_viewer: Type[QWidget] | None = None
+    default_viewer: type[QWidget] | None = None
+    context_menu: bool = True
 
     def __init__(self, data: models.Item):
         super().__init__(data.name)
         self.setData(data)
         self.setEditable(False)
         self._set_icon()
-        self.load_data()
-
-    @property
-    def _mdi_area(self) -> QMdiArea:
-        return self.model().parent().parent().mdi_area
-
-    @property
-    def _main_window(self) -> "MainWindow":
-        return self.model().parent().parent().parent()
+        self._load_data()
 
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
@@ -41,57 +28,7 @@ class Item(QStandardItem):
         else:
             return part
 
-    def context_menu(self) -> Menu:
-        result = Menu()
-
-        view_structures_menu = Menu(Menu.tr("View Structures"), result)
-        view_structures_menu.addAction(
-            Action(Action.tr("VS_Child"), view_structures_menu, triggered=self._view_structures_child)
-        )
-        view_structures_menu.addAction(
-            Action(Action.tr("VS_All"), view_structures_menu, triggered=self._view_structures_all)
-        )
-        view_structures_menu.addSeparator()
-
-        result.addMenu(view_structures_menu)
-        return result
-
-    def _view_structures_all(self):
-        self._create_viewer_and_add_to_mdi(MolecularStructure, all=True).show()
-
-    def _view_structures_child(self):
-        self._create_viewer_and_add_to_mdi(MolecularStructure, all=False).show()
-
-    def _create_viewer_and_add_to_mdi(self, cls: Type[QWidget], maximize: bool = False, *args, **kwargs) -> QWidget:
-        """
-        Create viewer instance and add it to MDI area and return this viewer instance
-        """
-        sub_window = QMdiSubWindow(self._mdi_area)
-        sub_window.setAttribute(Qt.WA_DeleteOnClose)
-        viewer = cls(sub_window, item=self, main_window=self._main_window, *args, **kwargs)
-        sub_window.setWidget(viewer)
-        self._mdi_area.addSubWindow(sub_window)
-        if maximize:
-            sub_window.showMaximized()
-        return viewer
-
-    def view(self, maximize: bool = False, *args, **kwargs) -> None | QWidget:
-        """
-        Check for existing viewer and create if doesn't exist
-        """
-        mdi_area = self._mdi_area
-        for sub_window in mdi_area.subWindowList():
-            # checking if viewer for this item already opened
-            if id(sub_window.widget().item) == id(self):
-                mdi_area.setActiveSubWindow(sub_window)
-                return sub_window.widget()
-        else:
-            if self.default_viewer:
-                return self._create_viewer_and_add_to_mdi(self.default_viewer, maximize, *args, **kwargs)
-            else:
-                return None
-
-    def load_data(self):
+    def _load_data(self):
         data: models.Item = self.data()
 
         for item in data.items:
@@ -121,17 +58,15 @@ class Unex(Item):
 
 
 class AtomicCoordinatesGroup(Item):
-    default_viewer = MolecularStructure
+    default_viewer = MolecularStructureViewer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
 
 
 class AtomicCoordinates(Item):
-    default_viewer = MolecularStructure
-
-    def context_menu(self) -> Menu:
-        return Menu()
+    default_viewer = MolecularStructureViewer
+    context_menu: bool = False
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates.png"))

@@ -2,6 +2,7 @@ from PySide6.QtGui import QQuaternion, QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
 from mir_commander.ui.utils.opengl.mesh import Cylinder
+from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
@@ -26,10 +27,10 @@ class BondItem(MeshItem):
         self._compute_transform()
 
     def _compute_transform(self):
-        self.transform.setToIdentity()
-        self.transform.translate(self._position)
-        self.transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), self._direction))
-        self.transform.scale(self._radius, self._radius, self._length)
+        self._transform.setToIdentity()
+        self._transform.translate(self._position)
+        self._transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), self._direction))
+        self._transform.scale(self._radius, self._radius, self._length)
 
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
         self._position = position
@@ -54,6 +55,8 @@ class Bond(Item):
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
         super().__init__()
+        self.picking_visible = False
+
         self._c_mesh_data = c_mesh_data
         self._radius = radius
         self._atom_1 = atom_1
@@ -86,36 +89,28 @@ class Bond(Item):
         return result
 
     def _add_bonds(self):
-        self._clear_bonds()
+        self.clear()
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            self._items.append(BondItem(self._c_mesh_data, position, direction, self._radius, length, color))
-
-    def _clear_bonds(self):
-        for item in self._items:
-            item.clear()
-        self._items.clear()
+            self.add_child(BondItem(self._c_mesh_data, position, direction, self._radius, length, color))
 
     def update_bonds(self):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
-        for i, bond in enumerate(self._items):
+        for i, bond in enumerate(self.children):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
 
-    def clear(self):
-        self._clear_bonds()
-
-    def paint(self):
+    def paint(self, mode: PaintMode):
         if self.visible and not self._atom_1.cloaked and not self._atom_2.cloaked:
-            for item in self._items:
-                item.paint()
+            for item in self.children:
+                item.paint(mode)
 
     def set_radius(self, radius: float):
         self._radius = radius
-        for bond in self._items:
+        for bond in self.children:
             bond.set_radius(radius)
 
     def set_atoms_color(self, value: bool):
@@ -129,10 +124,13 @@ class Bond(Item):
             self._atoms_color = False
             self._add_bonds()
         else:
-            for bond in self._items:
+            for bond in self.children:
                 bond.set_color(color)
 
     def set_smooth(self, smooth: bool):
         self._smooth = smooth
-        for item in self._items:
+        for item in self.children:
             item.set_smooth(smooth)
+
+    def __repr__(self) -> str:
+        return f"Bond(atom_1={self._atom_1}, atom_2={self._atom_2})"

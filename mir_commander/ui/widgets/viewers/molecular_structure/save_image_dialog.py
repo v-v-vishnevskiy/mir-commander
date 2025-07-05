@@ -23,7 +23,6 @@ class SaveImageDialog(Dialog):
         self.img_width_init = img_width
         self.img_height_init = img_height
         self.img_sratio_init = float(img_width) / float(img_height)
-        self._main_window = self.parent().parent().mdiArea().parent()
 
         self.setWindowTitle(self.tr("Save image"))
 
@@ -73,7 +72,6 @@ class SaveImageDialog(Dialog):
         # This needs to be implemented in a more advanced manner as the development of MirCMD progresses.
         # For example, the CWD logic may work not optimal if a project is opened through a menu, not a console.
         # Molecule -> QMdiSubWindow -> QMdiArea -> MainWindow -> project.path
-        # self.initial_file_path = self._main_window.project.path / f"{self.img_file_name_init}.png"
         self.initial_file_path = Path.cwd() / f"{self.img_file_name_init}.png"
         self.file_path_editbox.setText(str(self.initial_file_path))
         file_path_layout.addWidget(self.file_path_editbox)

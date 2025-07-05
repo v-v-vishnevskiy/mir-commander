@@ -4,7 +4,7 @@ BOHR2ANGSTROM = 0.529177210903  # 2018 CODATA
 
 
 class DIR:
-    APP = Path(__file__).parent.parent
+    APP = Path(__file__).parent.parent.parent
     HOME_CONFIG = Path.home() / ".mircmd"
     RESOURCES = APP / "resources"
     ICONS = RESOURCES / "icons"

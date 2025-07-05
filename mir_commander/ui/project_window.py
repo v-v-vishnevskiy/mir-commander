@@ -2,31 +2,28 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.core import Project
 
-from .config import ApplyCallbacks
+from .config import AppConfig, ApplyCallbacks
+from .mdi_area import MdiArea
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
-from .widgets.settings.settings_dialog import SettingsDialog as SettingsDialog
+from .widgets.settings.settings_dialog import SettingsDialog
+from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
+from .utils.sub_window_menu import SubWindowMenu
+from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
 
-if TYPE_CHECKING:
-    from .application import Application
-    from .utils.sub_window_menu import SubWindowMenu
-    from .utils.sub_window_toolbar import SubWindowToolBar
-
-
-logger = logging.getLogger("MainWindow")
+logger = logging.getLogger("ProjectWindow")
 
 
 @dataclass
@@ -36,36 +33,33 @@ class Docks:
     console: ConsoleDock
 
 
-class MainWindow(QMainWindow):
-    def __init__(self, app: "Application", project: Project, init_msg: None | list[str] = None):
+class ProjectWindow(QMainWindow):
+    close_project_signal = Signal(QMainWindow)
+    quit_application_signal = Signal()
+
+    def __init__(self, app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
         logger.debug("Initializing main window ...")
         super().__init__(None)
-        self.app: "Application" = app
         self.project = project
-        self.config = self.app.config.main_window
+        self.app_config = app_config
+        self.config = app_config.project_window
         self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
         self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
+        self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
         self.apply_callbacks.add(self._set_mainwindow_title)
 
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
-        # Mdi area as a central widget
-        self.mdi_area = QMdiArea(self)
-        self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
-        self.setCentralWidget(self.mdi_area)
-
+        self.setup_mdi_area()
         self.setup_toolbars()  # Note, we create toolbars before menus
         self.setup_docks()  # Create docks before menus
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
-        self.status = StatusBar(self)
-        self.setStatusBar(self.status)
+        self.status_bar = StatusBar(self)
+        self.setStatusBar(self.status_bar)
 
         self._set_mainwindow_title()
 
@@ -81,7 +75,11 @@ class MainWindow(QMainWindow):
 
         self._fix_window_composition()
 
-        self.status.showMessage(StatusBar.tr("Ready"), 10000)
+        self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
+
+        if project.is_temporary:
+            self.docks.project.tree.expand_top_items()
+            self.docks.project.tree.view_babushka()
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
@@ -98,16 +96,37 @@ class MainWindow(QMainWindow):
             self.mdi_area.removeSubWindow(self.__fix_sub_window)
             self.__fix_sub_window = None
 
+    def setup_mdi_area(self):
+        def added_viewer_slot(viewer: BaseViewer):
+            viewer.short_msg_signal.connect(self.status_bar.showMessage)
+            viewer.long_msg_signal.connect(self.docks.console.append)
+
+        self.mdi_area = MdiArea(parent=self, viewers_config=self.config.widgets.viewers)
+        self.mdi_area.subWindowActivated.connect(self.update_menus)
+        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
+        self.mdi_area.added_viewer_signal.connect(added_viewer_slot)
+        self.setCentralWidget(self.mdi_area)
+
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
         self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
-        self.docks = Docks(ProjectDock(self, self.project), ObjectDock(self), ConsoleDock(self))
+        self.docks = Docks(
+            ProjectDock(
+                parent=self, 
+                config=self.config.widgets.docks.project, 
+                project=self.project,
+            ),
+            ObjectDock(parent=self),
+            ConsoleDock(parent=self),
+        )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
+
+        self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.
@@ -151,8 +170,8 @@ class MainWindow(QMainWindow):
 
     def _setup_menubar_file(self) -> Menu:
         menu = Menu(Menu.tr("File"), self)
-        menu.addAction(self._close_project_action())
         menu.addAction(self._settings_action())
+        menu.addAction(self._close_project_action())
         menu.addAction(self._quit_action())
         return menu
 
@@ -187,14 +206,21 @@ class MainWindow(QMainWindow):
         action = Action(Action.tr("Settings..."), self)
         action.setMenuRole(Action.PreferencesRole)
         # Settings dialog is actually created here.
-        action.triggered.connect(SettingsDialog(self).show)
+        settings_dialog = SettingsDialog(
+            parent=self, 
+            app_apply_callbacks=self.app_apply_callbacks, 
+            mw_apply_callbacks=self.apply_callbacks, 
+            app_config=self.app_config, 
+            project_config=self.project.config,
+        )
+        action.triggered.connect(settings_dialog.show)
         return action
 
     def _quit_action(self) -> Action:
         action = Action(Action.tr("Quit"), self)
         action.setMenuRole(Action.QuitRole)
         action.setShortcut(QKeySequence.Quit)
-        action.triggered.connect(self.app.quit)
+        action.triggered.connect(self.quit_application_signal.emit)
         return action
 
     def _about_action(self) -> Action:
@@ -264,8 +290,9 @@ class MainWindow(QMainWindow):
             self.restoreState(base64.b64decode(state))
 
     def closeEvent(self, event: QCloseEvent):
+        logger.info("Closing %s project ...", self.project.name)
         self._save_settings()
-        self.app.close_project(self)
+        self.close_project_signal.emit(self)
         event.accept()
 
     @Slot()

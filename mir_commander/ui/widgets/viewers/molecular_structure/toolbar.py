@@ -6,10 +6,10 @@ from mir_commander.ui.config import Toolbars
 from mir_commander.ui.utils.sub_window_toolbar import SubWindowToolBar
 from mir_commander.ui.utils.widget import Action
 
-from .viewer import MolecularStructure
+from .viewer import MolecularStructureViewer
 
 
-class ToolBar(SubWindowToolBar[MolecularStructure]):
+class ToolBar(SubWindowToolBar[MolecularStructureViewer]):
     def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: Toolbars):
         super().__init__(ToolBar.tr("Molecular viewer"), parent, mdi_area, config)
         self.setObjectName("Molecular Structure Toolbar")

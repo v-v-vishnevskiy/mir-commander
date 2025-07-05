@@ -1,9 +1,9 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
 from PySide6.QtWidgets import QWidget
 
-if TYPE_CHECKING:
-    from mir_commander.ui.widgets.settings.settings_dialog import SettingsDialog
+from mir_commander.core.config import ProjectConfig
+from mir_commander.ui.config import AppConfig
 
 
 class BasePage(QWidget):
@@ -13,10 +13,10 @@ class BasePage(QWidget):
     initialization method, see the code below.
     """
 
-    def __init__(self, parent: "SettingsDialog"):
+    def __init__(self, parent: QWidget, app_config: AppConfig, project_config: ProjectConfig):
         super().__init__(parent)
-        self.app_config = parent.app_config
-        self.project_config = parent.project_config
+        self.app_config = app_config
+        self.project_config = project_config
         self._backup: dict[str, Any] = {}
 
         layout = self.setup_ui()

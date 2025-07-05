@@ -2,6 +2,7 @@ from OpenGL.GL import GLuint
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import MeshItem
+from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
 from mir_commander.ui.utils.opengl.utils import Color4f
@@ -33,24 +34,24 @@ class Atom(MeshItem):
         self._compute_transform()
 
     def _compute_transform(self):
-        self.transform.setToIdentity()
-        self.transform.translate(self.position)
+        self._transform.setToIdentity()
+        self._transform.translate(self.position)
 
         radius = self.radius
         if self._under_cursor:
             radius *= 1.15
 
-        self.transform.scale(radius, radius, radius)
+        self._transform.scale(radius, radius, radius)
 
     @property
     def shader(self) -> GLuint:
         if self.selected:
             return self.selected_shader.program
         return super().shader
-
-    def paint(self):
+    
+    def paint_self(self, mode: PaintMode):
         if not self.cloaked:
-            super().paint()
+            super().paint_self(mode)
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:
@@ -73,3 +74,6 @@ class Atom(MeshItem):
     def toggle_selection(self) -> bool:
         self.selected = not self.selected
         return self.selected
+
+    def __repr__(self) -> str:
+        return f"Atom(atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"

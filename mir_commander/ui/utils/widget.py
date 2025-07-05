@@ -48,6 +48,12 @@ class Translator:
         return QCoreApplication.translate(self.__class__.__name__, text).format(*text.format_args, **text.format_kwargs)
 
 
+class TR:
+    @staticmethod
+    def tr(value: str) -> TrString:
+        return QCoreApplication.translate("TR", value)
+
+
 class Widget(Translator):
     """
     A special class, which implements changeEvent handler.
@@ -245,7 +251,7 @@ class Menu(Widget, QMenu):
 
 
 class StatusBar(Widget, QStatusBar):
-    def showMessage(self, message: str, timeout: int = 0):
+    def showMessage(self, message: str, timeout: int = 10000):
         self.__message = message
         self.__timeout = timeout
         self.__monotonic = monotonic()

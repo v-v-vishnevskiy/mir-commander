@@ -49,3 +49,18 @@ SHADED = {
         }
     """,
 }
+
+PICKING_SHADER = {
+    "vertex": """
+        void main() {
+            gl_FrontColor = gl_Color;
+            gl_BackColor = gl_Color;
+            gl_Position = ftransform();
+        }
+    """,
+    "fragment": """
+        void main() {
+            gl_FragColor = gl_Color;
+        }
+    """,
+}
