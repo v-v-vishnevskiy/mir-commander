@@ -701,4 +701,3 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             self._molecule.current_geom_bond_tolerance = dlg.current_tol
         else:
             self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
-
