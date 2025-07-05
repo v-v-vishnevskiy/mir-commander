@@ -249,12 +249,6 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
                 atom.cloaked = True
         self.update()
 
-    def cloak_atoms_by_atnum(self, atomic_num: int):
-        for atom in self._molecule.atom_items:
-            if atom.atomic_num == atomic_num:
-                atom.cloaked = True
-        self.update()
-
     def cloak_toggle_h_atoms(self):
         for atom in self._molecule.atom_items:
             if atom.atomic_num == 1:
@@ -266,13 +260,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             atom.cloaked = False
         self.update()
 
+    def _cloak_atoms_by_atnum(self, atomic_num: int):
+        for atom in self._molecule.atom_items:
+            if atom.atomic_num == atomic_num:
+                atom.cloaked = True
+        self.update()
+
     def cloak_atoms_by_atnum(self):
         el_symbol, ok = QInputDialog.getText(
             self, self.tr("Cloak atoms by type"), self.tr("Enter element symbol:"), QLineEdit.Normal, ""
         )
         if ok:
             try:
-                self.cloak_atoms_by_atnum(symbol_to_atomic_number(el_symbol))
+                self._cloak_atoms_by_atnum(symbol_to_atomic_number(el_symbol))
             except ValueError:
                 QMessageBox.critical(
                     self,

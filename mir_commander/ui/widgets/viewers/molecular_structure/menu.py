@@ -242,15 +242,15 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def select_all_atoms_handler(self):
-        self.widget.select_all_atoms()
+        self.widget._molecule.select_all_atoms()
 
     @Slot()
     def unselect_all_atoms_handler(self):
-        self.widget.unselect_all_atoms()
+        self.widget._molecule.unselect_all_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.widget.select_toggle_all_atoms()
+        self.widget._molecule.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
