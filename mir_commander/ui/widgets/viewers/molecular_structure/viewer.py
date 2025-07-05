@@ -180,6 +180,28 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
 
+    def select_all_atoms(self):
+        for atom in self._molecule.atom_items:
+            atom.selected = True
+        self._molecule.selected_atom_items = self._molecule.atom_items.copy()
+        self.update()
+
+    def unselect_all_atoms(self):
+        for atom in self._molecule.atom_items:
+            atom.selected = False
+        self._molecule.selected_atom_items = []
+        self.update()
+
+    def select_toggle_all_atoms(self):
+        """
+        Unselect all atoms if at least one atom selected,
+        otherwise select all.
+        """
+        if len(self._molecule.selected_atom_items) > 0:
+            self.unselect_all_atoms()
+        else:
+            self.select_all_atoms()
+
     @Slot()
     def save_img_action_handler(self):
         dlg = SaveImageDialog(self.size().width(), self.size().height(), self._draw_item.text(), self)
