@@ -25,7 +25,7 @@ class Molecule(Item):
         self.picking_visible = False
 
         self._config = config
-        self._style = Style(config)
+        self.style = Style(config)
         self.center = QVector3D(0, 0, 0)
         self.radius = 0
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
@@ -70,7 +70,7 @@ class Molecule(Item):
         self.set_position(-center)
 
     def apply_style(self):
-        mesh_quality = self._style.current.quality.mesh
+        mesh_quality = self.style.current.quality.mesh
         self._apply_atoms_style(mesh_quality)
         self._apply_bonds_style(mesh_quality)
 
@@ -87,25 +87,25 @@ class Molecule(Item):
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_radius(radius)
             atom.set_color(color)
-            atom.set_smooth(self._style.current.quality.smooth)
+            atom.set_smooth(self.style.current.quality.smooth)
     
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
-        atoms_radius = self._style.current.atoms.radius
+        atoms_radius = self.style.current.atoms.radius
         if atoms_radius == "atomic":
             if atomic_num >= 0:
-                radius = self._style.current.atoms.atomic_radius[atomic_num]
+                radius = self.style.current.atoms.atomic_radius[atomic_num]
             else:
-                radius = self._style.current.atoms.special_atoms.atomic_radius[atomic_num]
-            radius *= self._style.current.atoms.scale_factor
+                radius = self.style.current.atoms.special_atoms.atomic_radius[atomic_num]
+            radius *= self.style.current.atoms.scale_factor
         elif atoms_radius == "bond":
-            radius = self._style.current.bond.radius
+            radius = self.style.current.bond.radius
         else:
-            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self._style.current.name}'")
+            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self.style.current.name}'")
 
         if atomic_num >= 0:
-            color = self._style.current.atoms.atomic_color[atomic_num]
+            color = self.style.current.atoms.atomic_color[atomic_num]
         else:
-            color = self._style.current.atoms.special_atoms.atomic_color[atomic_num]
+            color = self.style.current.atoms.special_atoms.atomic_color[atomic_num]
 
         return radius, normalize_color(color)
 
@@ -125,14 +125,14 @@ class Molecule(Item):
 
         # update items
         for bond in self.bond_items:
-            bond.set_radius(self._style.current.bond.radius)
+            bond.set_radius(self.style.current.bond.radius)
 
-            if self._style.current.bond.color == "atoms":
+            if self.style.current.bond.color == "atoms":
                 bond.set_atoms_color(True)
             else:
-                bond.set_color(normalize_color(self._style.current.bond.color))
+                bond.set_color(normalize_color(self.style.current.bond.color))
 
-            bond.set_smooth(self._style.current.quality.smooth)
+            bond.set_smooth(self.style.current.quality.smooth)
 
     def clear(self):
         self.atom_items.clear()
@@ -166,28 +166,28 @@ class Molecule(Item):
             color,
             selected_shader=self._edge_shader,
         )
-        item.set_smooth(self._style.current.quality.smooth)
+        item.set_smooth(self.style.current.quality.smooth)
         self.add_child(item)
         self.atom_items.append(item)
 
         return item
 
     def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
-        atoms_color = self._style.current.bond.color == "atoms"
+        atoms_color = self.style.current.bond.color == "atoms"
         if atoms_color:
             color = (0.5, 0.5, 0.5, 1.0)
         else:
-            color = normalize_color(self._style.current.bond.color)
+            color = normalize_color(self.style.current.bond.color)
 
         item = Bond(
             self._bond_mesh_data,
             atom_1,
             atom_2,
-            self._style.current.bond.radius,
+            self.style.current.bond.radius,
             atoms_color,
             color,
         )
-        item.set_smooth(self._style.current.quality.smooth)
+        item.set_smooth(self.style.current.quality.smooth)
         self.add_child(item)
         self.bond_items.append(item)
 

@@ -3,13 +3,14 @@ from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot
-from PySide6.QtGui import QStandardItem
+from PySide6.QtCore import Slot, QPoint
+from PySide6.QtGui import QStandardItem, QColor
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
+from mir_commander.ui.utils.opengl.text_overlay import TextOverlay, TextOverlayConfig
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -78,13 +79,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
+        self._under_cursor_overlay = TextOverlay(
+            parent=self,
+            config=self._molecule.style.current.under_cursor_text_overlay,
+        )
+        self._under_cursor_overlay.hide()
+
         self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
 
         self.update_window_title()
 
-        self.set_background_color(normalize_color(self._molecule._style.current.background.color))
-        self.set_projection_mode(self._molecule._style.current.projection.mode)
-        self.set_perspective_projection_fov(self._molecule._style.current.projection.perspective.fov)
+        self.set_background_color(normalize_color(self._molecule.style.current.background.color))
+        self.set_projection_mode(self._molecule.style.current.projection.mode)
+        self.set_perspective_projection_fov(self._molecule.style.current.projection.perspective.fov)
 
         self.build_molecule()
 
@@ -107,16 +114,24 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
             self.update()
         if isinstance(item, Atom):
-            self.short_msg_signal.emit(f"{item.element_symbol}{item.index_num + 1}")
+            self._under_cursor_overlay.set_text(f"Atom: {item.element_symbol}{item.index_num + 1}")
+            size = self._under_cursor_overlay.size()
+            self._under_cursor_overlay.set_position(QPoint(x, y - size.height()))
+            self._under_cursor_overlay.show()
+        else:
+            self._under_cursor_overlay.set_text("")
+            self._under_cursor_overlay.hide()
 
     def set_next_style(self):
-        if self._molecule._style.set_next_style():
+        if self._molecule.style.set_next_style():
             self._molecule.apply_style()
+            self._under_cursor_overlay.set_config(self._molecule.style.current.under_cursor_text_overlay, skip_position=True)
             self.update()
 
     def set_prev_style(self):
-        if self._molecule._style.set_prev_style():
+        if self._molecule.style.set_prev_style():
             self._molecule.apply_style()
+            self._under_cursor_overlay.set_config(self._molecule.style.current.under_cursor_text_overlay, skip_position=True)
             self.update()
 
     def _atomic_coordinates_item(
