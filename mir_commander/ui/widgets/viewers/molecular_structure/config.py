@@ -273,6 +273,12 @@ class Quality(BaseModel):
     smooth: bool = True
 
 
+class SelectedAtom(BaseModel):
+    color: Color = Color("#2D2DFF")
+    scale_factor: float = Field(default=1.4, ge=1.1, le=2.0)
+    opacity: float = Field(default=0.6, ge=0.01, le=0.99)
+
+
 class Style(BaseModel):
     name: str
     projection: ProjectionConfig = ProjectionConfig()
@@ -280,6 +286,7 @@ class Style(BaseModel):
     bond: Bond = Bond()
     atoms: Atoms = Atoms()
     quality: Quality = Quality()
+    selected_atom: SelectedAtom = SelectedAtom()
     under_cursor_text_overlay: TextOverlayConfig = TextOverlayConfig(
         alignment=["center"],
         background_color=Color("#44444499"),

@@ -1,11 +1,13 @@
-from OpenGL.GL import GLuint
-from PySide6.QtGui import QVector3D
+from OpenGL.GL import GL_BLEND, glEnable, glDisable, glLoadMatrixf
+from PySide6.QtGui import QVector3D, QMatrix4x4
 
 from mir_commander.ui.utils.opengl.graphics_items import MeshItem
 from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
+
+from ..config import SelectedAtom
 
 
 class Atom(MeshItem):
@@ -19,6 +21,7 @@ class Atom(MeshItem):
         radius: float,
         color: Color4f,
         selected_shader: ShaderProgram,
+        selected_atom_config: SelectedAtom,
     ):
         super().__init__(mesh_data, color=color)
         self.position = position
@@ -30,7 +33,7 @@ class Atom(MeshItem):
         self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self.selected = False
         self._under_cursor = False
-
+        self.selected_atom_config = selected_atom_config
         self._compute_transform()
 
     def _compute_transform(self):
@@ -43,15 +46,30 @@ class Atom(MeshItem):
 
         self._transform.scale(radius, radius, radius)
 
-    @property
-    def shader(self) -> GLuint:
-        if self.selected:
-            return self.selected_shader.program
-        return super().shader
-    
     def paint_self(self, mode: PaintMode):
         if not self.cloaked:
             super().paint_self(mode)
+            if self.selected and mode == PaintMode.Normal:
+                self._paint_self_selected(mode)
+
+    def _paint_self_selected(self, mode: PaintMode):
+        backup_shader = self._shader
+        self._shader = self.selected_shader
+
+        backup_color = self._color
+        r, g, b, _ = color_to_color4f(self.selected_atom_config.color)
+        self._color = (r, g, b, self.selected_atom_config.opacity)
+
+        transform = QMatrix4x4(self.get_transform)
+        scale_factor = self.selected_atom_config.scale_factor
+        transform.scale(scale_factor, scale_factor, scale_factor)
+        glLoadMatrixf(transform.data())
+        glEnable(GL_BLEND)
+        super().paint_self(mode)
+        glDisable(GL_BLEND)
+
+        self._shader = backup_shader
+        self._color = backup_color
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:

@@ -15,7 +15,7 @@ from mir_commander.utils.chem import atomic_number_to_symbol
 from .config import MolecularStructureViewerConfig
 from .graphics_items.atom import Atom
 from .graphics_items.bond import Bond
-from .shaders import OUTLINE
+from .shaders import TRANSPARENT
 from .style import Style
 
 
@@ -30,7 +30,10 @@ class Molecule(Item):
         self.radius = 0
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
-        self._edge_shader = ShaderProgram(VertexShader(OUTLINE["vertex"]), FragmentShader(OUTLINE["fragment"]))
+        self._tansparent_shader = ShaderProgram(
+            VertexShader(TRANSPARENT["vertex"]), 
+            FragmentShader(TRANSPARENT["fragment"]),
+        )
         self._atom_index_under_cursor: None | Atom = None
 
         self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
@@ -85,10 +88,11 @@ class Molecule(Item):
         # update items
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
+            atom.set_selected_atom_config(self.style.current.selected_atom)
             atom.set_radius(radius)
             atom.set_color(color)
             atom.set_smooth(self.style.current.quality.smooth)
-    
+
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
         atoms_radius = self.style.current.atoms.radius
         if atoms_radius == "atomic":
@@ -164,7 +168,8 @@ class Molecule(Item):
             position,
             radius,
             color,
-            selected_shader=self._edge_shader,
+            selected_shader=self._tansparent_shader,
+            selected_atom_config=self.style.current.selected_atom,
         )
         item.set_smooth(self.style.current.quality.smooth)
         self.add_child(item)

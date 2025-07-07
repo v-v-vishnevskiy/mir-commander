@@ -1,5 +1,5 @@
 import logging
-from OpenGL.GL import GL_DEPTH_TEST, GL_MULTISAMPLE, glEnable
+from OpenGL.GL import GL_DEPTH_TEST, GL_MULTISAMPLE, glEnable, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QSurfaceFormat, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -65,6 +65,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.projection_manager.build_projections(self.size().width(), self.size().height())
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_MULTISAMPLE)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def resize(self, w: int, h: int):
         parent = self.parent()

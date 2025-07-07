@@ -19,6 +19,10 @@ def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
     r, g, b, a = value.as_rgb_tuple(alpha=True)
     return QColor(r, g, b, a * 255 if alpha else 255)
 
+def color_to_color4f(value: Color, alpha: bool = True) -> Color4f:
+    r, g, b, a = value.as_rgb_tuple(alpha=True)
+    return r / 255, g / 255, b / 255, a if alpha else 1.0
+
 def id_to_color(obj_id: int) -> Color4f:
     # Supports up to 256³ = 16,777,216 objects
     r = ((obj_id >> 16) & 0xFF) / 255.0
