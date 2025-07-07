@@ -235,7 +235,7 @@ class ProjectWindow(QMainWindow):
 
     def _import_file_action(self) -> Action:
         action = Action(Action.tr("Import File..."), self)
-        action.setShortcut(QKeySequence("Ctrl+I"))
+        action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
         action.triggered.connect(self._import_file)
         return action
 
