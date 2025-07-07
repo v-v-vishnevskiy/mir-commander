@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from .errors import LoadProjectError
-from .parsers import load_file
 from .project import Project
 
 
@@ -17,7 +16,7 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
     if path.is_file():
         logs: list[str] = []
         project = Project()
-        project.data.items.append(load_file(path, logs))
+        project.import_file(path, logs)
         project.config.name = path.name
 
         return project, logs

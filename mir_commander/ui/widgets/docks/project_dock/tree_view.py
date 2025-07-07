@@ -69,22 +69,25 @@ class TreeView(QTreeView):
             self.view_item.emit(item, item.default_viewer, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
+    
+    def add_item_to_root(self, item: Item):
+        root_item = self.model().invisibleRootItem()
+        if type(item.data) is models.AtomicCoordinates:
+            tree_item = AtomicCoordinates(item)
+        elif type(item.data) is models.AtomicCoordinatesGroup:
+            tree_item = AtomicCoordinatesGroup(item)
+        elif type(item.data) is models.Molecule:
+            tree_item = Molecule(item)
+        elif type(item.data) is models.Unex:
+            tree_item = Unex(item)
+        else:
+            tree_item = Container(item)
+        root_item.appendRow(tree_item)
 
     def load_data(self):
         logger.debug("Loading data ...")
-        root_item = self.model().invisibleRootItem()
         for item in self._data.items:
-            if type(item.data) is models.AtomicCoordinates:
-                tree_item = AtomicCoordinates(item)
-            elif type(item.data) is models.AtomicCoordinatesGroup:
-                tree_item = AtomicCoordinatesGroup(item)
-            elif type(item.data) is models.Molecule:
-                tree_item = Molecule(item)
-            elif type(item.data) is models.Unex:
-                tree_item = Unex(item)
-            else:
-                tree_item = Container(item)
-            root_item.appendRow(tree_item)
+            self.add_item_to_root(item)
 
     def expand_top_items(self):
         logger.debug("Expanding top items ...")

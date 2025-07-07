@@ -2,14 +2,16 @@ import base64
 import logging
 from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiSubWindow, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QMdiSubWindow, QTabWidget, QFileDialog
 
 from mir_commander import __version__
 from mir_commander.core import Project
+from mir_commander.core.errors import LoadFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
@@ -170,6 +172,8 @@ class ProjectWindow(QMainWindow):
 
     def _setup_menubar_file(self) -> Menu:
         menu = Menu(Menu.tr("File"), self)
+        menu.addAction(self._import_file_action())
+        menu.addSeparator()
         menu.addAction(self._settings_action())
         menu.addAction(self._close_project_action())
         menu.addAction(self._quit_action())
@@ -227,6 +231,12 @@ class ProjectWindow(QMainWindow):
         action = Action(Action.tr("About"), self)
         action.setMenuRole(Action.AboutRole)
         action.triggered.connect(About(self).show)
+        return action
+
+    def _import_file_action(self) -> Action:
+        action = Action(Action.tr("Import File..."), self)
+        action.setShortcut(QKeySequence("Ctrl+I"))
+        action.triggered.connect(self._import_file)
         return action
 
     def _window_actions(self):
@@ -317,6 +327,30 @@ class ProjectWindow(QMainWindow):
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
             self.mdi_area.setActiveSubWindow(window)
+
+    def _import_file(self):
+        """Import a file into the current project."""
+        dialog = QFileDialog(self, self.tr("Import File"))
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilter(self.tr("All files (*)"))
+
+        if dialog.exec() == QFileDialog.Accepted:
+            file_path = Path(dialog.selectedFiles()[0])
+            try:
+                logs = []
+                imported_item = self.project.import_file(file_path, logs)
+                self.docks.project.add_item_to_root(imported_item)
+
+                # Show import messages in console
+                self.append_to_console(f"Imported file: {file_path}")
+                for log in logs:
+                    self.append_to_console(log)
+
+                self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
+            except LoadFileError as e:
+                logger.error(f"Failed to import file {file_path}: {e}")
+                self.append_to_console(self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e))
+                self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
 
     @Slot()
     def update_window_menu(self):
