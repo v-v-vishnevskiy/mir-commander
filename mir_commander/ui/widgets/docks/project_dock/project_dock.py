@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import Project
+from mir_commander.core.models.item import Item
 
 from ..base import BaseDock
 from .config import ProjectDockConfig
@@ -21,3 +22,6 @@ class ProjectDock(BaseDock):
         self.tree = TreeView(self, project.data, config.tree)
         self.tree.load_data()
         self.setWidget(self.tree)
+
+    def add_item_to_root(self, item: Item):
+        self.tree.add_item_to_root(item)

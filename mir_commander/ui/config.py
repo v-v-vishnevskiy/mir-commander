@@ -19,10 +19,19 @@ class Widgets(BaseModel):
     viewers: ViewersConfig = ViewersConfig()
 
 
+class MenuFileHotkeys(BaseModel):
+    import_file: str = "Ctrl+I"
+
+
+class HotkeysConfig(BaseModel):
+    menu_file: MenuFileHotkeys = MenuFileHotkeys()
+
+
 class ProjectWindowConfig(BaseModel):
     state: None | str = None
     pos: None | list[int] = Field(default=None, min_length=2, max_length=2, description="x, y coordinates")
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
+    hotkeys: HotkeysConfig = HotkeysConfig()
     widgets: Widgets = Widgets()
 
 

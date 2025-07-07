@@ -1,7 +1,9 @@
 from pathlib import Path
 
+from mir_commander.core.parsers import load_file
+
 from .config import ProjectConfig
-from .models import Data
+from .models import Data, Item
 
 
 class Project:
@@ -17,6 +19,12 @@ class Project:
     @property
     def is_temporary(self) -> bool:
         return self.path is None
+
+    def import_file(self, file_path: Path, logs: list[str]) -> Item:
+        imported_item = load_file(file_path, logs)
+        self.data.items.append(imported_item)
+        self.save()
+        return imported_item
 
     def save(self):
         self.data.dump()
