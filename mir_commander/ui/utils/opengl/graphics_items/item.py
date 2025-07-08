@@ -14,7 +14,7 @@ class Item:
     _id_counter = 1
 
     def __init__(self):
-        self.visible = True
+        self._visible = True
         self.picking_visible = True
         self.transparent = False
 
@@ -29,6 +29,20 @@ class Item:
         self._translation = QVector3D(0.0, 0.0, 0.0)
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
+
+    @property
+    def visible(self) -> bool:
+        return self._visible
+
+    def set_visible(self, value: bool):
+        self._visible = value
+        for child in self.children:
+            child.set_visible(value)
+
+    def toggle_visible(self):
+        self._visible = not self._visible
+        for child in self.children:
+            child.toggle_visible()
 
     @property
     def get_transform(self) -> QMatrix4x4:

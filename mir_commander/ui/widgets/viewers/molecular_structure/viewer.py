@@ -4,13 +4,13 @@ from typing import Optional
 
 import OpenGL.error
 from PySide6.QtCore import Slot, QPoint
-from PySide6.QtGui import QStandardItem, QColor
+from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
-from mir_commander.ui.utils.opengl.text_overlay import TextOverlay, TextOverlayConfig
+from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -265,42 +265,42 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def cloak_selected_atoms(self):
         for atom in self._molecule.atom_items:
             if atom._selected:
-                atom.cloaked = True
+                atom.set_cloaked(True)
         self.update()
 
     def cloak_not_selected_atoms(self):
         for atom in self._molecule.atom_items:
             if not atom._selected:
-                atom.cloaked = True
+                atom.set_cloaked(True)
         self.update()
 
     def cloak_h_atoms(self):
         for atom in self._molecule.atom_items:
             if atom.atomic_num == 1:
-                atom.cloaked = True
+                atom.set_cloaked(True)
         self.update()
 
     def cloak_not_selected_h_atoms(self):
         for atom in self._molecule.atom_items:
             if atom.atomic_num == 1 and not atom._selected:
-                atom.cloaked = True
+                atom.set_cloaked(True)
         self.update()
 
     def cloak_toggle_h_atoms(self):
         for atom in self._molecule.atom_items:
             if atom.atomic_num == 1:
-                atom.cloaked = not atom.cloaked
+                atom.set_cloaked(not atom.cloaked)
         self.update()
 
     def uncloak_all_atoms(self):
         for atom in self._molecule.atom_items:
-            atom.cloaked = False
+            atom.set_cloaked(False)
         self.update()
 
     def _cloak_atoms_by_atnum(self, atomic_num: int):
         for atom in self._molecule.atom_items:
             if atom.atomic_num == atomic_num:
-                atom.cloaked = True
+                atom.set_cloaked(True)
         self.update()
 
     def cloak_atoms_by_atnum(self):

@@ -18,12 +18,15 @@ class BoundingSphere(MeshItem):
     ):
         self.atom_color = atom_color
         super().__init__(mesh_data, color=self._compute_color(config))
-        self.visible = False
         self.picking_visible = False
         self.transparent = True
 
         self.config = config
         self._compute_transform()
+
+    @property
+    def visible(self) -> bool:
+        return super().visible and self.parent.selected and not self.parent.cloaked
 
     def set_config(self, config: SelectedAtom):
         self.config = config

@@ -1,7 +1,6 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.graphics_items import MeshItem
-from mir_commander.ui.utils.opengl.enums import PaintMode
+from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
 from mir_commander.ui.utils.opengl.utils import Color4f
@@ -29,12 +28,30 @@ class Atom(MeshItem):
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
-        self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
+        self._related_bonds = []
+        self._cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self._selected = False
         self._under_cursor = False
         self._compute_transform()
         self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
         self.add_child(self._bounding_sphere)
+
+    def add_related_bond(self, bond: Item):
+        self._related_bonds.append(bond)
+
+    def set_cloaked(self, value: bool):
+        self._cloaked = value
+        for bond in self._related_bonds:
+            atom_1, atom_2 = bond.atoms
+            bond.set_visible(bool((not atom_1.cloaked) * (not atom_2.cloaked)))
+
+    @property
+    def cloaked(self) -> bool:
+        return self._cloaked
+
+    @property
+    def visible(self) -> bool:
+        return super().visible and not self._cloaked
 
     def _compute_transform(self):
         self._transform.setToIdentity()
@@ -45,10 +62,6 @@ class Atom(MeshItem):
             radius *= 1.15
 
         self._transform.scale(radius, radius, radius)
-
-    def paint_self(self, mode: PaintMode):
-        if not self.cloaked:
-            super().paint_self(mode)
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:
@@ -72,11 +85,9 @@ class Atom(MeshItem):
 
     def set_selected(self, value: bool):
         self._selected = value
-        self._bounding_sphere.visible = value
 
     def toggle_selection(self) -> bool:
         self._selected = not self._selected
-        self._bounding_sphere.visible = not self._bounding_sphere.visible
         return self._selected
 
     def __repr__(self) -> str:

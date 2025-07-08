@@ -32,6 +32,10 @@ class BondItem(MeshItem):
         self._transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), self._direction))
         self._transform.scale(self._radius, self._radius, self._length)
 
+    @property
+    def visible(self) -> bool:
+        return super().visible and self.parent.visible
+
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
         self._position = position
         self._direction = direction
@@ -103,10 +107,12 @@ class Bond(Item):
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
 
-    def paint(self, mode: PaintMode):
-        if self.visible and not self._atom_1.cloaked and not self._atom_2.cloaked:
-            for item in self.children:
-                item.paint(mode)
+    @property
+    def visible(self) -> bool:
+        return super().visible and not self._atom_1.cloaked and not self._atom_2.cloaked
+
+    def paint_self(self, mode: PaintMode):
+        pass
 
     def set_radius(self, radius: float):
         self._radius = radius
