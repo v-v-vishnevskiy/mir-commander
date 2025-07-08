@@ -62,9 +62,6 @@ class MeshItem(Item):
         return self._color
 
     def paint_self(self, mode: PaintMode):
-        if not self.visible:
-            return
-
         if mode == PaintMode.Picking:
             glUseProgram(self._picking_shader.program)
         else:

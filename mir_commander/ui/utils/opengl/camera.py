@@ -25,7 +25,7 @@ class Camera:
             target: Point the camera is looking at (default: (0, 0, 0))
             up_vector: Up direction vector (default: (0, 1, 0))
         """
-        self._position = position or QVector3D(0.0, 0.0, 5.0)
+        self.position = position or QVector3D(0.0, 0.0, 5.0)
         self._target = target or QVector3D(0.0, 0.0, 0.0)
         self._up_vector = up_vector or QVector3D(0.0, 1.0, 0.0)
 
@@ -40,7 +40,7 @@ class Camera:
     
     def set_position(self, position: QVector3D):
         """Set camera position."""
-        self._position = position
+        self.position = position
         self._update_view_matrix()
     
     def set_target(self, target: QVector3D):
@@ -62,7 +62,7 @@ class Camera:
             target: Point to look at
             up_vector: Up direction (optional, uses current if not provided)
         """
-        self._position = position
+        self.position = position
         self._target = target
         if up_vector is not None:
             self._up_vector = up_vector.normalized()
@@ -75,7 +75,7 @@ class Camera:
         Args:
             translation: Vector to translate camera by
         """
-        self._position += translation
+        self.position += translation
         self._target += translation
         self._update_view_matrix()
     
@@ -86,7 +86,7 @@ class Camera:
         Args:
             distance: Distance to move (positive = forward, negative = backward)
         """
-        direction = (self._target - self._position).normalized()
+        direction = (self._target - self.position).normalized()
         translation = direction * distance * self._movement_speed
         self.translate(translation)
 
@@ -97,7 +97,7 @@ class Camera:
         Args:
             distance: Distance to move (positive = right, negative = left)
         """
-        forward = (self._target - self._position).normalized()
+        forward = (self._target - self.position).normalized()
         right = QVector3D.crossProduct(forward, self._up_vector).normalized()
         translation = right * distance * self._movement_speed
         self.translate(translation)
@@ -125,7 +125,7 @@ class Camera:
         yaw_rad = yaw * self._rotation_speed * 0.0174533
         
         # Get current distance from target
-        distance = (self._position - self._target).length()
+        distance = (self.position - self._target).length()
         
         # Calculate new position using spherical coordinates
         current_pitch = self._get_pitch_angle()
@@ -152,8 +152,8 @@ class Camera:
         Args:
             factor: Zoom factor (positive = zoom in, negative = zoom out)
         """
-        direction = (self._target - self._position).normalized()
-        distance = (self._target - self._position).length()
+        direction = (self._target - self.position).normalized()
+        distance = (self._target - self.position).length()
         
         # Calculate new distance
         new_distance = distance * (1.0 + factor * self._zoom_speed)
@@ -174,7 +174,7 @@ class Camera:
     
     def get_direction(self) -> QVector3D:
         """Get camera view direction (normalized vector from position to target)."""
-        return (self._target - self._position).normalized()
+        return (self._target - self.position).normalized()
     
     def get_right_vector(self) -> QVector3D:
         """Get camera right vector (normalized)."""
@@ -183,7 +183,7 @@ class Camera:
     
     def get_distance_to_target(self) -> float:
         """Get distance from camera to target."""
-        return (self._target - self._position).length()
+        return (self._target - self.position).length()
     
     def _get_pitch_angle(self) -> float:
         """Get current pitch angle in radians."""
@@ -198,7 +198,7 @@ class Camera:
     def _update_view_matrix(self):
         """Update the view matrix based on current camera parameters."""
         self.view_matrix.setToIdentity()
-        self.view_matrix.lookAt(self._position, self._target, self._up_vector)
+        self.view_matrix.lookAt(self.position, self._target, self._up_vector)
     
     def __repr__(self) -> str:
-        return f"Camera(pos={self._position}, target={self._target})"
+        return f"Camera(pos={self.position}, target={self._target})"

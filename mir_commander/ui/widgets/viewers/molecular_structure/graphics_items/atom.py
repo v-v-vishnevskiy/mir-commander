@@ -1,11 +1,12 @@
-from OpenGL.GL import GLuint
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.graphics_items import MeshItem
-from mir_commander.ui.utils.opengl.enums import PaintMode
+from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
 from mir_commander.ui.utils.opengl.utils import Color4f
+
+from ..config import SelectedAtom
+from .bounding_sphere import BoundingSphere
 
 
 class Atom(MeshItem):
@@ -19,6 +20,7 @@ class Atom(MeshItem):
         radius: float,
         color: Color4f,
         selected_shader: ShaderProgram,
+        selected_atom_config: SelectedAtom,
     ):
         super().__init__(mesh_data, color=color)
         self.position = position
@@ -26,12 +28,30 @@ class Atom(MeshItem):
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
-        self.selected_shader = selected_shader
-        self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
-        self.selected = False
+        self._related_bonds = []
+        self._cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
+        self._selected = False
         self._under_cursor = False
-
         self._compute_transform()
+        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
+        self.add_child(self._bounding_sphere)
+
+    def add_related_bond(self, bond: Item):
+        self._related_bonds.append(bond)
+
+    def set_cloaked(self, value: bool):
+        self._cloaked = value
+        for bond in self._related_bonds:
+            atom_1, atom_2 = bond.atoms
+            bond.set_visible(bool((not atom_1.cloaked) * (not atom_2.cloaked)))
+
+    @property
+    def cloaked(self) -> bool:
+        return self._cloaked
+
+    @property
+    def visible(self) -> bool:
+        return super().visible and not self._cloaked
 
     def _compute_transform(self):
         self._transform.setToIdentity()
@@ -42,16 +62,6 @@ class Atom(MeshItem):
             radius *= 1.15
 
         self._transform.scale(radius, radius, radius)
-
-    @property
-    def shader(self) -> GLuint:
-        if self.selected:
-            return self.selected_shader.program
-        return super().shader
-    
-    def paint_self(self, mode: PaintMode):
-        if not self.cloaked:
-            super().paint_self(mode)
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:
@@ -66,14 +76,19 @@ class Atom(MeshItem):
         self.position = position
         self._compute_transform()
 
-    def cross_with_line_test(self, point: QVector3D, direction: QVector3D) -> bool:
-        if not self.cloaked:
-            return self.position.distanceToLine(point, direction) <= self.radius
-        return False
+    def set_selected_atom_config(self, config: SelectedAtom):
+        self._bounding_sphere.set_config(config)
+
+    @property
+    def selected(self) -> bool:
+        return self._selected
+
+    def set_selected(self, value: bool):
+        self._selected = value
 
     def toggle_selection(self) -> bool:
-        self.selected = not self.selected
-        return self.selected
+        self._selected = not self._selected
+        return self._selected
 
     def __repr__(self) -> str:
-        return f"Atom(atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
+        return f"Atom(id={self._id}, atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"

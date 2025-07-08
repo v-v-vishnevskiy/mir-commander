@@ -14,8 +14,9 @@ class Item:
     _id_counter = 1
 
     def __init__(self):
-        self.visible = True
+        self._visible = True
         self.picking_visible = True
+        self.transparent = False
 
         self._transform = QMatrix4x4()
         self._id = Item._id_counter
@@ -28,6 +29,20 @@ class Item:
         self._translation = QVector3D(0.0, 0.0, 0.0)
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
+
+    @property
+    def visible(self) -> bool:
+        return self._visible
+
+    def set_visible(self, value: bool):
+        self._visible = value
+        for child in self.children:
+            child.set_visible(value)
+
+    def toggle_visible(self):
+        self._visible = not self._visible
+        for child in self.children:
+            child.toggle_visible()
 
     @property
     def get_transform(self) -> QMatrix4x4:
@@ -105,7 +120,13 @@ class Item:
             self.remove_child(child)
         logger.debug("Cleared item: %s", self)
 
-    def paint(self, mode: PaintMode = PaintMode.Normal):
+    def get_all_items(self) -> list[Self]:
+        items = [self]
+        for child in self.children:
+            items.extend(child.get_all_items())
+        return items
+
+    def paint(self, mode: PaintMode = PaintMode.Normal, transparent: bool = False):
         if not self.visible:
             return
 
@@ -113,11 +134,8 @@ class Item:
             glLoadMatrixf(self.get_transform.data())
             self.paint_self(mode)
 
-        for child in self.children:
-            child.paint(mode)
-
     def paint_self(self, mode: PaintMode):
         raise NotImplementedError()
 
     def __repr__(self) -> str:
-        return self.__class__.__name__
+        return f"{self.__class__.__name__}(id={self._id})"

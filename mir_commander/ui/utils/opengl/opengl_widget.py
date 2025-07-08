@@ -1,5 +1,5 @@
 import logging
-from OpenGL.GL import GL_DEPTH_TEST, GL_MULTISAMPLE, glEnable
+from OpenGL.GL import GL_MULTISAMPLE, glEnable
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QSurfaceFormat, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -63,7 +63,6 @@ class OpenGLWidget(QOpenGLWidget):
     def initializeGL(self):
         self.makeCurrent()
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        glEnable(GL_DEPTH_TEST)
         glEnable(GL_MULTISAMPLE)
 
     def resize(self, w: int, h: int):
