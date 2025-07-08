@@ -1,5 +1,5 @@
 import logging
-from OpenGL.GL import GL_DEPTH_TEST, GL_MULTISAMPLE, glEnable, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+from OpenGL.GL import GL_MULTISAMPLE, glEnable
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QSurfaceFormat, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget

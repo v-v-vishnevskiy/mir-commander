@@ -1,6 +1,6 @@
 import logging
 
-from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, glDepthMask, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_TRUE, GL_FALSE, glLoadMatrixf, GL_CULL_FACE
+from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_CULL_FACE
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
