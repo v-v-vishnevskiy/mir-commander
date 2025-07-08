@@ -197,13 +197,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def select_all_atoms(self):
         for atom in self._molecule.atom_items:
-            atom.selected = True
+            atom.set_selected(True)
         self._molecule.selected_atom_items = self._molecule.atom_items.copy()
         self.update()
 
     def unselect_all_atoms(self):
         for atom in self._molecule.atom_items:
-            atom.selected = False
+            atom.set_selected(False)
         self._molecule.selected_atom_items = []
         self.update()
 
@@ -264,13 +264,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def cloak_selected_atoms(self):
         for atom in self._molecule.atom_items:
-            if atom.selected:
+            if atom._selected:
                 atom.cloaked = True
         self.update()
 
     def cloak_not_selected_atoms(self):
         for atom in self._molecule.atom_items:
-            if not atom.selected:
+            if not atom._selected:
                 atom.cloaked = True
         self.update()
 
@@ -282,7 +282,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def cloak_not_selected_h_atoms(self):
         for atom in self._molecule.atom_items:
-            if atom.atomic_num == 1 and not atom.selected:
+            if atom.atomic_num == 1 and not atom._selected:
                 atom.cloaked = True
         self.update()
 

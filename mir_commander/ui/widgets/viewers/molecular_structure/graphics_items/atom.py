@@ -30,7 +30,7 @@ class Atom(MeshItem):
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
-        self.selected = False
+        self._selected = False
         self._under_cursor = False
         self._compute_transform()
         self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
@@ -66,10 +66,18 @@ class Atom(MeshItem):
     def set_selected_atom_config(self, config: SelectedAtom):
         self._bounding_sphere.set_config(config)
 
+    @property
+    def selected(self) -> bool:
+        return self._selected
+
+    def set_selected(self, value: bool):
+        self._selected = value
+        self._bounding_sphere.visible = value
+
     def toggle_selection(self) -> bool:
-        self.selected = not self.selected
+        self._selected = not self._selected
         self._bounding_sphere.visible = not self._bounding_sphere.visible
-        return self.selected
+        return self._selected
 
     def __repr__(self) -> str:
         return f"Atom(id={self._id}, atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
