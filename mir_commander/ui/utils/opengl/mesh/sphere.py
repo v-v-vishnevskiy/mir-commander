@@ -27,9 +27,10 @@ class Sphere(MeshData):
         faces = self._generate_faces()
 
         new_vertices = []
-        for i in faces:
-            i *= 3
-            new_vertices.extend([vertices[i], vertices[i + 1], vertices[i + 2]])
+        for i in range(0, len(faces), 3):
+            for j in range(3):
+                idx = faces[i + j]
+                new_vertices.extend(vertices[idx*3:idx*3+3])
         self.set_vertices(new_vertices)
 
     def _generate_vertices(self) -> list[float]:
@@ -48,28 +49,28 @@ class Sphere(MeshData):
 
     def _generate_faces(self) -> list[int]:
         faces = []
-        # the top
-        prev_i = self.slices
-        for i in range(1, self.slices + 1):
-            faces.extend([0, prev_i, i])
-            prev_i = i
+        # top cap
+        for i in range(self.slices):
+            faces.extend([0, i + 1, ((i + 1) % self.slices) + 1])
 
-        # the middle
-        prev_stack = 1
-        for stack in range(2, self.stacks):
-            prev_i = stack * self.slices
-            for i in range(prev_stack * self.slices + 1, stack * self.slices + 1):
-                faces.extend([prev_i - self.slices, prev_i, i])
-                faces.extend([i - self.slices, prev_i - self.slices, i])
-                prev_i = i
-            prev_stack = stack
+        # middle
+        for stack in range(1, self.stacks - 1):
+            for slice in range(self.slices):
+                first = (stack - 1) * self.slices + 1 + slice
+                second = first + self.slices
+                next_slice = (slice + 1) % self.slices
+                first_next = (stack - 1) * self.slices + 1 + next_slice
+                second_next = first_next + self.slices
 
-        # the bottom
-        num_vertices = (self.stacks - 1) * self.slices + 2
-        last_i = num_vertices - 1
-        prev_i = last_i - 1
-        for i in range(last_i - self.slices, last_i):
-            faces.extend([i, prev_i, last_i])
-            prev_i = i
+                faces.extend([first, second, first_next])
+                faces.extend([first_next, second, second_next])
 
+        # bottom cap
+        last_vertex = (self.stacks - 1) * self.slices + 1
+        for i in range(self.slices):
+            faces.extend([
+                last_vertex,
+                last_vertex - self.slices + ((i + 1) % self.slices),
+                last_vertex - self.slices + i
+            ])
         return faces
