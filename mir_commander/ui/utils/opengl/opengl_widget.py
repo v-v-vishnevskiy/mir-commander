@@ -63,9 +63,7 @@ class OpenGLWidget(QOpenGLWidget):
     def initializeGL(self):
         self.makeCurrent()
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        glEnable(GL_DEPTH_TEST)
         glEnable(GL_MULTISAMPLE)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def resize(self, w: int, h: int):
         parent = self.parent()

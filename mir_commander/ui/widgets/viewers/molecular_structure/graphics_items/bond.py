@@ -133,4 +133,4 @@ class Bond(Item):
             item.set_smooth(smooth)
 
     def __repr__(self) -> str:
-        return f"Bond(atom_1={self._atom_1}, atom_2={self._atom_2})"
+        return f"Bond(id={self._id}, atom_1={self._atom_1}, atom_2={self._atom_2})"

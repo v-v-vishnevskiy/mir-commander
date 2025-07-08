@@ -16,6 +16,7 @@ class Item:
     def __init__(self):
         self.visible = True
         self.picking_visible = True
+        self.transparent = False
 
         self._transform = QMatrix4x4()
         self._id = Item._id_counter
@@ -105,7 +106,13 @@ class Item:
             self.remove_child(child)
         logger.debug("Cleared item: %s", self)
 
-    def paint(self, mode: PaintMode = PaintMode.Normal):
+    def get_all_items(self) -> list[Self]:
+        items = [self]
+        for child in self.children:
+            items.extend(child.get_all_items())
+        return items
+
+    def paint(self, mode: PaintMode = PaintMode.Normal, transparent: bool = False):
         if not self.visible:
             return
 
@@ -113,11 +120,8 @@ class Item:
             glLoadMatrixf(self.get_transform.data())
             self.paint_self(mode)
 
-        for child in self.children:
-            child.paint(mode)
-
     def paint_self(self, mode: PaintMode):
         raise NotImplementedError()
 
     def __repr__(self) -> str:
-        return self.__class__.__name__
+        return f"{self.__class__.__name__}(id={self._id})"

@@ -1,6 +1,6 @@
 import logging
 
-from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport
+from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, glDepthMask, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_TRUE, GL_FALSE, glLoadMatrixf
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
@@ -30,7 +30,24 @@ class Renderer:
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        self._scene.paint(PaintMode.Normal)
+        items = self._scene.get_all_items()
+
+        glEnable(GL_DEPTH_TEST)
+        # glDepthMask(GL_TRUE)
+        glDisable(GL_BLEND)
+        for item in items:
+            if item.transparent:
+                continue
+            item.paint(PaintMode.Normal)
+
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        # glDepthMask(GL_FALSE)
+        for item in items:
+            if not item.transparent:
+                continue
+            item.paint(PaintMode.Normal)
+
         self._has_new_image = False
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
@@ -133,7 +150,8 @@ class Renderer:
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        self._scene.paint(PaintMode.Picking)
+        for item in self._scene.get_all_items():
+            item.paint(PaintMode.Picking)
 
         fbo.release()
 

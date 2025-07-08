@@ -65,12 +65,6 @@ class Molecule(Item):
         # add bonds
         self.build_bonds(atomic_coordinates, self.current_geom_bond_tolerance)
 
-        # hack for rendering transparent objects
-        for bond in self.bond_items:
-            self.add_child(bond)
-        for atom in self.atom_items:
-            self.add_child(atom)
-
         center = QVector3D(
             np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
             np.sum(atomic_coordinates.y) / len(atomic_coordinates.y), 
@@ -178,6 +172,7 @@ class Molecule(Item):
             selected_atom_config=self.style.current.selected_atom,
         )
         item.set_smooth(self.style.current.quality.smooth)
+        self.add_child(item)
         self.atom_items.append(item)
 
         return item
@@ -198,6 +193,7 @@ class Molecule(Item):
             color,
         )
         item.set_smooth(self.style.current.quality.smooth)
+        self.add_child(item)
         self.bond_items.append(item)
 
         return item

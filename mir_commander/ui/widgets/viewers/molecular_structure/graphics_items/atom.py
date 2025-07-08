@@ -1,13 +1,13 @@
-from OpenGL.GL import GL_BLEND, glEnable, glDisable, glLoadMatrixf
-from PySide6.QtGui import QVector3D, QMatrix4x4
+from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import MeshItem
 from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
-from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
+from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
+from .bounding_sphere import BoundingSphere
 
 
 class Atom(MeshItem):
@@ -29,12 +29,12 @@ class Atom(MeshItem):
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
-        self.selected_shader = selected_shader
         self.cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self.selected = False
         self._under_cursor = False
-        self.selected_atom_config = selected_atom_config
         self._compute_transform()
+        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, selected_atom_config)
+        self.add_child(self._bounding_sphere)
 
     def _compute_transform(self):
         self._transform.setToIdentity()
@@ -49,27 +49,6 @@ class Atom(MeshItem):
     def paint_self(self, mode: PaintMode):
         if not self.cloaked:
             super().paint_self(mode)
-            if self.selected and mode == PaintMode.Normal:
-                self._paint_self_selected(mode)
-
-    def _paint_self_selected(self, mode: PaintMode):
-        backup_shader = self._shader
-        self._shader = self.selected_shader
-
-        backup_color = self._color
-        r, g, b, _ = color_to_color4f(self.selected_atom_config.color)
-        self._color = (r, g, b, self.selected_atom_config.opacity)
-
-        transform = QMatrix4x4(self.get_transform)
-        scale_factor = self.selected_atom_config.scale_factor
-        transform.scale(scale_factor, scale_factor, scale_factor)
-        glLoadMatrixf(transform.data())
-        glEnable(GL_BLEND)
-        super().paint_self(mode)
-        glDisable(GL_BLEND)
-
-        self._shader = backup_shader
-        self._color = backup_color
 
     def set_under_cursor(self, value: bool):
         if self._under_cursor != value:
@@ -84,14 +63,10 @@ class Atom(MeshItem):
         self.position = position
         self._compute_transform()
 
-    def cross_with_line_test(self, point: QVector3D, direction: QVector3D) -> bool:
-        if not self.cloaked:
-            return self.position.distanceToLine(point, direction) <= self.radius
-        return False
-
     def toggle_selection(self) -> bool:
         self.selected = not self.selected
+        self._bounding_sphere.visible = not self._bounding_sphere.visible
         return self.selected
 
     def __repr__(self) -> str:
-        return f"Atom(atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
+        return f"Atom(id={self._id}, atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
