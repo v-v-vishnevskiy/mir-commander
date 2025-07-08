@@ -6,6 +6,7 @@ from .cfour_parser import is_cfour, load_cfour
 from .mdlmol2000_parser import is_mdlmol2000, load_mdlmol2000
 from .unex_parser import is_unex, load_unex
 from .xyz_parser import is_xyz, load_xyz
+from .gaucube_parser import is_gaucube, load_gaucube
 
 
 def load_file(path: Path, logs: list[str]) -> Item:
@@ -19,10 +20,13 @@ def load_file(path: Path, logs: list[str]) -> Item:
 
     if is_unex(lines):
         return load_unex(path, logs)
-    if is_xyz(lines):
+    elif is_xyz(lines):
         return load_xyz(path, logs)
-    if is_cfour(lines):
+    elif is_cfour(lines):
         return load_cfour(path, logs)
-    if is_mdlmol2000(lines):
+    elif is_mdlmol2000(lines):
         return load_mdlmol2000(path, logs)
-    return load_cclib(path, logs)
+    elif is_gaucube(path):
+        return load_gaucube(path, logs)
+    else:
+        return load_cclib(path, logs)
