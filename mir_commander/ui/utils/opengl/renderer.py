@@ -2,11 +2,12 @@ import logging
 
 from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, glDepthMask, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_TRUE, GL_FALSE, glLoadMatrixf
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QColor, QImage
+from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from .camera import Camera
 from .enums import PaintMode
+from .graphics_items.item import Item
 from .projection import ProjectionManager
 from .scene import Scene
 from .utils import Color4f
@@ -33,7 +34,6 @@ class Renderer:
         items = self._scene.get_all_items()
 
         glEnable(GL_DEPTH_TEST)
-        # glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
         for item in items:
             if item.transparent:
@@ -42,13 +42,19 @@ class Renderer:
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        # glDepthMask(GL_FALSE)
-        for item in items:
+        for item in self._sort_by_depth(items):
             if not item.transparent:
                 continue
             item.paint(PaintMode.Normal)
 
         self._has_new_image = False
+
+    def _get_item_depth(self, item: Item) -> float:
+        point = QVector3D(0.0, 0.0, 0.0) * item.get_transform
+        return self._camera.position.distanceToPoint(point)
+
+    def _sort_by_depth(self, items: list[Item]) -> list[Item]:
+        return sorted(items, key=self._get_item_depth, reverse=True)
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
         # Need this hack with the fake 1x1 image to take into account the format of our real image
