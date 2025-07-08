@@ -274,8 +274,8 @@ class Quality(BaseModel):
 
 
 class SelectedAtom(BaseModel):
-    color: Color = Color("#2D2DFF")
-    scale_factor: float = Field(default=1.4, ge=1.1, le=2.0)
+    color: Literal["atom"] | Color = Color("#94FFFF")
+    scale_factor: float = Field(default=1.4, ge=1.1, le=3.0)
     opacity: float = Field(default=0.6, ge=0.01, le=0.99)
 
 
@@ -332,7 +332,11 @@ class MolecularStructureViewerConfig(BaseModel):
         default=[
             Style(name="Colored Bonds"),
             Style(name="Simple", bond=Bond(color="#888888")),
-            Style(name="Colored Bonds Only", atoms=Atoms(radius="bond")),
+            Style(
+                name="Colored Bonds Only", 
+                atoms=Atoms(radius="bond"),
+                selected_atom=SelectedAtom(scale_factor=3.0),
+            ),
         ],
         min_length=1,
         description="List of available styles for the molecular structure viewer.",

@@ -33,7 +33,7 @@ class Atom(MeshItem):
         self.selected = False
         self._under_cursor = False
         self._compute_transform()
-        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, selected_atom_config)
+        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
         self.add_child(self._bounding_sphere)
 
     def _compute_transform(self):
@@ -62,6 +62,9 @@ class Atom(MeshItem):
     def set_position(self, position: QVector3D):
         self.position = position
         self._compute_transform()
+
+    def set_selected_atom_config(self, config: SelectedAtom):
+        self._bounding_sphere.set_config(config)
 
     def toggle_selection(self) -> bool:
         self.selected = not self.selected

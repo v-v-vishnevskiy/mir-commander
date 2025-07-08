@@ -1,10 +1,8 @@
-from PySide6.QtGui import QVector3D
-
 from mir_commander.ui.utils.opengl.graphics_items import MeshItem
 
 from mir_commander.ui.utils.opengl.mesh import Sphere
 from mir_commander.ui.utils.opengl.shader import ShaderProgram
-from mir_commander.ui.utils.opengl.utils import color_to_color4f
+from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ..config import SelectedAtom
 
@@ -15,16 +13,30 @@ class BoundingSphere(MeshItem):
         mesh_data: Sphere,
         radius: float,
         shader: ShaderProgram,
+        atom_color: Color4f,
         config: SelectedAtom,
     ):
-        r, g, b, _ = color_to_color4f(config.color)
-        super().__init__(mesh_data, color=(r, g, b, config.opacity))
+        self.atom_color = atom_color
+        super().__init__(mesh_data, color=self._compute_color(config))
         self.visible = False
         self.picking_visible = False
         self.transparent = True
 
         self.config = config
         self._compute_transform()
+
+    def set_config(self, config: SelectedAtom):
+        self.config = config
+        self.set_color(self._compute_color(config))
+        self._compute_transform()
+
+    def _compute_color(self, config: SelectedAtom) -> Color4f:
+        if config.color == "atom":
+            color = (self.atom_color[0], self.atom_color[1], self.atom_color[2], config.opacity)
+        else:
+            r, g, b, _ = color_to_color4f(config.color)
+            color = (r, g, b, config.opacity)
+        return color
 
     def _compute_transform(self):
         self._transform.setToIdentity()
