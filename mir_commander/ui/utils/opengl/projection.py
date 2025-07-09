@@ -21,7 +21,7 @@ class AbstractProjection(ABC):
 
 
 class PerspectiveProjection(AbstractProjection):
-    def __init__(self, fov: float = 45.0, near_plane: float = 0.001, far_plane: float = 10000.0):
+    def __init__(self, fov: float = 45.0, near_plane: float = 0.1, far_plane: float = 1000.0):
         super().__init__()
         self._fov = fov
         self._near_plane = near_plane

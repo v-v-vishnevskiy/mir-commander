@@ -269,7 +269,7 @@ class Atoms(BaseModel):
 
 
 class Quality(BaseModel):
-    mesh: float = Field(default=8, ge=1, le=100)
+    mesh: float = Field(default=10, ge=1, le=100)
     smooth: bool = True
 
 
