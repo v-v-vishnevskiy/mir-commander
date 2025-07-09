@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "cclib>=1.8.1",
+    "numpydantic>=1.6.9",
     "pydantic>=2.11.4",
     "pydantic-extra-types>=2.10.5",
     "pyopengl>=3.1.9",

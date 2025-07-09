@@ -11,7 +11,7 @@ from mir_commander.ui.widgets.viewers.molecular_structure import MolecularStruct
 from mir_commander.ui.utils.widget import Action, Menu
 
 from .config import TreeConfig
-from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Item, Molecule, Unex
+from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Item, Molecule, Unex, VolCube
 
 logger = logging.getLogger("ProjectDock.TreeView")
 
@@ -80,6 +80,8 @@ class TreeView(QTreeView):
             tree_item = Molecule(item)
         elif type(item.data) is models.Unex:
             tree_item = Unex(item)
+        elif type(item.data) is models.VolCube:
+            tree_item = VolCube(item)
         else:
             tree_item = Container(item)
         root_item.appendRow(tree_item)

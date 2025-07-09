@@ -2,9 +2,11 @@ import logging
 from pathlib import Path
 import numpy as np
 
+from mir_commander.utils import consts
 from ..errors import LoadFileError
 from ..models import AtomicCoordinates, Item, VolCube
 from .consts import babushka_priehala
+from ...utils.consts import BOHR2ANGSTROM
 
 logger = logging.getLogger("Parsers.GauCubeParser")
 
@@ -88,9 +90,9 @@ def load_gaucube(path: Path, logs: list) -> Item:
         for ia in range(natm):
             d = f.readline().split()
             atom_atomic_num.append(int(d[0]))
-            atom_coord_x.append(float(d[1]))
-            atom_coord_y.append(float(d[2]))
-            atom_coord_z.append(float(d[3]))
+            atom_coord_x.append(float(d[2])*BOHR2ANGSTROM)
+            atom_coord_y.append(float(d[3])*BOHR2ANGSTROM)
+            atom_coord_z.append(float(d[4])*BOHR2ANGSTROM)
 
         if dset_ids:
             d = f.readline().split()
@@ -101,8 +103,8 @@ def load_gaucube(path: Path, logs: list) -> Item:
 
     vcub.cube_data = np.array([float(x) for x in data.split()]).reshape([vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]])
 
-    result = Item(name=path.name, data=vcub, metadata={"type": "volcube"})
-
+    result = Item(name=path.name, data=vcub, metadata={"type": "volcube", babushka_priehala: True})
+    
     # Add the set of Cartesian coordinates directly to the cube
     at_coord_item = Item(
         name="CubeMol",

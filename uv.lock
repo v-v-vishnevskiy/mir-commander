@@ -141,6 +141,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "cclib" },
+    { name = "numpydantic" },
     { name = "pydantic" },
     { name = "pydantic-extra-types" },
     { name = "pyopengl" },
@@ -161,6 +162,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cclib", specifier = ">=1.8.1" },
+    { name = "numpydantic", specifier = ">=1.6.9" },
     { name = "pydantic", specifier = ">=2.11.4" },
     { name = "pydantic-extra-types", specifier = ">=2.10.5" },
     { name = "pyopengl", specifier = ">=3.1.9" },
@@ -273,6 +275,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/c4/2e407e85df35b29f79945751b8f8e671057a13a376497d7fb2151ba0d290/numpy-2.2.5-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:c26843fd58f65da9491165072da2cccc372530681de481ef670dcc8e27cfb066", size = 17893672, upload-time = "2025-04-19T22:46:28.585Z" },
     { url = "https://files.pythonhosted.org/packages/29/7e/d0b44e129d038dba453f00d0e29ebd6eaf2f06055d72b95b9947998aca14/numpy-2.2.5-cp313-cp313t-win32.whl", hash = "sha256:1a161c2c79ab30fe4501d5a2bbfe8b162490757cf90b7f05be8b80bc02f7bb8e", size = 6377102, upload-time = "2025-04-19T22:46:39.949Z" },
     { url = "https://files.pythonhosted.org/packages/63/be/b85e4aa4bf42c6502851b971f1c326d583fcc68227385f92089cf50a7b45/numpy-2.2.5-cp313-cp313t-win_amd64.whl", hash = "sha256:d403c84991b5ad291d3809bace5e85f4bbf44a04bdc9a88ed2bb1807b3360bb8", size = 12750096, upload-time = "2025-04-19T22:47:00.147Z" },
+]
+
+[[package]]
+name = "numpydantic"
+version = "1.6.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c1/af/5e4ecfdfbb35b9119f42d12466970f24c02e93577c4b1d5d230b5b7cabdf/numpydantic-1.6.9.tar.gz", hash = "sha256:bb2c563e76894abffb06cf0e991d6cb0aa42e2b39d40426ebb0699011d18ec0d", size = 77899, upload-time = "2025-05-10T05:18:33.553Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/56/2a/46f1e3059b3bd899ab1335ae3a42f7cbff9a5a9ae9294cb1d7a3eb04a9ce/numpydantic-1.6.9-py3-none-any.whl", hash = "sha256:149ed4b7dfec907fb1e7c0874fd7d41bc95734c22764124d22c7c27aa8f059fd", size = 85598, upload-time = "2025-05-10T05:18:31.95Z" },
 ]
 
 [[package]]
