@@ -21,8 +21,7 @@ uniform vec4 color;
 
 void main() {
     vec3 light_color = vec3(1.0, 1.0, 1.0) * 0.9;
-    vec3 light_position = vec3(0.3, 0.3, 1.0);
-    vec3 light_direction = normalize(light_position - fragment_position);
+    vec3 light_direction = normalize(vec3(0.3, 0.3, 1.0));
     vec3 norm = normalize(normal);
 
     // Ambient

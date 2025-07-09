@@ -13,7 +13,9 @@ out vec3 fragment_position;
 
 void main() {
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(position, 1.0);
-    normal = in_normal;
+    
+    // Transform normal to world space
+    normal = mat3(transpose(inverse(model_matrix))) * in_normal;
     fragment_position = vec3(model_matrix * vec4(position, 1.0));
 }
 """

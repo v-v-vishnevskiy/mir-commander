@@ -7,19 +7,21 @@ void main() {
 DIFFUSE = """
 varying vec3 normal;
 void main() {
+    vec3 light_color = vec3(1.0, 1.0, 1.0) * 0.9;
+    vec3 light_direction = normalize(vec3(0.3, 0.3, 1.0));
     vec3 norm = normalize(normal);
 
-    // Simple lighting for the transparent sphere
-    vec3 light_dir = normalize(vec3(0.3, 0.3, 1.0));
-    float diff = max(dot(norm, light_dir), 0.0);
+    // Ambient
+    float ambient_strength = 0.1;
+    vec3 ambient = light_color * ambient_strength;
+
+    // Diffuse
+    float diff = max(dot(norm, light_direction), 0.0);
+    vec3 diffuse = diff * light_color;
 
     vec4 color = gl_Color;
-
-    // Add some diffuse lighting to the transparent sphere
-    vec3 diffuse = diff * vec3(1.0, 1.0, 1.0) * 0.2;
-    color.rgb = color.rgb + diffuse;
     
-    gl_FragColor = color;
+    gl_FragColor = vec4((ambient + diffuse) * color.xyz, color.w);
 }
 """
 
