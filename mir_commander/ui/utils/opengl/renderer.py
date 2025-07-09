@@ -5,6 +5,9 @@ from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
+from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.ui.utils.opengl.shaders import fragment, fragment_fallback, vertex, vertex_fallback
+
 from .camera import Camera
 from .enums import PaintMode
 from .graphics_items.item import Item
@@ -16,14 +19,32 @@ logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera, use_modern_gl: bool):
+    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera, fallback_mode: bool):
         self._projection_manager = projection_manager
         self._scene = scene
         self._camera = camera
-        self._use_modern_gl = use_modern_gl
+        self._fallback_mode = fallback_mode
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._picking_image: None | QImage = None
         self._has_new_image = False
+        self._shaders = {}
+        self._init_shaders()
+
+    def _init_shaders(self):
+        if self._fallback_mode:
+            self._shaders["default"] = ShaderProgram(
+                VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.BLINN_PHONG)
+            )
+            self._shaders["picking"] = ShaderProgram(
+                VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.FLAT_COLOR)
+            )
+        else:
+            self._shaders["default"] = ShaderProgram(
+                VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.DIFFUSE)
+            )
+            self._shaders["picking"] = ShaderProgram(
+                VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.FLAT_COLOR)
+            )
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -34,20 +55,26 @@ class Renderer:
 
         items = self._scene.get_all_items()
 
+        projection_matrix = self._projection_manager.active_projection.matrix.data()
+        view_matrix = self._camera.view_matrix.data()
+
+        shader = self._shaders["default"]
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
         glDisable(GL_BLEND)
         for item in items:
             if item.transparent:
                 continue
-            item.paint(PaintMode.Normal, self._use_modern_gl)
+            item.paint(PaintMode.Normal, view_matrix, projection_matrix, shader)
 
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        for item in self._sort_by_depth(items):
-            if not item.transparent:
-                continue
-            item.paint(PaintMode.Normal, self._use_modern_gl)
+        if items := self._sort_by_depth(items):
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            for item in items:
+                if not item.transparent:
+                    continue
+                item.paint(PaintMode.Normal, view_matrix, projection_matrix, shader)
 
         self._has_new_image = False
 
@@ -153,13 +180,18 @@ class Renderer:
         fbo = QOpenGLFramebufferObject(width, height, fbo_format)
         fbo.bind()
 
+        projection_matrix = self._projection_manager.active_projection.matrix.data()
+        view_matrix = self._camera.view_matrix.data()
+
+        shader = self._shaders["picking"]
+
         glViewport(0, 0, width, height)
 
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         for item in self._scene.get_all_items():
-            item.paint(PaintMode.Picking, self._use_modern_gl)
+            item.paint(PaintMode.Picking, view_matrix, projection_matrix, shader)
 
         fbo.release()
 

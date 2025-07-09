@@ -50,7 +50,7 @@ class Application(QApplication):
             sf.setSamples(16)
         else:
             sf.setSamples(0)
-        if self.config.opengl.use_modern_gl:
+        if not self.config.opengl.fallback_mode:
             sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
             sf.setVersion(4, 1)
         QSurfaceFormat.setDefaultFormat(sf)

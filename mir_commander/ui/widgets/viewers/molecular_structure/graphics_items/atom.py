@@ -1,8 +1,7 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh import Sphere
-from mir_commander.ui.utils.opengl.shader import ShaderProgram
+from mir_commander.ui.utils.opengl.mesh_object import MeshObject
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
@@ -12,17 +11,16 @@ from .bounding_sphere import BoundingSphere
 class Atom(MeshItem):
     def __init__(
         self,
-        mesh_data: Sphere,
+        mesh_object: MeshObject,
         index_num: int,
         atomic_num: int,
         element_symbol: str,
         position: QVector3D,
         radius: float,
         color: Color4f,
-        selected_shader: ShaderProgram,
         selected_atom_config: SelectedAtom,
     ):
-        super().__init__(mesh_data, color=color)
+        super().__init__(mesh_object, color=color)
         self.position = position
         self.radius = radius
         self.index_num = index_num
@@ -33,7 +31,7 @@ class Atom(MeshItem):
         self._selected = False
         self._under_cursor = False
         self._compute_transform()
-        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
+        self._bounding_sphere = BoundingSphere(mesh_object, radius, color, selected_atom_config)
         self.add_child(self._bounding_sphere)
 
     def add_related_bond(self, bond: Item):

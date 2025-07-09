@@ -6,7 +6,7 @@ from PySide6.QtGui import QVector3D
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
-from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.ui.utils.opengl.mesh_object import MeshObject
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -14,7 +14,6 @@ from mir_commander.utils.chem import atomic_number_to_symbol
 from .config import MolecularStructureViewerConfig
 from .graphics_items.atom import Atom
 from .graphics_items.bond import Bond
-from .shaders import TRANSPARENT
 from .style import Style
 
 
@@ -26,12 +25,12 @@ class Molecule(Item):
         self.style = Style(config)
         self.center = QVector3D(0, 0, 0)
         self.radius = 0
+
         self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
         self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
-        self._tansparent_shader = ShaderProgram(
-            VertexShader(TRANSPARENT["vertex"]), 
-            FragmentShader(TRANSPARENT["fragment"]),
-        )
+        self._atom_mesh_object = MeshObject(self._atom_mesh_data, self.style.current.quality.smooth)
+        self._bond_mesh_object = MeshObject(self._bond_mesh_data, self.style.current.quality.smooth)
+
         self._atom_index_under_cursor: None | Atom = None
 
         self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
@@ -77,8 +76,8 @@ class Molecule(Item):
         s_stacks, s_slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
         if (s_stacks, s_slices) != (self._atom_mesh_data.stacks, self._atom_mesh_data.slices):
             self._atom_mesh_data.generate_mesh(stacks=int(s_stacks), slices=int(s_slices), radius=self._atom_mesh_data.radius)
-            self._atom_mesh_data.compute_vertex_normals()
-            self._atom_mesh_data.compute_face_normals()
+
+        self._atom_mesh_object.set_smooth(self.style.current.quality.smooth)
 
         # update items
         for atom in self.atom_items:
@@ -86,7 +85,6 @@ class Molecule(Item):
             atom.set_selected_atom_config(self.style.current.selected_atom)
             atom.set_radius(radius)
             atom.set_color(color)
-            atom.set_smooth(self.style.current.quality.smooth)
 
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
         atoms_radius = self.style.current.atoms.radius
@@ -119,8 +117,7 @@ class Molecule(Item):
                 length=self._bond_mesh_data.length,
                 caps=self._bond_mesh_data.caps,
             )
-            self._bond_mesh_data.compute_vertex_normals()
-            self._bond_mesh_data.compute_face_normals()
+        self._bond_mesh_object.set_smooth(self.style.current.quality.smooth)
 
         # update items
         for bond in self.bond_items:
@@ -130,8 +127,6 @@ class Molecule(Item):
                 bond.set_atoms_color(True)
             else:
                 bond.set_color(normalize_color(self.style.current.bond.color))
-
-            bond.set_smooth(self.style.current.quality.smooth)
 
     def clear(self):
         self.atom_items.clear()
@@ -156,17 +151,15 @@ class Molecule(Item):
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
         item = Atom(
-            self._atom_mesh_data,
+            self._atom_mesh_object,
             index_num,
             atomic_num,
             atomic_number_to_symbol(atomic_num),
             position,
             radius,
             color,
-            selected_shader=self._tansparent_shader,
             selected_atom_config=self.style.current.selected_atom,
         )
-        item.set_smooth(self.style.current.quality.smooth)
         self.add_child(item)
         self.atom_items.append(item)
 
@@ -180,14 +173,13 @@ class Molecule(Item):
             color = normalize_color(self.style.current.bond.color)
 
         item = Bond(
-            self._bond_mesh_data,
+            self._bond_mesh_object,
             atom_1,
             atom_2,
             self.style.current.bond.radius,
             atoms_color,
             color,
         )
-        item.set_smooth(self.style.current.quality.smooth)
         self.add_child(item)
         self.bond_items.append(item)
 

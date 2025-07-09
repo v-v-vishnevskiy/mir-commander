@@ -15,8 +15,8 @@ class Sphere(MeshData):
         self.radius = self.min_radius
 
         self.generate_mesh(stacks, slices, radius)
-        self.compute_vertex_normals()
-        self.compute_face_normals()
+        self._compute_vertex_normals()
+        self._compute_face_normals()
 
     def generate_mesh(self, stacks: int, slices: int, radius: float = 1.0):
         self.stacks = max(self.min_stacks, stacks)

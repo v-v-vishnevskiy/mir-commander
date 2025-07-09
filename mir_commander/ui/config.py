@@ -36,7 +36,7 @@ class ProjectWindowConfig(BaseModel):
 
 
 class OpenGLConfig(BaseModel):
-    use_modern_gl: bool = False
+    fallback_mode: bool = False
     antialiasing: bool = True
 
 

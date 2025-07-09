@@ -3,7 +3,7 @@ from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot, QPoint
+from PySide6.QtCore import Slot, QPoint, QCoreApplication
 from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
@@ -63,7 +63,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         super().__init__(
             parent=parent, 
             keymap=Keymap(config.keymap.viewer.model_dump()), 
-            use_modern_gl=False,
+            fallback_mode=QCoreApplication.instance().config.opengl.fallback_mode,
         )
         self._config = config
         self._molecule = Molecule(config)

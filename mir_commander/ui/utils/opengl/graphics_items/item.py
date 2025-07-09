@@ -1,8 +1,9 @@
 import logging
 from typing import Self
 
-from OpenGL.GL import glLoadMatrixf
 from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
+
+from mir_commander.ui.utils.opengl.shader import ShaderProgram
 
 from ..enums import PaintMode
 from ..utils import id_to_color
@@ -19,7 +20,7 @@ class Item:
         self.picking_visible = picking_visible
         self.transparent = False
 
-        self._transform = QMatrix4x4()
+        self._transform = QMatrix4x4()  # model matrix
         self._id = Item._id_counter
         Item._id_counter += 1
         self._picking_color = id_to_color(self._id)
@@ -134,21 +135,14 @@ class Item:
             items.extend(child.get_all_items())
         return items
 
-    def paint(self, mode: PaintMode, use_modern_gl: bool):
+    def paint(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
         if not self.visible or self.is_container:
             return
 
         if mode == PaintMode.Normal or self.picking_visible:
-            if use_modern_gl:
-                self.paint_self_modern(mode)
-            else:
-                glLoadMatrixf(self.get_transform.data())
-                self.paint_self(mode)
+            self.paint_self(mode, view_matrix, projection_matrix, shader)
 
-    def paint_self(self, mode: PaintMode):
-        raise NotImplementedError()
-
-    def paint_self_modern(self, mode: PaintMode):
+    def paint_self(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
         raise NotImplementedError()
 
     def __repr__(self) -> str:

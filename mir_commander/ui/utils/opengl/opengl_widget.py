@@ -19,7 +19,7 @@ logger = logging.getLogger("OpenGL.Widget")
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, parent: QWidget, keymap: None | Keymap = None, use_modern_gl: bool = False):
+    def __init__(self, parent: QWidget, keymap: None | Keymap = None, fallback_mode: bool = False):
         super().__init__(parent)
 
         self._cursor_pos: QPoint = QPoint(0, 0)
@@ -27,14 +27,14 @@ class OpenGLWidget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
-        self._use_modern_gl = use_modern_gl
+        self._fallback_mode = fallback_mode
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene(self.camera)
-        self.renderer = Renderer(self.projection_manager, self.scene, self.camera, use_modern_gl)
+        self.renderer = Renderer(self.projection_manager, self.scene, self.camera, fallback_mode)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -54,7 +54,7 @@ class OpenGLWidget(QOpenGLWidget):
 
     def _setup_projection(self, w: int, h: int):
         glViewport(0, 0, w, h)
-        if not self._use_modern_gl:
+        if self._fallback_mode:
             glMatrixMode(GL_PROJECTION)
             glLoadMatrixf(self.projection_manager.active_projection.matrix.data())
             glMatrixMode(GL_MODELVIEW)
@@ -135,17 +135,20 @@ class OpenGLWidget(QOpenGLWidget):
     def set_projection_mode(self, mode: ProjectionMode | str):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
+        self._setup_projection(self.size().width(), self.size().height())
         self.update()
 
     def toggle_projection_mode(self):
         self.makeCurrent()
         self.projection_manager.toggle_projection_mode()
+        self._setup_projection(self.size().width(), self.size().height())
         self.update()
 
     def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
         self.projection_manager.perspective_projection.set_fov(value)
         self.projection_manager.build_projections(self.size().width(), self.size().height())
+        self._setup_projection(self.size().width(), self.size().height())
         self.update()
 
     def set_scene_position(self, point: QVector3D):

@@ -1,7 +1,7 @@
 from PySide6.QtGui import QQuaternion, QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh import Cylinder
+from mir_commander.ui.utils.opengl.mesh_object import MeshObject
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
@@ -10,14 +10,14 @@ from .atom import Atom
 class BondItem(MeshItem):
     def __init__(
         self,
-        mesh_data: Cylinder,
+        mesh_object: MeshObject,
         position: QVector3D,
         direction: QVector3D,
         radius: float,
         length: float,
         color: Color4f,
     ):
-        super().__init__(mesh_data, color=color)
+        super().__init__(mesh_object, color=color)
         self._position = position
         self._direction = direction
         self._radius = radius
@@ -50,7 +50,7 @@ class BondItem(MeshItem):
 class Bond(Item):
     def __init__(
         self,
-        c_mesh_data: Cylinder,
+        c_mesh_object: MeshObject,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
@@ -59,7 +59,7 @@ class Bond(Item):
     ):
         super().__init__(is_container=True, picking_visible=False)
 
-        self._c_mesh_data = c_mesh_data
+        self._c_mesh_object = c_mesh_object
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
@@ -95,7 +95,7 @@ class Bond(Item):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            self.add_child(BondItem(self._c_mesh_data, position, direction, self._radius, length, color))
+            self.add_child(BondItem(self._c_mesh_object, position, direction, self._radius, length, color))
 
     def update_bonds(self):
         bonds = self._build_bonds()

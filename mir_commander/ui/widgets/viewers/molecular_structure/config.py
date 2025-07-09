@@ -324,7 +324,6 @@ class Keymap(BaseModel):
 class MolecularStructureViewerConfig(BaseModel):
     keymap: Keymap = Keymap()
     geom_bond_tolerance: float = 0.15
-    antialiasing: bool = True
     size: tuple[int, int] = (500, 500)
     min_size: tuple[int, int] = (150, 150)
     current_style: str = "Colored Bonds"
