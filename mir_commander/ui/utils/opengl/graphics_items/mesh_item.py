@@ -52,7 +52,11 @@ class MeshItem(Item):
     def paint_self_modern(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
         glUseProgram(shader.program)
 
-        glUniform4f(shader.uniform_locations.color, *self.color)
+        if mode == PaintMode.Picking:
+            glUniform4f(shader.uniform_locations.color, *self._picking_color)
+        else:
+            glUniform4f(shader.uniform_locations.color, *self.color)
+
         glUniformMatrix4fv(shader.uniform_locations.model_matrix, 1, False, self.get_transform.data())
         glUniformMatrix4fv(shader.uniform_locations.view_matrix, 1, False, view_matrix)
         glUniformMatrix4fv(shader.uniform_locations.projection_matrix, 1, False, projection_matrix)
