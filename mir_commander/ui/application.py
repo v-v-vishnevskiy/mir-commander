@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.utils.consts import DIR
@@ -41,6 +41,19 @@ class Application(QApplication):
         self._error.setIcon(QMessageBox.Icon.Critical)
 
         self.apply_callbacks.add(self._set_translation)
+
+        self.setup_opengl()
+
+    def setup_opengl(self):
+        sf = QSurfaceFormat()
+        if self.config.opengl.antialiasing:
+            sf.setSamples(16)
+        else:
+            sf.setSamples(0)
+        if self.config.opengl.use_modern_gl:
+            sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+            sf.setVersion(4, 1)
+        QSurfaceFormat.setDefaultFormat(sf)
 
     def fix_palette(self):
         """
