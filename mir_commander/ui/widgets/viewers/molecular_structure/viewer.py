@@ -63,7 +63,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         super().__init__(
             parent=parent, 
             keymap=Keymap(config.keymap.viewer.model_dump()), 
-            antialiasing=config.antialiasing,
+            use_modern_gl=False,
         )
         self._config = config
         self._molecule = Molecule(config)

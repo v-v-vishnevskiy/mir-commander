@@ -1,13 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
 
-from OpenGL.GL import (
-    GL_MODELVIEW,
-    GL_PROJECTION,
-    glLoadMatrixf,
-    glMatrixMode,
-    glViewport,
-)
 from PySide6.QtGui import QMatrix4x4
 
 from .enums import ProjectionMode
@@ -78,8 +71,6 @@ class OrthographicProjection(AbstractProjection):
 
 class ProjectionManager:
     def __init__(self, width: int, height: int, projection_mode: ProjectionMode = ProjectionMode.Perspective):
-        self._width = width
-        self._height = height
         self._projection_mode = projection_mode
         self.perspective_projection = PerspectiveProjection()
         self.perspective_projection.setup_projection(width, height)
@@ -96,24 +87,14 @@ class ProjectionManager:
             return self.perspective_projection
         return self.orthographic_projection
 
-    def setup_projection(self):
-        glViewport(0, 0, self._width, self._height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadMatrixf(self.active_projection.matrix.data())
-        glMatrixMode(GL_MODELVIEW)
-
     def build_projections(self, width: int, height: int):
-        self._width = width
-        self._height = height
         self.perspective_projection.setup_projection(width, height)
         self.orthographic_projection.setup_projection(width, height)
-        self.setup_projection()
 
     def set_projection_mode(self, mode: ProjectionMode):
         if self._projection_mode == mode:
             return
         self._projection_mode = mode
-        self.setup_projection()
         logger.debug("Setting projection mode to %s", mode.name)
 
     def toggle_projection_mode(self):

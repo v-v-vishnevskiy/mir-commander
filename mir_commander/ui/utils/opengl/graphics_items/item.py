@@ -13,9 +13,10 @@ logger = logging.getLogger("OpenGL.Item")
 class Item:
     _id_counter = 1
 
-    def __init__(self):
-        self._visible = True
-        self.picking_visible = True
+    def __init__(self, is_container: bool = False, visible: bool = True, picking_visible: bool = True):
+        self._is_container = is_container
+        self._visible = visible
+        self.picking_visible = picking_visible
         self.transparent = False
 
         self._transform = QMatrix4x4()
@@ -29,6 +30,13 @@ class Item:
         self._translation = QVector3D(0.0, 0.0, 0.0)
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
+
+    @property
+    def is_container(self) -> bool:
+        return self._is_container
+
+    def set_is_container(self, value: bool):
+        self._is_container = value
 
     @property
     def visible(self) -> bool:
@@ -126,15 +134,21 @@ class Item:
             items.extend(child.get_all_items())
         return items
 
-    def paint(self, mode: PaintMode = PaintMode.Normal, transparent: bool = False):
-        if not self.visible:
+    def paint(self, mode: PaintMode, use_modern_gl: bool):
+        if not self.visible or self.is_container:
             return
 
         if mode == PaintMode.Normal or self.picking_visible:
-            glLoadMatrixf(self.get_transform.data())
-            self.paint_self(mode)
+            if use_modern_gl:
+                self.paint_self_modern(mode)
+            else:
+                glLoadMatrixf(self.get_transform.data())
+                self.paint_self(mode)
 
     def paint_self(self, mode: PaintMode):
+        raise NotImplementedError()
+
+    def paint_self_modern(self, mode: PaintMode):
         raise NotImplementedError()
 
     def __repr__(self) -> str:

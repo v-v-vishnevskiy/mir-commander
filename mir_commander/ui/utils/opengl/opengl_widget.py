@@ -1,7 +1,7 @@
 import logging
-from OpenGL.GL import GL_MULTISAMPLE, glEnable
+from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport, glMatrixMode, glLoadMatrixf, GL_PROJECTION, GL_MODELVIEW
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QSurfaceFormat, QVector3D, QWheelEvent
+from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
@@ -19,7 +19,7 @@ logger = logging.getLogger("OpenGL.Widget")
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, parent: QWidget, keymap: None | Keymap = None, antialiasing: bool = True):
+    def __init__(self, parent: QWidget, keymap: None | Keymap = None, use_modern_gl: bool = False):
         super().__init__(parent)
 
         self._cursor_pos: QPoint = QPoint(0, 0)
@@ -27,21 +27,17 @@ class OpenGLWidget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
+        self._use_modern_gl = use_modern_gl
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene(self.camera)
-        self.renderer = Renderer(self.projection_manager, self.scene, self.camera)
+        self.renderer = Renderer(self.projection_manager, self.scene, self.camera, use_modern_gl)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
-
-        if antialiasing:
-            sf = QSurfaceFormat()
-            sf.setSamples(16)
-            self.setFormat(sf)
 
         self._init_actions()
 
@@ -56,6 +52,13 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
+    def _setup_projection(self, w: int, h: int):
+        glViewport(0, 0, w, h)
+        if not self._use_modern_gl:
+            glMatrixMode(GL_PROJECTION)
+            glLoadMatrixf(self.projection_manager.active_projection.matrix.data())
+            glMatrixMode(GL_MODELVIEW)
+
     @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
@@ -63,6 +66,7 @@ class OpenGLWidget(QOpenGLWidget):
     def initializeGL(self):
         self.makeCurrent()
         self.projection_manager.build_projections(self.size().width(), self.size().height())
+        self._setup_projection(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
 
     def resize(self, w: int, h: int):
@@ -75,6 +79,7 @@ class OpenGLWidget(QOpenGLWidget):
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
+        self._setup_projection(w, h)
         self.update()
 
     def paintGL(self):

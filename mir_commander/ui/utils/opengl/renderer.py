@@ -16,10 +16,11 @@ logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera):
+    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera, use_modern_gl: bool):
         self._projection_manager = projection_manager
         self._scene = scene
         self._camera = camera
+        self._use_modern_gl = use_modern_gl
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._picking_image: None | QImage = None
         self._has_new_image = False
@@ -39,14 +40,14 @@ class Renderer:
         for item in items:
             if item.transparent:
                 continue
-            item.paint(PaintMode.Normal)
+            item.paint(PaintMode.Normal, self._use_modern_gl)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         for item in self._sort_by_depth(items):
             if not item.transparent:
                 continue
-            item.paint(PaintMode.Normal)
+            item.paint(PaintMode.Normal, self._use_modern_gl)
 
         self._has_new_image = False
 
@@ -158,7 +159,7 @@ class Renderer:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         for item in self._scene.get_all_items():
-            item.paint(PaintMode.Picking)
+            item.paint(PaintMode.Picking, self._use_modern_gl)
 
         fbo.release()
 

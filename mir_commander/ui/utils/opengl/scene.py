@@ -2,13 +2,11 @@ from PySide6.QtGui import QMatrix4x4
 
 from .camera import Camera
 from .graphics_items.item import Item
-from .enums import PaintMode
 
 
 class Scene(Item):
     def __init__(self, camera: Camera):
-        super().__init__()
-        self.picking_visible = False
+        super().__init__(is_container=True, picking_visible=False)
 
         self._camera = camera
 
@@ -18,6 +16,3 @@ class Scene(Item):
     @property
     def get_transform(self) -> QMatrix4x4:
         return self._camera.view_matrix * super().get_transform
-
-    def paint_self(self, mode: PaintMode):
-        pass

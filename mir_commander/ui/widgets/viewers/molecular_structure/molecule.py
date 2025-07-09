@@ -4,7 +4,6 @@ import numpy as np
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.graphics_items.item import Item
 from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
@@ -21,8 +20,7 @@ from .style import Style
 
 class Molecule(Item):
     def __init__(self, config: MolecularStructureViewerConfig):
-        super().__init__()
-        self.picking_visible = False
+        super().__init__(is_container=True, picking_visible=False)
 
         self._config = config
         self.style = Style(config)
@@ -42,9 +40,6 @@ class Molecule(Item):
         self.selected_atom_items: list[Atom] = []
 
         self.apply_style()
-
-    def paint_self(self, mode: PaintMode):
-        pass
 
     def build(self, atomic_coordinates: AtomicCoordinates):
         """

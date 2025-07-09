@@ -2,7 +2,6 @@ from PySide6.QtGui import QQuaternion, QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
 from mir_commander.ui.utils.opengl.mesh import Cylinder
-from mir_commander.ui.utils.opengl.enums import PaintMode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
@@ -58,8 +57,7 @@ class Bond(Item):
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__()
-        self.picking_visible = False
+        super().__init__(is_container=True, picking_visible=False)
 
         self._c_mesh_data = c_mesh_data
         self._radius = radius
@@ -110,9 +108,6 @@ class Bond(Item):
     @property
     def visible(self) -> bool:
         return super().visible and not self._atom_1.cloaked and not self._atom_2.cloaked
-
-    def paint_self(self, mode: PaintMode):
-        pass
 
     def set_radius(self, radius: float):
         self._radius = radius
