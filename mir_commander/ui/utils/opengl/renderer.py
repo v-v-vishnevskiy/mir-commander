@@ -40,7 +40,7 @@ class Renderer:
             )
         else:
             self._shaders["default"] = ShaderProgram(
-                VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.DIFFUSE)
+                VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.BLINN_PHONG)
             )
             self._shaders["picking"] = ShaderProgram(
                 VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.FLAT_COLOR)
