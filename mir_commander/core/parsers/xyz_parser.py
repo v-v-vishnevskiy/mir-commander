@@ -38,8 +38,6 @@ def is_xyz(lines: list[str]) -> bool:
 def load_xyz(path: Path, logs: list) -> Item:
     """
     Import data from XYZ file, build and populate a respective tree of items.
-    Also return a list of flagged items.
-    Additionally return a list of messages, which can be printed later.
     """
 
     logger.info("Parsing XYZ file ...")

@@ -6,5 +6,6 @@
     <file>items/molecule.png</file>
     <file>items/item.png</file>
     <file>items/unex.png</file>
+    <file>items/volcube.png</file>
   </qresource>
 </RCC>

@@ -57,6 +57,9 @@ class Unex(Item):
     pass
 
 
+class VolCube(Item):
+    pass
+
 class AtomicCoordinatesGroup(Item):
     default_viewer = MolecularStructureViewer
 
