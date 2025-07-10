@@ -3,7 +3,7 @@ from typing import Self
 
 from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
 
-from mir_commander.ui.utils.opengl.shader import ShaderProgram
+from mir_commander.ui.utils.opengl.shader import UniformLocations
 
 from ..enums import PaintMode
 from ..utils import id_to_color
@@ -135,14 +135,7 @@ class Item:
             items.extend(child.get_all_items())
         return items
 
-    def paint(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
-        if not self.visible or self.is_container:
-            return
-
-        if mode == PaintMode.Normal or self.picking_visible:
-            self.paint_self(mode, view_matrix, projection_matrix, shader)
-
-    def paint_self(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
+    def paint(self, mode: PaintMode, uniform_locations: UniformLocations):
         raise NotImplementedError()
 
     def __repr__(self) -> str:

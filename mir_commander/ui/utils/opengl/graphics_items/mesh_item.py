@@ -4,11 +4,7 @@ from OpenGL.GL import (
     GL_VERTEX_ARRAY,
     GL_TRIANGLES,
     glDrawArrays,
-    glUseProgram,
-    glUniformMatrix4fv,
-    glBindVertexArray,
     glUniform4f,
-    glLoadMatrixf,
     glEnableClientState,
     glNormalPointer,
     glVertexPointer,
@@ -17,7 +13,7 @@ from OpenGL.GL import (
 )
 
 from mir_commander.ui.utils.opengl.mesh_object import MeshObject
-from mir_commander.ui.utils.opengl.shader import ShaderProgram
+from mir_commander.ui.utils.opengl.shader import UniformLocations
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..enums import PaintMode
@@ -41,39 +37,23 @@ class MeshItem(Item):
         self._count = int(len(self._mesh_data.vertices) / 3)
 
         if self._vao is None:
-            self.paint_self = self.paint_self_fallback
+            self.paint = self.paint_fallback
         else:
-            self.paint_self = self.paint_self_modern
+            self.paint = self.paint_modern
 
     @property
     def color(self) -> Color4f:
         return self._color
 
-    def paint_self_modern(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
-        glUseProgram(shader.program)
-
+    def paint_modern(self, mode: PaintMode, uniform_locations: UniformLocations):
         if mode == PaintMode.Picking:
-            glUniform4f(shader.uniform_locations.color, *self._picking_color)
+            glUniform4f(uniform_locations.color, *self._picking_color)
         else:
-            glUniform4f(shader.uniform_locations.color, *self.color)
-
-        glUniformMatrix4fv(shader.uniform_locations.model_matrix, 1, False, self.get_transform.data())
-        glUniformMatrix4fv(shader.uniform_locations.view_matrix, 1, False, view_matrix)
-        glUniformMatrix4fv(shader.uniform_locations.projection_matrix, 1, False, projection_matrix)
-
-        glBindVertexArray(self._vao.vao)
+            glUniform4f(uniform_locations.color, *self.color)
 
         glDrawArrays(GL_TRIANGLES, 0, self._vao.count)
 
-        glBindVertexArray(0)
-
-        glUseProgram(0)
-
-    def paint_self_fallback(self, mode: PaintMode, view_matrix: list[float], projection_matrix: list[float], shader: ShaderProgram):
-        glLoadMatrixf(self.get_transform.data())
-
-        glUseProgram(shader.program)
-
+    def paint_fallback(self, mode: PaintMode, uniform_locations: UniformLocations):
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self._mesh_data.vertices)
 
@@ -89,7 +69,6 @@ class MeshItem(Item):
 
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
-        glUseProgram(0)
 
     def set_color(self, color: Color4f):
         self._color = color

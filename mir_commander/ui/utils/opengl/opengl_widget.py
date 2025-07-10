@@ -8,10 +8,10 @@ from PySide6.QtWidgets import QMdiSubWindow, QWidget
 from .action_handler import ActionHandler
 from .camera import Camera
 from .graphics_items.item import Item
-from .enums import ClickAndMoveMode, ProjectionMode, WheelMode
+from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .projection import ProjectionManager
-from .renderer import Renderer
+from .renderer import FallbackRenderer, ModernRenderer
 from .scene import Scene
 from .utils import Color4f, color_to_id
 
@@ -34,7 +34,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.scene = Scene(self.camera)
-        self.renderer = Renderer(self.projection_manager, self.scene, self.camera, fallback_mode)
+
+        if fallback_mode:
+            self.renderer = FallbackRenderer(self.projection_manager, self.scene, self.camera)
+        else:
+            self.renderer = ModernRenderer(self.projection_manager, self.scene, self.camera)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -87,7 +91,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def paintGL(self):
-        self.renderer.paint()
+        self.renderer.paint(PaintMode.Normal)
 
     def setWindowIcon(self, icon: QIcon):
         parent = self.parent()
