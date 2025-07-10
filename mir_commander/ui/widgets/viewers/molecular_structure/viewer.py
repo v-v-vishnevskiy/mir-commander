@@ -66,8 +66,6 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             fallback_mode=QCoreApplication.instance().config.opengl.fallback_mode,
         )
         self._config = config
-        self._molecule = Molecule(config)
-        self.scene.add_item(self._molecule)
 
         self.item = item
         self._all = all
@@ -79,15 +77,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
+        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
+
+        self.update_window_title()
+
+    def init(self):
+        self._molecule = Molecule(self._config)
+        self.scene.add_item(self._molecule)
+
         self._under_cursor_overlay = TextOverlay(
             parent=self,
             config=self._molecule.style.current.under_cursor_text_overlay,
         )
         self._under_cursor_overlay.hide()
-
-        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
-
-        self.update_window_title()
 
         self.set_background_color(normalize_color(self._molecule.style.current.background.color))
         self.set_projection_mode(self._molecule.style.current.projection.mode)

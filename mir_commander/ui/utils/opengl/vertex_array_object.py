@@ -19,7 +19,7 @@ class VertexArrayObject:
     __slots__ = ("vao",  "count", "_vbo_vertices", "_vbo_normals")
 
     def __init__(self, vertices: np.ndarray, normals: np.ndarray):
-        self.vao = glGenVertexArrays(1)
+        self.vao = None
         self.count = 0
         self._vbo_vertices = None
         self._vbo_normals = None
@@ -27,6 +27,8 @@ class VertexArrayObject:
 
     def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray):
         self.count = int(len(vertices) / 3)
+
+        self.vao = glGenVertexArrays(1)
 
         glBindVertexArray(self.vao)
 

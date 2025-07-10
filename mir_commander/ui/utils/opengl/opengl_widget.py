@@ -41,6 +41,9 @@ class OpenGLWidget(QOpenGLWidget):
 
         self._init_actions()
 
+    def init(self):
+        pass
+
     def clear(self):
         self.scene.clear()
 
@@ -68,6 +71,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.projection_manager.build_projections(self.size().width(), self.size().height())
         self._setup_projection(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
+        self.init()
 
     def resize(self, w: int, h: int):
         parent = self.parent()
