@@ -81,7 +81,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.update_window_title()
 
-    def init(self):
+    def post_init(self):
         self._molecule = Molecule(self._config)
         self.scene.add_item(self._molecule)
 
