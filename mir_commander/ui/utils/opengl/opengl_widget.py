@@ -15,6 +15,8 @@ from .renderer import FallbackRenderer, ModernRenderer
 from .scene import Scene
 from .utils import Color4f, color_to_id
 
+from time import monotonic
+
 logger = logging.getLogger("OpenGL.Widget")
 
 
@@ -91,7 +93,10 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def paintGL(self):
+        start_time = monotonic()
         self.renderer.paint(PaintMode.Normal)
+        end_time = monotonic()
+        print(f"Paint time: {end_time - start_time} seconds")
 
     def setWindowIcon(self, icon: QIcon):
         parent = self.parent()

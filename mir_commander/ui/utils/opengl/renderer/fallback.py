@@ -27,12 +27,11 @@ class FallbackRenderer(BaseRenderer):
         else:
             shader = self._shaders["picking"]
 
-        uniform_locations = shader.uniform_locations
         glUseProgram(shader.program)
 
         for item in items:
             glLoadMatrixf(item.get_transform.data())
-            item.paint(paint_mode, uniform_locations)
+            item.paint(paint_mode)
 
     def paint_transparent(self, items: list[Item], paint_mode: PaintMode):
         if paint_mode == PaintMode.Normal:
@@ -40,9 +39,8 @@ class FallbackRenderer(BaseRenderer):
         else:
             shader = self._shaders["picking"]
 
-        uniform_locations = shader.uniform_locations
         glUseProgram(shader.program)
 
         for item in items:
             glLoadMatrixf(item.get_transform.data())
-            item.paint(paint_mode, uniform_locations)
+            item.paint(paint_mode)

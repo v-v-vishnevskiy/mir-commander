@@ -4,7 +4,6 @@ from OpenGL.GL import (
     GL_VERTEX_ARRAY,
     GL_TRIANGLES,
     glDrawArrays,
-    glUniform4f,
     glEnableClientState,
     glNormalPointer,
     glVertexPointer,
@@ -13,7 +12,6 @@ from OpenGL.GL import (
 )
 
 from mir_commander.ui.utils.opengl.mesh_object import MeshObject
-from mir_commander.ui.utils.opengl.shader import UniformLocations
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..enums import PaintMode
@@ -45,15 +43,10 @@ class MeshItem(Item):
     def color(self) -> Color4f:
         return self._color
 
-    def paint_modern(self, mode: PaintMode, uniform_locations: UniformLocations):
-        if mode == PaintMode.Picking:
-            glUniform4f(uniform_locations.color, *self._picking_color)
-        else:
-            glUniform4f(uniform_locations.color, *self.color)
-
+    def paint_modern(self, mode: PaintMode):
         glDrawArrays(GL_TRIANGLES, 0, self._vao.count)
 
-    def paint_fallback(self, mode: PaintMode, uniform_locations: UniformLocations):
+    def paint_fallback(self, mode: PaintMode):
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self._mesh_data.vertices)
 
