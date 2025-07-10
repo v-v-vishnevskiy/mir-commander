@@ -25,6 +25,22 @@ void main() {
 }
 """
 
+GLOW_EFFECT = """
+varying vec3 normal;
+void main() {
+    vec3 light_color = vec3(1.0, 1.0, 1.0) * 0.9;
+    vec3 light_direction = normalize(vec3(0.3, 0.3, 1.0));
+    vec3 norm = normalize(normal);
+
+    // Diffuse
+    float diff = max(dot(norm, light_direction), 0.0);
+
+    vec4 color = gl_Color;
+    
+    gl_FragColor = vec4(color.xyz, min(diff, color.w));
+}
+"""
+
 BLINN_PHONG = """
 varying vec3 normal;
 void main() {

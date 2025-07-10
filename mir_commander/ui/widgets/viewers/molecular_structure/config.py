@@ -276,7 +276,7 @@ class Quality(BaseModel):
 class SelectedAtom(BaseModel):
     color: Literal["atom"] | Color = Color("#94FFFF")
     scale_factor: float = Field(default=1.4, ge=1.1, le=3.0)
-    opacity: float = Field(default=0.6, ge=0.01, le=0.99)
+    opacity: float = Field(default=0.3, ge=0.01, le=0.99)
 
 
 class Style(BaseModel):

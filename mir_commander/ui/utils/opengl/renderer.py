@@ -69,6 +69,7 @@ class Renderer:
             item.paint(PaintMode.Normal, view_matrix, projection_matrix, shader)
 
         if items := self._sort_by_depth(items):
+            shader = self._shaders["picking"]
             glEnable(GL_BLEND)
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             for item in items:
