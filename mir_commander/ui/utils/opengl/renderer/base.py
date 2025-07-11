@@ -41,16 +41,16 @@ class BaseRenderer:
         glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
-            self.paint_picking(self._picking_items())
+            self.paint_picking(self._scene.picking_items())
         else:
-            opaque_items, transparent_items = self._items()
+            opaque_items, transparent_items = self._scene.items()
 
             self.paint_opaque(opaque_items)
 
             if transparent_items:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self.paint_transparent(transparent_items)
+                self.paint_transparent(self._sort_by_depth(transparent_items))
 
             self._has_new_image = False
 
@@ -62,31 +62,6 @@ class BaseRenderer:
 
     def paint_picking(self, items: list[Item]):
         pass
-
-    def _items(self) -> tuple[list[Item], list[Item]]:
-        items = self._scene.get_all_items()
-
-        opaque_items = []
-        transparent_items = []
-
-        for item in items:
-            if item.is_container or not item.visible:
-                continue
-
-            if item.transparent:
-                transparent_items.append(item)
-            else:
-                opaque_items.append(item)
-
-        return opaque_items, self._sort_by_depth(transparent_items)
-
-    def _picking_items(self) -> list[Item]:
-        result = []
-        items = self._scene.get_all_items()
-        for item in items:
-            if not item.is_container and item.visible and item.picking_visible:
-                result.append(item)
-        return result
 
     def _get_item_depth(self, item: Item) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * item.get_transform
