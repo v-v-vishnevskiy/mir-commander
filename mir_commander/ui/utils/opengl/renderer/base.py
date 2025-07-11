@@ -33,6 +33,8 @@ class BaseRenderer:
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
+        opaque_items, transparent_items, picking_items = self._scene.items()
+        
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
@@ -41,10 +43,8 @@ class BaseRenderer:
         glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
-            self.paint_picking(self._scene.picking_items())
+            self.paint_picking(picking_items)
         else:
-            opaque_items, transparent_items = self._scene.items()
-
             self.paint_opaque(opaque_items)
 
             if transparent_items:

@@ -11,11 +11,11 @@ logger = logging.getLogger("OpenGL.Item")
 class Item:
     _id_counter = 1
 
-    def __init__(self, is_container: bool = False, visible: bool = True, picking_visible: bool = True):
+    def __init__(self, is_container: bool = False, visible: bool = True, picking_visible: bool = True, transparent: bool = False):
         self._is_container = is_container
         self._visible = visible
         self.picking_visible = picking_visible
-        self._transparent = False
+        self._transparent = transparent
 
         self._transform = QMatrix4x4()  # model matrix
         self._id = Item._id_counter
@@ -29,7 +29,7 @@ class Item:
         self._rotation = QQuaternion()
         self._scale = QVector3D(1.0, 1.0, 1.0)
 
-    def _notify_parents_of_change(self):
+    def notify_parents_of_change(self):
         current = self.parent
         while current is not None:
             current.invalidate_cache()
@@ -44,7 +44,7 @@ class Item:
 
     def set_is_container(self, value: bool):
         self._is_container = value
-        self._notify_parents_of_change()
+        self.notify_parents_of_change()
 
     @property
     def transparent(self) -> bool:
@@ -52,7 +52,7 @@ class Item:
 
     def set_transparent(self, value: bool):
         self._transparent = value
-        self._notify_parents_of_change()
+        self.notify_parents_of_change()
 
     @property
     def visible(self) -> bool:
@@ -60,15 +60,15 @@ class Item:
 
     def set_visible(self, value: bool):
         self._visible = value
-        self._notify_parents_of_change()
         for child in self.children:
             child.set_visible(value)
+        self.notify_parents_of_change()
 
     def toggle_visible(self):
         self._visible = not self._visible
-        self._notify_parents_of_change()
         for child in self.children:
             child.toggle_visible()
+        self.notify_parents_of_change()
 
     @property
     def get_transform(self) -> QMatrix4x4:
@@ -87,7 +87,7 @@ class Item:
         child.parent = self
         self.children.append(child)
 
-        self._notify_parents_of_change()
+        self.notify_parents_of_change()
 
         logger.debug("Added child: %s", child)
         return True
@@ -96,7 +96,9 @@ class Item:
         if child in self.children:
             self.children.remove(child)
             child.parent = None
-            self._notify_parents_of_change()
+
+            self.notify_parents_of_change()
+
             logger.debug("Removed child: %s", child)
             return True
         return False
@@ -146,10 +148,9 @@ class Item:
         self._transform.translate(self._translation)
 
     def clear(self):
-        for child in self.children[:]:
-            self.remove_child(child)
+        self.children.clear()
 
-        self._notify_parents_of_change()
+        self.notify_parents_of_change()
 
         logger.debug("Cleared item: %s", self)
 
@@ -160,4 +161,4 @@ class Item:
         return items
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(id={self._id})"
+        return f"{self.__class__.__name__}(id={self._id}, is_container={self.is_container}, visible={self.visible}, transparent={self.transparent}, picking_visible={self.picking_visible})"

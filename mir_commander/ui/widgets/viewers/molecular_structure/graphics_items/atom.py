@@ -42,6 +42,7 @@ class Atom(MeshItem):
         for bond in self._related_bonds:
             atom_1, atom_2 = bond.atoms
             bond.set_visible(bool((not atom_1.cloaked) * (not atom_2.cloaked)))
+        self.notify_parents_of_change()
 
     @property
     def cloaked(self) -> bool:
@@ -83,10 +84,12 @@ class Atom(MeshItem):
 
     def set_selected(self, value: bool):
         self._selected = value
+        self.notify_parents_of_change()
 
     def toggle_selection(self) -> bool:
         self._selected = not self._selected
+        self.notify_parents_of_change()
         return self._selected
 
     def __repr__(self) -> str:
-        return f"Atom(id={self._id}, atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
+        return f"{self.__class__.__name__}(id={self._id}, index_num={self.index_num + 1}, element_symbol={self.element_symbol})"
