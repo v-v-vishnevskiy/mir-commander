@@ -12,7 +12,7 @@ from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .projection import ProjectionManager
 from .renderer import FallbackRenderer, ModernRenderer
-from .scene import Scene
+from .scene_graph import SceneGraph
 from .utils import Color4f, color_to_id
 
 from time import monotonic
@@ -35,12 +35,12 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler = ActionHandler(keymap)
         self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.scene = Scene(self.camera)
+        self.scene_graph = SceneGraph()
 
         if fallback_mode:
-            self.renderer = FallbackRenderer(self.projection_manager, self.scene, self.camera)
+            self.renderer = FallbackRenderer(self.projection_manager, self.scene_graph, self.camera)
         else:
-            self.renderer = ModernRenderer(self.projection_manager, self.scene, self.camera)
+            self.renderer = ModernRenderer(self.projection_manager, self.scene_graph, self.camera)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -51,7 +51,7 @@ class OpenGLWidget(QOpenGLWidget):
         pass
 
     def clear(self):
-        self.scene.clear()
+        self.scene_graph.clear()
 
     def _init_actions(self):
         self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
@@ -165,11 +165,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.scene.set_position(point)
+        self.scene_graph.set_position(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):
-        self.scene.translate(vector)
+        self.scene_graph.translate(vector)
         self.update()
 
     def set_background_color(self, color: Color4f):
@@ -177,11 +177,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float = 0.0):
-        self.scene.rotate(pitch, yaw, roll)
+        self.scene_graph.rotate(pitch, yaw, roll)
         self.update()
 
     def scale_scene(self, factor: float):
-        self.scene.scale(factor)
+        self.scene_graph.scale(factor)
         self.update()
 
     def new_cursor_position(self, x: int, y: int):
@@ -201,5 +201,5 @@ class OpenGLWidget(QOpenGLWidget):
         color = image.pixelColor(x, y)
         obj_id = color_to_id(color)
 
-        return self.scene.find_item_by_id(obj_id)
+        return self.scene_graph.find_item_by_id(obj_id)
 

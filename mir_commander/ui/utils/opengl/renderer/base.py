@@ -9,14 +9,14 @@ from ..camera import Camera
 from ..enums import PaintMode
 from ..graphics_items.item import Item
 from ..projection import ProjectionManager
-from ..scene import Scene
+from ..scene_graph import SceneGraph
 from ..utils import Color4f
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
 class BaseRenderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera):
+    def __init__(self, projection_manager: ProjectionManager, scene: SceneGraph, camera: Camera):
         self._projection_manager = projection_manager
         self._scene = scene
         self._camera = camera

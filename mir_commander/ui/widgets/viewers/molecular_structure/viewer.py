@@ -83,7 +83,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def post_init(self):
         self._molecule = Molecule(self._config)
-        self.scene.add_item(self._molecule)
+        self.scene_graph.add_item(self._molecule)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,
@@ -100,7 +100,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
         self.camera.reset_to_default()
-        self.camera.move_forward(-self._molecule.radius * 1.5)
+        self.camera.move_forward(-self._molecule.radius * 2.5)
 
     def toggle_atom_selection_under_cursor(self):
         if item := self.item_under_cursor():
