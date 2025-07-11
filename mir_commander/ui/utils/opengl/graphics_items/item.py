@@ -3,9 +3,6 @@ from typing import Self
 
 from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
 
-from mir_commander.ui.utils.opengl.shader import UniformLocations
-
-from ..enums import PaintMode
 from ..utils import id_to_color
 
 logger = logging.getLogger("OpenGL.Item")
@@ -134,9 +131,6 @@ class Item:
         for child in self.children:
             items.extend(child.get_all_items())
         return items
-
-    def paint(self, mode: PaintMode, uniform_locations: UniformLocations):
-        raise NotImplementedError()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self._id})"

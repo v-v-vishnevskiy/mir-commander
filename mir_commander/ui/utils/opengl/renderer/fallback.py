@@ -1,4 +1,4 @@
-from OpenGL.GL import glLoadMatrixf, glUseProgram
+from OpenGL.GL import glLoadMatrixf, glUseProgram, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, glVertexPointer, glNormalPointer, glColor4f, glDrawArrays, glEnableClientState, glDisableClientState, GL_FLOAT, GL_TRIANGLES
 
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.shaders import fragment_fallback, vertex_fallback
@@ -21,26 +21,33 @@ class FallbackRenderer(BaseRenderer):
             VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.FLAT_COLOR)
         )
 
-    def paint_opaque(self, items: list[Item], paint_mode: PaintMode):
-        if paint_mode == PaintMode.Normal:
-            shader = self._shaders["default"]
-        else:
-            shader = self._shaders["picking"]
+    def paint_opaque(self, items: list[Item]):
+        self._paint(self._shaders["default"], items, PaintMode.Normal)
 
+    def paint_transparent(self, items: list[Item]):
+        self._paint(self._shaders["transparent"], items, PaintMode.Normal)
+
+    def paint_picking(self, items: list[Item]):
+        self._paint(self._shaders["picking"], items, PaintMode.Picking)
+
+    def _paint(self, shader: ShaderProgram, items: list[Item], paint_mode: PaintMode):
         glUseProgram(shader.program)
 
         for item in items:
             glLoadMatrixf(item.get_transform.data())
-            item.paint(paint_mode)
 
-    def paint_transparent(self, items: list[Item], paint_mode: PaintMode):
-        if paint_mode == PaintMode.Normal:
-            shader = self._shaders["transparent"]
-        else:
-            shader = self._shaders["picking"]
+            glEnableClientState(GL_VERTEX_ARRAY)
+            glVertexPointer(3, GL_FLOAT, 0, item._mesh_data.vertices)
 
-        glUseProgram(shader.program)
+            if paint_mode == PaintMode.Picking:
+                glColor4f(*item._picking_color)
+            else:
+                glColor4f(*item.color)
 
-        for item in items:
-            glLoadMatrixf(item.get_transform.data())
-            item.paint(paint_mode)
+            glEnableClientState(GL_NORMAL_ARRAY)
+            glNormalPointer(GL_FLOAT, 0, item._mesh_object.normals)
+
+            glDrawArrays(GL_TRIANGLES, 0, int(len(item._mesh_data.vertices) / 3))
+
+            glDisableClientState(GL_NORMAL_ARRAY)
+            glDisableClientState(GL_VERTEX_ARRAY)

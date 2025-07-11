@@ -36,35 +36,41 @@ class BaseRenderer:
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        opaque_items, transparent_items = self._items(paint_mode)
-
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
         glDisable(GL_BLEND)
-        self.paint_opaque(opaque_items, paint_mode)
 
-        if transparent_items:
-            if paint_mode == PaintMode.Normal:
+        if paint_mode == PaintMode.Picking:
+            self.paint_picking(self._picking_items())
+        else:
+            opaque_items, transparent_items = self._items()
+
+            self.paint_opaque(opaque_items)
+
+            if transparent_items:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            self.paint_transparent(transparent_items, paint_mode)
+                self.paint_transparent(transparent_items)
 
-        self._has_new_image = False
+            self._has_new_image = False
 
-    def paint_opaque(self, items: list[Item], paint_mode: PaintMode):
+    def paint_opaque(self, items: list[Item]):
         pass
 
-    def paint_transparent(self, items: list[Item], paint_mode: PaintMode):
+    def paint_transparent(self, items: list[Item]):
         pass
 
-    def _items(self, paint_mode: PaintMode) -> tuple[list[Item], list[Item]]:
+    def paint_picking(self, items: list[Item]):
+        pass
+
+    def _items(self) -> tuple[list[Item], list[Item]]:
         items = self._scene.get_all_items()
 
         opaque_items = []
         transparent_items = []
 
         for item in items:
-            if item.is_container or not item.visible or (paint_mode == PaintMode.Picking and not item.picking_visible):
+            if item.is_container or not item.visible:
                 continue
 
             if item.transparent:
@@ -73,6 +79,14 @@ class BaseRenderer:
                 opaque_items.append(item)
 
         return opaque_items, self._sort_by_depth(transparent_items)
+
+    def _picking_items(self) -> list[Item]:
+        result = []
+        items = self._scene.get_all_items()
+        for item in items:
+            if not item.is_container and item.visible and item.picking_visible:
+                result.append(item)
+        return result
 
     def _get_item_depth(self, item: Item) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * item.get_transform
