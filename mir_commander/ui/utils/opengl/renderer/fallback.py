@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from OpenGL.GL import glLoadMatrixf, glUseProgram, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, glVertexPointer, glNormalPointer, glColor4f, glDrawArrays, glEnableClientState, glDisableClientState, GL_FLOAT, GL_TRIANGLES
 
 from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
@@ -33,21 +35,28 @@ class FallbackRenderer(BaseRenderer):
     def _paint(self, shader: ShaderProgram, items: list[Item], paint_mode: PaintMode):
         glUseProgram(shader.program)
 
+        items_by_mesh_id = defaultdict(list)
         for item in items:
-            glLoadMatrixf(item.get_transform.data())
+            items_by_mesh_id[item.mesh_id].append(item)
 
+        for items in items_by_mesh_id.values():
             glEnableClientState(GL_VERTEX_ARRAY)
-            glVertexPointer(3, GL_FLOAT, 0, item._mesh_data.vertices)
-
-            if paint_mode == PaintMode.Picking:
-                glColor4f(*item._picking_color)
-            else:
-                glColor4f(*item.color)
+            glVertexPointer(3, GL_FLOAT, 0, items[0]._mesh_data.vertices)
 
             glEnableClientState(GL_NORMAL_ARRAY)
-            glNormalPointer(GL_FLOAT, 0, item._mesh_object.normals)
+            glNormalPointer(GL_FLOAT, 0, items[0]._mesh_object.normals)
 
-            glDrawArrays(GL_TRIANGLES, 0, int(len(item._mesh_data.vertices) / 3))
+            count = int(len(items[0]._mesh_data.vertices) / 3)
+
+            for item in items:
+                glLoadMatrixf(item.get_transform.data())
+
+                if paint_mode == PaintMode.Picking:
+                    glColor4f(*item._picking_color)
+                else:
+                    glColor4f(*item.color)
+
+                glDrawArrays(GL_TRIANGLES, 0, count)
 
             glDisableClientState(GL_NORMAL_ARRAY)
             glDisableClientState(GL_VERTEX_ARRAY)

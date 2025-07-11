@@ -17,6 +17,11 @@ class MeshItem(Item):
         self._vao = mesh_object.vao
         self._smooth = smooth
         self._color = color
+        self._mesh_id = mesh_object.id
+
+    @property
+    def mesh_id(self) -> int:
+        return self._mesh_id
 
     @property
     def color(self) -> Color4f:
