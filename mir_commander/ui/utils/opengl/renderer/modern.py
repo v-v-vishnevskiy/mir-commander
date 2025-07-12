@@ -87,28 +87,25 @@ class ModernRenderer(BaseRenderer):
                 buffer = glGenBuffers(1)
                 self._transformation_buffers[vao_color] = buffer
 
-                # Подготавливаем буфер с матрицами трансформаций
                 transformation_data = []
                 for item in vao_items:
                     transformation_data.extend(item.get_transform.data())
 
-                # Преобразуем в numpy массив для glBufferData
                 transformation_array = np.array(transformation_data, dtype=np.float32)
 
-                # Загружаем данные в буфер
                 glBindBuffer(GL_ARRAY_BUFFER, buffer)
                 glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
             else:
                 buffer = self._transformation_buffers[vao_color]
                 glBindBuffer(GL_ARRAY_BUFFER, buffer)
 
-            # Настраиваем instanced attributes для матриц трансформаций
-            # Матрица 4x4 занимает 4 атрибута (location 2, 3, 4, 5)
+            # Setup instanced attributes for transformation matrices
+            # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
             stride = 16 * 4  # 16 floats * 4 bytes per float
             for i in range(4):
                 glEnableVertexAttribArray(2 + i)
                 glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
-                glVertexAttribDivisor(2 + i, 1)  # Обновляется для каждого инстанса
+                glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
 
             glUniform4f(uniform_locations.color, *color)
             glDrawArraysInstanced(GL_TRIANGLES, 0, vertex_count, len(vao_items))
