@@ -57,10 +57,10 @@ class Atom(MeshItem):
 
     def set_under_cursor(self, value: bool):
         if value:
-            factor = self._radius * 1.15
-            self.set_scale(QVector3D(factor, factor, factor))
+            radius = self.radius * 1.15
         else:
-            self.set_scale(QVector3D(self._radius, self._radius, self._radius))
+            radius = self.radius
+        self.set_scale(QVector3D(radius, radius, radius))
 
     @property
     def radius(self) -> float:

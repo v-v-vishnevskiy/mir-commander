@@ -122,22 +122,18 @@ class Item:
                 return item
         return None
 
-    def set_position(self, position: QVector3D):
+    def set_translation(self, position: QVector3D):
         self._translation = position
+        self._update_transform()
+    
+    def translate(self, vector: QVector3D):
+        self._translation += vector
         self._update_transform()
 
     def set_rotation(self, rotation: QQuaternion):
         self._rotation = rotation
         self._update_transform()
-
-    def set_scale(self, scale: QVector3D):
-        self._scale = scale
-        self._update_transform()
-
-    def translate(self, vector: QVector3D):
-        self._translation += vector
-        self._update_transform()
-
+    
     def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
         pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), pitch)
         yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0, 1, 0), yaw)
@@ -145,6 +141,10 @@ class Item:
 
         rotation = pitch_quat * yaw_quat * roll_quat
         self._rotation = rotation * self._rotation
+        self._update_transform()
+
+    def set_scale(self, scale: QVector3D):
+        self._scale = scale
         self._update_transform()
 
     def scale(self, factor: float):

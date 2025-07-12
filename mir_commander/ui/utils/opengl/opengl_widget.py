@@ -160,7 +160,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.scene_graph.set_position(point)
+        self.scene_graph.set_translation(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):

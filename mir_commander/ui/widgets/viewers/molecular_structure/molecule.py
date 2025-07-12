@@ -64,7 +64,7 @@ class Molecule(Item):
             np.sum(atomic_coordinates.y) / len(atomic_coordinates.y), 
             np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
         )
-        self.set_position(-center)
+        self.set_translation(-center)
 
     def apply_style(self):
         mesh_quality = self.style.current.quality.mesh
