@@ -3,14 +3,14 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 
 
 class UniformLocations:
-    __slots__ = ("model_matrix", "view_matrix", "projection_matrix", "color")
+    __slots__ = ("model_matrix", "scene_matrix", "view_matrix", "projection_matrix", "color")
 
     def __init__(self):
         self.model_matrix: GLuint | None = None
+        self.scene_matrix: GLuint | None = None
         self.view_matrix: GLuint | None = None
         self.projection_matrix: GLuint | None = None
         self.color: GLuint | None = None
-
 
 class Shader:
     def __init__(self, shader_type, code: str):
@@ -58,6 +58,7 @@ class ShaderProgram:
         glUseProgram(program)
 
         self.uniform_locations.model_matrix = glGetUniformLocation(program, "model_matrix")
+        self.uniform_locations.scene_matrix = glGetUniformLocation(program, "scene_matrix")
         self.uniform_locations.view_matrix = glGetUniformLocation(program, "view_matrix")
         self.uniform_locations.projection_matrix = glGetUniformLocation(program, "projection_matrix")
         self.uniform_locations.color = glGetUniformLocation(program, "color")

@@ -49,7 +49,7 @@ class FallbackRenderer(BaseRenderer):
             count = int(len(items[0]._mesh_data.vertices) / 3)
 
             for item in items:
-                glLoadMatrixf((self._camera.view_matrix * item.get_transform).data())
+                glLoadMatrixf((self._camera.view_matrix * self._scene.get_transform * item.get_transform).data())
 
                 if paint_mode == PaintMode.Picking:
                     glColor4f(*item._picking_color)

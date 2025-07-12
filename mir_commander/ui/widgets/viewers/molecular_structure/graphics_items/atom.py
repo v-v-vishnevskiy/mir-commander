@@ -21,16 +21,15 @@ class Atom(MeshItem):
         selected_atom_config: SelectedAtom,
     ):
         super().__init__(mesh_object, color=color)
-        self.position = position
-        self.radius = radius
+        self._radius = radius
+        self.translate(position)
+        self.set_scale(QVector3D(radius, radius, radius))
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self._related_bonds = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
         self._selected = False
-        self._under_cursor = False
-        self._compute_transform()
         self._bounding_sphere = BoundingSphere(mesh_object, radius, color, selected_atom_config)
         self.add_child(self._bounding_sphere)
 
@@ -45,6 +44,10 @@ class Atom(MeshItem):
         self.notify_parents_of_change()
 
     @property
+    def position(self) -> QVector3D:
+        return self._translation
+
+    @property
     def cloaked(self) -> bool:
         return self._cloaked
 
@@ -52,28 +55,20 @@ class Atom(MeshItem):
     def visible(self) -> bool:
         return super().visible and not self._cloaked
 
-    def _compute_transform(self):
-        self._transform.setToIdentity()
-        self._transform.translate(self.position)
-
-        radius = self.radius
-        if self._under_cursor:
-            radius *= 1.15
-
-        self._transform.scale(radius, radius, radius)
-
     def set_under_cursor(self, value: bool):
-        if self._under_cursor != value:
-            self._under_cursor = value
-            self._compute_transform()
+        if value:
+            factor = self._radius * 1.15
+            self.set_scale(QVector3D(factor, factor, factor))
+        else:
+            self.set_scale(QVector3D(self._radius, self._radius, self._radius))
+
+    @property
+    def radius(self) -> float:
+        return self._radius
 
     def set_radius(self, radius: float):
-        self.radius = radius
-        self._compute_transform()
-
-    def set_position(self, position: QVector3D):
-        self.position = position
-        self._compute_transform()
+        self._radius = radius
+        self.set_scale(QVector3D(radius, radius, radius))
 
     def set_selected_atom_config(self, config: SelectedAtom):
         self._bounding_sphere.set_config(config)

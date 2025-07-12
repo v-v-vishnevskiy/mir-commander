@@ -86,21 +86,21 @@ class ModernRenderer(BaseRenderer):
             if vao_color not in self._transformation_buffers:
                 buffer = glGenBuffers(1)
                 self._transformation_buffers[vao_color] = buffer
-            buffer = self._transformation_buffers[vao_color]
 
-            glBindBuffer(GL_ARRAY_BUFFER, buffer)
+                # Подготавливаем буфер с матрицами трансформаций
+                transformation_data = []
+                for item in vao_items:
+                    transformation_data.extend(item.get_transform.data())
 
-            # Подготавливаем буфер с матрицами трансформаций
-            transformation_data = []
-            for item in vao_items:
-                transformation_data.extend(item.get_transform.data())
+                # Преобразуем в numpy массив для glBufferData
+                transformation_array = np.array(transformation_data, dtype=np.float32)
 
-            # Преобразуем в numpy массив для glBufferData
-            transformation_array = np.array(transformation_data, dtype=np.float32)
-
-            # Загружаем данные в буфер
-            glBindBuffer(GL_ARRAY_BUFFER, buffer)
-            glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
+                # Загружаем данные в буфер
+                glBindBuffer(GL_ARRAY_BUFFER, buffer)
+                glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
+            else:
+                buffer = self._transformation_buffers[vao_color]
+                glBindBuffer(GL_ARRAY_BUFFER, buffer)
 
             # Настраиваем instanced attributes для матриц трансформаций
             # Матрица 4x4 занимает 4 атрибута (location 2, 3, 4, 5)
@@ -114,9 +114,11 @@ class ModernRenderer(BaseRenderer):
             glDrawArraysInstanced(GL_TRIANGLES, 0, vertex_count, len(vao_items))
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
+        scene_matrix = self._scene.get_transform.data()
         view_matrix = self._camera.view_matrix.data()
         projection_matrix = self._projection_manager.active_projection.matrix.data()
 
+        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix)
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
 

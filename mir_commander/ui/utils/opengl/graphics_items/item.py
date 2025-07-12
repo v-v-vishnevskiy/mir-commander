@@ -17,7 +17,6 @@ class Item:
         self.picking_visible = picking_visible
         self._transparent = transparent
 
-        self._transform = QMatrix4x4()  # model matrix
         self._id = Item._id_counter
         Item._id_counter += 1
         self._picking_color = id_to_color(self._id)
@@ -25,9 +24,12 @@ class Item:
         self.children: list[Self] = []
         self.parent: None | Self = None
 
-        self._translation = QVector3D(0.0, 0.0, 0.0)
-        self._rotation = QQuaternion()
+        self._update_transform_for_children = True
+        self._parent_transform = QMatrix4x4()
+        self._transform = QMatrix4x4()  # model matrix
         self._scale = QVector3D(1.0, 1.0, 1.0)
+        self._rotation = QQuaternion()
+        self._translation = QVector3D(0.0, 0.0, 0.0)
 
     def notify_parents_of_change(self):
         current = self.parent
@@ -70,11 +72,16 @@ class Item:
             child.toggle_visible()
         self.notify_parents_of_change()
 
+    def update_parent_transform(self) -> QMatrix4x4:
+        self._parent_transform = self.parent.get_transform
+        for child in self.children:
+            child.update_parent_transform()
+
+        self.notify_parents_of_change()
+
     @property
     def get_transform(self) -> QMatrix4x4:
-        if self.parent is not None:
-            return self.parent.get_transform * self._transform
-        return self._transform
+        return self._parent_transform * self._transform
 
     def add_child(self, child: Self) -> bool:
         if not isinstance(child, Item):
@@ -86,6 +93,9 @@ class Item:
 
         child.parent = self
         self.children.append(child)
+
+        if self._update_transform_for_children:
+            child.update_parent_transform()
 
         self.notify_parents_of_change()
 
@@ -143,9 +153,15 @@ class Item:
 
     def _update_transform(self):
         self._transform.setToIdentity()
-        self._transform.scale(self._scale)
         self._transform.rotate(self._rotation)
         self._transform.translate(self._translation)
+        self._transform.scale(self._scale)
+
+        if self._update_transform_for_children:
+            for child in self.children:
+                child.update_parent_transform()
+
+        self.notify_parents_of_change()  # TODO: refactor this
 
     def clear(self):
         self.children.clear()
