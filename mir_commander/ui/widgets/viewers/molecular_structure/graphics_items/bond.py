@@ -31,10 +31,6 @@ class BondItem(MeshItem):
         self._transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), self._direction))
         self._transform.scale(self._radius, self._radius, self._length)
 
-    @property
-    def visible(self) -> bool:
-        return super().visible and self.parent.visible
-
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
         self._position = position
         self._direction = direction
@@ -68,7 +64,14 @@ class Bond(Item):
         self._color = color
         self._items: list[BondItem] = []
 
+        atom_1.add_related_bond(self)
+        atom_2.add_related_bond(self)
+
         self._add_bonds()
+
+    @property
+    def atoms(self) -> tuple[Atom, Atom]:
+        return self._atom_1, self._atom_2
 
     def _build_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
         result = []
@@ -104,10 +107,6 @@ class Bond(Item):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
-
-    @property
-    def visible(self) -> bool:
-        return super().visible and not self._atom_1.cloaked and not self._atom_2.cloaked
 
     def set_radius(self, radius: float):
         self._radius = radius

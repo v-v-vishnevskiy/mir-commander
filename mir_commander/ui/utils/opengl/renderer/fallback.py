@@ -52,7 +52,7 @@ class FallbackRenderer(BaseRenderer):
                 glLoadMatrixf((self._camera.view_matrix * self._scene.get_transform * item.get_transform).data())
 
                 if paint_mode == PaintMode.Picking:
-                    glColor4f(*item._picking_color)
+                    glColor4f(*item.picking_color)
                 else:
                     glColor4f(*item.color)
 

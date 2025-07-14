@@ -34,6 +34,16 @@ class ModernRenderer(BaseRenderer):
             VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.FLAT_COLOR)
         )
 
+    def paint_opaque(self, items: list[Item]):
+        shader = self._shaders["default"]
+
+        uniform_locations = shader.uniform_locations
+        glUseProgram(shader.program)
+
+        self._setup_uniforms(uniform_locations)
+
+        self._paint_normal(items, uniform_locations)
+
     def paint_transparent(self, items: list[Item]):
         shader = self._shaders["transparent"]
 
@@ -58,23 +68,17 @@ class ModernRenderer(BaseRenderer):
         for vao, items in items_by_vao.items():
             glBindVertexArray(vao)
             for item in items:
-                glUniform4f(uniform_locations.color, *item._picking_color)
+                glUniform4f(uniform_locations.color, *item.picking_color)
                 glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, item.get_transform.data())
                 glDrawArrays(GL_TRIANGLES, 0, item._vao.count)
 
-    def paint_opaque(self, items: list[Item]):
-        shader = self._shaders["default"]
-
-        uniform_locations = shader.uniform_locations
-        glUseProgram(shader.program)
-
-        self._setup_uniforms(uniform_locations)
-
-        self._paint_normal(items, uniform_locations)
-
     def _paint_normal(self, items: list[Item], uniform_locations: UniformLocations):
         items_by_vao = defaultdict(list)
+        set_transform_data = False
         for item in items:
+            if item.transform_dirty:
+                set_transform_data = True
+                item.validate_transform()
             items_by_vao[(item._vao.vao, item.color)].append(item)
 
         for vao_color, vao_items in items_by_vao.items():
@@ -85,19 +89,23 @@ class ModernRenderer(BaseRenderer):
 
             if vao_color not in self._transformation_buffers:
                 buffer = glGenBuffers(1)
-                self._transformation_buffers[vao_color] = buffer
+                self._transformation_buffers[vao_color] = (buffer, len(vao_items))
+                set_transform_data = True
 
+                glBindBuffer(GL_ARRAY_BUFFER, buffer)
+            else:
+                buffer, count = self._transformation_buffers[vao_color]
+                glBindBuffer(GL_ARRAY_BUFFER, buffer)
+                if count != len(vao_items):
+                    self._transformation_buffers[vao_color] = (buffer, len(vao_items))
+                    set_transform_data = True
+
+            if set_transform_data:
                 transformation_data = []
                 for item in vao_items:
                     transformation_data.extend(item.get_transform.data())
-
                 transformation_array = np.array(transformation_data, dtype=np.float32)
-
-                glBindBuffer(GL_ARRAY_BUFFER, buffer)
                 glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
-            else:
-                buffer = self._transformation_buffers[vao_color]
-                glBindBuffer(GL_ARRAY_BUFFER, buffer)
 
             # Setup instanced attributes for transformation matrices
             # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
@@ -120,5 +128,5 @@ class ModernRenderer(BaseRenderer):
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
 
     def __del__(self):
-        for buffer in self._transformation_buffers.values():
+        for buffer, _ in self._transformation_buffers.values():
             glDeleteBuffers(1, [buffer])

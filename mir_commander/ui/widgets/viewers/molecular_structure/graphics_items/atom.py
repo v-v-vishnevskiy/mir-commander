@@ -28,7 +28,7 @@ class Atom(MeshItem):
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self._related_bonds = []
-        self._cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
+        self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
         self._bounding_sphere = BoundingSphere(mesh_object, radius, color, selected_atom_config)
         self.add_child(self._bounding_sphere)

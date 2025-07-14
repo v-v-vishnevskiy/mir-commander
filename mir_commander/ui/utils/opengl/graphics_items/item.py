@@ -9,27 +9,30 @@ logger = logging.getLogger("OpenGL.Item")
 
 
 class Item:
-    _id_counter = 1
+    _id_counter = 0
 
     def __init__(self, is_container: bool = False, visible: bool = True, picking_visible: bool = True, transparent: bool = False):
+        Item._id_counter += 1
+        self._id = Item._id_counter
+
         self._is_container = is_container
         self._visible = visible
-        self.picking_visible = picking_visible
         self._transparent = transparent
 
-        self._id = Item._id_counter
-        Item._id_counter += 1
-        self._picking_color = id_to_color(self._id)
+        self.picking_visible = picking_visible
+        self.picking_color = id_to_color(self._id)
 
         self.children: list[Self] = []
         self.parent: None | Self = None
 
         self._update_transform_for_children = True
+
         self._parent_transform = QMatrix4x4()
         self._transform = QMatrix4x4()  # model matrix
         self._scale = QVector3D(1.0, 1.0, 1.0)
         self._rotation = QQuaternion()
         self._translation = QVector3D(0.0, 0.0, 0.0)
+        self._transform_dirty = True
 
     def notify_parents_of_change(self):
         current = self.parent
@@ -39,6 +42,16 @@ class Item:
 
     def invalidate_cache(self):
         pass
+
+    @property
+    def transform_dirty(self) -> bool:
+        return self._transform_dirty
+
+    def invalidate_transform(self):
+        self._transform_dirty = True
+
+    def validate_transform(self):
+        self._transform_dirty = False
 
     @property
     def is_container(self) -> bool:
@@ -73,7 +86,10 @@ class Item:
         self.notify_parents_of_change()
 
     def update_parent_transform(self) -> QMatrix4x4:
-        self._parent_transform = self.parent.get_transform
+        if self.parent is not None:
+            self._parent_transform = self.parent.get_transform
+            self.invalidate_transform()
+
         for child in self.children:
             child.update_parent_transform()
 
@@ -124,16 +140,19 @@ class Item:
 
     def set_translation(self, position: QVector3D):
         self._translation = position
+
         self._update_transform()
-    
+
     def translate(self, vector: QVector3D):
         self._translation += vector
+
         self._update_transform()
 
     def set_rotation(self, rotation: QQuaternion):
         self._rotation = rotation
+
         self._update_transform()
-    
+
     def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
         pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), pitch)
         yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0, 1, 0), yaw)
@@ -141,14 +160,17 @@ class Item:
 
         rotation = pitch_quat * yaw_quat * roll_quat
         self._rotation = rotation * self._rotation
+
         self._update_transform()
 
     def set_scale(self, scale: QVector3D):
         self._scale = scale
+
         self._update_transform()
 
     def scale(self, factor: float):
         self._scale *= factor
+
         self._update_transform()
 
     def _update_transform(self):
@@ -156,6 +178,8 @@ class Item:
         self._transform.rotate(self._rotation)
         self._transform.translate(self._translation)
         self._transform.scale(self._scale)
+
+        self.invalidate_transform()
 
         if self._update_transform_for_children:
             for child in self.children:
