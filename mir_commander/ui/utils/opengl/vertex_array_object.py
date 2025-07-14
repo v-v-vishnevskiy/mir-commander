@@ -51,23 +51,6 @@ class VertexArrayObject:
         # Unbind VAO
         glBindVertexArray(0)
 
-    def update(self, vertices: np.ndarray, normals: np.ndarray):
-        """Update VBO data when mesh data changes"""
-
-        self.count = int(len(vertices) / 3)
-
-        glBindVertexArray(self.vao)
-
-        # Update vertex data
-        glBindBuffer(GL_ARRAY_BUFFER, self._vbo_vertices)
-        glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
-
-        # Update normal data
-        glBindBuffer(GL_ARRAY_BUFFER, self._vbo_normals)
-        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
-
-        glBindVertexArray(0)
-
     def __del__(self):
         """Cleanup OpenGL resources"""
         if self.vao is not None:

@@ -27,13 +27,3 @@ class MeshObject:
             return self.mesh_data.vertex_normals
         else:
             return self.mesh_data.face_normals
-
-    def set_vertices(self, vertices: np.ndarray):
-        self.mesh_data.set_vertices(vertices)
-        if self.vao is not None:
-            self.vao.update(self.mesh_data.vertices, self.normals)
-
-    def set_smooth(self, smooth: bool):
-        self._smooth = smooth
-        if self.vao is not None:
-            self.vao.update(self.mesh_data.vertices, self.normals)

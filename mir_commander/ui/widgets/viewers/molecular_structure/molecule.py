@@ -26,14 +26,14 @@ class Molecule(Item):
         self.center = QVector3D(0, 0, 0)
         self.radius = 0
 
-        self._atom_mesh_data = Sphere(stacks=Sphere.min_stacks, slices=Sphere.min_slices, radius=1.0)
-        self._bond_mesh_data = Cylinder(stacks=1, slices=Cylinder.min_slices, radius=1.0, length=1.0, caps=False)
-        self._atom_mesh_object = MeshObject(self._atom_mesh_data, self.style.current.quality.smooth)
-        self._bond_mesh_object = MeshObject(self._bond_mesh_data, self.style.current.quality.smooth)
+        self._atom_mesh_data = self._get_sphere_mesh_data()
+        self._bond_mesh_data = self._get_cylinder_mesh_data()
+        self._atom_mesh_object = MeshObject(self._atom_mesh_data, config.quality.smooth)
+        self._bond_mesh_object = MeshObject(self._bond_mesh_data, config.quality.smooth)
 
         self._atom_index_under_cursor: None | Atom = None
 
-        self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
+        self.current_geom_bond_tolerance = config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
         self.selected_atom_items: list[Atom] = []
@@ -67,18 +67,20 @@ class Molecule(Item):
         self.set_translation(-center)
 
     def apply_style(self):
-        mesh_quality = self.style.current.quality.mesh
-        self._apply_atoms_style(mesh_quality)
-        self._apply_bonds_style(mesh_quality)
+        self._apply_atoms_style()
+        self._apply_bonds_style()
 
-    def _apply_atoms_style(self, mesh_quality: int):
-        # update mesh
-        s_stacks, s_slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
-        if (s_stacks, s_slices) != (self._atom_mesh_data.stacks, self._atom_mesh_data.slices):
-            self._atom_mesh_data.generate_mesh(stacks=int(s_stacks), slices=int(s_slices), radius=self._atom_mesh_data.radius)
+    def _get_sphere_mesh_data(self) -> Sphere:
+        mesh_quality = self._config.quality.mesh
+        stacks, slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
+        return Sphere(stacks=int(stacks), slices=int(slices), radius=1.0)
 
-        self._atom_mesh_object.set_smooth(self.style.current.quality.smooth)
+    def _get_cylinder_mesh_data(self) -> Cylinder:
+        mesh_quality = self._config.quality.mesh
+        slices = Cylinder.min_slices * (mesh_quality / 2)
+        return Cylinder(stacks=1, slices=int(slices), radius=1.0, length=1.0, caps=False)
 
+    def _apply_atoms_style(self):
         # update items
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
@@ -106,19 +108,7 @@ class Molecule(Item):
 
         return radius, normalize_color(color)
 
-    def _apply_bonds_style(self, mesh_quality: int):
-        # update mesh
-        c_slices = Cylinder.min_slices * (mesh_quality / 2)
-        if c_slices != self._bond_mesh_data.slices:
-            self._bond_mesh_data.generate_mesh(
-                stacks=self._bond_mesh_data.stacks,
-                slices=int(c_slices),
-                radius=self._bond_mesh_data.radius,
-                length=self._bond_mesh_data.length,
-                caps=self._bond_mesh_data.caps,
-            )
-        self._bond_mesh_object.set_smooth(self.style.current.quality.smooth)
-
+    def _apply_bonds_style(self):
         # update items
         for bond in self.bond_items:
             bond.set_radius(self.style.current.bond.radius)
