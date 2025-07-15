@@ -2,12 +2,13 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
+from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -41,6 +42,36 @@ class Application(QApplication):
         self._error.setIcon(QMessageBox.Icon.Critical)
 
         self.apply_callbacks.add(self._set_translation)
+
+        self.opengl_fallback_mode = True
+        self.setup_opengl()
+
+    def setup_opengl(self):
+        try:
+            opengl_info = OpenGLInfo()
+            version = opengl_info.version
+        except Exception as e:
+            logger.error("Failed to get OpenGL info: %s", e)
+            version = (2, 1)
+
+        if self.config.opengl.fallback_mode is True or version < (3, 3):
+            self.opengl_fallback_mode = True
+        else:
+            self.opengl_fallback_mode = False
+
+        if self.config.opengl.fallback_mode is False and self.opengl_fallback_mode is True:
+            logger.warning("Switching to fallback OpenGL mode")
+
+        sf = QSurfaceFormat()
+        if self.config.opengl.antialiasing:
+            sf.setSamples(16)
+        else:
+            sf.setSamples(0)
+
+        if self.opengl_fallback_mode is False:
+            sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+            sf.setVersion(*version)
+        QSurfaceFormat.setDefaultFormat(sf)
 
     def fix_palette(self):
         """

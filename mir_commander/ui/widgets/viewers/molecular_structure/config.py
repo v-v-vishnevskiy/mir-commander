@@ -268,15 +268,10 @@ class Atoms(BaseModel):
     special_atoms: SpecialAtoms = SpecialAtoms()
 
 
-class Quality(BaseModel):
-    mesh: float = Field(default=8, ge=1, le=100)
-    smooth: bool = True
-
-
 class SelectedAtom(BaseModel):
     color: Literal["atom"] | Color = Color("#94FFFF")
     scale_factor: float = Field(default=1.4, ge=1.1, le=3.0)
-    opacity: float = Field(default=0.6, ge=0.01, le=0.99)
+    opacity: float = Field(default=0.3, ge=0.01, le=0.99)
 
 
 class Style(BaseModel):
@@ -285,7 +280,6 @@ class Style(BaseModel):
     background: Background = Background()
     bond: Bond = Bond()
     atoms: Atoms = Atoms()
-    quality: Quality = Quality()
     selected_atom: SelectedAtom = SelectedAtom()
     under_cursor_text_overlay: TextOverlayConfig = TextOverlayConfig(
         alignment=["center"],
@@ -321,12 +315,17 @@ class Keymap(BaseModel):
     viewer: ViewerKeymap = ViewerKeymap()
 
 
+class Quality(BaseModel):
+    mesh: float = Field(default=10, ge=1, le=100)
+    smooth: bool = True
+
+
 class MolecularStructureViewerConfig(BaseModel):
     keymap: Keymap = Keymap()
     geom_bond_tolerance: float = 0.15
-    antialiasing: bool = True
     size: tuple[int, int] = (500, 500)
     min_size: tuple[int, int] = (150, 150)
+    quality: Quality = Quality()
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[

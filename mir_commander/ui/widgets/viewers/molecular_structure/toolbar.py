@@ -57,11 +57,11 @@ class ToolBar(SubWindowToolBar[MolecularStructureViewer]):
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.widget.scene.cloak_toggle_h_atoms()
+        self.widget.scene_graph.cloak_toggle_h_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.widget.scene.select_toggle_all_atoms()
+        self.widget.scene_graph.select_toggle_all_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):

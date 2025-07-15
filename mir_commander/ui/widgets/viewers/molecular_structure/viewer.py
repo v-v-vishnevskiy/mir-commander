@@ -3,7 +3,7 @@ from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot, QPoint
+from PySide6.QtCore import Slot, QPoint, QCoreApplication
 from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
@@ -63,11 +63,9 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         super().__init__(
             parent=parent, 
             keymap=Keymap(config.keymap.viewer.model_dump()), 
-            antialiasing=config.antialiasing,
+            fallback_mode=QCoreApplication.instance().opengl_fallback_mode,
         )
         self._config = config
-        self._molecule = Molecule(config)
-        self.scene.add_item(self._molecule)
 
         self.item = item
         self._all = all
@@ -79,15 +77,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
+        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
+
+        self.update_window_title()
+
+    def post_init(self):
+        self._molecule = Molecule(self._config)
+        self.scene_graph.add_item(self._molecule)
+
         self._under_cursor_overlay = TextOverlay(
             parent=self,
             config=self._molecule.style.current.under_cursor_text_overlay,
         )
         self._under_cursor_overlay.hide()
-
-        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
-
-        self.update_window_title()
 
         self.set_background_color(normalize_color(self._molecule.style.current.background.color))
         self.set_projection_mode(self._molecule.style.current.projection.mode)
@@ -98,7 +100,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
         self.camera.reset_to_default()
-        self.camera.move_forward(-self._molecule.radius * 1.5)
+        self.camera.move_forward(-self._molecule.radius * 2.5)
 
     def toggle_atom_selection_under_cursor(self):
         if item := self.item_under_cursor():

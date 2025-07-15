@@ -1,54 +1,67 @@
 import logging
 
-from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_CULL_FACE
+from OpenGL.GL import GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glClear, glClearColor, glViewport, glEnable, glDisable, GL_BLEND, GL_DEPTH_TEST, GL_CULL_FACE, glUseProgram, glUniformMatrix4fv, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from .camera import Camera
-from .enums import PaintMode
-from .graphics_items.item import Item
-from .projection import ProjectionManager
-from .scene import Scene
-from .utils import Color4f
+from ..camera import Camera
+from ..enums import PaintMode
+from ..graphics_items.item import Item
+from ..projection import ProjectionManager
+from ..scene_graph import SceneGraph
+from ..utils import Color4f
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
-class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: Scene, camera: Camera):
+class BaseRenderer:
+    def __init__(self, projection_manager: ProjectionManager, scene: SceneGraph, camera: Camera):
         self._projection_manager = projection_manager
         self._scene = scene
         self._camera = camera
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._picking_image: None | QImage = None
         self._has_new_image = False
+        self._shaders = {}
+        self.init_shaders()
+
+    def init_shaders(self):
+        pass
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
 
-    def paint(self):
+    def paint(self, paint_mode: PaintMode):
+        opaque_items, transparent_items, picking_items = self._scene.items()
+
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-
-        items = self._scene.get_all_items()
 
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
         glDisable(GL_BLEND)
-        for item in items:
-            if item.transparent:
-                continue
-            item.paint(PaintMode.Normal)
 
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        for item in self._sort_by_depth(items):
-            if not item.transparent:
-                continue
-            item.paint(PaintMode.Normal)
+        if paint_mode == PaintMode.Picking:
+            self.paint_picking(picking_items)
+        else:
+            self.paint_opaque(opaque_items)
 
-        self._has_new_image = False
+            if transparent_items:
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                self.paint_transparent(self._sort_by_depth(transparent_items))
+
+            self._has_new_image = False
+
+    def paint_opaque(self, items: list[Item]):
+        pass
+
+    def paint_transparent(self, items: list[Item]):
+        pass
+
+    def paint_picking(self, items: list[Item]):
+        pass
 
     def _get_item_depth(self, item: Item) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * item.get_transform
@@ -128,7 +141,9 @@ class Renderer:
         bg_color = QColor.fromRgbF(*self._bg_color)
 
         glViewport(0, 0, width, height)
-        self.paint()
+
+        self.paint(PaintMode.Normal)
+
         self._bg_color = bg_color_bak
 
         fbo.release()
@@ -154,11 +169,7 @@ class Renderer:
 
         glViewport(0, 0, width, height)
 
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-        for item in self._scene.get_all_items():
-            item.paint(PaintMode.Picking)
+        self.paint(PaintMode.Picking)
 
         fbo.release()
 

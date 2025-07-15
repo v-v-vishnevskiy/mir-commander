@@ -1,8 +1,7 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh import Sphere
-from mir_commander.ui.utils.opengl.shader import ShaderProgram
+from mir_commander.ui.utils.opengl.mesh_object import MeshObject
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
@@ -12,28 +11,26 @@ from .bounding_sphere import BoundingSphere
 class Atom(MeshItem):
     def __init__(
         self,
-        mesh_data: Sphere,
+        mesh_object: MeshObject,
         index_num: int,
         atomic_num: int,
         element_symbol: str,
         position: QVector3D,
         radius: float,
         color: Color4f,
-        selected_shader: ShaderProgram,
         selected_atom_config: SelectedAtom,
     ):
-        super().__init__(mesh_data, color=color)
-        self.position = position
-        self.radius = radius
+        super().__init__(mesh_object, color=color)
+        self._radius = radius
+        self.translate(position)
+        self.set_scale(QVector3D(radius, radius, radius))
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self._related_bonds = []
-        self._cloaked = False  # if `True` do not draw this atom and its bonds. Also see `Bond.paint` method
+        self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._under_cursor = False
-        self._compute_transform()
-        self._bounding_sphere = BoundingSphere(mesh_data, radius, selected_shader, color, selected_atom_config)
+        self._bounding_sphere = BoundingSphere(mesh_object, radius, color, selected_atom_config)
         self.add_child(self._bounding_sphere)
 
     def add_related_bond(self, bond: Item):
@@ -44,6 +41,11 @@ class Atom(MeshItem):
         for bond in self._related_bonds:
             atom_1, atom_2 = bond.atoms
             bond.set_visible(bool((not atom_1.cloaked) * (not atom_2.cloaked)))
+        self.notify_parents_of_change()
+
+    @property
+    def position(self) -> QVector3D:
+        return self._translation
 
     @property
     def cloaked(self) -> bool:
@@ -53,28 +55,20 @@ class Atom(MeshItem):
     def visible(self) -> bool:
         return super().visible and not self._cloaked
 
-    def _compute_transform(self):
-        self._transform.setToIdentity()
-        self._transform.translate(self.position)
-
-        radius = self.radius
-        if self._under_cursor:
-            radius *= 1.15
-
-        self._transform.scale(radius, radius, radius)
-
     def set_under_cursor(self, value: bool):
-        if self._under_cursor != value:
-            self._under_cursor = value
-            self._compute_transform()
+        if value:
+            radius = self.radius * 1.15
+        else:
+            radius = self.radius
+        self.set_scale(QVector3D(radius, radius, radius))
+
+    @property
+    def radius(self) -> float:
+        return self._radius
 
     def set_radius(self, radius: float):
-        self.radius = radius
-        self._compute_transform()
-
-    def set_position(self, position: QVector3D):
-        self.position = position
-        self._compute_transform()
+        self._radius = radius
+        self.set_scale(QVector3D(radius, radius, radius))
 
     def set_selected_atom_config(self, config: SelectedAtom):
         self._bounding_sphere.set_config(config)
@@ -85,10 +79,12 @@ class Atom(MeshItem):
 
     def set_selected(self, value: bool):
         self._selected = value
+        self.notify_parents_of_change()
 
     def toggle_selection(self) -> bool:
         self._selected = not self._selected
+        self.notify_parents_of_change()
         return self._selected
 
     def __repr__(self) -> str:
-        return f"Atom(id={self._id}, atomic_num={self.atomic_num}, element_symbol={self.element_symbol})"
+        return f"{self.__class__.__name__}(id={self._id}, index_num={self.index_num + 1}, element_symbol={self.element_symbol})"

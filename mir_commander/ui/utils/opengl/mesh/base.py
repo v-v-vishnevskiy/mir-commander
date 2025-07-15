@@ -3,16 +3,19 @@ from PySide6.QtGui import QVector3D
 
 
 class MeshData:
-    def __init__(self, vertices: None | list[float] = None):
-        vertices = vertices or []
-        self.vertices: np.ndarray = np.array(vertices, dtype=np.float32)
+    __slots__ = ("vertices", "face_normals", "vertex_normals")
+
+    def __init__(self):
+        self.vertices: np.ndarray = np.array([], dtype=np.float32)
         self.face_normals: np.ndarray = np.array([], dtype=np.float32)
         self.vertex_normals: np.ndarray = np.array([], dtype=np.float32)
 
     def set_vertices(self, vertices: list[float]):
         self.vertices = np.array(vertices, dtype=np.float32)
+        self._compute_vertex_normals()
+        self._compute_face_normals()
 
-    def compute_vertex_normals(self):
+    def _compute_vertex_normals(self):
         vertices = self.vertices
 
         normals = []
@@ -22,7 +25,7 @@ class MeshData:
             normals.extend([norm.x(), norm.y(), norm.z()])
         self.vertex_normals = np.array(normals, dtype=np.float32)
 
-    def compute_face_normals(self):
+    def _compute_face_normals(self):
         vertices = self.vertices
 
         normals = []

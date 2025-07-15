@@ -35,8 +35,14 @@ class ProjectWindowConfig(BaseModel):
     widgets: Widgets = Widgets()
 
 
+class OpenGLConfig(BaseModel):
+    fallback_mode: bool = False
+    antialiasing: bool = True
+
+
 class AppConfig(BaseConfig):
     language: Literal["system", "en", "ru"] = "system"
+    opengl: OpenGLConfig = OpenGLConfig()
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
 

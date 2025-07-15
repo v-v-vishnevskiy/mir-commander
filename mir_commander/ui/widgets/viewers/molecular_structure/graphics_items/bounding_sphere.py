@@ -1,7 +1,6 @@
 from mir_commander.ui.utils.opengl.graphics_items import MeshItem
 
 from mir_commander.ui.utils.opengl.mesh import Sphere
-from mir_commander.ui.utils.opengl.shader import ShaderProgram
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ..config import SelectedAtom
@@ -12,14 +11,13 @@ class BoundingSphere(MeshItem):
         self,
         mesh_data: Sphere,
         radius: float,
-        shader: ShaderProgram,
         atom_color: Color4f,
         config: SelectedAtom,
     ):
         self.atom_color = atom_color
         super().__init__(mesh_data, color=self._compute_color(config))
         self.picking_visible = False
-        self.transparent = True
+        self.set_transparent(True)
 
         self.config = config
         self._compute_transform()

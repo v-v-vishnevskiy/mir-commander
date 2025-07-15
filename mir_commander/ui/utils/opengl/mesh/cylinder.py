@@ -18,8 +18,8 @@ class Cylinder(MeshData):
         self.caps = caps
 
         self.generate_mesh(stacks, slices, radius, length, caps)
-        self.compute_vertex_normals()
-        self.compute_face_normals()
+        self._compute_vertex_normals()
+        self._compute_face_normals()
 
     def generate_mesh(self, stacks: int, slices: int, radius: float = 1.0, length: float = 1.0, caps: bool = True):
         self.stacks = max(self.min_stacks, stacks)
