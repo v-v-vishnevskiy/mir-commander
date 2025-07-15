@@ -32,15 +32,22 @@ class PerspectiveProjection(AbstractProjection):
         self.matrix.setToIdentity()
         self.matrix.perspective(self._fov, width / height, self._near_plane, self._far_plane)
 
+    def get_fov(self):
+        return self._fov
+
     def set_fov(self, value: float):
         self._fov = min(90.0, max(35.0, value))
 
+    def set_near_far_plane(self, near_plane: float, far_plane: float):
+        self._near_plane = near_plane
+        self._far_plane = far_plane
+
 
 class OrthographicProjection(AbstractProjection):
-    def __init__(self, view_bounds: float = 5.4, depth_factor: float = 10.0):
+    def __init__(self, view_bounds: float = 10.0, depth_factor: float = 10.0):
         super().__init__()
         self._view_bounds = view_bounds
-        self._orthographic_depth_factor = max(500.0, depth_factor)
+        self._orthographic_depth_factor = depth_factor
 
     def setup_projection(self, width: int, height: int):
         """Setup orthographic projection matrix with proper aspect ratio handling."""
@@ -64,6 +71,9 @@ class OrthographicProjection(AbstractProjection):
 
         self.matrix.setToIdentity()
         self.matrix.ortho(left, right, bottom, top, -depth_range, depth_range)
+
+    def set_view_bounds(self, value: float):
+        self._view_bounds = value
 
     def set_depth_factor(self, value: float):
         self._orthographic_depth_factor = value
@@ -95,7 +105,7 @@ class ProjectionManager:
         if self._projection_mode == mode:
             return
         self._projection_mode = mode
-        logger.debug("Setting projection mode to %s", mode.name)
+        logger.info("Setting projection mode to %s", mode.name)
 
     def toggle_projection_mode(self):
         if self._projection_mode == ProjectionMode.Orthographic:

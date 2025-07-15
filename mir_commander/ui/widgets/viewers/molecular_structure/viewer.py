@@ -4,7 +4,7 @@ from typing import Optional
 
 import OpenGL.error
 from PySide6.QtCore import Slot, QPoint, QCoreApplication
-from PySide6.QtGui import QStandardItem
+from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
@@ -85,6 +85,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._molecule = Molecule(self._config)
         self.scene_graph.add_item(self._molecule)
 
+        self.build_molecule()
+
         self._under_cursor_overlay = TextOverlay(
             parent=self,
             config=self._molecule.style.current.under_cursor_text_overlay,
@@ -92,15 +94,20 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._under_cursor_overlay.hide()
 
         self.set_background_color(normalize_color(self._molecule.style.current.background.color))
-        self.set_projection_mode(self._molecule.style.current.projection.mode)
-        self.set_perspective_projection_fov(self._molecule.style.current.projection.perspective.fov)
 
-        self.build_molecule()
+        self.projection_manager.orthographic_projection.set_view_bounds(self._molecule.radius + self._molecule.radius*0.10)
+        current_fov = self._molecule.style.current.projection.perspective.fov
+        self.set_perspective_projection_fov(current_fov)
+        fov_factor = current_fov/45.0
+        self.projection_manager.perspective_projection.set_near_far_plane(self._molecule.radius/fov_factor, 4*self._molecule.radius/fov_factor)
+        self.set_projection_mode(self._molecule.style.current.projection.mode)
+
+        self.camera.reset_to_default()
+        self.camera.set_position(QVector3D(0, 0, 3*self._molecule.radius/fov_factor))
+
 
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
-        self.camera.reset_to_default()
-        self.camera.move_forward(-self._molecule.radius * 2.5)
 
     def toggle_atom_selection_under_cursor(self):
         if item := self.item_under_cursor():

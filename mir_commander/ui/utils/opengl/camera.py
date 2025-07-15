@@ -166,7 +166,7 @@ class Camera:
     def reset_to_default(self):
         """Reset camera to default position and orientation."""
         self.look_at(
-            position=QVector3D(0.0, 0.0, 5.0),
+            position=QVector3D(0.0, 0.0, 1.0),
             target=QVector3D(0.0, 0.0, 0.0),
             up_vector=QVector3D(0.0, 1.0, 0.0)
         )
