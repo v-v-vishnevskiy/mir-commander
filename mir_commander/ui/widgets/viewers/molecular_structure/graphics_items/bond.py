@@ -1,52 +1,38 @@
 from PySide6.QtGui import QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh_object import MeshObject
+from mir_commander.ui.utils.opengl.resource_manager import SceneNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
 
 
-class BondItem(MeshItem):
+class BondItem(SceneNode):
     def __init__(
         self,
-        mesh_object: MeshObject,
+        resource_name: str,
         position: QVector3D,
         direction: QVector3D,
         radius: float,
         length: float,
         color: Color4f,
     ):
-        super().__init__(mesh_object, color=color)
-        self._position = position
-        self._direction = direction
-        self._radius = radius
-        self._length = length
-
-        self._compute_transform()
-
-    def _compute_transform(self):
-        self._transform.setToIdentity()
-        self._transform.translate(self._position)
-        self._transform.rotate(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), self._direction))
-        self._transform.scale(self._radius, self._radius, self._length)
+        super().__init__(picking_visible=False)
+        self.set_mesh(resource_name)
+        self.set_vbo(resource_name)
+        self.set_color(color)
+        self.set_shader("default")
+        self.set_transformation(position, direction, radius, length)
 
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
-        self._position = position
-        self._direction = direction
-        self._radius = radius
-        self._length = length
-        self._compute_transform()
-
-    def set_radius(self, radius: float):
-        self._radius = radius
-        self._compute_transform()
+        self.translate(position)
+        self.set_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), direction))
+        self.set_scale(QVector3D(radius, radius, length))
 
 
-class Bond(Item):
+class Bond(SceneNode):
     def __init__(
         self,
-        c_mesh_object: MeshObject,
+        resource_name: str,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
@@ -55,7 +41,7 @@ class Bond(Item):
     ):
         super().__init__(is_container=True, picking_visible=False)
 
-        self._c_mesh_object = c_mesh_object
+        self._resource_name = resource_name
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
@@ -98,19 +84,19 @@ class Bond(Item):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            self.add_child(BondItem(self._c_mesh_object, position, direction, self._radius, length, color))
+            self.add_node(BondItem(self._resource_name, position, direction, self._radius, length, color))
 
     def update_bonds(self):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
-        for i, bond in enumerate(self.children):
+        for i, bond in enumerate(self._nodes):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
 
     def set_radius(self, radius: float):
         self._radius = radius
-        for bond in self.children:
+        for bond in self._nodes:
             bond.set_radius(radius)
 
     def set_atoms_color(self, value: bool):
@@ -124,13 +110,8 @@ class Bond(Item):
             self._atoms_color = False
             self._add_bonds()
         else:
-            for bond in self.children:
+            for bond in self._nodes:
                 bond.set_color(color)
-
-    def set_smooth(self, smooth: bool):
-        self._smooth = smooth
-        for item in self.children:
-            item.set_smooth(smooth)
 
     def __repr__(self) -> str:
         return f"Bond(id={self._id}, atom_1={self._atom_1}, atom_2={self._atom_2})"

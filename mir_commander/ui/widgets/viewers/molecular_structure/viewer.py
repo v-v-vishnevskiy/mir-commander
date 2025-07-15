@@ -1,9 +1,10 @@
+import logging
 import math
 from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot, QPoint, QCoreApplication
+from PySide6.QtCore import Slot, QPoint
 from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
@@ -23,6 +24,8 @@ from .config import MolecularStructureViewerConfig
 from .graphics_items import Atom
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
+
+logger = logging.getLogger("Viewers.MolecularStructure")
 
 
 class InteratomicDistance:
@@ -60,11 +63,7 @@ class InteratomicOutOfPlane:
 
 class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
-        super().__init__(
-            parent=parent, 
-            keymap=Keymap(config.keymap.viewer.model_dump()), 
-            fallback_mode=QCoreApplication.instance().opengl_fallback_mode,
-        )
+        super().__init__(parent=parent, keymap=Keymap(config.keymap.viewer.model_dump()))
         self._config = config
 
         self.item = item
@@ -82,10 +81,14 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update_window_title()
 
     def post_init(self):
-        self._molecule = Molecule(self._config)
-        self.scene_graph.add_item(self._molecule)
+        super().post_init()
+
+        self._molecule = Molecule(self._config, self.resource_manager)
+        self.resource_manager.current_scene.add_node(self._molecule)
 
         self.build_molecule()
+
+        print(self.resource_manager)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,
@@ -102,9 +105,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.projection_manager.perspective_projection.set_near_far_plane(self._molecule.radius/fov_factor, 4*self._molecule.radius/fov_factor)
         self.set_projection_mode(self._molecule.style.current.projection.mode)
 
-        self.camera.reset_to_default()
-        self.camera.set_position(QVector3D(0, 0, 3*self._molecule.radius/fov_factor))
-
+        self.resource_manager.current_camera.reset_to_default()
+        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3*self._molecule.radius/fov_factor))
 
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
@@ -120,8 +122,10 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def new_cursor_position(self, x: int, y: int):
         item = self.item_under_cursor()
+
         if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
             self.update()
+
         if isinstance(item, Atom):
             self._under_cursor_overlay.set_text(f"Atom: {item.element_symbol}{item.index_num + 1}")
             size = self._under_cursor_overlay.size()

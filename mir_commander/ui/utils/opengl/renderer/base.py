@@ -5,35 +5,27 @@ from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from ..camera import Camera
 from ..enums import PaintMode
-from ..graphics_items.item import Item
 from ..projection import ProjectionManager
-from ..scene_graph import SceneGraph
+from ..resource_manager import ResourceManager, SceneNode
 from ..utils import Color4f
 
 logger = logging.getLogger("OpenGL.Renderer")
 
 
 class BaseRenderer:
-    def __init__(self, projection_manager: ProjectionManager, scene: SceneGraph, camera: Camera):
+    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager):
         self._projection_manager = projection_manager
-        self._scene = scene
-        self._camera = camera
+        self._resource_manager = resource_manager
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._picking_image: None | QImage = None
         self._has_new_image = False
-        self._shaders = {}
-        self.init_shaders()
-
-    def init_shaders(self):
-        pass
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
-        opaque_items, transparent_items, picking_items = self._scene.items()
+        opaque_nodes, transparent_nodes, picking_nodes = self._resource_manager.current_scene.nodes()
 
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -43,32 +35,32 @@ class BaseRenderer:
         glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
-            self.paint_picking(picking_items)
+            self.paint_picking(picking_nodes)
         else:
-            self.paint_opaque(opaque_items)
+            self.paint_opaque(opaque_nodes)
 
-            if transparent_items:
+            if transparent_nodes:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self.paint_transparent(self._sort_by_depth(transparent_items))
+                self.paint_transparent(self._sort_by_depth(transparent_nodes))
 
             self._has_new_image = False
 
-    def paint_opaque(self, items: list[Item]):
+    def paint_opaque(self, nodes: list[SceneNode]):
         pass
 
-    def paint_transparent(self, items: list[Item]):
+    def paint_transparent(self, nodes: list[SceneNode]):
         pass
 
-    def paint_picking(self, items: list[Item]):
+    def paint_picking(self, nodes: list[SceneNode]):
         pass
 
-    def _get_item_depth(self, item: Item) -> float:
-        point = QVector3D(0.0, 0.0, 0.0) * item.get_transform
-        return self._camera.position.distanceToPoint(point)
+    def _get_node_depth(self, node: SceneNode) -> float:
+        point = QVector3D(0.0, 0.0, 0.0) * node.transform
+        return self._resource_manager.current_camera.get_distance_to_point(point)
 
-    def _sort_by_depth(self, items: list[Item]) -> list[Item]:
-        return sorted(items, key=self._get_item_depth, reverse=True)
+    def _sort_by_depth(self, nodes: list[SceneNode]) -> list[SceneNode]:
+        return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
         # Need this hack with the fake 1x1 image to take into account the format of our real image
@@ -169,7 +161,12 @@ class BaseRenderer:
 
         glViewport(0, 0, width, height)
 
+        bg_color_bak = self._bg_color
+        self._bg_color = (0.0, 0.0, 0.0, 1.0)
+
         self.paint(PaintMode.Picking)
+
+        self._bg_color = bg_color_bak
 
         fbo.release()
 

@@ -1,6 +1,8 @@
 from ctypes import c_void_p
+
+import numpy as np
 from pydantic_extra_types.color import Color
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QVector3D
 
 
 Color4f = tuple[float, float, float, float]
@@ -36,3 +38,25 @@ def color_to_id(color: QColor) -> int:
     g = int(color.green())
     b = int(color.blue())
     return b | (g << 8) | (r << 16)
+
+
+def compute_vertex_normals(vertices: np.ndarray) -> np.ndarray:
+    normals = []
+    for i in range(0, len(vertices), 3):
+        norm = QVector3D(*vertices[i : i + 3])
+        norm.normalize()
+        normals.extend([norm.x(), norm.y(), norm.z()])
+    return np.array(normals, dtype=np.float32)
+
+
+def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
+    normals = []
+    for i in range(0, len(vertices), 9):
+        norm = QVector3D().normal(
+            QVector3D(*vertices[i : i + 3]),
+            QVector3D(*vertices[i + 3 : i + 6]),
+            QVector3D(*vertices[i + 6 : i + 9]),
+        )
+        norm = [norm.x(), norm.y(), norm.z()] * 3
+        normals.extend(norm)
+    return np.array(normals, dtype=np.float32)

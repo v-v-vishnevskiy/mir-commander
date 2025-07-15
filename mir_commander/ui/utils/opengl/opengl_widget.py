@@ -1,25 +1,28 @@
 import logging
+import traceback
+
 from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport, glMatrixMode, glLoadMatrixf, GL_PROJECTION, GL_MODELVIEW
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QCoreApplication, QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
+from . import shaders
 from .action_handler import ActionHandler
-from .camera import Camera
-from .graphics_items.item import Item
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
 from .keymap import Keymap
 from .projection import ProjectionManager
 from .renderer import FallbackRenderer, ModernRenderer
-from .scene_graph import SceneGraph
+from .resource_manager import Camera, FragmentShader, ResourceManager, Scene, SceneNode, ShaderProgram, VertexShader
 from .utils import Color4f, color_to_id
+
+from time import monotonic
 
 logger = logging.getLogger("OpenGL.Widget")
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, parent: QWidget, keymap: None | Keymap = None, fallback_mode: bool = False):
+    def __init__(self, parent: QWidget, keymap: None | Keymap = None):
         super().__init__(parent)
 
         self._cursor_pos: QPoint = QPoint(0, 0)
@@ -27,18 +30,19 @@ class OpenGLWidget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
-        self._fallback_mode = fallback_mode
+        self._fallback_mode = QCoreApplication.instance().opengl_fallback_mode
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
-        self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.scene_graph = SceneGraph()
+        self.resource_manager = ResourceManager(fallback_mode=self._fallback_mode)
+        self.resource_manager.add_camera(Camera("main"))
+        self.resource_manager.add_scene(Scene("main"))
 
-        if fallback_mode:
-            self.renderer = FallbackRenderer(self.projection_manager, self.scene_graph, self.camera)
+        if self._fallback_mode:
+            self.renderer = FallbackRenderer(self.projection_manager, self.resource_manager)
         else:
-            self.renderer = ModernRenderer(self.projection_manager, self.scene_graph, self.camera)
+            self.renderer = ModernRenderer(self.projection_manager, self.resource_manager)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -46,10 +50,53 @@ class OpenGLWidget(QOpenGLWidget):
         self._init_actions()
 
     def post_init(self):
-        pass
+        if self._fallback_mode:
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "default",
+                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
+                    FragmentShader(shaders.fragment_fallback.BLINN_PHONG)
+                )
+            )
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "transparent",
+                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
+                    FragmentShader(shaders.fragment_fallback.FLAT_COLOR)
+                )
+            )
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "picking",
+                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
+                    FragmentShader(shaders.fragment_fallback.FLAT_COLOR)
+                )
+            )
+        else:
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "default",
+                    VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
+                    FragmentShader(shaders.fragment.BLINN_PHONG)
+                )
+            )
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "transparent",
+                    VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                    FragmentShader(shaders.fragment.FLAT_COLOR)
+                )
+            )
+            self.resource_manager.add_shader(
+                ShaderProgram(
+                    "picking",
+                    VertexShader(shaders.vertex.COMPUTE_POSITION),
+                    FragmentShader(shaders.fragment.FLAT_COLOR)
+                )
+            )
 
     def clear(self):
-        self.scene_graph.clear()
+        self.resource_manager.current_scene.clear()
 
     def _init_actions(self):
         self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
@@ -75,7 +122,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.projection_manager.build_projections(self.size().width(), self.size().height())
         self._setup_projection(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
-        self.post_init()
+
+        try:
+            self.post_init()
+        except Exception:
+            print(traceback.format_exc())
 
     def resize(self, w: int, h: int):
         parent = self.parent()
@@ -91,7 +142,10 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def paintGL(self):
+        start = monotonic()
         self.renderer.paint(PaintMode.Normal)
+        end = monotonic()
+        print(f"paintGL: {end - start} seconds")
 
     def setWindowIcon(self, icon: QIcon):
         parent = self.parent()
@@ -160,11 +214,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.scene_graph.set_translation(point)
+        self.resource_manager.current_scene.transform.set_translation(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):
-        self.scene_graph.translate(vector)
+        self.resource_manager.current_scene.transform.translate(vector)
         self.update()
 
     def set_background_color(self, color: Color4f):
@@ -172,11 +226,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float = 0.0):
-        self.scene_graph.rotate(pitch, yaw, roll)
+        self.resource_manager.current_scene.transform.rotate(pitch, yaw, roll)
         self.update()
 
     def scale_scene(self, factor: float):
-        self.scene_graph.scale(factor)
+        self.resource_manager.current_scene.transform.scale(factor)
         self.update()
 
     def new_cursor_position(self, x: int, y: int):
@@ -186,7 +240,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> None | Item:
+    def item_under_cursor(self) -> None | SceneNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 
@@ -196,5 +250,4 @@ class OpenGLWidget(QOpenGLWidget):
         color = image.pixelColor(x, y)
         obj_id = color_to_id(color)
 
-        return self.scene_graph.find_item_by_id(obj_id)
-
+        return self.resource_manager.current_scene.find_node_by_id(obj_id)

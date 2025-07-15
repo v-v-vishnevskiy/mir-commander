@@ -1,13 +1,13 @@
+import logging
 import math
 
 import numpy as np
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl.graphics_items.item import Item
-from mir_commander.ui.utils.opengl.mesh import Cylinder, Sphere
-from mir_commander.ui.utils.opengl.mesh_object import MeshObject
-from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
+from mir_commander.ui.utils.opengl.models import cylinder, sphere
+from mir_commander.ui.utils.opengl.resource_manager import Mesh, ResourceManager, SceneNode, VertexArrayObject
+from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
 
@@ -16,20 +16,23 @@ from .graphics_items.atom import Atom
 from .graphics_items.bond import Bond
 from .style import Style
 
+logger = logging.getLogger("MoleculeStructure.Molecule")
 
-class Molecule(Item):
-    def __init__(self, config: MolecularStructureViewerConfig):
-        super().__init__(is_container=True, picking_visible=False)
+
+class Molecule(SceneNode):
+    def __init__(
+        self,
+        config: MolecularStructureViewerConfig,
+        resource_manager: ResourceManager,
+    ):
+        super().__init__(is_container=True)
+
+        self._resource_manager = resource_manager
 
         self._config = config
         self.style = Style(config)
         self.center = QVector3D(0, 0, 0)
         self.radius = 0
-
-        self._atom_mesh_data = self._get_sphere_mesh_data()
-        self._bond_mesh_data = self._get_cylinder_mesh_data()
-        self._atom_mesh_object = MeshObject(self._atom_mesh_data, config.quality.smooth)
-        self._bond_mesh_object = MeshObject(self._bond_mesh_data, config.quality.smooth)
 
         self._atom_index_under_cursor: None | Atom = None
 
@@ -39,6 +42,59 @@ class Molecule(Item):
         self.selected_atom_items: list[Atom] = []
 
         self.apply_style()
+
+        self._sphere_resource_name = "sphere"
+        self._cylinder_resource_name = "cylinder"
+
+        self.init_resources()
+
+    def init_resources(self):
+        logger.debug("Initializing resources")
+
+        atom_mesh = self._get_atom_mesh()
+        bond_mesh = self._get_bond_mesh()
+        self._resource_manager.add_mesh(atom_mesh)
+        self._resource_manager.add_mesh(bond_mesh)
+
+        if self._resource_manager.fallback_mode is False:
+            atom_vao = self._get_atom_vao(atom_mesh)
+            bond_vao = self._get_bond_vao(bond_mesh)
+            self._resource_manager.add_vertex_array_object(atom_vao)
+            self._resource_manager.add_vertex_array_object(bond_vao)
+
+        logger.debug("Resources initialized")
+
+    def _get_atom_mesh(self) -> Mesh:
+        logger.debug("Getting atom mesh data")
+        mesh_quality = self._config.quality.mesh
+        stacks, slices = sphere.min_stacks * mesh_quality, sphere.min_slices * mesh_quality
+        tmp_vertices = sphere.get_vertices(stacks=int(stacks), slices=int(slices), radius=1.0)
+        faces = sphere.get_faces(stacks=int(stacks), slices=int(slices))
+        vertices = sphere.unwind_vertices(tmp_vertices, faces)
+        if self._config.quality.smooth:
+            normals = compute_vertex_normals(vertices)
+        else:
+            normals = compute_face_normals(vertices)
+        return Mesh(self._sphere_resource_name, vertices, normals)
+
+    def _get_bond_mesh(self) -> Mesh:
+        logger.debug("Getting bond mesh data")
+        mesh_quality = self._config.quality.mesh
+        slices = cylinder.min_slices * (mesh_quality / 2)
+        tmp_vertices = cylinder.get_vertices(stacks=1, slices=int(slices), radius=1.0, length=1.0, caps=False)
+        faces = cylinder.get_faces(stacks=1, slices=int(slices), caps=False)
+        vertices = cylinder.unwind_vertices(tmp_vertices, faces)
+        if self._config.quality.smooth:
+            normals = compute_vertex_normals(vertices)
+        else:
+            normals = compute_face_normals(vertices)
+        return Mesh(self._cylinder_resource_name, vertices, normals)
+
+    def _get_atom_vao(self, mesh: Mesh) -> VertexArrayObject:
+        return VertexArrayObject(self._sphere_resource_name, mesh.vertices, mesh.normals)
+
+    def _get_bond_vao(self, mesh: Mesh) -> VertexArrayObject:
+        return VertexArrayObject(self._cylinder_resource_name, mesh.vertices, mesh.normals)
 
     def build(self, atomic_coordinates: AtomicCoordinates):
         """
@@ -70,16 +126,6 @@ class Molecule(Item):
     def apply_style(self):
         self._apply_atoms_style()
         self._apply_bonds_style()
-
-    def _get_sphere_mesh_data(self) -> Sphere:
-        mesh_quality = self._config.quality.mesh
-        stacks, slices = Sphere.min_stacks * mesh_quality, Sphere.min_slices * mesh_quality
-        return Sphere(stacks=int(stacks), slices=int(slices), radius=1.0)
-
-    def _get_cylinder_mesh_data(self) -> Cylinder:
-        mesh_quality = self._config.quality.mesh
-        slices = Cylinder.min_slices * (mesh_quality / 2)
-        return Cylinder(stacks=1, slices=int(slices), radius=1.0, length=1.0, caps=False)
 
     def _apply_atoms_style(self):
         # update items
@@ -122,7 +168,7 @@ class Molecule(Item):
     def clear(self):
         self.atom_items.clear()
         self.bond_items.clear()
-        super().clear()
+        self.clear()
 
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
         for i in range(len(atomic_coordinates.atomic_num)):
@@ -142,7 +188,7 @@ class Molecule(Item):
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
         item = Atom(
-            self._atom_mesh_object,
+            self._sphere_resource_name,
             index_num,
             atomic_num,
             atomic_number_to_symbol(atomic_num),
@@ -151,7 +197,7 @@ class Molecule(Item):
             color,
             selected_atom_config=self.style.current.selected_atom,
         )
-        self.add_child(item)
+        self.add_node(item)
         self.atom_items.append(item)
 
         return item
@@ -164,25 +210,25 @@ class Molecule(Item):
             color = normalize_color(self.style.current.bond.color)
 
         item = Bond(
-            self._bond_mesh_object,
+            self._cylinder_resource_name,
             atom_1,
             atom_2,
             self.style.current.bond.radius,
             atoms_color,
             color,
         )
-        self.add_child(item)
+        self.add_node(item)
         self.bond_items.append(item)
 
         return item
 
     def remove_bond(self, index: int):
-        self.remove_child(self.bond_items[index])
+        self.remove_node(self.bond_items[index])
         self.bond_items.pop(index)
 
     def remove_bond_all(self):
         for bond in self.bond_items:
-            self.remove_child(bond)
+            self.remove_node(bond)
         self.bond_items.clear()
 
     def atom(self, index: int) -> Atom:

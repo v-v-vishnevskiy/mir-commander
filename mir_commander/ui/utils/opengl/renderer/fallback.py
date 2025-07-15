@@ -1,62 +1,76 @@
 from collections import defaultdict
 
+from PySide6.QtGui import QMatrix4x4
+
 from OpenGL.GL import glLoadMatrixf, glUseProgram, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, glVertexPointer, glNormalPointer, glColor4f, glDrawArrays, glEnableClientState, glDisableClientState, GL_FLOAT, GL_TRIANGLES
 
-from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, VertexShader
-from mir_commander.ui.utils.opengl.shaders import fragment_fallback, vertex_fallback
-
-from ..graphics_items.item import Item
 from ..enums import PaintMode
+from ..resource_manager import SceneNode
 
 from .base import BaseRenderer
 
 
 class FallbackRenderer(BaseRenderer):
-    def init_shaders(self):
-        self._shaders["default"] = ShaderProgram(
-            VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.BLINN_PHONG)
-        )
-        self._shaders["transparent"] = ShaderProgram(
-            VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.FLAT_COLOR)
-        )
-        self._shaders["picking"] = ShaderProgram(
-            VertexShader(vertex_fallback.COMPUTE_POSITION), FragmentShader(fragment_fallback.FLAT_COLOR)
-        )
+    def paint_opaque(self, nodes: list[SceneNode]):
+        self._paint_normal(nodes)
 
-    def paint_opaque(self, items: list[Item]):
-        self._paint(self._shaders["default"], items, PaintMode.Normal)
+    def paint_transparent(self, nodes: list[SceneNode]):
+        self._paint_normal(nodes)
 
-    def paint_transparent(self, items: list[Item]):
-        self._paint(self._shaders["transparent"], items, PaintMode.Normal)
+    def paint_picking(self, nodes: list[SceneNode]):
+        self._paint_picking(nodes)
 
-    def paint_picking(self, items: list[Item]):
-        self._paint(self._shaders["picking"], items, PaintMode.Picking)
+    def _paint_normal(self, nodes: list[SceneNode]):
+        transform_matrix = self._get_transform_matrix()
 
-    def _paint(self, shader: ShaderProgram, items: list[Item], paint_mode: PaintMode):
+        nodes_by_group = defaultdict(list)
+        for node in nodes:
+            nodes_by_group[(node.mesh, node.shader)].append(node)
+
+        for group, nodes in nodes_by_group.items():
+            mesh_name, shader_name = group
+            mesh = self._resource_manager.get_mesh(mesh_name)
+            shader = self._resource_manager.get_shader(shader_name)
+            glUseProgram(shader.program)
+            self._paint_nodes(nodes, transform_matrix, mesh.vertices, mesh.normals, PaintMode.Normal)
+
+    def _paint_picking(self, nodes: list[SceneNode]):
+        shader = self._resource_manager.get_shader("picking")
         glUseProgram(shader.program)
 
-        items_by_mesh_id = defaultdict(list)
-        for item in items:
-            items_by_mesh_id[item.mesh_id].append(item)
+        transform_matrix = self._get_transform_matrix()
 
-        for items in items_by_mesh_id.values():
-            glEnableClientState(GL_VERTEX_ARRAY)
-            glVertexPointer(3, GL_FLOAT, 0, items[0]._mesh_data.vertices)
+        nodes_by_mesh_name = defaultdict(list)
+        for node in nodes:
+            nodes_by_mesh_name[node.mesh].append(node)
 
-            glEnableClientState(GL_NORMAL_ARRAY)
-            glNormalPointer(GL_FLOAT, 0, items[0]._mesh_object.normals)
+        for mesh_name, nodes in nodes_by_mesh_name.items():
+            mesh = self._resource_manager.get_mesh(mesh_name)
+            self._paint_nodes(nodes, transform_matrix, mesh.vertices, mesh.normals, PaintMode.Picking)
 
-            count = int(len(items[0]._mesh_data.vertices) / 3)
+    def _get_transform_matrix(self) -> QMatrix4x4:
+        view_matrix = self._resource_manager.current_camera.matrix
+        scene_matrix = self._resource_manager.current_scene.transform.matrix
+        return view_matrix * scene_matrix
 
-            for item in items:
-                glLoadMatrixf((self._camera.view_matrix * self._scene.get_transform * item.get_transform).data())
+    def _paint_nodes(self, nodes: list[SceneNode], transform_matrix: QMatrix4x4, vertices: list[float], normals: list[float], paint_mode: PaintMode):
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glVertexPointer(3, GL_FLOAT, 0, vertices)
 
-                if paint_mode == PaintMode.Picking:
-                    glColor4f(*item.picking_color)
-                else:
-                    glColor4f(*item.color)
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glNormalPointer(GL_FLOAT, 0, normals)
 
-                glDrawArrays(GL_TRIANGLES, 0, count)
+        count = int(len(vertices) / 3)
 
-            glDisableClientState(GL_NORMAL_ARRAY)
-            glDisableClientState(GL_VERTEX_ARRAY)
+        for node in nodes:
+            glLoadMatrixf((transform_matrix * node.transform).data())
+
+            if paint_mode == PaintMode.Picking:
+                glColor4f(*node.picking_color)
+            else:
+                glColor4f(*node.color)
+
+            glDrawArrays(GL_TRIANGLES, 0, count)
+
+        glDisableClientState(GL_NORMAL_ARRAY)
+        glDisableClientState(GL_VERTEX_ARRAY)
