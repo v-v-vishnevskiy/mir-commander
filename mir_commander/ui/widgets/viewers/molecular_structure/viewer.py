@@ -63,7 +63,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         super().__init__(
             parent=parent, 
             keymap=Keymap(config.keymap.viewer.model_dump()), 
-            fallback_mode=QCoreApplication.instance().config.opengl.fallback_mode,
+            fallback_mode=QCoreApplication.instance().opengl_fallback_mode,
         )
         self._config = config
 
