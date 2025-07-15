@@ -45,6 +45,12 @@ class Molecule(Item):
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
 
+        center = QVector3D(
+            np.sum(atomic_coordinates.x) / len(atomic_coordinates.x),
+            np.sum(atomic_coordinates.y) / len(atomic_coordinates.y),
+            np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
+        )
+
         self.radius = 0
 
         # add atoms
@@ -52,18 +58,13 @@ class Molecule(Item):
             position = QVector3D(atomic_coordinates.x[i], atomic_coordinates.y[i], atomic_coordinates.z[i])
             atom = self.add_atom(i, atomic_num, position)
 
-            d = position.length() + atom.radius
+            d = position.distanceToPoint(center) + atom.radius
             if self.radius < d:
                 self.radius = d
 
         # add bonds
         self.build_bonds(atomic_coordinates, self.current_geom_bond_tolerance)
 
-        center = QVector3D(
-            np.sum(atomic_coordinates.x) / len(atomic_coordinates.x), 
-            np.sum(atomic_coordinates.y) / len(atomic_coordinates.y), 
-            np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
-        )
         self.set_translation(-center)
 
     def apply_style(self):
