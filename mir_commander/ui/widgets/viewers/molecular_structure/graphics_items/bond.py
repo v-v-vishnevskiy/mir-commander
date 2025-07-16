@@ -18,7 +18,7 @@ class BondItem(SceneNode):
     ):
         super().__init__(picking_visible=False)
         self.set_mesh(resource_name)
-        self.set_vbo(resource_name)
+        self.set_vao(resource_name)
         self.set_color(color)
         self.set_shader("default")
         self.set_transformation(position, direction, radius, length)

@@ -22,7 +22,7 @@ logger = logging.getLogger("ResourceManager.VertexArrayObject")
 
 
 class VertexArrayObject(Resource):
-    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals")
+    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_triangles_count")
 
     def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray):
         super().__init__(name)
@@ -30,8 +30,13 @@ class VertexArrayObject(Resource):
         self._vao = None
         self._vbo_vertices = None
         self._vbo_normals = None
+        self._triangles_count = int(len(vertices) / 3)
 
         self._setup_buffers(vertices, normals)
+
+    @property
+    def triangles_count(self) -> int:
+        return self._triangles_count
 
     def bind(self):
         glBindVertexArray(self._vao)

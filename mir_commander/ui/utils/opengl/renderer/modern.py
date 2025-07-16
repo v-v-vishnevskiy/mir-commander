@@ -3,128 +3,132 @@ import numpy as np
 import ctypes
 from collections import defaultdict
 
-from OpenGL.GL import glUseProgram, glUniformMatrix4fv, glBindVertexArray, glUniform4f, glBindBuffer, glBufferData, glDrawArraysInstanced, GL_ARRAY_BUFFER, GL_TRIANGLES, GL_STATIC_DRAW, glGenBuffers, glDrawArrays, glEnableVertexAttribArray, glVertexAttribPointer, glVertexAttribDivisor, GL_FLOAT, glDeleteBuffers
+from OpenGL.GL import (
+    glUseProgram, 
+    glUniformMatrix4fv, 
+    glUniform4f, 
+    glBindBuffer, 
+    glBufferData, 
+    glDrawArraysInstanced, 
+    GL_ARRAY_BUFFER, 
+    GL_TRIANGLES, 
+    GL_STATIC_DRAW, 
+    glGenBuffers, 
+    glDrawArrays, 
+    glEnableVertexAttribArray, 
+    glVertexAttribPointer, 
+    glVertexAttribDivisor, 
+    GL_FLOAT, 
+    glDeleteBuffers,
+)
 
-from mir_commander.ui.utils.opengl.shader import FragmentShader, ShaderProgram, UniformLocations, VertexShader
-from mir_commander.ui.utils.opengl.shaders import fragment, vertex
+from mir_commander.ui.utils.opengl.shader import UniformLocations
 
-from ..graphics_items.item import Item
 from ..projection import ProjectionManager
-from ..scene_graph import SceneGraph
-from ..camera import Camera
+from ..resource_manager import ResourceManager, SceneNode
+from ..utils import Color4f
 
 from .base import BaseRenderer
 
-logger = logging.getLogger("OpenGL.Renderer")
+logger = logging.getLogger("OpenGL.ModernRenderer")
 
 
 class ModernRenderer(BaseRenderer):
-    def __init__(self, projection_manager: ProjectionManager, scene: SceneGraph, camera: Camera):
-        super().__init__(projection_manager, scene, camera)
-        self._transformation_buffers = {}
+    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager):
+        super().__init__(projection_manager, resource_manager)
+        self._transformation_buffers: dict[tuple[str, str, Color4f], tuple[int, int]] = {}
 
-    def init_shaders(self):
-        self._shaders["default"] = ShaderProgram(
-            VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.BLINN_PHONG)
-        )
-        self._shaders["transparent"] = ShaderProgram(
-            VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.FLAT_COLOR)
-        )
-        self._shaders["picking"] = ShaderProgram(
-            VertexShader(vertex.COMPUTE_POSITION), FragmentShader(fragment.FLAT_COLOR)
-        )
+    def paint_opaque(self, nodes: list[SceneNode]):
+        self._paint_normal(nodes)
 
-    def paint_opaque(self, items: list[Item]):
-        shader = self._shaders["default"]
+    def paint_transparent(self, nodes: list[SceneNode]):
+        self._paint_normal(nodes)
 
+    def paint_picking(self, nodes: list[SceneNode]):
+        shader = self._resource_manager.get_shader("picking")
         uniform_locations = shader.uniform_locations
         glUseProgram(shader.program)
 
         self._setup_uniforms(uniform_locations)
 
-        self._paint_normal(items, uniform_locations)
+        nodes_by_vao: dict[str, list[SceneNode]] = defaultdict(list)
+        for node in nodes:
+            nodes_by_vao[node.vao].append(node)
 
-    def paint_transparent(self, items: list[Item]):
-        shader = self._shaders["transparent"]
+        for vao, nodes in nodes_by_vao.items():
+            vao = self._resource_manager.get_vertex_array_object(vao)
+            vao.bind()
+            for node in nodes:
+                glUniform4f(uniform_locations.color, *node.picking_color)
+                glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
+                glDrawArrays(GL_TRIANGLES, 0, vao.triangles_count)
 
-        uniform_locations = shader.uniform_locations
-        glUseProgram(shader.program)
+    def _paint_normal(self, nodes: list[SceneNode]):
+        nodes_by_shader = self._group_nodes(nodes)
 
-        self._setup_uniforms(uniform_locations)
+        for shader_name, nodes_by_vao in nodes_by_shader.items():
+            shader = self._resource_manager.get_shader(shader_name)
+            glUseProgram(shader.program)
+            uniform_locations = shader.uniform_locations
+            self._setup_uniforms(uniform_locations)
 
-        self._paint_normal(items, uniform_locations)
+            for vao_name, nodes_by_color in nodes_by_vao.items():
+                vao = self._resource_manager.get_vertex_array_object(vao_name)
+                vao.bind()
 
-    def paint_picking(self, items: list[Item]):
-        shader = self._shaders["picking"]
-        uniform_locations = shader.uniform_locations
-        glUseProgram(shader.program)
+                for color, nodes in nodes_by_color.items():
+                    buffer_key = (shader_name, vao_name, color)
+                    buffer_id, nodes_count = self._get_transformation_buffer(buffer_key)
+                    glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+                    current_len_nodes = len(nodes)
+                    transform_dirty = any(node.transform_dirty for node in nodes)
+                    if current_len_nodes != nodes_count or transform_dirty:
+                        self._update_transformation_buffer(buffer_key, buffer_id, nodes)
 
-        self._setup_uniforms(uniform_locations)
+                    # Setup instanced attributes for transformation matrices
+                    # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
+                    stride = 16 * 4  # 16 floats * 4 bytes per float
+                    for i in range(4):
+                        glEnableVertexAttribArray(2 + i)
+                        glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
+                        glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
 
-        items_by_vao = defaultdict(list)
-        for item in items:
-            items_by_vao[item._vao.vao].append(item)
+                    glUniform4f(uniform_locations.color, *color)
+                    glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
 
-        for vao, items in items_by_vao.items():
-            glBindVertexArray(vao)
-            for item in items:
-                glUniform4f(uniform_locations.color, *item.picking_color)
-                glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, item.get_transform.data())
-                glDrawArrays(GL_TRIANGLES, 0, item._vao.count)
+    def _group_nodes(self, nodes: list[SceneNode]) -> dict[str, dict[str, dict[Color4f, list[SceneNode]]]]:
+        """
+        Returns a dictionary of nodes grouped by shader, vao, and color.
+        """
+        result = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        for node in nodes:
+            result[node.shader][node.vao][node.color].append(node)
+        return result
 
-    def _paint_normal(self, items: list[Item], uniform_locations: UniformLocations):
-        items_by_vao = defaultdict(list)
-        set_transform_data = False
-        for item in items:
-            if item.transform_dirty:
-                set_transform_data = True
-                item.validate_transform()
-            items_by_vao[(item._vao.vao, item.color)].append(item)
+    def _has_dirty_transform(self, nodes: list[SceneNode]) -> bool:
+        return any(node.transform_dirty for node in nodes)
+    
+    def _get_transformation_buffer(self, key: tuple[str, str, Color4f]) -> tuple[int, int]:
+        if key not in self._transformation_buffers:
+            buffer = glGenBuffers(1)
+            self._transformation_buffers[key] = (buffer, 0)
+        return self._transformation_buffers[key]
 
-        for vao_color, vao_items in items_by_vao.items():
-            vertex_count = int(len(vao_items[0]._mesh_data.vertices) / 3)
-
-            vao, color = vao_color
-            glBindVertexArray(vao)
-
-            if vao_color not in self._transformation_buffers:
-                buffer = glGenBuffers(1)
-                self._transformation_buffers[vao_color] = (buffer, len(vao_items))
-                set_transform_data = True
-
-                glBindBuffer(GL_ARRAY_BUFFER, buffer)
-            else:
-                buffer, count = self._transformation_buffers[vao_color]
-                glBindBuffer(GL_ARRAY_BUFFER, buffer)
-                if count != len(vao_items):
-                    self._transformation_buffers[vao_color] = (buffer, len(vao_items))
-                    set_transform_data = True
-
-            if set_transform_data:
-                transformation_data = []
-                for item in vao_items:
-                    transformation_data.extend(item.get_transform.data())
-                transformation_array = np.array(transformation_data, dtype=np.float32)
-                glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
-
-            # Setup instanced attributes for transformation matrices
-            # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
-            stride = 16 * 4  # 16 floats * 4 bytes per float
-            for i in range(4):
-                glEnableVertexAttribArray(2 + i)
-                glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
-                glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
-
-            glUniform4f(uniform_locations.color, *color)
-            glDrawArraysInstanced(GL_TRIANGLES, 0, vertex_count, len(vao_items))
+    def _update_transformation_buffer(self, key: tuple[str, str, Color4f], buffer: int, nodes: list[SceneNode]):
+        transformation_data = []
+        for node in nodes:
+            transformation_data.extend(node.transform.data())
+        transformation_array = np.array(transformation_data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
+        self._transformation_buffers[key] = (buffer, len(nodes))
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
-        scene_matrix = self._scene.get_transform.data()
-        view_matrix = self._camera.view_matrix.data()
+        view_matrix = self._resource_manager.current_camera.matrix.data()
+        scene_matrix = self._resource_manager.current_scene.transform.matrix.data()
         projection_matrix = self._projection_manager.active_projection.matrix.data()
 
-        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix)
+        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
 
     def __del__(self):

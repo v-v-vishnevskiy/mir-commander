@@ -42,7 +42,7 @@ class SceneNode:
 
         self._color: Color4f = (0.5, 0.5, 0.5, 1.0)
         self._mesh_name: str = ""
-        self._vbo_name: str = ""
+        self._vao_name: str = ""
         self._shader_name: str = ""
 
     @property
@@ -91,8 +91,8 @@ class SceneNode:
         return self._mesh_name
 
     @property
-    def vbo(self) -> str:
-        return self._vbo_name
+    def vao(self) -> str:
+        return self._vao_name
 
     @property
     def shader(self) -> str:
@@ -184,8 +184,8 @@ class SceneNode:
     def set_mesh(self, mesh_name: str):
         self._mesh_name = mesh_name
 
-    def set_vbo(self, vbo_name: str):
-        self._vbo_name = vbo_name
+    def set_vao(self, vao_name: str):
+        self._vao_name = vao_name
 
     def set_shader(self, shader_name: str):
         self._shader_name = shader_name
@@ -195,7 +195,7 @@ class SceneNode:
             f"id={self._id}, " \
             f"color={self._color}, " \
             f"mesh={self._mesh_name}, " \
-            f"vbo={self._vbo_name}, " \
+            f"vao={self._vao_name}, " \
             f"shader={self._shader_name}, " \
             f"nodes_dirty={self._nodes_dirty}" \
             ")"

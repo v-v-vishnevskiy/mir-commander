@@ -17,7 +17,7 @@ class BoundingSphere(SceneNode):
 
         self.set_color(self._compute_color(config))
         self.set_mesh(resource_name)
-        self.set_vbo(resource_name)
+        self.set_vao(resource_name)
         self.set_shader("transparent")
 
         self.scale(config.scale_factor)

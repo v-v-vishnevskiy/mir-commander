@@ -25,7 +25,7 @@ class Atom(SceneNode):
         self.set_scale(radius)
         self.set_color(color)
         self.set_mesh(resource_name)
-        self.set_vbo(resource_name)
+        self.set_vao(resource_name)
         self.set_shader("default")
 
         self._radius = radius
