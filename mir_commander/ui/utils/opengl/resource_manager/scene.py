@@ -17,6 +17,10 @@ class Scene(Resource):
 
         self.transform = Transform()
 
+    @property
+    def root_node(self) -> SceneNode:
+        return self._root_node
+
     def add_node(self, node: SceneNode):
         self._root_node.add_node(node)
 
@@ -50,7 +54,7 @@ class Scene(Resource):
                 self._transparent_nodes.append(node)
             else:
                 self._opaque_nodes.append(node)
-            
+
             if node.picking_visible:
                 self._picking_nodes.append(node)
 

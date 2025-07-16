@@ -29,6 +29,7 @@ class SceneNode:
 
         self.picking_color = id_to_color(self._id)
 
+        self._group_transform_dirty: dict[tuple[str, str, Color4f], bool] = {}
         # 1 - transform has been changed, 0 - transform is up to date
         self._transform_dirty = 1
         self._transform = Transform()
@@ -75,6 +76,12 @@ class SceneNode:
         return self._transform_matrix
 
     @property
+    def group_transform_dirty(self) -> dict[tuple[str, str, Color4f], bool]:
+        result = self._group_transform_dirty
+        self._group_transform_dirty = {}
+        return result
+
+    @property
     def transform_dirty(self) -> int:
         return self._transform_dirty
 
@@ -104,18 +111,26 @@ class SceneNode:
         else:
             self._transform_matrix = self._transform.matrix
 
-    def invalidate_transform(self):
-        self._transform_dirty = 1
-        for node in self._nodes:
-            node.invalidate_transform()
-
-    def invalidate_root_node(self):
+    @property
+    def _root_node(self) -> Self:
         root_node = self
         parent = self.parent
         while parent is not None:
             root_node = parent
             parent = parent.parent
-        root_node._nodes_dirty = True
+        return root_node
+
+    def invalidate_transform(self):
+        self._transform_dirty = 1
+        for node in self._nodes:
+            node.invalidate_transform()
+        self.invalidate_group_transform_root_node()
+
+    def invalidate_root_node(self):
+        self._root_node._nodes_dirty = True
+
+    def invalidate_group_transform_root_node(self):
+        self._root_node._group_transform_dirty = {(self.shader, self.vao, self.color): True}
 
     def scale(self, value: QVector3D):
         self._transform.scale(value)

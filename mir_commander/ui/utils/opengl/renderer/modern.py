@@ -66,6 +66,8 @@ class ModernRenderer(BaseRenderer):
     def _paint_normal(self, nodes: list[SceneNode]):
         nodes_by_shader = self._group_nodes(nodes)
 
+        group_transform_dirty = self._resource_manager.current_scene.root_node.group_transform_dirty
+
         for shader_name, nodes_by_vao in nodes_by_shader.items():
             shader = self._resource_manager.get_shader(shader_name)
             glUseProgram(shader.program)
@@ -83,7 +85,7 @@ class ModernRenderer(BaseRenderer):
 
                     current_len_nodes = len(nodes)
 
-                    if current_len_nodes != nodes_count or self._has_dirty_transform(nodes):
+                    if current_len_nodes != nodes_count or group_transform_dirty.get(buffer_key, False):
                         self._update_transformation_buffer(buffer_key, buffer_id, nodes)
 
                     self._setup_instanced_attributes()
@@ -99,12 +101,6 @@ class ModernRenderer(BaseRenderer):
         for node in nodes:
             result[node.shader][node.vao][node.color].append(node)
         return result
-
-    def _has_dirty_transform(self, nodes: list[SceneNode]) -> bool:
-        for node in nodes:
-            if node.transform_dirty:
-                return True
-        return False
 
     def _get_transformation_buffer(self, key: tuple[str, str, Color4f]) -> tuple[int, int]:
         if key not in self._transformation_buffers:
