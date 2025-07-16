@@ -80,18 +80,13 @@ class ModernRenderer(BaseRenderer):
                     buffer_key = (shader_name, vao_name, color)
                     buffer_id, nodes_count = self._get_transformation_buffer(buffer_key)
                     glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+
                     current_len_nodes = len(nodes)
-                    transform_dirty = any(node.transform_dirty for node in nodes)
-                    if current_len_nodes != nodes_count or transform_dirty:
+
+                    if current_len_nodes != nodes_count or self._has_dirty_transform(nodes):
                         self._update_transformation_buffer(buffer_key, buffer_id, nodes)
 
-                    # Setup instanced attributes for transformation matrices
-                    # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
-                    stride = 16 * 4  # 16 floats * 4 bytes per float
-                    for i in range(4):
-                        glEnableVertexAttribArray(2 + i)
-                        glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
-                        glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
+                    self._setup_instanced_attributes()
 
                     glUniform4f(uniform_locations.color, *color)
                     glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
@@ -106,8 +101,11 @@ class ModernRenderer(BaseRenderer):
         return result
 
     def _has_dirty_transform(self, nodes: list[SceneNode]) -> bool:
-        return any(node.transform_dirty for node in nodes)
-    
+        for node in nodes:
+            if node.transform_dirty:
+                return True
+        return False
+
     def _get_transformation_buffer(self, key: tuple[str, str, Color4f]) -> tuple[int, int]:
         if key not in self._transformation_buffers:
             buffer = glGenBuffers(1)
@@ -121,6 +119,15 @@ class ModernRenderer(BaseRenderer):
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
         self._transformation_buffers[key] = (buffer, len(nodes))
+
+    def _setup_instanced_attributes(self):
+        # Setup instanced attributes for transformation matrices
+        # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
+        stride = 16 * 4  # 16 floats * 4 bytes per float
+        for i in range(4):
+            glEnableVertexAttribArray(2 + i)
+            glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
+            glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
         view_matrix = self._resource_manager.current_camera.matrix.data()
