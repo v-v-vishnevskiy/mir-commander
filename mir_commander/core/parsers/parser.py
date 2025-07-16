@@ -18,8 +18,8 @@ def load_file(path: Path, logs: list[str]) -> Item:
             if i >= line_number_limit:
                 break
 
-    if is_unex(lines):
-        return load_unex(path, logs)
+    if (ver := is_unex(lines)) != 0:
+        return load_unex(ver, path, logs)
     elif is_xyz(lines):
         return load_xyz(path, logs)
     elif is_cfour(lines):
