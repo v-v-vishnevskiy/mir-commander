@@ -1,6 +1,5 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.graphics_items import Item
 from mir_commander.ui.utils.opengl.resource_manager import SceneNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
@@ -38,7 +37,7 @@ class Atom(SceneNode):
         self._bounding_sphere = BoundingSphere(resource_name, color, selected_atom_config)
         self.add_node(self._bounding_sphere)
 
-    def add_related_bond(self, bond: Item):
+    def add_related_bond(self, bond: SceneNode):
         self._related_bonds.append(bond)
 
     def set_cloaked(self, value: bool):

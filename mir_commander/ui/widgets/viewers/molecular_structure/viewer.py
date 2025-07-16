@@ -88,8 +88,6 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.build_molecule()
 
-        print(self.resource_manager)
-
         self._under_cursor_overlay = TextOverlay(
             parent=self,
             config=self._molecule.style.current.under_cursor_text_overlay,

@@ -22,10 +22,8 @@ from OpenGL.GL import (
     glDeleteBuffers,
 )
 
-from mir_commander.ui.utils.opengl.shader import UniformLocations
-
 from ..projection import ProjectionManager
-from ..resource_manager import ResourceManager, SceneNode
+from ..resource_manager import ResourceManager, SceneNode, UniformLocations
 from ..utils import Color4f
 
 from .base import BaseRenderer
