@@ -87,8 +87,7 @@ class Atom(SceneNode):
         self.invalidate_root_node()
 
     def toggle_selection(self) -> bool:
-        self._selected = not self._selected
-        self.invalidate_root_node()
+        self.set_selected(not self._selected)
         return self._selected
 
     def __repr__(self) -> str:

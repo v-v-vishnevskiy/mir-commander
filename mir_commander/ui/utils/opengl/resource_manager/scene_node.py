@@ -30,8 +30,8 @@ class SceneNode:
         self.picking_color = id_to_color(self._id)
 
         self._group_transform_dirty: dict[tuple[str, str, Color4f], bool] = {}
-        # 1 - transform has been changed, 0 - transform is up to date
-        self._transform_dirty = 1
+        # True - transform has been changed, False - transform is up to date
+        self._transform_dirty = True
         self._transform = Transform()
         self._transform_matrix = QMatrix4x4()
 
@@ -72,17 +72,15 @@ class SceneNode:
     def transform(self) -> QMatrix4x4:
         if self._transform_dirty:
             self._update_transform()
-            self._transform_dirty = 0
+            self._transform_dirty = False
         return self._transform_matrix
 
     @property
     def group_transform_dirty(self) -> dict[tuple[str, str, Color4f], bool]:
-        result = self._group_transform_dirty
-        self._group_transform_dirty = {}
-        return result
+        return self._group_transform_dirty
 
     @property
-    def transform_dirty(self) -> int:
+    def transform_dirty(self) -> bool:
         return self._transform_dirty
 
     @property
@@ -105,6 +103,9 @@ class SceneNode:
     def shader(self) -> str:
         return self._shader_name
 
+    def clear_group_transform_dirty(self):
+        self._group_transform_dirty.clear()
+
     def _update_transform(self):
         if self.parent:
             self._transform_matrix = self.parent.transform * self._transform.matrix
@@ -121,7 +122,7 @@ class SceneNode:
         return root_node
 
     def invalidate_transform(self):
-        self._transform_dirty = 1
+        self._transform_dirty = True
         for node in self._nodes:
             node.invalidate_transform()
         self.invalidate_group_transform_root_node()
@@ -130,7 +131,7 @@ class SceneNode:
         self._root_node._nodes_dirty = True
 
     def invalidate_group_transform_root_node(self):
-        self._root_node._group_transform_dirty = {(self.shader, self.vao, self.color): True}
+        self._root_node._group_transform_dirty[(self.shader, self.vao, self.color)] = True
 
     def scale(self, value: QVector3D):
         self._transform.scale(value)

@@ -46,6 +46,8 @@ class BaseRenderer:
 
             self._has_new_image = False
 
+        self._resource_manager.current_scene.root_node.clear_group_transform_dirty()
+
     def paint_opaque(self, nodes: list[SceneNode]):
         pass
 
