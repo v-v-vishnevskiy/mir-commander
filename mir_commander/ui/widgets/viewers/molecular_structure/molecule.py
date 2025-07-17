@@ -247,13 +247,13 @@ class Molecule(SceneNode):
     def highlight_atom_under_cursor(self, atom: None | Atom) -> bool:
         old_atom = self._atom_index_under_cursor
         self._atom_index_under_cursor = atom
-        if atom:
-            if atom != old_atom:
-                if old_atom is not None:
-                    old_atom.set_under_cursor(False)
-                atom.set_under_cursor(True)
-                return True
-        elif old_atom:
+
+        if atom == old_atom:
+            return False
+
+        if atom is not None:
+            atom.set_under_cursor(True)
+        if old_atom is not None:
             old_atom.set_under_cursor(False)
-            return True
-        return False
+
+        return True

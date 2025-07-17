@@ -9,19 +9,22 @@ from .atom import Atom
 class BondItem(SceneNode):
     def __init__(
         self,
-        resource_name: str,
+        model_name: str,
         position: QVector3D,
         direction: QVector3D,
         radius: float,
         length: float,
         color: Color4f,
     ):
-        super().__init__(picking_visible=False)
-        self.set_mesh(resource_name)
-        self.set_vao(resource_name)
+        super().__init__()
+        self.set_model(model_name)
         self.set_color(color)
         self.set_shader("default")
         self.set_transformation(position, direction, radius, length)
+
+    @property
+    def visible(self) -> bool:
+        return super().visible and self.parent.visible
 
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
         self.translate(position)
@@ -32,16 +35,16 @@ class BondItem(SceneNode):
 class Bond(SceneNode):
     def __init__(
         self,
-        resource_name: str,
+        model_name: str,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__(is_container=True, picking_visible=False)
+        super().__init__(is_container=True)
 
-        self._resource_name = resource_name
+        self._model_name = model_name
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
@@ -54,6 +57,10 @@ class Bond(SceneNode):
         atom_2.add_related_bond(self)
 
         self._add_bonds()
+
+    @property
+    def visible(self) -> bool:
+        return super().visible and not self._atom_1.cloaked and not self._atom_2.cloaked
 
     @property
     def atoms(self) -> tuple[Atom, Atom]:
@@ -84,7 +91,7 @@ class Bond(SceneNode):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            self.add_node(BondItem(self._resource_name, position, direction, self._radius, length, color))
+            self.add_node(BondItem(self._model_name, position, direction, self._radius, length, color))
 
     def update_bonds(self):
         bonds = self._build_bonds()

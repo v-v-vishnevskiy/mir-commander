@@ -32,7 +32,10 @@ class ResourceManager:
             self._current_camera = camera
 
     def get_camera(self, name: str) -> Camera:
-        return self._cameras[name]
+        try:
+            return self._cameras[name]
+        except KeyError:
+            raise ValueError(f"Camera `{name}` not found")
 
     def add_scene(self, scene: Scene):
         self._scenes[scene.name] = scene
@@ -40,25 +43,37 @@ class ResourceManager:
             self._current_scene = scene
 
     def get_scene(self, name: str) -> Scene:
-        return self._scenes[name]
+        try:
+            return self._scenes[name]
+        except KeyError:
+            raise ValueError(f"Scene `{name}` not found")
 
     def add_mesh(self, mesh: Mesh):
         self._meshes[mesh.name] = mesh
 
     def get_mesh(self, name: str) -> Mesh:
-        return self._meshes[name]
+        try:
+            return self._meshes[name]
+        except KeyError:
+            raise ValueError(f"Mesh `{name}` not found")
 
     def add_vertex_array_object(self, vertex_array_object: VertexArrayObject):
         self._vertex_array_objects[vertex_array_object.name] = vertex_array_object
 
     def get_vertex_array_object(self, name: str) -> VertexArrayObject:
-        return self._vertex_array_objects[name]
+        try:
+            return self._vertex_array_objects[name]
+        except KeyError:
+            raise ValueError(f"Vertex array object `{name}` not found")
 
     def add_shader(self, shader: ShaderProgram):
         self._shaders[shader.name] = shader
 
     def get_shader(self, name: str) -> ShaderProgram:
-        return self._shaders[name]
+        try:
+            return self._shaders[name]
+        except KeyError:
+            raise ValueError(f"Shader `{name}` not found")
 
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))

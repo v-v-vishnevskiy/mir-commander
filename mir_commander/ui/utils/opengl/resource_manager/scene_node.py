@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, TYPE_CHECKING, Optional
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
@@ -7,6 +7,9 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 from ..utils import id_to_color
 
 from .transform import Transform
+
+if TYPE_CHECKING:
+    from .root_scene_node import RootSceneNode
 
 
 class SceneNode:
@@ -22,6 +25,8 @@ class SceneNode:
         SceneNode._id_counter += 1
         self._id = SceneNode._id_counter
 
+        self._root_node: Optional["RootSceneNode"] = None
+
         self._is_container = is_container
         self._visible = visible
         self._transparent = transparent
@@ -29,22 +34,22 @@ class SceneNode:
 
         self.picking_color = id_to_color(self._id)
 
-        self._group_transform_dirty: dict[tuple[str, str, Color4f], bool] = {}
         # True - transform has been changed, False - transform is up to date
-        self._transform_dirty = True
+        self._transform_dirty = False
         self._transform = Transform()
         self._transform_matrix = QMatrix4x4()
 
-        # True - nodes have been added or removed, False - nodes are up to date
-        self._nodes_dirty = False
         self._nodes: list[Self] = []
 
         self.parent: None | Self = None
 
-        self._color: Color4f = (0.5, 0.5, 0.5, 1.0)
-        self._mesh_name: str = ""
-        self._vao_name: str = ""
+        self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
+        self._model_name: str = ""
         self._shader_name: str = ""
+
+    @property
+    def group_id(self) -> int:
+        return self._shader_name, self._model_name, self._color
 
     @property
     def is_container(self) -> bool:
@@ -53,12 +58,6 @@ class SceneNode:
     @property
     def visible(self) -> bool:
         return self._visible
-
-    def set_visible(self, value: bool):
-        self._visible = value
-        for node in self._nodes:
-            node.set_visible(value)
-        self.invalidate_root_node()
 
     @property
     def transparent(self) -> bool:
@@ -76,35 +75,20 @@ class SceneNode:
         return self._transform_matrix
 
     @property
-    def group_transform_dirty(self) -> dict[tuple[str, str, Color4f], bool]:
-        return self._group_transform_dirty
-
-    @property
-    def transform_dirty(self) -> bool:
-        return self._transform_dirty
-
-    @property
-    def nodes_dirty(self) -> bool:
-        return self._nodes_dirty
+    def nodes(self) -> list[Self]:
+        return self._nodes
 
     @property
     def color(self) -> Color4f:
         return self._color
 
     @property
-    def mesh(self) -> str:
-        return self._mesh_name
-
-    @property
-    def vao(self) -> str:
-        return self._vao_name
+    def model(self) -> str:
+        return self._model_name
 
     @property
     def shader(self) -> str:
         return self._shader_name
-
-    def clear_group_transform_dirty(self):
-        self._group_transform_dirty.clear()
 
     def _update_transform(self):
         if self.parent:
@@ -112,26 +96,92 @@ class SceneNode:
         else:
             self._transform_matrix = self._transform.matrix
 
-    @property
-    def _root_node(self) -> Self:
-        root_node = self
-        parent = self.parent
-        while parent is not None:
-            root_node = parent
-            parent = parent.parent
-        return root_node
+    def _get_children(self, include_self: bool = True) -> list[Self]:
+        result = []
+        if include_self:
+            result.append(self)
+
+        stack = self._nodes.copy()
+        while stack:
+            node = stack.pop()
+            result.append(node)
+            stack.extend(node.nodes)
+
+        return result
+
+    def notify_visible_changed(self):
+        root_node = self._root_node
+        for node in self._get_children(include_self=True):
+            if root_node is not None:
+                root_node.notify_visible_changed(node)
+
+    def set_visible(self, value: bool):
+        if self._visible == value:
+            return
+
+        root_node = self._root_node
+        for node in self._get_children(include_self=True):
+            if node._visible != value:
+                node._visible = value
+                if root_node is not None:
+                    root_node.notify_visible_changed(node)
+
+    def add_node(self, node: Self):
+        if node in self._nodes:
+            return
+
+        if self._root_node is not None:
+            node.set_root_node(self._root_node)
+        self._nodes.append(node)
+        node.parent = self
+        node.invalidate_transform()
+        if self._root_node is not None:
+            self._root_node.notify_add_node(node)
+
+    def remove_node(self, node: Self):
+        if node not in self._nodes:
+            return
+
+        self._nodes.remove(node)
+        node.parent = None
+        node.invalidate_transform()
+        if self._root_node is not None:
+            self._root_node.notify_remove_node(node)
+
+    def clear(self):
+        root_node = self._root_node
+        for node in self._get_children(include_self=False):
+            node.invalidate_transform()
+            if root_node is not None:
+                root_node.notify_remove_node(node)
+        self._nodes.clear()
+
+    def set_root_node(self, root_node: "RootSceneNode"):
+        if self._root_node is not None and id(self._root_node) != id(root_node):
+            self.remove_root_node()
+
+        for node in self._get_children(include_self=True):
+            root_node.notify_add_node(node)
+            node._root_node = root_node
+        
+        self._root_node = root_node
+
+    def remove_root_node(self):
+        root_node = self._root_node
+
+        if root_node is None:
+            return
+
+        for node in self._get_children(include_self=True):
+            root_node.notify_remove_node(node)
+            node._root_node = None
 
     def invalidate_transform(self):
-        self._transform_dirty = True
-        for node in self._nodes:
-            node.invalidate_transform()
-        self.invalidate_group_transform_root_node()
-
-    def invalidate_root_node(self):
-        self._root_node._nodes_dirty = True
-
-    def invalidate_group_transform_root_node(self):
-        self._root_node._group_transform_dirty[(self.shader, self.vao, self.color)] = True
+        root_node = self._root_node
+        for node in self._get_children(include_self=True):
+            node._transform_dirty = True
+            if root_node is not None:
+                root_node.notify_transform_changed(node)
 
     def scale(self, value: QVector3D):
         self._transform.scale(value)
@@ -157,61 +207,38 @@ class SceneNode:
         self._transform.set_translation(translation)
         self.invalidate_transform()
 
-    def add_node(self, node: Self):
-        self._nodes.append(node)
-        node.parent = self
-        self.invalidate_root_node()
-
-    def remove_node(self, node: Self):
-        self._nodes.remove(node)
-        node.parent = None
-        self.invalidate_root_node()
-
-    def clear(self):
-        self._nodes.clear()
-        self.invalidate_root_node()
-
-    def find_node_by_id(self, obj_id: int) -> Self | None:
-        if obj_id == 0:
-            return None
-
-        if self._id == obj_id:
+    def find_node_by_id(self, node_id: int) -> Self | None:
+        if self._id == node_id:
             return self
 
         # TODO: optimize this
         for node in self._nodes:
-            node = node.find_node_by_id(obj_id)
+            node = node.find_node_by_id(node_id)
             if node is not None:
                 return node
         return None
 
-    def get_all_nodes(self) -> list[Self]:
-        result = [self]
-        for node in self._nodes:
-            result.extend(node.get_all_nodes())
-
-        self._nodes_dirty = False
-
-        return result
-
     def set_color(self, color: Color4f):
         self._color = color
 
-    def set_mesh(self, mesh_name: str):
-        self._mesh_name = mesh_name
-
-    def set_vao(self, vao_name: str):
-        self._vao_name = vao_name
+    def set_model(self, model_name: str):
+        self._model_name = model_name
 
     def set_shader(self, shader_name: str):
         self._shader_name = shader_name
 
+    def __eq__(self, other: None | Self) -> bool:
+        if other is None:
+            return False
+        return self._id == other._id
+
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
             f"id={self._id}, " \
+            f"visible={self._visible}, " \
+            f"transparent={self._transparent}, " \
+            f"picking_visible={self._picking_visible}, " \
             f"color={self._color}, " \
-            f"mesh={self._mesh_name}, " \
-            f"vao={self._vao_name}, " \
+            f"model={self._model_name}, " \
             f"shader={self._shader_name}, " \
-            f"nodes_dirty={self._nodes_dirty}" \
             ")"

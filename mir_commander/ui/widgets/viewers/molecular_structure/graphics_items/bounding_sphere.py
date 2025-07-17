@@ -8,16 +8,15 @@ from ..config import SelectedAtom
 class BoundingSphere(SceneNode):
     def __init__(
         self,
-        resource_name: str,
+        model_name: str,
         atom_color: Color4f,
         config: SelectedAtom,
     ):
-        super().__init__(transparent=True)
+        super().__init__(transparent=True, visible=False)
         self._atom_color = atom_color
 
         self.set_color(self._compute_color(config))
-        self.set_mesh(resource_name)
-        self.set_vao(resource_name)
+        self.set_model(model_name)
         self.set_shader("transparent")
 
         self.scale(config.scale_factor)
