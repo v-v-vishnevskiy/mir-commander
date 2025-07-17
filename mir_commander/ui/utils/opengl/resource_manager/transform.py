@@ -10,13 +10,13 @@ class Transform:
         self._rotation = QQuaternion()
         self._translation = QVector3D(0.0, 0.0, 0.0)
 
-        self._dirty = 1
+        self._dirty = True
 
     @property
     def matrix(self) -> QMatrix4x4:
         if self._dirty:
             self._update_matrix()
-            self._dirty = 0
+            self._dirty = False
         return self._matrix
 
     @property
@@ -31,11 +31,11 @@ class Transform:
 
     def scale(self, value: QVector3D):
         self._scale *= value
-        self._dirty = 1
+        self._dirty = True
 
     def set_scale(self, value: QVector3D):
         self._scale = value
-        self._dirty = 1
+        self._dirty = True
 
     def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
         pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), pitch)
@@ -44,16 +44,16 @@ class Transform:
 
         rotation = pitch_quat * yaw_quat * roll_quat
         self._rotation = rotation * self._rotation
-        self._dirty = 1
+        self._dirty = True
 
     def set_rotation(self, rotation: QQuaternion):
         self._rotation = rotation
-        self._dirty = 1
+        self._dirty = True
 
     def translate(self, translation: QVector3D):
         self._translation += translation
-        self._dirty = 1
+        self._dirty = True
 
     def set_translation(self, translation: QVector3D):
         self._translation = translation
-        self._dirty = 1
+        self._dirty = True

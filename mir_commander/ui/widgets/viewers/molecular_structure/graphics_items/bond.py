@@ -21,15 +21,20 @@ class BondItem(SceneNode):
         self.set_color(color)
         self.set_shader("default")
         self.set_transformation(position, direction, radius, length)
+        self._length = 0
 
     @property
     def visible(self) -> bool:
         return super().visible and self.parent.visible
 
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
+        self._length = length
         self.translate(position)
         self.set_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), direction))
         self.set_scale(QVector3D(radius, radius, length))
+
+    def set_radius(self, radius: float):
+        self.set_scale(QVector3D(radius, radius, self._length))
 
 
 class Bond(SceneNode):

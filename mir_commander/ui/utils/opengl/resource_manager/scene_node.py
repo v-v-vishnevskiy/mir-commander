@@ -130,10 +130,10 @@ class SceneNode:
         if node in self._nodes:
             return
 
+        node.parent = self
         if self._root_node is not None:
             node.set_root_node(self._root_node)
         self._nodes.append(node)
-        node.parent = self
         node.invalidate_transform()
         if self._root_node is not None:
             self._root_node.notify_add_node(node)
@@ -144,14 +144,14 @@ class SceneNode:
 
         self._nodes.remove(node)
         node.parent = None
-        node.invalidate_transform()
+        # node.invalidate_transform()
         if self._root_node is not None:
             self._root_node.notify_remove_node(node)
 
     def clear(self):
         root_node = self._root_node
         for node in self._get_children(include_self=False):
-            node.invalidate_transform()
+            # node.invalidate_transform()
             if root_node is not None:
                 root_node.notify_remove_node(node)
         self._nodes.clear()
