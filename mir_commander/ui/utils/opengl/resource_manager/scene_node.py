@@ -43,12 +43,12 @@ class SceneNode:
 
         self.parent: None | Self = None
 
-        self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
-        self._model_name: str = ""
         self._shader_name: str = ""
+        self._model_name: str = ""
+        self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
 
     @property
-    def group_id(self) -> int:
+    def group_id(self) -> tuple[str, str, Color4f]:
         return self._shader_name, self._model_name, self._color
 
     @property
@@ -83,11 +83,11 @@ class SceneNode:
         return self._color
 
     @property
-    def model(self) -> str:
+    def model_name(self) -> str:
         return self._model_name
 
     @property
-    def shader(self) -> str:
+    def shader_name(self) -> str:
         return self._shader_name
 
     def _update_transform(self):
@@ -144,14 +144,12 @@ class SceneNode:
 
         self._nodes.remove(node)
         node.parent = None
-        # node.invalidate_transform()
         if self._root_node is not None:
             self._root_node.notify_remove_node(node)
 
     def clear(self):
         root_node = self._root_node
         for node in self._get_children(include_self=False):
-            # node.invalidate_transform()
             if root_node is not None:
                 root_node.notify_remove_node(node)
         self._nodes.clear()
@@ -211,26 +209,20 @@ class SceneNode:
         if self._id == node_id:
             return self
 
-        # TODO: optimize this
         for node in self._nodes:
             node = node.find_node_by_id(node_id)
             if node is not None:
                 return node
         return None
 
-    def set_color(self, color: Color4f):
-        self._color = color
+    def set_shader(self, shader_name: str):
+        self._shader_name = shader_name
 
     def set_model(self, model_name: str):
         self._model_name = model_name
 
-    def set_shader(self, shader_name: str):
-        self._shader_name = shader_name
-
-    def __eq__(self, other: None | Self) -> bool:
-        if other is None:
-            return False
-        return self._id == other._id
+    def set_color(self, color: Color4f):
+        self._color = color
 
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
@@ -238,7 +230,7 @@ class SceneNode:
             f"visible={self._visible}, " \
             f"transparent={self._transparent}, " \
             f"picking_visible={self._picking_visible}, " \
-            f"color={self._color}, " \
-            f"model={self._model_name}, " \
             f"shader={self._shader_name}, " \
+            f"model={self._model_name}, " \
+            f"color={self._color}, " \
             ")"
