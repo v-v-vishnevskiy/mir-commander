@@ -28,15 +28,19 @@ class RenderingContainer:
         group_id = node.group_id
         shader_name, model_name, material = group_id
 
-        self.nodes[shader_name][model_name][material].remove(node)
-        self.transform_dirty[group_id] = True
+        try:
+            self.nodes[shader_name][model_name][material].remove(node)
+            self.transform_dirty[group_id] = True
 
-        if len(self.nodes[shader_name][model_name][material]) == 0:
-            del self.nodes[shader_name][model_name][material]
-        if len(self.nodes[shader_name][model_name]) == 0:
-            del self.nodes[shader_name][model_name]
-        if len(self.nodes[shader_name]) == 0:
-            del self.nodes[shader_name]
+            if len(self.nodes[shader_name][model_name][material]) == 0:
+                del self.nodes[shader_name][model_name][material]
+            if len(self.nodes[shader_name][model_name]) == 0:
+                del self.nodes[shader_name][model_name]
+            if len(self.nodes[shader_name]) == 0:
+                del self.nodes[shader_name]
+        except (KeyError, ValueError):
+            # Node was already removed
+            pass
 
     def set_transform_dirty(self, node: SceneNode):
         self.transform_dirty[node.group_id] = True

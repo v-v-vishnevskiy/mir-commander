@@ -7,7 +7,7 @@ from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectF
 
 from ..enums import PaintMode
 from ..projection import ProjectionManager
-from ..resource_manager import ResourceManager, SceneNode
+from ..resource_manager import RenderingContainer, ResourceManager, SceneNode
 from ..utils import Color4f
 
 logger = logging.getLogger("OpenGL.Renderer")
@@ -25,7 +25,7 @@ class BaseRenderer:
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
-        opaque_nodes, transparent_nodes, picking_nodes = self._resource_manager.current_scene.nodes()
+        opaque_rc, transparent_rc, picking_rc = self._resource_manager.current_scene.containers()
 
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -35,26 +35,26 @@ class BaseRenderer:
         glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
-            self.paint_picking(picking_nodes)
+            self.paint_picking(picking_rc)
         else:
-            self.paint_opaque(opaque_nodes)
+            self.paint_opaque(opaque_rc)
 
-            if transparent_nodes:
+            if transparent_rc:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self.paint_transparent(self._sort_by_depth(transparent_nodes))
+                self.paint_transparent(transparent_rc)
 
             self._has_new_image = False
 
-        self._resource_manager.current_scene.root_node.clear_group_transform_dirty()
+        self._resource_manager.current_scene.root_node.clear_transform_dirty()
 
-    def paint_opaque(self, nodes: list[SceneNode]):
+    def paint_opaque(self, rc: RenderingContainer):
         pass
 
-    def paint_transparent(self, nodes: list[SceneNode]):
+    def paint_transparent(self, rc: RenderingContainer):
         pass
 
-    def paint_picking(self, nodes: list[SceneNode]):
+    def paint_picking(self, rc: RenderingContainer):
         pass
 
     def _get_node_depth(self, node: SceneNode) -> float:
