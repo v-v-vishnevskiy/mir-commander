@@ -3,13 +3,13 @@ import numpy as np
 
 def get_vertices() -> np.ndarray:
     vertices: list[float] = [
-        -0.5, 0.0, 0.5,
-        0.5, 0.0, 0.5,
-        0.5, 0.0, -0.5,
+        -0.5, -0.5, 0.0,
+        0.5, -0.5, 0.0,
+        0.5, 0.5, 0.0,
 
-        -0.5, 0.0, 0.5,
-        0.5, 0.0, -0.5,
-        -0.5, 0.0, -0.5,
+        -0.5, -0.5, 0.0,
+        0.5, 0.5, 0.0,
+        -0.5, 0.5, 0.0,
     ]
     return np.array(vertices, dtype=np.float32)
 
