@@ -81,11 +81,7 @@ class OpenGLWidget(QOpenGLWidget):
                 )
             )
             self.resource_manager.add_shader(
-                ShaderProgram(
-                    "text",
-                    VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_WITH_TEXTURE), 
-                    FragmentShader(shaders.fragment.TEXTURE)
-                )
+                ShaderProgram("text", VertexShader(shaders.vertex.TEXT), FragmentShader(shaders.fragment.TEXTURE))
             )
             self.resource_manager.add_shader(
                 ShaderProgram(
