@@ -43,13 +43,14 @@ class SceneNode:
 
         self.parent: None | Self = None
 
-        self._shader_name: str = ""
-        self._model_name: str = ""
+        self._shader_name: None | str = None
+        self._model_name: None | str = None
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
+        self._texture_name: None | str = None
 
     @property
-    def group_id(self) -> tuple[str, str, Color4f]:
-        return self._shader_name, self._model_name, self._color
+    def group_id(self) -> tuple[str, str, tuple[Color4f, str]]:
+        return self._shader_name, self._model_name, (self._color, self._texture_name)
 
     @property
     def is_container(self) -> bool:
@@ -79,16 +80,20 @@ class SceneNode:
         return self._nodes
 
     @property
+    def shader_name(self) -> None | str:
+        return self._shader_name
+
+    @property
+    def model_name(self) -> None | str:
+        return self._model_name
+
+    @property
     def color(self) -> Color4f:
         return self._color
 
     @property
-    def model_name(self) -> str:
-        return self._model_name
-
-    @property
-    def shader_name(self) -> str:
-        return self._shader_name
+    def texture_name(self) -> None | str:
+        return self._texture_name
 
     def _update_transform(self):
         if self.parent:
@@ -224,13 +229,17 @@ class SceneNode:
     def set_color(self, color: Color4f):
         self._color = color
 
+    def set_texture(self, texture_name: str):
+        self._texture_name = texture_name
+
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
             f"id={self._id}, " \
             f"visible={self._visible}, " \
             f"transparent={self._transparent}, " \
             f"picking_visible={self._picking_visible}, " \
-            f"shader={self._shader_name}, " \
-            f"model={self._model_name}, " \
+            f"shader='{self._shader_name}', " \
+            f"model='{self._model_name}', " \
             f"color={self._color}, " \
+            f"texture='{self._texture_name}'" \
             ")"

@@ -24,7 +24,8 @@ class Atom(SceneNode):
         self.set_scale(radius)
         self.set_color(color)
         self.set_model(model_name)
-        self.set_shader("default")
+        self.set_shader("atom")
+        self.set_texture("atom")
 
         self._radius = radius
         self.index_num = index_num

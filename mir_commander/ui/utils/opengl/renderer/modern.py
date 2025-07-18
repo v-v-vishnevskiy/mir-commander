@@ -69,8 +69,13 @@ class ModernRenderer(BaseRenderer):
                 vao = self._resource_manager.get_vertex_array_object(model_name)
                 vao.bind()
 
-                for color, nodes in nodes_by_color.items():
-                    group_id = (shader_name, model_name, color)
+                for material, nodes in nodes_by_color.items():
+                    color, texture_name = material
+                    if texture_name is not None:
+                        texture = self._resource_manager.get_texture(texture_name)
+                        texture.bind()
+
+                    group_id = (shader_name, model_name, material)
 
                     buffer_id, nodes_count = self._get_transformation_buffer(group_id)
                     glBindBuffer(GL_ARRAY_BUFFER, buffer_id)

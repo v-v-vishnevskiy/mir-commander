@@ -92,6 +92,7 @@ class ResourceManager:
         meshes = ",\n\t".join((str(mesh) for mesh in self._meshes.values()))
         vertex_array_objects = ",\n\t".join((str(vao) for vao in self._vertex_array_objects.values()))
         shaders = ",\n\t".join((str(shader) for shader in self._shaders.values()))
+        textures = ",\n\t".join((str(texture) for texture in self._textures.values()))
 
         return f"""{self.__class__.__name__}(
     cameras=[
@@ -108,5 +109,8 @@ class ResourceManager:
     ],
     vertex_array_objects=[
         {vertex_array_objects}
+    ],
+    textures=[
+        {textures}
     ]
 )"""

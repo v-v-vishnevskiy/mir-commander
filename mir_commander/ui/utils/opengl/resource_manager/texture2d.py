@@ -30,7 +30,9 @@ class Texture2D(Resource):
 
     def _load(self, width: int, height: int, data: np.ndarray):
         logger.debug(f"Loading texture {self.name}")
-        
+
+        self.unbind()
+
         self._texture = glGenTextures(1)
         self.bind()
 

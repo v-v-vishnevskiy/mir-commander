@@ -22,17 +22,18 @@ logger = logging.getLogger("ResourceManager.VertexArrayObject")
 
 
 class VertexArrayObject(Resource):
-    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_triangles_count")
+    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_vbo_tex_coords", "_triangles_count")
 
-    def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray):
+    def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray = None):
         super().__init__(name)
 
         self._vao = None
         self._vbo_vertices = None
         self._vbo_normals = None
+        self._vbo_tex_coords = None
         self._triangles_count = int(len(vertices) / 3)
 
-        self._setup_buffers(vertices, normals)
+        self._setup_buffers(vertices, normals, tex_coords)
 
     @property
     def triangles_count(self) -> int:
@@ -44,7 +45,7 @@ class VertexArrayObject(Resource):
     def unbind(self):
         glBindVertexArray(0)
 
-    def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray):
+    def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray):
         logger.debug("Setting up buffers")
         self._vao = glGenVertexArrays(1)
         self.bind()
@@ -52,6 +53,8 @@ class VertexArrayObject(Resource):
         # Generate VBOs
         self._vbo_vertices = glGenBuffers(1)
         self._vbo_normals = glGenBuffers(1)
+        if tex_coords is not None:
+            self._vbo_tex_coords = glGenBuffers(1)
 
         # Setup position data
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_vertices)
@@ -65,6 +68,13 @@ class VertexArrayObject(Resource):
         glVertexAttribPointer(1, 3, GL_FLOAT, False, 0, None)
         glEnableVertexAttribArray(1)  # normal
 
+        # Setup tex_coords data
+        if tex_coords is not None:
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo_tex_coords)
+            glBufferData(GL_ARRAY_BUFFER, tex_coords.nbytes, tex_coords, GL_STATIC_DRAW)
+            glVertexAttribPointer(2, 2, GL_FLOAT, False, 0, None)
+            glEnableVertexAttribArray(2)  # tex_coords
+
         self.unbind()
 
     def __del__(self):
@@ -75,6 +85,8 @@ class VertexArrayObject(Resource):
             glDeleteBuffers(1, [self._vbo_vertices])
         if self._vbo_normals is not None:
             glDeleteBuffers(1, [self._vbo_normals])
+        if self._vbo_tex_coords is not None:
+            glDeleteBuffers(1, [self._vbo_tex_coords])
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals})"
+        return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals}, vbo_tex_coords={self._vbo_tex_coords})"
