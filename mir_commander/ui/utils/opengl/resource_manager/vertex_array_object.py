@@ -77,4 +77,4 @@ class VertexArrayObject(Resource):
             glDeleteBuffers(1, [self._vbo_normals])
 
     def __repr__(self):
-        return f"VertexArrayObject(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals})"
+        return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals})"

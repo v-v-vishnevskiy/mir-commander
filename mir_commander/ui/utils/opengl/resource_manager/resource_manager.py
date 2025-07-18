@@ -2,6 +2,7 @@ from .camera import Camera
 from .mesh import Mesh
 from .scene import Scene
 from .shader import ShaderProgram
+from .texture2d import Texture2D
 from .vertex_array_object import VertexArrayObject
 
 
@@ -11,9 +12,10 @@ class ResourceManager:
 
         self._cameras: dict[str, Camera] = {}
         self._scenes: dict[str, Scene] = {}
+        self._shaders: dict[str, ShaderProgram] = {}
         self._meshes: dict[str, Mesh] = {}
         self._vertex_array_objects: dict[str, VertexArrayObject] = {}
-        self._shaders: dict[str, ShaderProgram] = {}
+        self._textures: dict[str, Texture2D] = {}
 
         self._current_camera: None | Camera = None
         self._current_scene: None | Scene = None
@@ -48,6 +50,15 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Scene `{name}` not found")
 
+    def add_shader(self, shader: ShaderProgram):
+        self._shaders[shader.name] = shader
+
+    def get_shader(self, name: str) -> ShaderProgram:
+        try:
+            return self._shaders[name]
+        except KeyError:
+            raise ValueError(f"Shader `{name}` not found")
+
     def add_mesh(self, mesh: Mesh):
         self._meshes[mesh.name] = mesh
 
@@ -66,14 +77,14 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Vertex array object `{name}` not found")
 
-    def add_shader(self, shader: ShaderProgram):
-        self._shaders[shader.name] = shader
+    def add_texture(self, texture: Texture2D):
+        self._textures[texture.name] = texture
 
-    def get_shader(self, name: str) -> ShaderProgram:
+    def get_texture(self, name: str) -> Texture2D:
         try:
-            return self._shaders[name]
+            return self._textures[name]
         except KeyError:
-            raise ValueError(f"Shader `{name}` not found")
+            raise ValueError(f"Texture `{name}` not found")
 
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))
@@ -89,13 +100,13 @@ class ResourceManager:
     scenes=[
         {scenes}
     ],
+    shaders=[
+        {shaders}
+    ],
     meshes=[
         {meshes}
     ],
     vertex_array_objects=[
         {vertex_array_objects}
-    ],
-    shaders=[
-        {shaders}
     ]
 )"""
