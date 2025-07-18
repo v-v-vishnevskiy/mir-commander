@@ -13,4 +13,9 @@ class Mesh(Resource):
         self.tex_coords: None | np.ndarray = tex_coords
 
     def __repr__(self):
-        return f"Mesh(name={self.name}, vertices={len(self.vertices)}, normals={len(self.normals)}, tex_coords={len(self.tex_coords)})"
+        return f"Mesh(" \
+            f"name={self.name}, " \
+            f"vertices={len(self.vertices) // 3}, " \
+            f"normals={len(self.normals) // 3}, " \
+            f"tex_coords={len(self.tex_coords) // 2 if self.tex_coords is not None else None}" \
+            ")"

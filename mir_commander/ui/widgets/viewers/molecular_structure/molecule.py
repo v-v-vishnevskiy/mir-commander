@@ -5,8 +5,13 @@ import numpy as np
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl.models import cylinder, sphere
-from mir_commander.ui.utils.opengl.resource_manager import Mesh, ResourceManager, SceneNode, VertexArrayObject
+from mir_commander.ui.utils.opengl.models import cylinder, sphere, square
+from mir_commander.ui.utils.opengl.resource_manager import (
+    Mesh,
+    ResourceManager,
+    SceneNode,
+    VertexArrayObject,
+)
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -51,14 +56,19 @@ class Molecule(SceneNode):
     def init_resources(self):
         logger.debug("Initializing resources")
 
+        square_mesh = Mesh("square", square.get_vertices(), square.get_normals(), square.get_texture_coords())
+        self._resource_manager.add_mesh(square_mesh)
+
         atom_mesh = self._get_atom_mesh()
         bond_mesh = self._get_bond_mesh()
         self._resource_manager.add_mesh(atom_mesh)
         self._resource_manager.add_mesh(bond_mesh)
 
         if self._resource_manager.fallback_mode is False:
+            square_vao = VertexArrayObject("square", square_mesh.vertices, square_mesh.normals, square_mesh.tex_coords)
             atom_vao = self._get_atom_vao(atom_mesh)
             bond_vao = self._get_bond_vao(bond_mesh)
+            self._resource_manager.add_vertex_array_object(square_vao)
             self._resource_manager.add_vertex_array_object(atom_vao)
             self._resource_manager.add_vertex_array_object(bond_vao)
 
@@ -67,9 +77,9 @@ class Molecule(SceneNode):
     def _get_atom_mesh(self) -> Mesh:
         logger.debug("Getting atom mesh data")
         mesh_quality = self._config.quality.mesh
-        stacks, slices = sphere.min_stacks * mesh_quality, sphere.min_slices * mesh_quality
-        tmp_vertices = sphere.get_vertices(stacks=int(stacks), slices=int(slices), radius=1.0)
-        faces = sphere.get_faces(stacks=int(stacks), slices=int(slices))
+        stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
+        tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices, radius=1.0)
+        faces = sphere.get_faces(stacks=stacks, slices=slices)
         vertices = sphere.unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_vertex_normals(vertices)
@@ -80,9 +90,9 @@ class Molecule(SceneNode):
     def _get_bond_mesh(self) -> Mesh:
         logger.debug("Getting bond mesh data")
         mesh_quality = self._config.quality.mesh
-        slices = cylinder.min_slices * (mesh_quality / 2)
-        tmp_vertices = cylinder.get_vertices(stacks=1, slices=int(slices), radius=1.0, length=1.0, caps=False)
-        faces = cylinder.get_faces(stacks=1, slices=int(slices), caps=False)
+        slices = int(cylinder.min_slices * (mesh_quality / 2))
+        tmp_vertices = cylinder.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, caps=False)
+        faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
         vertices = cylinder.unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_vertex_normals(vertices)

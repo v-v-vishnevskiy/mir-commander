@@ -85,7 +85,7 @@ class ModernRenderer(BaseRenderer):
                     if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
                         self._update_transformation_buffer(group_id, buffer_id, nodes)
 
-                    self._setup_instanced_attributes()
+                    self._setup_instanced_attributes(2 if texture_name is None else 3)
 
                     glUniform4f(uniform_locations.color, *color)
                     glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
@@ -104,14 +104,14 @@ class ModernRenderer(BaseRenderer):
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
         self._transformation_buffers[key] = (buffer, len(nodes))
 
-    def _setup_instanced_attributes(self):
+    def _setup_instanced_attributes(self, start_index: int):
         # Setup instanced attributes for transformation matrices
         # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
         stride = 16 * 4  # 16 floats * 4 bytes per float
         for i in range(4):
-            glEnableVertexAttribArray(2 + i)
-            glVertexAttribPointer(2 + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
-            glVertexAttribDivisor(2 + i, 1)  # Updated for each instance
+            glEnableVertexAttribArray(start_index + i)
+            glVertexAttribPointer(start_index + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
+            glVertexAttribDivisor(start_index + i, 1)  # Updated for each instance
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
         view_matrix = self._resource_manager.current_camera.matrix.data()

@@ -4,6 +4,7 @@ from mir_commander.ui.utils.opengl.resource_manager import SceneNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
+from .atom_label import AtomLabel
 from .bounding_sphere import BoundingSphere
 
 
@@ -24,8 +25,7 @@ class Atom(SceneNode):
         self.set_scale(radius)
         self.set_color(color)
         self.set_model(model_name)
-        self.set_shader("atom")
-        self.set_texture("atom")
+        self.set_shader("default")
 
         self._radius = radius
         self.index_num = index_num
@@ -36,6 +36,7 @@ class Atom(SceneNode):
         self._selected = False
         self._bounding_sphere = BoundingSphere(model_name, color, selected_atom_config)
         self.add_node(self._bounding_sphere)
+        self.add_node(AtomLabel(position))
 
     def add_related_bond(self, bond: SceneNode):
         self._related_bonds.append(bond)
@@ -82,7 +83,7 @@ class Atom(SceneNode):
 
     def set_selected(self, value: bool):
         self._selected = value
-        self._bounding_sphere.set_visible(value)
+        self._bounding_sphere.notify_visible_changed()
 
     def toggle_selection(self) -> bool:
         self.set_selected(not self._selected)

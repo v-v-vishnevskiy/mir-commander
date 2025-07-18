@@ -12,7 +12,7 @@ class BoundingSphere(SceneNode):
         atom_color: Color4f,
         config: SelectedAtom,
     ):
-        super().__init__(transparent=True, visible=False)
+        super().__init__(transparent=True)
         self._atom_color = atom_color
 
         self.set_color(self._compute_color(config))
