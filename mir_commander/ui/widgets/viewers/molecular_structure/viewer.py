@@ -96,11 +96,16 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.set_background_color(normalize_color(self._molecule.style.current.background.color))
 
-        self.projection_manager.orthographic_projection.set_view_bounds(self._molecule.radius + self._molecule.radius*0.10)
+        self.projection_manager.orthographic_projection.set_view_bounds(
+            self._molecule.radius + self._molecule.radius * 0.10
+        )
         current_fov = self._molecule.style.current.projection.perspective.fov
         self.set_perspective_projection_fov(current_fov)
-        fov_factor = current_fov/45.0
-        self.projection_manager.perspective_projection.set_near_far_plane(self._molecule.radius/fov_factor, 4*self._molecule.radius/fov_factor)
+        fov_factor = current_fov / 45.0
+        self.projection_manager.perspective_projection.set_near_far_plane(
+            self._molecule.radius/fov_factor,
+            8 * self._molecule.radius/fov_factor,
+        )
         self.set_projection_mode(self._molecule.style.current.projection.mode)
 
         self.resource_manager.current_camera.reset_to_default()
