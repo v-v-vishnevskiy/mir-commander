@@ -16,13 +16,13 @@ def get_vertices() -> np.ndarray:
 
 def get_texture_coords() -> np.ndarray:
     tex_coords: list[float] = [
-        0.0, 0.0,
-        1.0, 0.0,
-        1.0, 1.0,
-
-        1.0, 1.0,
         0.0, 1.0,
+        1.0, 1.0,
+        1.0, 0.0,
+
+        1.0, 0.0,
         0.0, 0.0,
+        0.0, 1.0,
     ]
 
     return np.array(tex_coords, dtype=np.float32)
