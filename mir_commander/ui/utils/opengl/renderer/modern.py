@@ -72,7 +72,7 @@ class ModernRenderer(BaseRenderer):
         for group_id, nodes in rc.batches:
             shader_name, texture_name, model_name, color = group_id
 
-            # Switch shader if needed
+            # OPTIMIZATION: Switch shader only when needed (expensive operation)
             if shader_name != last_shader_name:
                 try:
                     shader = self._resource_manager.get_shader(shader_name)
@@ -85,7 +85,7 @@ class ModernRenderer(BaseRenderer):
                 self._setup_uniforms(uniform_locations)
                 last_shader_name = shader_name
 
-            # Switch texture if needed
+            # OPTIMIZATION: Switch texture only when needed (expensive operation)
             if texture_name is not None and texture_name != last_texture_name:
                 texture = self._resource_manager.get_texture(texture_name)
                 texture.bind()
@@ -96,13 +96,13 @@ class ModernRenderer(BaseRenderer):
                 texture.unbind()
                 last_texture_name = texture_name
 
-            # Switch VAO if needed
+            # OPTIMIZATION: Switch VAO only when needed (expensive operation)
             if model_name != last_model_name:
                 vao = self._resource_manager.get_vertex_array_object(model_name)
                 vao.bind()
                 last_model_name = model_name
 
-            # Bind transformation buffer
+            # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
             buffer_id, nodes_count = self._get_transformation_buffer(group_id)
             glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
 
@@ -114,7 +114,7 @@ class ModernRenderer(BaseRenderer):
             # Setup instanced attributes
             self._setup_instanced_attributes(2 if texture_name is None else 3)
 
-            # Draw nodes
+            # OPTIMIZATION: Single draw call for all instances
             glUniform4f(uniform_locations.color, *color)
             glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
 
