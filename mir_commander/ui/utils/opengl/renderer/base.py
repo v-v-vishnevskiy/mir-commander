@@ -15,14 +15,13 @@ from OpenGL.GL import (
     glEnable,
     glViewport,
 )
-from PySide6.QtCore import QRect
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
 from ..enums import PaintMode
 from ..projection import ProjectionManager
 from ..resource_manager import RenderingContainer, ResourceManager, SceneNode
-from ..utils import Color4f
+from ..utils import Color4f, crop_image_to_content
 
 logger = logging.getLogger("OpenGL.Renderer")
 
@@ -78,52 +77,6 @@ class BaseRenderer:
     def _sort_by_depth(self, nodes: list[SceneNode]) -> list[SceneNode]:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
-    def crop_image_to_content(self, image: QImage, bg_color: QColor) -> QImage:
-        # Need this hack with the fake 1x1 image to take into account the format of our real image
-        # so we know the value of the background color as it is represented in the image.
-        bg_image = QImage(1, 1, image.format())
-        bg_image.setPixelColor(0, 0, bg_color)
-        bg_color_value = bg_image.pixel(0, 0)
-        xmin = ymin = xmax = ymax = -1
-
-        for y in range(image.height()):
-            for x in range(image.width()):
-                if image.pixel(x, y) != bg_color_value:
-                    ymin = y
-                    break
-            if ymin >= 0:
-                break
-
-        for y in reversed(range(image.height())):
-            for x in range(image.width()):
-                if image.pixel(x, y) != bg_color_value:
-                    ymax = y
-                    break
-            if ymax >= 0:
-                break
-
-        for x in range(image.width()):
-            for y in range(image.height()):
-                if image.pixel(x, y) != bg_color_value:
-                    xmin = x
-                    break
-            if xmin >= 0:
-                break
-
-        for x in reversed(range(image.width())):
-            for y in range(image.height()):
-                if image.pixel(x, y) != bg_color_value:
-                    xmax = x
-                    break
-            if xmax >= 0:
-                break
-
-        if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
-            crop_area = QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
-            image = image.copy(crop_area)
-
-        return image
-
     def render_to_image(
         self, 
         width: int, 
@@ -162,7 +115,7 @@ class BaseRenderer:
             image = image.convertToFormat(QImage.Format_RGB32)
 
         if crop_to_content:
-            image = self.crop_image_to_content(image, bg_color)
+            image = crop_image_to_content(image, bg_color)
 
         return image
 

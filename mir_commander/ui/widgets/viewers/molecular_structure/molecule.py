@@ -2,7 +2,9 @@ import logging
 import math
 
 import numpy as np
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QVector3D
+from periodictable import elements
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.models import cylinder, sphere, square
@@ -10,8 +12,10 @@ from mir_commander.ui.utils.opengl.resource_manager import (
     Mesh,
     ResourceManager,
     SceneNode,
+    Texture2D,
     VertexArrayObject,
 )
+from mir_commander.ui.utils.opengl import render_text_to_image
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -56,6 +60,8 @@ class Molecule(SceneNode):
     def init_resources(self):
         logger.debug("Initializing resources")
 
+        self._init_textures()
+
         square_mesh = Mesh("square", square.get_vertices(), square.get_normals(), square.get_texture_coords())
         self._resource_manager.add_mesh(square_mesh)
 
@@ -74,11 +80,30 @@ class Molecule(SceneNode):
 
         logger.debug("Resources initialized")
 
+    def _init_textures(self):
+        logger.debug("Initializing textures")
+
+        for element in elements:
+            image = render_text_to_image(element.symbol)
+
+            if image.width() > image.height():
+                image = image.scaled(image.width(), image.width(), Qt.AspectRatioMode.IgnoreAspectRatio)
+            else:
+                image = image.scaled(image.height(), image.height(), Qt.AspectRatioMode.IgnoreAspectRatio)
+
+            texture = Texture2D(
+                f"atom_{element.symbol}",
+                image.width(),
+                image.height(),
+                np.frombuffer(image.bits().tobytes(), dtype=np.uint8).reshape(image.height(), image.width(), 4),
+            )
+            self._resource_manager.add_texture(texture)
+
     def _get_atom_mesh(self) -> Mesh:
         logger.debug("Getting atom mesh data")
         mesh_quality = self._config.quality.mesh
         stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
-        tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices, radius=1.0)
+        tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices)
         faces = sphere.get_faces(stacks=stacks, slices=slices)
         vertices = sphere.unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
