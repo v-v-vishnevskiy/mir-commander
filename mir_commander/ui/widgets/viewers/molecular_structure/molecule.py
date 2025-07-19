@@ -83,21 +83,25 @@ class Molecule(SceneNode):
     def _init_textures(self):
         logger.debug("Initializing textures")
 
-        for element in elements:
-            image = render_text_to_image(element.symbol)
+        for e in elements:
+            self._add_texture(text=f"{e.symbol}", name=f"atom_s_{e.symbol}")
+        self._add_texture(text="X", name="atom_s_X")
+        self._add_texture(text="Q", name="atom_s_Q")
 
-            if image.width() > image.height():
-                image = image.scaled(image.width(), image.width(), Qt.AspectRatioMode.IgnoreAspectRatio)
-            else:
-                image = image.scaled(image.height(), image.height(), Qt.AspectRatioMode.IgnoreAspectRatio)
+    def _add_texture(self, text: str, name: str):
+        image = render_text_to_image(text)
+        if image.width() > image.height():
+            image = image.scaled(image.width(), image.width(), Qt.AspectRatioMode.IgnoreAspectRatio)
+        else:
+            image = image.scaled(image.height(), image.height(), Qt.AspectRatioMode.IgnoreAspectRatio)
 
-            texture = Texture2D(
-                f"atom_{element.symbol}",
-                image.width(),
-                image.height(),
-                np.frombuffer(image.bits().tobytes(), dtype=np.uint8).reshape(image.height(), image.width(), 4),
-            )
-            self._resource_manager.add_texture(texture)
+        texture = Texture2D(
+            name,
+            image.width(),
+            image.height(),
+            np.frombuffer(image.bits().tobytes(), dtype=np.uint8).reshape(image.height(), image.width(), 4),
+        )
+        self._resource_manager.add_texture(texture)
 
     def _get_atom_mesh(self) -> Mesh:
         logger.debug("Getting atom mesh data")
@@ -202,6 +206,7 @@ class Molecule(SceneNode):
 
     def clear(self):
         self.atom_items.clear()
+        # TODO: remove textures
         self.bond_items.clear()
         self.clear()
 
@@ -222,11 +227,16 @@ class Molecule(SceneNode):
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
+        element_symbol = atomic_number_to_symbol(atomic_num)
+
+        self._add_texture(text=f"{element_symbol}{index_num}", name=f"atom_si_{element_symbol}{index_num}")
+        self._add_texture(text=f"{index_num}", name=f"atom_i_{index_num}")
+
         item = Atom(
             self._sphere_resource_name,
             index_num,
             atomic_num,
-            atomic_number_to_symbol(atomic_num),
+            element_symbol,
             position,
             radius,
             color,

@@ -20,7 +20,7 @@ uniform vec4 color;
 uniform sampler2D tex_1;
 
 void main() {
-    output_color = texture(tex_1, fragment_texcoord);
+    output_color = texture(tex_1, fragment_texcoord) * color;
 }
 """
 

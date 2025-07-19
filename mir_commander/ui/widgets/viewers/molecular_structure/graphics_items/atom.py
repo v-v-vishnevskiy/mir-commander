@@ -36,7 +36,9 @@ class Atom(SceneNode):
         self._selected = False
         self._bounding_sphere = BoundingSphere(model_name, color, selected_atom_config)
         self.add_node(self._bounding_sphere)
-        self.add_node(AtomLabel(element_symbol, index_num, position))
+        # self.add_node(AtomLabel(f"atom_s_{element_symbol}", position))
+        self.add_node(AtomLabel(f"atom_si_{element_symbol}{index_num}", position))
+        # self.add_node(AtomLabel(f"atom_i_{index_num}", position))
 
     def add_related_bond(self, bond: SceneNode):
         self._related_bonds.append(bond)

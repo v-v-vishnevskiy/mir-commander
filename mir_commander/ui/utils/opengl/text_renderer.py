@@ -1,53 +1,72 @@
 from PySide6.QtGui import QFont, QPainter, QImage, QColor
 from PySide6.QtCore import Qt
 
-from .utils import crop_image_to_content
 
+def calculate_font_size(font: QFont, target_size: int, text: str) -> int:
+    """Calculate optimal font size to fit text in square"""
 
-def render_text_to_image(text: str, font: None | QFont = None, padding: int = 0) -> QImage:
-    if font is None:
-        font = QFont()
-        font.setPointSize(150)
-        font.setBold(False)
-        font.setFamily("Arial")
+    # Start with a reasonable font size
+    font.setPointSize(target_size // 4)
 
-    # Create temporary image for measuring text size
+    # Create temporary painter to measure text
     temp_image = QImage(1, 1, QImage.Format.Format_RGBA8888)
     temp_painter = QPainter(temp_image)
     temp_painter.setFont(font)
-    text_rect = temp_painter.boundingRect(0, 0, 1000, 1000, Qt.AlignLeft | Qt.AlignTop, text)
+
+    # Binary search for optimal font size
+    min_size = 1
+    max_size = target_size
+    optimal_size = min_size
+
+    while min_size <= max_size:
+        current_size = (min_size + max_size) // 2
+        font.setPointSize(current_size)
+        temp_painter.setFont(font)
+
+        # Measure text bounds
+        text_rect = temp_painter.boundingRect(0, 0, target_size, target_size, Qt.AlignCenter, text)
+
+        # Check if text fits
+        if text_rect.width() <= target_size * 0.9 and text_rect.height() <= target_size * 0.9:
+            optimal_size = current_size
+            min_size = current_size + 1
+        else:
+            max_size = current_size - 1
+
     temp_painter.end()
+    return optimal_size
 
-    # Add padding
-    width = text_rect.width() + padding * 2
-    height = text_rect.height() + padding * 2
 
-    # Ensure minimum size
-    if width <= 0:
-        width = 1
-    if height <= 0:
-        height = 1
+def render_text_to_image(
+    text: str,
+    font: None | QFont = None,
+    color: QColor = QColor(255, 255, 255, 255),
+    size: int = 100,
+) -> QImage:
+    if font is None:
+        font = QFont()
+        font.setBold(False)
+        font.setFamily("Arial")
 
-    # Create image with white background for debugging
-    image = QImage(width, height, QImage.Format.Format_RGBA8888)
+    # Create square image with specified size
+    image = QImage(size, size, QImage.Format.Format_RGBA8888)
     image.fill(QColor(0, 0, 0, 0))  # Transparent background
+
+    # Calculate and set optimal font size
+    optimal_font_size = calculate_font_size(font, size, text)
+    font.setPointSize(optimal_font_size)
 
     # Render text
     painter = QPainter(image)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
 
-    # Draw text
-    text_color = QColor(0, 0, 0, 255)  # Black text
-    painter.setPen(text_color)
+    painter.setPen(color)
     painter.setFont(font)
 
-    # Position text correctly
-    x = padding
-    y = padding + text_rect.height() - text_rect.y()  # Adjust for baseline
-
-    painter.drawText(x, y, text)
+    # Center text in the square
+    painter.drawText(0, 0, size, size, Qt.AlignCenter, text)
 
     painter.end()
 
-    return crop_image_to_content(image, QColor(0, 0, 0, 0))
+    return image
