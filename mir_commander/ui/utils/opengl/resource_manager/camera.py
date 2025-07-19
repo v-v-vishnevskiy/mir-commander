@@ -71,6 +71,10 @@ class Camera(Resource):
             self._dirty = False
         return self._matrix
 
+    @property
+    def position(self) -> QVector3D:
+        return self._position
+
     def set_position(self, position: QVector3D):
         """Set camera position."""
 

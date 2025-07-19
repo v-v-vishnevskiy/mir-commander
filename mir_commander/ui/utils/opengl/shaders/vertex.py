@@ -94,21 +94,33 @@ uniform mat4 projection_matrix;
 out vec2 fragment_texcoord;
 
 void main() {
-    // get scale from instance_model_matrix
-    vec3 scale;
-    scale.x = length(vec3(instance_model_matrix[0][0], instance_model_matrix[0][1], instance_model_matrix[0][2]));
-    scale.y = length(vec3(instance_model_matrix[1][0], instance_model_matrix[1][1], instance_model_matrix[1][2]));
-    scale.z = length(vec3(instance_model_matrix[2][0], instance_model_matrix[2][1], instance_model_matrix[2][2]));
+    vec3 camera_position = vec3(-view_matrix[3][0], -view_matrix[3][1], -view_matrix[3][2]);
+
+    vec3 scene_scale;
+    scene_scale.x = length(vec3(scene_matrix[0][0], scene_matrix[0][1], scene_matrix[0][2]));
+    scene_scale.y = length(vec3(scene_matrix[1][0], scene_matrix[1][1], scene_matrix[1][2]));
+    scene_scale.z = length(vec3(scene_matrix[2][0], scene_matrix[2][1], scene_matrix[2][2]));
+
+    vec3 model_scale;
+    model_scale.x = length(vec3(instance_model_matrix[0][0], instance_model_matrix[0][1], instance_model_matrix[0][2]));
+    model_scale.y = length(vec3(instance_model_matrix[1][0], instance_model_matrix[1][1], instance_model_matrix[1][2]));
+    model_scale.z = length(vec3(instance_model_matrix[2][0], instance_model_matrix[2][1], instance_model_matrix[2][2]));
 
     // apply scale to position
-    vec3 scaled_position = position * scale;
+    vec3 scaled_position = position * model_scale * scene_scale;
 
-    // get object position
+    // get object position in world space
     vec3 object_pos = vec3(scene_matrix * instance_model_matrix * vec4(0.0, 0.0, 0.0, 1.0));
 
-    // combine object position and scaled quad
-    vec4 world_pos = vec4(object_pos + scaled_position, 1.0);
+    float label_offset = 0.3 * 2;
 
+    // direction from object to camera
+    vec3 to_camera = normalize(camera_position - object_pos);
+
+    // move label in front of the object
+    vec3 billboard_pos = object_pos + scaled_position + to_camera * label_offset;
+
+    vec4 world_pos = vec4(billboard_pos, 1.0);
     gl_Position = projection_matrix * view_matrix * world_pos;
 
     fragment_texcoord = in_texcoord;
