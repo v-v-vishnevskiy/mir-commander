@@ -1,19 +1,19 @@
-from .scene_node import SceneNode
+from typing import Hashable
 
-from ..utils import Color4f
+from .scene_node import SceneNode
 
 
 class RenderingContainer:
     def __init__(self, name: str):
         self.name = name
-        self._batches: dict[tuple[str, str, str, Color4f], list[SceneNode]] = {}
+        self._batches: dict[Hashable, list[SceneNode]] = {}
         self.transform_dirty: dict[tuple, bool] = {}
 
     def __bool__(self):
         return bool(self._batches)
 
     @property
-    def batches(self) -> list[tuple[tuple[str, str, str, Color4f], list[SceneNode]]]:
+    def batches(self) -> list[Hashable, list[SceneNode]]:
         return sorted(((group_id, nodes) for group_id, nodes in self._batches.items()))
 
     def add_node(self, node: SceneNode):

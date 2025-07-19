@@ -50,7 +50,7 @@ class ModernRenderer(BaseRenderer):
         last_model_name = None
 
         for group_id, nodes in rc.batches:
-            shader_name, model_name, texture_name, color = group_id
+            _, _, model_name, _ = group_id
 
             # Switch VAO if needed
             if model_name != last_model_name:
@@ -70,7 +70,7 @@ class ModernRenderer(BaseRenderer):
         last_texture_name = None
 
         for group_id, nodes in rc.batches:
-            shader_name, model_name, texture_name, color = group_id
+            shader_name, texture_name, model_name, color = group_id
 
             # Switch shader if needed
             if shader_name != last_shader_name:
@@ -85,12 +85,6 @@ class ModernRenderer(BaseRenderer):
                 self._setup_uniforms(uniform_locations)
                 last_shader_name = shader_name
 
-            # Switch VAO if needed
-            if model_name != last_model_name:
-                vao = self._resource_manager.get_vertex_array_object(model_name)
-                vao.bind()
-                last_model_name = model_name
-
             # Switch texture if needed
             if texture_name is not None and texture_name != last_texture_name:
                 texture = self._resource_manager.get_texture(texture_name)
@@ -101,6 +95,12 @@ class ModernRenderer(BaseRenderer):
                 texture = self._resource_manager.get_texture(last_texture_name)
                 texture.unbind()
                 last_texture_name = texture_name
+
+            # Switch VAO if needed
+            if model_name != last_model_name:
+                vao = self._resource_manager.get_vertex_array_object(model_name)
+                vao.bind()
+                last_model_name = model_name
 
             # Bind transformation buffer
             buffer_id, nodes_count = self._get_transformation_buffer(group_id)

@@ -29,7 +29,7 @@ class FallbackRenderer(BaseRenderer):
         last_shader_name = None
 
         for group_id, nodes in rc.batches:
-            shader_name, model_name, texture_name, color = group_id
+            shader_name, _, model_name, color = group_id
 
             # Switch shader if needed
             if shader_name != last_shader_name:
@@ -51,7 +51,7 @@ class FallbackRenderer(BaseRenderer):
         transform_matrix = self._get_transform_matrix()
 
         for group_id, nodes in rc.batches:
-            shader_name, model_name, texture_name, color = group_id
+            _, _, model_name, color = group_id
 
             self._paint_nodes(model_name, nodes, color, transform_matrix, PaintMode.Picking)
 
