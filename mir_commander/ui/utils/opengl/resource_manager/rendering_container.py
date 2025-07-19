@@ -1,43 +1,40 @@
 from .scene_node import SceneNode
 
+from ..utils import Color4f
+
 
 class RenderingContainer:
     def __init__(self, name: str):
         self.name = name
-        self.nodes: dict = {}
+        self._batches: dict[tuple[str, str, str, Color4f], list[SceneNode]] = {}
         self.transform_dirty: dict[tuple, bool] = {}
 
     def __bool__(self):
-        return bool(self.nodes)
+        return bool(self._batches)
+
+    @property
+    def batches(self) -> list[tuple[tuple[str, str, str, Color4f], list[SceneNode]]]:
+        return sorted(((group_id, nodes) for group_id, nodes in self._batches.items()))
 
     def add_node(self, node: SceneNode):
         group_id = node.group_id
-        shader_name, model_name, material = group_id
 
-        if shader_name not in self.nodes:
-            self.nodes[shader_name] = {}
-        if model_name not in self.nodes[shader_name]:
-            self.nodes[shader_name][model_name] = {}
-        if material not in self.nodes[shader_name][model_name]:
-            self.nodes[shader_name][model_name][material] = []
-        if node not in self.nodes[shader_name][model_name][material]:
+        if group_id not in self._batches:
+            self._batches[group_id] = []
+
+        if node not in self._batches[group_id]:
             self.transform_dirty[group_id] = True
-            self.nodes[shader_name][model_name][material].append(node)
+            self._batches[group_id].append(node)
 
     def remove_node(self, node: SceneNode):
         group_id = node.group_id
-        shader_name, model_name, material = group_id
 
         try:
-            self.nodes[shader_name][model_name][material].remove(node)
+            self._batches[group_id].remove(node)
             self.transform_dirty[group_id] = True
 
-            if len(self.nodes[shader_name][model_name][material]) == 0:
-                del self.nodes[shader_name][model_name][material]
-            if len(self.nodes[shader_name][model_name]) == 0:
-                del self.nodes[shader_name][model_name]
-            if len(self.nodes[shader_name]) == 0:
-                del self.nodes[shader_name]
+            if not self._batches[group_id]:
+                del self._batches[group_id]
         except (KeyError, ValueError):
             # Node was already removed
             pass
@@ -46,23 +43,19 @@ class RenderingContainer:
         self.transform_dirty[node.group_id] = True
 
     def clear(self):
-        self.nodes.clear()
+        self._batches.clear()
         self.transform_dirty.clear()
 
     def clear_transform_dirty(self):
         self.transform_dirty.clear()
 
     def __repr__(self) -> str:
-        result = []
-        for key, value in self.nodes.items():
-            result.append(f"{key}:")
-            for key2, value2 in value.items():
-                result.append(f"  {key2}:")
-                for key3, value3 in value2.items():
-                    result.append(f"    {key3}:")
-                    for node in value3:
-                        result.append(f"      {node}")
+        _batches = []
+        for group_id, batches in self.batches:
+            _batches.append(f"{group_id}:")
+            for node in batches:
+                _batches.append(f"  {node}")
 
-        nodes = "\n".join(result)
+        batches = "\n".join(_batches)
 
-        return f"{self.__class__.__name__}(name={self.name}, nodes={nodes})"
+        return f"{self.__class__.__name__}(name={self.name}, batches={batches})"

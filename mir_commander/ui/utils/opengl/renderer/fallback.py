@@ -1,11 +1,16 @@
+import logging
+
 from PySide6.QtGui import QMatrix4x4
 
 from OpenGL.GL import glLoadMatrixf, glUseProgram, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, glVertexPointer, glNormalPointer, glColor4f, glDrawArrays, glEnableClientState, glDisableClientState, GL_FLOAT, GL_TRIANGLES
 
 from ..enums import PaintMode
 from ..resource_manager import RenderingContainer, SceneNode
+from ..utils import Color4f
 
 from .base import BaseRenderer
+
+logger = logging.getLogger("Renderer.Fallback")
 
 
 class FallbackRenderer(BaseRenderer):
@@ -21,11 +26,23 @@ class FallbackRenderer(BaseRenderer):
     def _paint_normal(self, rc: RenderingContainer):
         transform_matrix = self._get_transform_matrix()
 
-        for shader_name, nodes_by_model in rc.nodes.items():
-            shader = self._resource_manager.get_shader(shader_name)
-            glUseProgram(shader.program)
-            for model_name, nodes_by_color in nodes_by_model.items():
-                self._paint_nodes(model_name, nodes_by_color, transform_matrix, PaintMode.Normal)
+        last_shader_name = None
+
+        for group_id, nodes in rc.batches:
+            shader_name, model_name, texture_name, color = group_id
+
+            # Switch shader if needed
+            if shader_name != last_shader_name:
+                try:
+                    shader = self._resource_manager.get_shader(shader_name)
+                except ValueError:
+                    logger.warning(f"Shader `{shader_name}` not found, skipping group")
+                    continue
+
+                glUseProgram(shader.program)
+                last_shader_name = shader_name
+
+            self._paint_nodes(model_name, nodes, color, transform_matrix, PaintMode.Normal)
 
     def _paint_picking(self, rc: RenderingContainer):
         shader = self._resource_manager.get_shader("picking")
@@ -33,9 +50,10 @@ class FallbackRenderer(BaseRenderer):
 
         transform_matrix = self._get_transform_matrix()
 
-        for shader_name, nodes_by_model in rc.nodes.items():
-            for model_name, nodes_by_color in nodes_by_model.items():
-                self._paint_nodes(model_name, nodes_by_color, transform_matrix, PaintMode.Picking)
+        for group_id, nodes in rc.batches:
+            shader_name, model_name, texture_name, color = group_id
+
+            self._paint_nodes(model_name, nodes, color, transform_matrix, PaintMode.Picking)
 
     def _get_transform_matrix(self) -> QMatrix4x4:
         view_matrix = self._resource_manager.current_camera.matrix
@@ -45,7 +63,8 @@ class FallbackRenderer(BaseRenderer):
     def _paint_nodes(
         self,
         model_name: str,
-        nodes: dict[str, list[SceneNode]],
+        nodes: list[SceneNode],
+        color: Color4f,
         transform_matrix: QMatrix4x4,
         paint_mode: PaintMode,
     ):
@@ -59,16 +78,15 @@ class FallbackRenderer(BaseRenderer):
 
         count = int(len(mesh.vertices) / 3)
 
-        for color, nodes in nodes.items():
-            for node in nodes:
-                glLoadMatrixf((transform_matrix * node.transform).data())
+        glColor4f(*color)
 
-                if paint_mode == PaintMode.Picking:
-                    glColor4f(*node.picking_color)
-                else:
-                    glColor4f(*color)
+        for node in nodes:
+            glLoadMatrixf((transform_matrix * node.transform).data())
 
-                glDrawArrays(GL_TRIANGLES, 0, count)
+            if paint_mode == PaintMode.Picking:
+                glColor4f(*node.picking_color)
+
+            glDrawArrays(GL_TRIANGLES, 0, count)
 
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)

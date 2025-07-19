@@ -47,49 +47,76 @@ class ModernRenderer(BaseRenderer):
         glUseProgram(shader.program)
         self._setup_uniforms(uniform_locations)
 
-        for shader_name, nodes_by_model in rc.nodes.items():
-            for model_texture_name, nodes_by_color in nodes_by_model.items():
-                model_name, _ = model_texture_name
+        last_model_name = None
+
+        for group_id, nodes in rc.batches:
+            shader_name, model_name, texture_name, color = group_id
+
+            # Switch VAO if needed
+            if model_name != last_model_name:
                 vao = self._resource_manager.get_vertex_array_object(model_name)
                 vao.bind()
+                last_model_name = model_name
 
-                for color, nodes in nodes_by_color.items():
-                    for node in nodes:
-                        glUniform4f(uniform_locations.color, *node.picking_color)
-                        glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
-                        glDrawArrays(GL_TRIANGLES, 0, vao.triangles_count)
+            # Draw nodes
+            for node in nodes:
+                glUniform4f(uniform_locations.color, *node.picking_color)
+                glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
+                glDrawArrays(GL_TRIANGLES, 0, vao.triangles_count)
 
     def _paint_normal(self, rc: RenderingContainer):
-        for shader_name, nodes_by_model in rc.nodes.items():
-            shader = self._resource_manager.get_shader(shader_name)
-            glUseProgram(shader.program)
-            uniform_locations = shader.uniform_locations
-            self._setup_uniforms(uniform_locations)
+        last_shader_name = None
+        last_model_name = None
+        last_texture_name = None
 
-            for model_texture_name, nodes_by_color in nodes_by_model.items():
-                model_name, texture_name = model_texture_name
+        for group_id, nodes in rc.batches:
+            shader_name, model_name, texture_name, color = group_id
+
+            # Switch shader if needed
+            if shader_name != last_shader_name:
+                try:
+                    shader = self._resource_manager.get_shader(shader_name)
+                except ValueError:
+                    logger.warning(f"Shader `{shader_name}` not found, skipping group")
+                    continue
+
+                glUseProgram(shader.program)
+                uniform_locations = shader.uniform_locations
+                self._setup_uniforms(uniform_locations)
+                last_shader_name = shader_name
+
+            # Switch VAO if needed
+            if model_name != last_model_name:
                 vao = self._resource_manager.get_vertex_array_object(model_name)
                 vao.bind()
+                last_model_name = model_name
 
-                if texture_name is not None:
-                    texture = self._resource_manager.get_texture(texture_name)
-                    texture.bind()
+            # Switch texture if needed
+            if texture_name is not None and texture_name != last_texture_name:
+                texture = self._resource_manager.get_texture(texture_name)
+                texture.bind()
+                last_texture_name = texture_name
+            # Unbind texture if needed
+            elif texture_name is None and last_texture_name is not None:
+                texture = self._resource_manager.get_texture(last_texture_name)
+                texture.unbind()
+                last_texture_name = texture_name
 
-                for color, nodes in nodes_by_color.items():
-                    group_id = (shader_name, model_texture_name, color)
+            # Bind transformation buffer
+            buffer_id, nodes_count = self._get_transformation_buffer(group_id)
+            glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
 
-                    buffer_id, nodes_count = self._get_transformation_buffer(group_id)
-                    glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+            # Update transformation buffer if needed
+            current_len_nodes = len(nodes)
+            if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
+                self._update_transformation_buffer(group_id, buffer_id, nodes)
 
-                    current_len_nodes = len(nodes)
+            # Setup instanced attributes
+            self._setup_instanced_attributes(2 if texture_name is None else 3)
 
-                    if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
-                        self._update_transformation_buffer(group_id, buffer_id, nodes)
-
-                    self._setup_instanced_attributes(2 if texture_name is None else 3)
-
-                    glUniform4f(uniform_locations.color, *color)
-                    glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
+            # Draw nodes
+            glUniform4f(uniform_locations.color, *color)
+            glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
 
     def _get_transformation_buffer(self, key: tuple[str, str, Color4f]) -> tuple[int, int]:
         if key not in self._transformation_buffers:
