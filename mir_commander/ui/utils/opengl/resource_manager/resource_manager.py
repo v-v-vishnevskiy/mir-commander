@@ -1,4 +1,5 @@
 from .camera import Camera
+from .font_atlas import FontAtlas
 from .mesh import Mesh
 from .scene import Scene
 from .shader import ShaderProgram
@@ -16,6 +17,7 @@ class ResourceManager:
         self._meshes: dict[str, Mesh] = {}
         self._vertex_array_objects: dict[str, VertexArrayObject] = {}
         self._textures: dict[str, Texture2D] = {}
+        self._font_atlases: dict[str, FontAtlas] = {}
 
         self._current_camera: None | Camera = None
         self._current_scene: None | Scene = None
@@ -86,6 +88,15 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Texture `{name}` not found")
 
+    def add_font_atlas(self, font_atlas: FontAtlas):
+        self._font_atlases[font_atlas.name] = font_atlas
+
+    def get_font_atlas(self, name: str) -> FontAtlas:
+        try:
+            return self._font_atlases[name]
+        except KeyError:
+            raise ValueError(f"Font atlas `{name}` not found")
+
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))
         scenes = ",\n\t".join((str(scene) for scene in self._scenes.values()))
@@ -93,6 +104,7 @@ class ResourceManager:
         vertex_array_objects = ",\n\t".join((str(vao) for vao in self._vertex_array_objects.values()))
         shaders = ",\n\t".join((str(shader) for shader in self._shaders.values()))
         textures = ",\n\t".join((str(texture) for texture in self._textures.values()))
+        font_atlases = ",\n\t".join((str(font_atlas) for font_atlas in self._font_atlases.values()))
 
         return f"""{self.__class__.__name__}(
     cameras=[
@@ -112,5 +124,8 @@ class ResourceManager:
     ],
     textures=[
         {textures}
+    ],
+    font_atlases=[
+        {font_atlases}
     ]
 )"""

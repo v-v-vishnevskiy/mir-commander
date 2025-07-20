@@ -1,4 +1,5 @@
 from .camera import Camera
+from .font_atlas import FontAtlas
 from .mesh import Mesh
 from .rendering_container import RenderingContainer
 from .resource_manager import ResourceManager

@@ -2,20 +2,11 @@ import logging
 import math
 
 import numpy as np
-from PySide6.QtCore import Qt
 from PySide6.QtGui import QVector3D
-from periodictable import elements
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl.models import cylinder, sphere, square
-from mir_commander.ui.utils.opengl.resource_manager import (
-    Mesh,
-    ResourceManager,
-    SceneNode,
-    Texture2D,
-    VertexArrayObject,
-)
-from mir_commander.ui.utils.opengl import render_text_to_image
+from mir_commander.ui.utils.opengl.models import cylinder, sphere
+from mir_commander.ui.utils.opengl.resource_manager import Mesh, ResourceManager, SceneNode, VertexArrayObject
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -60,48 +51,18 @@ class Molecule(SceneNode):
     def init_resources(self):
         logger.debug("Initializing resources")
 
-        self._init_textures()
-
-        square_mesh = Mesh("square", square.get_vertices(), square.get_normals(), square.get_texture_coords())
-        self._resource_manager.add_mesh(square_mesh)
-
         atom_mesh = self._get_atom_mesh()
         bond_mesh = self._get_bond_mesh()
         self._resource_manager.add_mesh(atom_mesh)
         self._resource_manager.add_mesh(bond_mesh)
 
         if self._resource_manager.fallback_mode is False:
-            square_vao = VertexArrayObject("square", square_mesh.vertices, square_mesh.normals, square_mesh.tex_coords)
             atom_vao = self._get_atom_vao(atom_mesh)
             bond_vao = self._get_bond_vao(bond_mesh)
-            self._resource_manager.add_vertex_array_object(square_vao)
             self._resource_manager.add_vertex_array_object(atom_vao)
             self._resource_manager.add_vertex_array_object(bond_vao)
 
         logger.debug("Resources initialized")
-
-    def _init_textures(self):
-        logger.debug("Initializing textures")
-
-        for e in elements:
-            self._add_texture(text=f"{e.symbol}", name=f"atom_s_{e.symbol}")
-        self._add_texture(text="X", name="atom_s_X")
-        self._add_texture(text="Q", name="atom_s_Q")
-
-    def _add_texture(self, text: str, name: str):
-        image = render_text_to_image(text)
-        if image.width() > image.height():
-            image = image.scaled(image.width(), image.width(), Qt.AspectRatioMode.IgnoreAspectRatio)
-        else:
-            image = image.scaled(image.height(), image.height(), Qt.AspectRatioMode.IgnoreAspectRatio)
-
-        texture = Texture2D(
-            name,
-            image.width(),
-            image.height(),
-            np.frombuffer(image.bits().tobytes(), dtype=np.uint8).reshape(image.height(), image.width(), 4),
-        )
-        self._resource_manager.add_texture(texture)
 
     def _get_atom_mesh(self) -> Mesh:
         logger.debug("Getting atom mesh data")
@@ -206,7 +167,6 @@ class Molecule(SceneNode):
 
     def clear(self):
         self.atom_items.clear()
-        # TODO: remove textures
         self.bond_items.clear()
         self.clear()
 
@@ -227,16 +187,11 @@ class Molecule(SceneNode):
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
-        element_symbol = atomic_number_to_symbol(atomic_num)
-
-        self._add_texture(text=f"{element_symbol}{index_num}", name=f"atom_si_{element_symbol}{index_num}")
-        self._add_texture(text=f"{index_num}", name=f"atom_i_{index_num}")
-
         item = Atom(
             self._sphere_resource_name,
             index_num,
             atomic_num,
-            element_symbol,
+            atomic_number_to_symbol(atomic_num),
             position,
             radius,
             color,

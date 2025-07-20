@@ -10,10 +10,23 @@ from PySide6.QtWidgets import QMdiSubWindow, QWidget
 from . import shaders
 from .action_handler import ActionHandler
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
+from .font_atlas import create_font_atlas
 from .keymap import Keymap
+from .models import rect
 from .projection import ProjectionManager
 from .renderer import FallbackRenderer, ModernRenderer
-from .resource_manager import Camera, FragmentShader, ResourceManager, Scene, SceneNode, ShaderProgram, VertexShader
+from .resource_manager import (
+    Camera,
+    FontAtlas,
+    FragmentShader,
+    ResourceManager,
+    Scene,
+    SceneNode,
+    ShaderProgram,
+    Texture2D,
+    VertexArrayObject,
+    VertexShader,
+)
 from .utils import Color4f, color_to_id
 
 from time import monotonic
@@ -97,6 +110,28 @@ class OpenGLWidget(QOpenGLWidget):
                     FragmentShader(shaders.fragment.FLAT_COLOR)
                 )
             )
+
+        self.add_font_atlas("Arial.ttf", "arial", "font_atlas_arial")
+
+    def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str, atlas_size: int = 1024):
+        data, atlas_info = create_font_atlas(font_name, atlas_size=atlas_size)
+        font_atlas = FontAtlas(font_atlas_name, atlas_info)
+        texture = Texture2D(name=font_atlas_texture_name, width=atlas_size, height=atlas_size, data=data)
+        self.resource_manager.add_font_atlas(font_atlas)
+        self.resource_manager.add_texture(texture)
+
+        self._build_font_atlas_geometry(font_atlas)
+
+    def _build_font_atlas_geometry(self, font_atlas: FontAtlas):
+        for char, info in font_atlas.info.items():
+            u_min, v_min = info["uv_min"]
+            u_max, v_max = info["uv_max"]
+            width = info["width"] / info["height"]
+
+            vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
+            tex_coords = rect.get_texture_coords(left=u_min, right=u_max, bottom=v_min, top=v_max)
+            vao = VertexArrayObject(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
+            self.resource_manager.add_vertex_array_object(vao)
 
     def clear(self):
         self.resource_manager.current_scene.clear()
