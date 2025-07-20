@@ -21,13 +21,13 @@ def get_vertices(left: float = -1.0, right: float = 1.0, bottom: float = -1.0, t
 
 def get_texture_coords(left: float = 0.0, right: float = 1.0, bottom: float = 0.0, top: float = 1.0) -> np.ndarray:
     tex_coords: list[float] = [
-        left, top,
-        right, top,
-        left, bottom,
+        left, bottom,   # bottom left
+        right, bottom,  # bottom right
+        right, top,     # top right
 
-        left, bottom,
-        right, bottom,
-        left, top,
+        right, top,     # top right
+        left, top,      # top left
+        left, bottom,   # bottom left
     ]
 
     return np.array(tex_coords, dtype=np.float32)
