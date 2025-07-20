@@ -123,6 +123,6 @@ void main() {
     vec4 world_pos = vec4(billboard_pos, 1.0);
     gl_Position = projection_matrix * view_matrix * world_pos;
 
-    fragment_texcoord = in_texcoord;
+    fragment_texcoord = vec2(in_texcoord.x, 1.0 - in_texcoord.y);
 }
 """

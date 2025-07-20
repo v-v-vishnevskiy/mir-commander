@@ -19,15 +19,15 @@ def get_vertices(left: float = -1.0, right: float = 1.0, bottom: float = -1.0, t
     return np.array(vertices, dtype=np.float32)
 
 
-def get_texture_coords(left: float = 0.0, right: float = 1.0, bottom: float = 0.0, top: float = 1.0) -> np.ndarray:
+def get_texture_coords(u_min: float = 0.0, v_min: float = 0.0, u_max: float = 1.0, v_max: float = 1.0) -> np.ndarray:
     tex_coords: list[float] = [
-        left, bottom,   # bottom left
-        right, bottom,  # bottom right
-        right, top,     # top right
+        u_min, v_min,  # bottom left
+        u_max, v_min,  # bottom right
+        u_max, v_max,  # top right
 
-        right, top,     # top right
-        left, top,      # top left
-        left, bottom,   # bottom left
+        u_max, v_max,  # top right
+        u_min, v_max,  # top left
+        u_min, v_min,  # bottom left
     ]
 
     return np.array(tex_coords, dtype=np.float32)

@@ -113,7 +113,8 @@ class OpenGLWidget(QOpenGLWidget):
 
         self.add_font_atlas("Arial.ttf", "arial", "font_atlas_arial")
 
-    def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str, atlas_size: int = 1024):
+    def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str):
+        atlas_size = 512
         data, atlas_info = create_font_atlas(font_name, atlas_size=atlas_size)
         font_atlas = FontAtlas(font_atlas_name, atlas_info)
         texture = Texture2D(name=font_atlas_texture_name, width=atlas_size, height=atlas_size, data=data)
@@ -129,7 +130,7 @@ class OpenGLWidget(QOpenGLWidget):
             width = info["width"] / info["height"]
 
             vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
-            tex_coords = rect.get_texture_coords(left=u_min, right=u_max, bottom=v_min, top=v_max)
+            tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
             vao = VertexArrayObject(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
             self.resource_manager.add_vertex_array_object(vao)
 
