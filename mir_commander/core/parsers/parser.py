@@ -11,7 +11,7 @@ from .gaucube_parser import is_gaucube, load_gaucube
 
 def load_file(path: Path, logs: list[str]) -> Item:
     lines = []
-    line_number_limit = 10
+    line_number_limit = 100
     with path.open("r") as input_file:
         for i, line in enumerate(input_file):
             lines.append(line)
