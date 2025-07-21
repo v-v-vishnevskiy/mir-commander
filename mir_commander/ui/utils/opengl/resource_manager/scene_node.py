@@ -31,6 +31,7 @@ class SceneNode:
         self._visible = visible
         self._transparent = transparent
         self._picking_visible = picking_visible
+        self._is_text = False
 
         self.picking_color = id_to_color(self._id)
 
@@ -67,6 +68,10 @@ class SceneNode:
     @property
     def picking_visible(self) -> bool:
         return self._picking_visible
+
+    @property
+    def is_text(self) -> bool:
+        return self._is_text
 
     @property
     def transform(self) -> QMatrix4x4:

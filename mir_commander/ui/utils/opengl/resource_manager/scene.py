@@ -14,6 +14,7 @@ class Scene(Resource):
         self._containers = (
             RenderingContainer("opaque"),
             RenderingContainer("transparent"),
+            RenderingContainer("text"),
             RenderingContainer("picking"),
         )
         self._root_node = RootSceneNode(*self._containers)
@@ -39,7 +40,7 @@ class Scene(Resource):
     def clear(self):
         self._root_node.clear()
 
-    def containers(self) -> tuple[RenderingContainer, RenderingContainer, RenderingContainer]:
+    def containers(self) -> tuple[RenderingContainer, RenderingContainer, RenderingContainer, RenderingContainer]:
         return self._containers
 
     def __repr__(self):

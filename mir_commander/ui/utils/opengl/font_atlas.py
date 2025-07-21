@@ -4,9 +4,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 def create_font_atlas(
     font_name: str = "Arial.ttf",
-    font_size: int = 82,
+    font_size: int = 72,
     atlas_size: int = 512,
-    chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?-+=/\\|#()[]{}*&$%^@~",
 ) -> tuple[np.ndarray, dict]:
     """
     Create a font atlas from a font file
@@ -61,5 +61,7 @@ def create_font_atlas(
         }
 
         x += char_width
+
+    atlas.save("font_atlas.png")
 
     return np.array(atlas), atlas_info

@@ -52,7 +52,7 @@ class RenderingContainer:
     def __repr__(self) -> str:
         _batches = []
         for group_id, batches in self.batches:
-            _batches.append(f"{group_id}:")
+            _batches.append(f"group_id={group_id}:")
             for node in batches:
                 _batches.append(f"  {node}")
 

@@ -7,11 +7,13 @@ class RootSceneNode:
         self,
         opaque_rendering_container: RenderingContainer,
         transparent_rendering_container: RenderingContainer,
+        text_rendering_container: RenderingContainer,
         picking_rendering_container: RenderingContainer,
     ):
         self._nodes: list[SceneNode] = []
         self._opaque_rendering_container: RenderingContainer = opaque_rendering_container
         self._transparent_rendering_container: RenderingContainer = transparent_rendering_container
+        self._text_rendering_container: RenderingContainer = text_rendering_container
         self._picking_rendering_container: RenderingContainer = picking_rendering_container
 
     def add_node(self, node: SceneNode):
@@ -33,10 +35,15 @@ class RootSceneNode:
     def clear_transform_dirty(self):
         self._opaque_rendering_container.clear_transform_dirty()
         self._transparent_rendering_container.clear_transform_dirty()
+        self._text_rendering_container.clear_transform_dirty()
         self._picking_rendering_container.clear_transform_dirty()
 
     def notify_add_node(self, node: SceneNode):
         if node.is_container is True or node.visible is False:
+            return
+
+        if node.is_text is True:
+            self._text_rendering_container.add_node(node)
             return
 
         if node.transparent:
@@ -51,6 +58,10 @@ class RootSceneNode:
         if node.is_container is True:
             return
 
+        if node.is_text is True:
+            self._text_rendering_container.remove_node(node)
+            return
+
         if node.transparent:
             self._transparent_rendering_container.remove_node(node)
         else:
@@ -61,6 +72,10 @@ class RootSceneNode:
 
     def notify_transform_changed(self, node: SceneNode):
         if node.is_container is True:
+            return
+
+        if node.is_text is True:
+            self._text_rendering_container.set_transform_dirty(node)
             return
 
         if node.transparent:

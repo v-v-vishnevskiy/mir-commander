@@ -19,6 +19,7 @@ from .resource_manager import (
     Camera,
     FontAtlas,
     FragmentShader,
+    Mesh,
     ResourceManager,
     Scene,
     SceneNode,
@@ -113,7 +114,9 @@ class OpenGLWidget(QOpenGLWidget):
 
             vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
             tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
+            mesh = Mesh(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
             vao = VertexArrayObject(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
+            self.resource_manager.add_mesh(mesh)
             self.resource_manager.add_vertex_array_object(vao)
 
     def clear(self):

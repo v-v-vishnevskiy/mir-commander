@@ -39,7 +39,7 @@ from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectF
 
 from .enums import PaintMode
 from .projection import ProjectionManager
-from .resource_manager import RenderingContainer, ResourceManager, SceneNode, UniformLocations
+from .resource_manager import RenderingContainer, ResourceManager, SceneNode, SceneTextNode, UniformLocations
 from .utils import Color4f, crop_image_to_content
 
 logger = logging.getLogger("OpenGL.Renderer")
@@ -58,7 +58,9 @@ class Renderer:
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
-        opaque_rc, transparent_rc, picking_rc = self._resource_manager.current_scene.containers()
+        opaque_rc, transparent_rc, text_rc, picking_rc = self._resource_manager.current_scene.containers()
+
+        self._handle_text(text_rc)
 
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -68,26 +70,52 @@ class Renderer:
         glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
-            self.paint_picking(picking_rc)
+            self._paint_picking(picking_rc)
         else:
-            self.paint_opaque(opaque_rc)
+            self._paint_normal(opaque_rc)
 
             if transparent_rc:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self.paint_transparent(transparent_rc)
+                glDisable(GL_DEPTH_TEST)
+                self._paint_normal(transparent_rc)
 
             self._has_new_image = False
 
         self._resource_manager.current_scene.root_node.clear_transform_dirty()
 
-    def paint_opaque(self, rc: RenderingContainer):
-        self._paint_normal(rc)
+    def _handle_text(self, text_rc: RenderingContainer):
+        for group_id, nodes in text_rc.batches:
+            for node in nodes:
+                if node.has_new_text:
+                    self._update_char_translation(node)
+                    node._has_new_text = False
 
-    def paint_transparent(self, rc: RenderingContainer):
-        self._paint_normal(rc)
+    def _update_char_translation(self, node: SceneTextNode):
+        x_offset = 0.0
+        children = node.nodes
 
-    def paint_picking(self, rc: RenderingContainer):
+        font_atlas_name = node.font_atlas_name
+        font_atlas = self._resource_manager.get_font_atlas(font_atlas_name)
+
+        x_offset = 0.0
+        for i, char in enumerate(node.text):
+            info = font_atlas.info[char]
+            half_width = info["width"] / info["height"]
+            x = half_width + x_offset
+            children[i].translate(QVector3D(x, 0.0, 0.0))
+            x_offset += half_width * 2
+
+        if node.align == "center":
+            vector = QVector3D(-x_offset / 2, 0.0, 0.0)
+        elif node.align == "right":
+            vector = QVector3D(-x_offset, 0.0, 0.0)
+        else:
+            vector = QVector3D(0.0, 0.0, 0.0)
+        for n in node.nodes:
+            n.translate(vector)
+
+    def _paint_picking(self, rc: RenderingContainer):
         shader = self._resource_manager.get_shader("picking")
         uniform_locations = shader.uniform_locations
         glUseProgram(shader.program)
