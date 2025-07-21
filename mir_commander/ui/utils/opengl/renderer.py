@@ -1,6 +1,7 @@
 import ctypes
 import logging
 import numpy as np
+from typing import Hashable
 
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
@@ -51,7 +52,7 @@ class Renderer:
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
         self._picking_image: None | QImage = None
         self._has_new_image = False
-        self._transformation_buffers: dict[tuple[str, str, Color4f], tuple[int, int]] = {}
+        self._transformation_buffers: dict[Hashable, tuple[int, int]] = {}
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -95,7 +96,7 @@ class Renderer:
         last_model_name = None
 
         for group_id, nodes in rc.batches:
-            _, _, model_name, _ = group_id
+            _, _, model_name = group_id
 
             # Switch VAO if needed
             if model_name != last_model_name:
@@ -115,7 +116,7 @@ class Renderer:
         last_texture_name = None
 
         for group_id, nodes in rc.batches:
-            shader_name, texture_name, model_name, color = group_id
+            shader_name, texture_name, model_name = group_id
 
             # OPTIMIZATION: Switch shader only when needed (expensive operation)
             if shader_name != last_shader_name:
@@ -148,36 +149,47 @@ class Renderer:
                 last_model_name = model_name
 
             # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
-            buffer_id, nodes_count = self._get_transformation_buffer(group_id)
-            glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+            color_buffer_id, model_matrix_buffer_id, nodes_count = self._get_transformation_buffer(group_id)
 
             # Update transformation buffer if needed
             current_len_nodes = len(nodes)
             if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
-                self._update_transformation_buffer(group_id, buffer_id, nodes)
+                self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
+                self._update_color_buffer(color_buffer_id, nodes)
+                self._transformation_buffers[group_id] = (color_buffer_id, model_matrix_buffer_id,len(nodes))
 
             # Setup instanced attributes
-            self._setup_instanced_attributes(2 if texture_name is None else 3)
+            self._setup_color_attributes(color_buffer_id, 2 if texture_name is None else 3)
+            self._setup_model_matrix_attributes(model_matrix_buffer_id, 3 if texture_name is None else 4)
 
             # OPTIMIZATION: Single draw call for all instances
-            glUniform4f(uniform_locations.color, *color)
             glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
 
-    def _get_transformation_buffer(self, key: tuple[str, str, Color4f]) -> tuple[int, int]:
+    def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int]:
         if key not in self._transformation_buffers:
-            buffer = glGenBuffers(1)
-            self._transformation_buffers[key] = (buffer, 0)
+            color_buffer_id = glGenBuffers(1)
+            model_matrix_buffer_id = glGenBuffers(1)
+            self._transformation_buffers[key] = (color_buffer_id, model_matrix_buffer_id, 0)
         return self._transformation_buffers[key]
 
-    def _update_transformation_buffer(self, key: tuple[str, str, Color4f], buffer: int, nodes: list[SceneNode]):
+    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data = []
         for node in nodes:
             transformation_data.extend(node.transform.data())
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
-        self._transformation_buffers[key] = (buffer, len(nodes))
 
-    def _setup_instanced_attributes(self, start_index: int):
+    def _update_color_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        color_data = []
+        for node in nodes:
+            color_data.extend(list(node.color))
+        color_array = np.array(color_data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
+
+    def _setup_model_matrix_attributes(self, buffer_id: int, start_index: int):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         # Setup instanced attributes for transformation matrices
         # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
         stride = 16 * 4  # 16 floats * 4 bytes per float
@@ -185,6 +197,12 @@ class Renderer:
             glEnableVertexAttribArray(start_index + i)
             glVertexAttribPointer(start_index + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
             glVertexAttribDivisor(start_index + i, 1)  # Updated for each instance
+
+    def _setup_color_attributes(self, buffer_id: int, index: int):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        glEnableVertexAttribArray(index)
+        glVertexAttribPointer(index, 4, GL_FLOAT, False, 0, None)
+        glVertexAttribDivisor(index, 1)
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
         view_matrix = self._resource_manager.current_camera.matrix.data()
@@ -270,5 +288,5 @@ class Renderer:
         return self._picking_image
 
     def __del__(self):
-        for buffer, _ in self._transformation_buffers.values():
-            glDeleteBuffers(1, [buffer])
+        for buffer1, buffer2, _ in self._transformation_buffers.values():
+            glDeleteBuffers(1, [buffer1, buffer2])

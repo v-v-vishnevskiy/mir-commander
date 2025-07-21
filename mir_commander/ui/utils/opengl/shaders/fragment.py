@@ -1,12 +1,12 @@
 FLAT_COLOR = """
 #version 330 core
 
+in vec4 fragment_color;
+
 out vec4 output_color;
 
-uniform vec4 color;
-
 void main() {
-    output_color = color;
+    output_color = fragment_color;
 }
 """
 
@@ -28,9 +28,8 @@ BLINN_PHONG = """
 #version 330 core
 
 in vec3 normal;
+in vec4 fragment_color;
 out vec4 output_color;
-
-uniform vec4 color;
 
 void main() {
     const float Pi = 3.14159265;
@@ -57,7 +56,7 @@ void main() {
 
     vec3 specular = specular_strength * spec * light_color;
 
-    vec3 p = ((ambient + diffuse) * color.xyz) + specular;
-    output_color = vec4(p, color.w);
+    vec3 p = ((ambient + diffuse) * fragment_color.xyz) + specular;
+    output_color = vec4(p, fragment_color.w);
 }
 """

@@ -49,8 +49,8 @@ class SceneNode:
         self._texture_name: None | str = None
 
     @property
-    def group_id(self) -> tuple[str, str, str, Color4f]:
-        return self._shader_name, self._texture_name, self._model_name, self._color
+    def group_id(self) -> tuple[str, str, str]:
+        return self._shader_name, self._texture_name, self._model_name
 
     @property
     def is_container(self) -> bool:
