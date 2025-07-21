@@ -1,39 +1,84 @@
+import ctypes
 import logging
 import numpy as np
-import ctypes
 
 from OpenGL.GL import (
-    glUseProgram, 
-    glUniformMatrix4fv, 
-    glUniform4f, 
-    glBindBuffer, 
-    glBufferData, 
-    glDrawArraysInstanced, 
-    GL_ARRAY_BUFFER, 
-    GL_TRIANGLES, 
-    GL_STATIC_DRAW, 
-    glGenBuffers, 
-    glDrawArrays, 
-    glEnableVertexAttribArray, 
-    glVertexAttribPointer, 
-    glVertexAttribDivisor, 
-    GL_FLOAT, 
+    GL_ARRAY_BUFFER,
+    GL_BLEND,
+    GL_COLOR_BUFFER_BIT,
+    GL_CULL_FACE,
+    GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_TEST,
+    GL_FLOAT,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_SRC_ALPHA,
+    GL_STATIC_DRAW,
+    GL_TRIANGLES,
+    glBindBuffer,
+    glBlendFunc,
+    glBufferData,
+    glClear,
+    glClearColor,
     glDeleteBuffers,
+    glDisable,
+    glDrawArrays,
+    glDrawArraysInstanced,
+    glEnable,
+    glEnableVertexAttribArray,
+    glGenBuffers,
+    glUniform4f,
+    glUniformMatrix4fv,
+    glUseProgram,
+    glVertexAttribPointer,
+    glVertexAttribDivisor,
+    glViewport,
 )
+from PySide6.QtGui import QColor, QImage, QVector3D
+from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from ..projection import ProjectionManager
-from ..resource_manager import RenderingContainer, ResourceManager, SceneNode, UniformLocations
-from ..utils import Color4f
+from .enums import PaintMode
+from .projection import ProjectionManager
+from .resource_manager import RenderingContainer, ResourceManager, SceneNode, UniformLocations
+from .utils import Color4f, crop_image_to_content
 
-from .base import BaseRenderer
-
-logger = logging.getLogger("OpenGL.ModernRenderer")
+logger = logging.getLogger("OpenGL.Renderer")
 
 
-class ModernRenderer(BaseRenderer):
+class Renderer:
     def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager):
-        super().__init__(projection_manager, resource_manager)
+        self._projection_manager = projection_manager
+        self._resource_manager = resource_manager
+        self._bg_color = (0.0, 0.0, 0.0, 1.0)
+        self._picking_image: None | QImage = None
+        self._has_new_image = False
         self._transformation_buffers: dict[tuple[str, str, Color4f], tuple[int, int]] = {}
+
+    def set_background_color(self, color: Color4f):
+        self._bg_color = color
+
+    def paint(self, paint_mode: PaintMode):
+        opaque_rc, transparent_rc, picking_rc = self._resource_manager.current_scene.containers()
+
+        glClearColor(*self._bg_color)
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_CULL_FACE)
+        glDisable(GL_BLEND)
+
+        if paint_mode == PaintMode.Picking:
+            self.paint_picking(picking_rc)
+        else:
+            self.paint_opaque(opaque_rc)
+
+            if transparent_rc:
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                self.paint_transparent(transparent_rc)
+
+            self._has_new_image = False
+
+        self._resource_manager.current_scene.root_node.clear_transform_dirty()
 
     def paint_opaque(self, rc: RenderingContainer):
         self._paint_normal(rc)
@@ -149,6 +194,80 @@ class ModernRenderer(BaseRenderer):
         glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix)
         glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
+
+    def _get_node_depth(self, node: SceneNode) -> float:
+        point = QVector3D(0.0, 0.0, 0.0) * node.transform
+        return self._resource_manager.current_camera.get_distance_to_point(point)
+
+    def _sort_by_depth(self, nodes: list[SceneNode]) -> list[SceneNode]:
+        return sorted(nodes, key=self._get_node_depth, reverse=True)
+
+    def render_to_image(
+        self, 
+        width: int, 
+        height: int, 
+        transparent_bg: bool = False, 
+        crop_to_content: bool = False,
+        make_current_callback=None
+    ) -> QImage:
+        if make_current_callback:
+            make_current_callback()
+
+        fbo_format = QOpenGLFramebufferObjectFormat()
+        fbo_format.setSamples(16)
+        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+        fbo.bind()
+
+        bg_color_bak = self._bg_color
+
+        if transparent_bg:
+            self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
+
+        bg_color = QColor.fromRgbF(*self._bg_color)
+
+        glViewport(0, 0, width, height)
+
+        self.paint(PaintMode.Normal)
+
+        self._bg_color = bg_color_bak
+
+        fbo.release()
+
+        image = fbo.toImage()
+
+        if not transparent_bg:
+            image = image.convertToFormat(QImage.Format_RGB32)
+
+        if crop_to_content:
+            image = crop_image_to_content(image, bg_color)
+
+        return image
+
+    def picking_image(self, width: int, height: int) -> QImage:
+        if self._has_new_image:
+            return self._picking_image
+
+        fbo_format = QOpenGLFramebufferObjectFormat()
+        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+        fbo.bind()
+
+        glViewport(0, 0, width, height)
+
+        bg_color_bak = self._bg_color
+        self._bg_color = (0.0, 0.0, 0.0, 1.0)
+
+        self.paint(PaintMode.Picking)
+
+        self._bg_color = bg_color_bak
+
+        fbo.release()
+
+        self._picking_image = fbo.toImage()
+        self._has_new_image = True
+
+        return self._picking_image
 
     def __del__(self):
         for buffer, _ in self._transformation_buffers.values():

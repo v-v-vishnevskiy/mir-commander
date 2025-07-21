@@ -1,8 +1,8 @@
 import logging
 import traceback
 
-from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport, glMatrixMode, glLoadMatrixf, GL_PROJECTION, GL_MODELVIEW
-from PySide6.QtCore import QCoreApplication, QPoint, Qt
+from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
+from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
@@ -14,7 +14,7 @@ from .font_atlas import create_font_atlas
 from .keymap import Keymap
 from .models import rect
 from .projection import ProjectionManager
-from .renderer import FallbackRenderer, ModernRenderer
+from .renderer import Renderer
 from .resource_manager import (
     Camera,
     FontAtlas,
@@ -43,19 +43,15 @@ class OpenGLWidget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
-        self._fallback_mode = QCoreApplication.instance().opengl_fallback_mode
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.resource_manager = ResourceManager(fallback_mode=self._fallback_mode)
+        self.resource_manager = ResourceManager()
         self.resource_manager.add_camera(Camera("main"))
         self.resource_manager.add_scene(Scene("main"))
 
-        if self._fallback_mode:
-            self.renderer = FallbackRenderer(self.projection_manager, self.resource_manager)
-        else:
-            self.renderer = ModernRenderer(self.projection_manager, self.resource_manager)
+        self.renderer = Renderer(self.projection_manager, self.resource_manager)
 
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -63,54 +59,36 @@ class OpenGLWidget(QOpenGLWidget):
         self._init_actions()
 
     def post_init(self):
-        if self._fallback_mode:
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "default",
-                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
-                    FragmentShader(shaders.fragment_fallback.BLINN_PHONG)
-                )
-            )
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "transparent",
-                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
-                    FragmentShader(shaders.fragment_fallback.FLAT_COLOR)
-                )
-            )
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "picking",
-                    VertexShader(shaders.vertex_fallback.COMPUTE_POSITION),
-                    FragmentShader(shaders.fragment_fallback.FLAT_COLOR)
-                )
-            )
-        else:
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "default",
-                    VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
-                    FragmentShader(shaders.fragment.BLINN_PHONG)
-                )
-            )
-            self.resource_manager.add_shader(
-                ShaderProgram("text", VertexShader(shaders.vertex.TEXT), FragmentShader(shaders.fragment.TEXTURE))
-            )
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "transparent",
-                    VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                    FragmentShader(shaders.fragment.FLAT_COLOR)
-                )
-            )
-            self.resource_manager.add_shader(
-                ShaderProgram(
-                    "picking",
-                    VertexShader(shaders.vertex.COMPUTE_POSITION),
-                    FragmentShader(shaders.fragment.FLAT_COLOR)
-                )
-            )
+        self.init_shaders()
+        self.init_font_atlas()
 
+    def init_shaders(self):
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "default",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
+                FragmentShader(shaders.fragment.BLINN_PHONG)
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram("text", VertexShader(shaders.vertex.TEXT), FragmentShader(shaders.fragment.TEXTURE))
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "transparent",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.FLAT_COLOR)
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "picking",
+                VertexShader(shaders.vertex.COMPUTE_POSITION),
+                FragmentShader(shaders.fragment.FLAT_COLOR)
+            )
+        )
+
+    def init_font_atlas(self):
         self.add_font_atlas("Arial.ttf", "arial", "font_atlas_arial")
 
     def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str):
@@ -147,10 +125,6 @@ class OpenGLWidget(QOpenGLWidget):
 
     def _setup_projection(self, w: int, h: int):
         glViewport(0, 0, w, h)
-        if self._fallback_mode:
-            glMatrixMode(GL_PROJECTION)
-            glLoadMatrixf(self.projection_manager.active_projection.matrix.data())
-            glMatrixMode(GL_MODELVIEW)
 
     @property
     def cursor_position(self) -> tuple[int, int]:

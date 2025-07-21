@@ -52,15 +52,12 @@ class Molecule(SceneNode):
         logger.debug("Initializing resources")
 
         atom_mesh = self._get_atom_mesh()
-        bond_mesh = self._get_bond_mesh()
-        self._resource_manager.add_mesh(atom_mesh)
-        self._resource_manager.add_mesh(bond_mesh)
+        atom_vao = self._get_atom_vao(atom_mesh)
+        self._resource_manager.add_vertex_array_object(atom_vao)
 
-        if self._resource_manager.fallback_mode is False:
-            atom_vao = self._get_atom_vao(atom_mesh)
-            bond_vao = self._get_bond_vao(bond_mesh)
-            self._resource_manager.add_vertex_array_object(atom_vao)
-            self._resource_manager.add_vertex_array_object(bond_vao)
+        bond_mesh = self._get_bond_mesh()
+        bond_vao = self._get_bond_vao(bond_mesh)
+        self._resource_manager.add_vertex_array_object(bond_vao)
 
         logger.debug("Resources initialized")
 

@@ -8,9 +8,7 @@ from .vertex_array_object import VertexArrayObject
 
 
 class ResourceManager:
-    def __init__(self, fallback_mode: bool = False):
-        self.fallback_mode = fallback_mode
-
+    def __init__(self):
         self._cameras: dict[str, Camera] = {}
         self._scenes: dict[str, Scene] = {}
         self._shaders: dict[str, ShaderProgram] = {}

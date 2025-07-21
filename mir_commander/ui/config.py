@@ -36,7 +36,6 @@ class ProjectWindowConfig(BaseModel):
 
 
 class OpenGLConfig(BaseModel):
-    fallback_mode: bool = False
     antialiasing: bool = True
 
 
