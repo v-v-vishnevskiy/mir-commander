@@ -58,13 +58,15 @@ BILLBOARD_TEXT = """
 
 layout (location = 0) in vec3 position;
 layout (location = 2) in vec2 in_texcoord;
-layout (location = 3) in mat4 instance_model_matrix;
+layout (location = 3) in vec4 instance_color;
+layout (location = 4) in mat4 instance_model_matrix;
 
 uniform mat4 scene_matrix;
 uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 
 out vec2 fragment_texcoord;
+out vec4 fragment_color;
 
 void main() {
     vec3 camera_position = vec3(-view_matrix[3][0], -view_matrix[3][1], -view_matrix[3][2]);
@@ -97,5 +99,6 @@ void main() {
     gl_Position = projection_matrix * view_matrix * world_pos;
 
     fragment_texcoord = vec2(in_texcoord.x, 1.0 - in_texcoord.y);
+    fragment_color = instance_color;
 }
 """
