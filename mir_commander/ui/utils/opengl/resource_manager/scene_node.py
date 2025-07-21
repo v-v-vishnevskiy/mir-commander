@@ -36,7 +36,7 @@ class SceneNode:
         self.picking_color = id_to_color(self._id)
 
         # True - transform has been changed, False - transform is up to date
-        self._transform_dirty = False
+        self._transform_dirty = True
         self._transform = Transform()
         self._transform_matrix = QMatrix4x4()
 
@@ -48,6 +48,8 @@ class SceneNode:
         self._model_name: None | str = None
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
         self._texture_name: None | str = None
+
+        self.center = QVector3D(0.0, 0.0, 0.0)
 
     @property
     def group_id(self) -> tuple[str, str, str]:

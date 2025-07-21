@@ -112,8 +112,13 @@ class Renderer:
             vector = QVector3D(-x_offset, 0.0, 0.0)
         else:
             vector = QVector3D(0.0, 0.0, 0.0)
+
+        nd = node.transform.data()
+        center = QVector3D(nd[12], nd[13], nd[14])
+
         for n in node.nodes:
             n.translate(vector)
+            n.center = center
 
     def _paint_picking(self, rc: RenderingContainer):
         shader = self._resource_manager.get_shader("picking")
@@ -177,18 +182,22 @@ class Renderer:
                 last_model_name = model_name
 
             # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
-            color_buffer_id, model_matrix_buffer_id, nodes_count = self._get_transformation_buffer(group_id)
+            color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, nodes_count = self._get_transformation_buffer(group_id)
 
             # Update transformation buffer if needed
             current_len_nodes = len(nodes)
             if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
                 self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
                 self._update_color_buffer(color_buffer_id, nodes)
-                self._transformation_buffers[group_id] = (color_buffer_id, model_matrix_buffer_id,len(nodes))
+                self._update_center_buffer(center_buffer_id, nodes)
+                self._update_local_pos_buffer(local_pos_buffer_id, nodes)
+                self._transformation_buffers[group_id] = (color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, len(nodes))
 
             # Setup instanced attributes
-            self._setup_color_attributes(color_buffer_id, 2 if texture_name is None else 3)
-            self._setup_model_matrix_attributes(model_matrix_buffer_id, 3 if texture_name is None else 4)
+            self._setup_local_pos_attributes(local_pos_buffer_id, 2 if texture_name is None else 3)
+            self._setup_center_attributes(center_buffer_id, 3 if texture_name is None else 4)
+            self._setup_color_attributes(color_buffer_id, 4 if texture_name is None else 5)
+            self._setup_model_matrix_attributes(model_matrix_buffer_id, 5 if texture_name is None else 6)
 
             # OPTIMIZATION: Single draw call for all instances
             glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
@@ -196,8 +205,10 @@ class Renderer:
     def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int]:
         if key not in self._transformation_buffers:
             color_buffer_id = glGenBuffers(1)
+            local_pos_buffer_id = glGenBuffers(1)
+            center_buffer_id = glGenBuffers(1)
             model_matrix_buffer_id = glGenBuffers(1)
-            self._transformation_buffers[key] = (color_buffer_id, model_matrix_buffer_id, 0)
+            self._transformation_buffers[key] = (color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, 0)
         return self._transformation_buffers[key]
 
     def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[SceneNode]):
@@ -207,6 +218,22 @@ class Renderer:
             transformation_data.extend(node.transform.data())
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
+
+    def _update_center_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        data = []
+        for node in nodes:
+            data.extend(list(node.center.toTuple()))
+        array = np.array(data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
+
+    def _update_local_pos_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        data = []
+        for node in nodes:
+            data.extend(list(node._transform._translation.toTuple()))
+        array = np.array(data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
     def _update_color_buffer(self, buffer_id: int, nodes: list[SceneNode]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
@@ -230,6 +257,18 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         glEnableVertexAttribArray(index)
         glVertexAttribPointer(index, 4, GL_FLOAT, False, 0, None)
+        glVertexAttribDivisor(index, 1)
+
+    def _setup_local_pos_attributes(self, buffer_id: int, index: int):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        glEnableVertexAttribArray(index)
+        glVertexAttribPointer(index, 3, GL_FLOAT, False, 0, None)
+        glVertexAttribDivisor(index, 1)
+
+    def _setup_center_attributes(self, buffer_id: int, index: int):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        glEnableVertexAttribArray(index)
+        glVertexAttribPointer(index, 3, GL_FLOAT, False, 0, None)
         glVertexAttribDivisor(index, 1)
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
@@ -316,5 +355,5 @@ class Renderer:
         return self._picking_image
 
     def __del__(self):
-        for buffer1, buffer2, _ in self._transformation_buffers.values():
-            glDeleteBuffers(1, [buffer1, buffer2])
+        for buffer1, buffer2, buffer3, buffer4, _ in self._transformation_buffers.values():
+            glDeleteBuffers(1, [buffer1, buffer2, buffer3, buffer4])
