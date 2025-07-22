@@ -11,16 +11,19 @@ from OpenGL.GL import (
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_TEST,
     GL_FLOAT,
+    GL_FALSE,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_SRC_ALPHA,
     GL_STATIC_DRAW,
     GL_TRIANGLES,
+    GL_TRUE,
     glBindBuffer,
     glBlendFunc,
     glBufferData,
     glClear,
     glClearColor,
     glDeleteBuffers,
+    glDepthMask,
     glDisable,
     glDrawArrays,
     glDrawArraysInstanced,
@@ -78,7 +81,9 @@ class Renderer:
             if normal_containers["transparent"]:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glDepthMask(GL_FALSE)
                 self._paint_normal(normal_containers["transparent"])
+                glDepthMask(GL_TRUE)
 
             if normal_containers["char"]:
                 glEnable(GL_BLEND)
@@ -303,9 +308,6 @@ class Renderer:
         fbo.release()
 
         image = fbo.toImage()
-
-        if not transparent_bg:
-            image = image.convertToFormat(QImage.Format_RGB32)
 
         if crop_to_content:
             image = crop_image_to_content(image, bg_color)

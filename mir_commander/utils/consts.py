@@ -9,6 +9,7 @@ class DIR:
     RESOURCES = APP / "resources"
     ICONS = RESOURCES / "icons"
     TRANSLATIONS = RESOURCES / "i18n"
+    FONTS = RESOURCES / "fonts"
 
 
 ATOM_SINGLE_BOND_COVALENT_RADIUS = [

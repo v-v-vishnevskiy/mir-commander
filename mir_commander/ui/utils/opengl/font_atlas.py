@@ -17,8 +17,8 @@ class FontAtlasInfo(BaseModel):
 
 
 def create_font_atlas(
-    font_name: str = "Arial.ttf",
-    font_size: int = 72,
+    font_name: str,
+    font_size: int = 62,
     atlas_size: int = 512,
     chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?-+=/\\|#()[]{}*&$%^@~",
 ) -> tuple[np.ndarray, FontAtlasInfo]:

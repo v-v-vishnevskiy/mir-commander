@@ -7,6 +7,8 @@ from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
+from mir_commander.utils.consts import DIR
+
 from . import shaders
 from .action_handler import ActionHandler
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
@@ -95,7 +97,7 @@ class OpenGLWidget(QOpenGLWidget):
         )
 
     def init_font_atlas(self):
-        self.add_font_atlas("Arial.ttf", "arial", "font_atlas_arial")
+        self.add_font_atlas(str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), "arial", "font_atlas_arial")
 
     def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str):
         atlas_size = 512

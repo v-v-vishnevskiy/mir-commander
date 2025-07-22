@@ -80,7 +80,7 @@ class VertexArrayObject(Resource):
     def __del__(self):
         logger.debug("Cleaning up OpenGL resources")
         if self._vao is not None:
-            glBindVertexArray(0)
+            glDeleteVertexArrays(1, [self._vao])
         if self._vbo_vertices is not None:
             glDeleteBuffers(1, [self._vbo_vertices])
         if self._vbo_normals is not None:
