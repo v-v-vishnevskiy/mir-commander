@@ -18,7 +18,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
         self._keymap = keymap.menu
 
-        self._init_atoms_menu()
+        self._init_atom_labels_menu()
         self._init_bonds_menu()
         self._init_selection_menu()
         self._init_calculate_menu()
@@ -39,15 +39,10 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
         self.set_enabled_actions(False)
 
-    def _init_atoms_menu(self):
-        menu = BaseMenu(Menu.tr("Atoms"))
+    def _init_atom_labels_menu(self):
+        menu = BaseMenu(Menu.tr("Atom labels"))
         self.addMenu(menu)
 
-        menu.addMenu(self._init_labels_menu())
-
-    def _init_labels_menu(self):
-        menu = BaseMenu(Menu.tr("Labels"))
-        
         show_all_act = Action(Action.tr("Show all"), self.parent())
         show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
         show_all_act.triggered.connect(self.labels_show_for_all_atoms_handler)
@@ -82,8 +77,6 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         set_element_symbol_act.setStatusTip(Action.tr("Show element symbol as label"))
         set_element_symbol_act.triggered.connect(self.labels_set_element_symbol_handler)
         menu.addAction(set_element_symbol_act)
-
-        return menu
 
     def _init_bonds_menu(self):
         bonds_menu = BaseMenu(Menu.tr("Bonds"))
