@@ -100,8 +100,8 @@ class Renderer:
 
         x_offset = 0.0
         for i, char in enumerate(node.text):
-            info = font_atlas.info[char]
-            half_width = info["width"] / info["height"]
+            info = font_atlas.info.chars[char]
+            half_width = info.width / info.height
             x = half_width + x_offset
             children[i].translate(QVector3D(x, 0.0, 0.0))
             x_offset += half_width * 2

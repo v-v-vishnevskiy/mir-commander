@@ -1,5 +1,19 @@
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from pydantic import BaseModel
+
+
+class CharInfo(BaseModel):
+    width: int
+    height: int
+    u_min: float
+    u_max: float
+    v_min: float
+    v_max: float
+
+
+class FontAtlasInfo(BaseModel):
+    chars: dict[str, CharInfo] = {}
 
 
 def create_font_atlas(
@@ -7,7 +21,7 @@ def create_font_atlas(
     font_size: int = 72,
     atlas_size: int = 512,
     chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?-+=/\\|#()[]{}*&$%^@~",
-) -> tuple[np.ndarray, dict]:
+) -> tuple[np.ndarray, FontAtlasInfo]:
     """
     Create a font atlas from a font file
 
@@ -25,7 +39,7 @@ def create_font_atlas(
     draw = ImageDraw.Draw(atlas)
     font = ImageFont.truetype(font_name, font_size)
 
-    atlas_info = {}
+    atlas_info = FontAtlasInfo()
     max_height = 0
     min_top_padding = None
 
@@ -53,15 +67,15 @@ def create_font_atlas(
         draw.text((x, y), char, font=font, fill=(255, 255, 255, 255))
 
         # Save the character information
-        atlas_info[char] = {
-            "uv_min": (x / atlas_size, (atlas_size - (row * max_height)) / atlas_size),
-            "uv_max": ((x + char_width) / atlas_size, (atlas_size - ((row - 1) * max_height)) / atlas_size),
-            "width": char_width,
-            "height": max_height,
-        }
+        atlas_info.chars[char] = CharInfo(
+            width=char_width,
+            height=max_height,
+            u_min=x / atlas_size,
+            u_max=(x + char_width) / atlas_size,
+            v_min=(atlas_size - (row * max_height)) / atlas_size,
+            v_max=(atlas_size - ((row - 1) * max_height)) / atlas_size,
+        )
 
         x += char_width
-
-    atlas.save("font_atlas.png")
 
     return np.array(atlas), atlas_info

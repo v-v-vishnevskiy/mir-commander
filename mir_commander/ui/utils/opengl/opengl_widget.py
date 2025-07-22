@@ -107,10 +107,10 @@ class OpenGLWidget(QOpenGLWidget):
         self._build_font_atlas_geometry(font_atlas)
 
     def _build_font_atlas_geometry(self, font_atlas: FontAtlas):
-        for char, info in font_atlas.info.items():
-            u_min, v_min = info["uv_min"]
-            u_max, v_max = info["uv_max"]
-            width = info["width"] / info["height"]
+        for char, info in font_atlas.info.chars.items():
+            u_min, v_min = info.u_min, info.v_min
+            u_max, v_max = info.u_max, info.v_max
+            width = info.width / info.height
 
             vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
             tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
