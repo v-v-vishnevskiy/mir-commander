@@ -1,2 +1,2 @@
-from .atom import Atom
+from .atom import Atom, LabelType
 from .bond import Bond

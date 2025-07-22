@@ -42,7 +42,7 @@ void main() {
     float spec = 0.0;
 
     // Ambient
-    float ambient_strength = 0.1;
+    float ambient_strength = 0.3;
     vec3 ambient = light_color * ambient_strength;
 
     // Diffuse
