@@ -1,7 +1,8 @@
+from mir_commander.ui.utils.opengl.scene import Scene
+
 from .camera import Camera
 from .font_atlas import FontAtlas
 from .mesh import Mesh
-from .scene import Scene
 from .shader import ShaderProgram
 from .texture2d import Texture2D
 from .vertex_array_object import VertexArrayObject

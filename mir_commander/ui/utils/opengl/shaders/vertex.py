@@ -29,10 +29,8 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 in_normal;
 
 // Instanced attributes
-layout (location = 2) in vec3 instance_local_pos;
-layout (location = 3) in vec3 instance_center;
-layout (location = 4) in vec4 instance_color;
-layout (location = 5) in mat4 instance_model_matrix;
+layout (location = 2) in mat4 instance_model_matrix;
+layout (location = 8) in vec4 instance_color;
 
 uniform mat4 scene_matrix;
 uniform mat4 view_matrix;
@@ -56,10 +54,10 @@ BILLBOARD_TEXT = """
 
 layout (location = 0) in vec3 position;  // world vertex position
 layout (location = 2) in vec2 in_texcoord;
-layout (location = 3) in vec3 instance_local_pos;
-layout (location = 4) in vec3 instance_char_offset;  // world position of the left bottom corner of the letter
-layout (location = 5) in vec4 instance_color;
-layout (location = 6) in mat4 instance_model_matrix;
+layout (location = 3) in mat4 instance_model_matrix;
+layout (location = 7) in vec3 instance_local_position;
+layout (location = 8) in vec3 instance_parent_world_position;
+layout (location = 9) in vec4 instance_color;
 
 uniform mat4 scene_matrix;
 uniform mat4 view_matrix;
@@ -80,10 +78,10 @@ void main() {
     model_scale.z = length(vec3(instance_model_matrix[2][0], instance_model_matrix[2][1], instance_model_matrix[2][2]));
 
     // get center position in world space
-    vec3 center_pos = vec3(scene_matrix * vec4(instance_char_offset, 1.0));
+    vec3 center_pos = vec3(scene_matrix * vec4(instance_parent_world_position, 1.0));
 
     // apply scale to position
-    vec3 scaled_position = (position + instance_local_pos) * model_scale * scene_scale;
+    vec3 scaled_position = (position + instance_local_position) * model_scale * scene_scale;
 
     vec4 world_pos = vec4(scaled_position + center_pos, 1.0);
     gl_Position = projection_matrix * view_matrix * world_pos;

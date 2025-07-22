@@ -2,7 +2,7 @@ from enum import Enum
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.resource_manager import SceneNode
+from mir_commander.ui.utils.opengl.scene import BaseNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
@@ -16,7 +16,7 @@ class LabelType(Enum):
     ELEMENT_SYMBOL_AND_INDEX_NUMBER = 3
 
 
-class Atom(SceneNode):
+class Atom(OpaqueNode):
     def __init__(
         self,
         model_name: str,
@@ -28,7 +28,7 @@ class Atom(SceneNode):
         color: Color4f,
         selected_atom_config: SelectedAtom,
     ):
-        super().__init__(picking_visible=True)
+        super().__init__(visible=True, picking_visible=True)
         self.translate(position)
         self.set_scale(radius)
         self.set_color(color)
@@ -48,7 +48,7 @@ class Atom(SceneNode):
         self.set_label_type(LabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
         self.add_node(self._atom_label)
 
-    def add_related_bond(self, bond: SceneNode):
+    def add_related_bond(self, bond: BaseNode):
         self._related_bonds.append(bond)
 
     def set_cloaked(self, value: bool):

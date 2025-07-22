@@ -329,7 +329,7 @@ class MolecularStructureViewerConfig(BaseModel):
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[
-            Style(name="Colored Bonds"),
+            Style(name="Colored Bonds", background=Background(color="#222222")),
             Style(name="Simple", bond=Bond(color="#888888")),
             Style(
                 name="Colored Bonds Only", 

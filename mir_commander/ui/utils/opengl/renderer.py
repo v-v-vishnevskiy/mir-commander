@@ -39,7 +39,8 @@ from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectF
 
 from .enums import PaintMode
 from .projection import ProjectionManager
-from .resource_manager import RenderingContainer, ResourceManager, SceneNode, SceneTextNode, UniformLocations
+from .resource_manager import ResourceManager, UniformLocations
+from .scene import BaseNode, RenderingContainer
 from .utils import Color4f, crop_image_to_content
 
 logger = logging.getLogger("OpenGL.Renderer")
@@ -58,9 +59,9 @@ class Renderer:
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
-        opaque_rc, transparent_rc, text_rc, picking_rc = self._resource_manager.current_scene.containers()
+        normal_containers, picking_rc = self._resource_manager.current_scene.containers
 
-        self._handle_text(text_rc)
+        self._handle_text(normal_containers["text"])
 
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -72,13 +73,18 @@ class Renderer:
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
         else:
-            self._paint_normal(opaque_rc)
+            self._paint_normal(normal_containers["opaque"])
 
-            if transparent_rc:
+            if normal_containers["transparent"]:
+                glEnable(GL_BLEND)
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                self._paint_normal(normal_containers["transparent"])
+
+            if normal_containers["char"]:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 glDisable(GL_DEPTH_TEST)
-                self._paint_normal(transparent_rc)
+                self._paint_normal(normal_containers["char"])
 
             self._has_new_image = False
 
@@ -88,130 +94,102 @@ class Renderer:
         for group_id, nodes in text_rc.batches:
             for node in nodes:
                 if node.has_new_text:
-                    self._update_char_translation(node)
-                    node._has_new_text = False
-
-    def _update_char_translation(self, node: SceneTextNode):
-        x_offset = 0.0
-        children = node.nodes
-
-        font_atlas_name = node.font_atlas_name
-        font_atlas = self._resource_manager.get_font_atlas(font_atlas_name)
-
-        x_offset = 0.0
-        for i, char in enumerate(node.text):
-            info = font_atlas.info.chars[char]
-            half_width = info.width / info.height
-            x = half_width + x_offset
-            children[i].translate(QVector3D(x, 0.0, 0.0))
-            x_offset += half_width * 2
-
-        if node.align == "center":
-            vector = QVector3D(-x_offset / 2, 0.0, 0.0)
-        elif node.align == "right":
-            vector = QVector3D(-x_offset, 0.0, 0.0)
-        else:
-            vector = QVector3D(0.0, 0.0, 0.0)
-
-        nd = node.transform.data()
-        center = QVector3D(nd[12], nd[13], nd[14])
-
-        for n in node.nodes:
-            n.translate(vector)
-            n.center = center
+                    node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name).info)
 
     def _paint_picking(self, rc: RenderingContainer):
-        shader = self._resource_manager.get_shader("picking")
-        uniform_locations = shader.uniform_locations
-        glUseProgram(shader.program)
-        self._setup_uniforms(uniform_locations)
+        prev_model_name = None
 
-        last_model_name = None
+        uniform_locations = self._setup_shader(None, "picking")
 
         for group_id, nodes in rc.batches:
             _, _, model_name = group_id
 
-            # Switch VAO if needed
-            if model_name != last_model_name:
-                vao = self._resource_manager.get_vertex_array_object(model_name)
-                vao.bind()
-                last_model_name = model_name
+            triangles_count = self._setup_vao(prev_model_name, model_name)
+            prev_model_name = model_name
 
             # Draw nodes
             for node in nodes:
                 glUniform4f(uniform_locations.color, *node.picking_color)
                 glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
-                glDrawArrays(GL_TRIANGLES, 0, vao.triangles_count)
+                glDrawArrays(GL_TRIANGLES, 0, triangles_count)
 
     def _paint_normal(self, rc: RenderingContainer):
-        last_shader_name = None
-        last_model_name = None
-        last_texture_name = None
+        prev_shader_name = None
+        prev_texture_name = None
+        prev_model_name = None
 
         for group_id, nodes in rc.batches:
             shader_name, texture_name, model_name = group_id
 
-            # OPTIMIZATION: Switch shader only when needed (expensive operation)
-            if shader_name != last_shader_name:
-                try:
-                    shader = self._resource_manager.get_shader(shader_name)
-                except ValueError:
-                    logger.warning(f"Shader `{shader_name}` not found, skipping group")
-                    continue
+            self._setup_shader(prev_shader_name, shader_name)
+            prev_shader_name = shader_name
 
-                glUseProgram(shader.program)
-                uniform_locations = shader.uniform_locations
-                self._setup_uniforms(uniform_locations)
-                last_shader_name = shader_name
+            prev_texture_name = self._setup_texture(prev_texture_name, texture_name)
 
-            # OPTIMIZATION: Switch texture only when needed (expensive operation)
-            if texture_name is not None and texture_name != last_texture_name:
-                texture = self._resource_manager.get_texture(texture_name)
-                texture.bind()
-                last_texture_name = texture_name
-            # Unbind texture if needed
-            elif texture_name is None and last_texture_name is not None:
-                texture = self._resource_manager.get_texture(last_texture_name)
-                texture.unbind()
-                last_texture_name = texture_name
+            triangles_count = self._setup_vao(prev_model_name, model_name)
+            prev_model_name = model_name
 
-            # OPTIMIZATION: Switch VAO only when needed (expensive operation)
-            if model_name != last_model_name:
-                vao = self._resource_manager.get_vertex_array_object(model_name)
-                vao.bind()
-                last_model_name = model_name
-
-            # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
-            color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, nodes_count = self._get_transformation_buffer(group_id)
-
-            # Update transformation buffer if needed
-            current_len_nodes = len(nodes)
-            if current_len_nodes != nodes_count or rc.transform_dirty.get(group_id, False):
-                self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
-                self._update_color_buffer(color_buffer_id, nodes)
-                self._update_center_buffer(center_buffer_id, nodes)
-                self._update_local_pos_buffer(local_pos_buffer_id, nodes)
-                self._transformation_buffers[group_id] = (color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, len(nodes))
-
-            # Setup instanced attributes
-            self._setup_local_pos_attributes(local_pos_buffer_id, 2 if texture_name is None else 3)
-            self._setup_center_attributes(center_buffer_id, 3 if texture_name is None else 4)
-            self._setup_color_attributes(color_buffer_id, 4 if texture_name is None else 5)
-            self._setup_model_matrix_attributes(model_matrix_buffer_id, 5 if texture_name is None else 6)
+            self._setup_instanced_rendering(rc, group_id, nodes, texture_name is not None)
 
             # OPTIMIZATION: Single draw call for all instances
-            glDrawArraysInstanced(GL_TRIANGLES, 0, vao.triangles_count, current_len_nodes)
+            glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
+
+    def _setup_shader(self, prev_shader_name: None |str, shader_name: str) -> UniformLocations:
+        # OPTIMIZATION: Switch shader only when needed (expensive operation)
+        shader = self._resource_manager.get_shader(shader_name)
+        if shader_name != prev_shader_name:
+            glUseProgram(shader.program)
+            uniform_locations = shader.uniform_locations
+            self._setup_uniforms(uniform_locations)
+        return shader.uniform_locations
+
+    def _setup_texture(self, prev_texture_name: None | str, texture_name: None | str):
+        # OPTIMIZATION: Switch texture only when needed (expensive operation)
+        if texture_name is not None and texture_name != prev_texture_name:
+            texture = self._resource_manager.get_texture(texture_name)
+            texture.bind()
+            return texture_name
+        # Unbind texture if needed
+        elif texture_name is None and prev_texture_name is not None:
+            texture = self._resource_manager.get_texture(prev_texture_name)
+            texture.unbind()
+            return texture_name
+        return prev_texture_name
+
+    def _setup_vao(self, prev_model_name: None | str, model_name: str) -> int:
+        # OPTIMIZATION: Switch VAO only when needed (expensive operation)
+        vao = self._resource_manager.get_vertex_array_object(model_name)
+        if model_name != prev_model_name:
+            vao.bind()
+        return vao.triangles_count
+
+    def _setup_instanced_rendering(self, rc: RenderingContainer, group_id: Hashable, nodes: list[BaseNode], has_texture: bool):
+        # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
+        model_matrix_buffer_id, local_position_buffer_id, parent_world_position_buffer_id,color_buffer_id = self._get_transformation_buffer(group_id)
+
+        # Update buffers if needed
+        if rc.transform_dirty.get(group_id, False):
+            self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
+            self._update_local_position_buffer(local_position_buffer_id, nodes)
+            self._update_parent_world_position_buffer(parent_world_position_buffer_id, nodes)
+            self._update_color_buffer(color_buffer_id, nodes)
+
+        # Setup instanced attributes
+        self._setup_model_matrix_attributes(model_matrix_buffer_id, 3 if has_texture else 2)
+        self._setup_local_position_attributes(local_position_buffer_id, 7 if has_texture else 6)
+        self._setup_parent_world_position_attributes(parent_world_position_buffer_id, 8 if has_texture else 7)
+        self._setup_color_attributes(color_buffer_id, 9 if has_texture else 8)
 
     def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int]:
         if key not in self._transformation_buffers:
-            color_buffer_id = glGenBuffers(1)
-            local_pos_buffer_id = glGenBuffers(1)
-            center_buffer_id = glGenBuffers(1)
             model_matrix_buffer_id = glGenBuffers(1)
-            self._transformation_buffers[key] = (color_buffer_id, local_pos_buffer_id, center_buffer_id, model_matrix_buffer_id, 0)
+            local_position_buffer_id = glGenBuffers(1)
+            parent_world_position_buffer_id = glGenBuffers(1)
+            color_buffer_id = glGenBuffers(1)
+            self._transformation_buffers[key] = (model_matrix_buffer_id, local_position_buffer_id, parent_world_position_buffer_id,color_buffer_id)
         return self._transformation_buffers[key]
 
-    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[BaseNode]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data = []
         for node in nodes:
@@ -219,15 +197,7 @@ class Renderer:
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
-    def _update_center_buffer(self, buffer_id: int, nodes: list[SceneNode]):
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        data = []
-        for node in nodes:
-            data.extend(list(node.center.toTuple()))
-        array = np.array(data, dtype=np.float32)
-        glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
-
-    def _update_local_pos_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+    def _update_local_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -235,7 +205,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_color_buffer(self, buffer_id: int, nodes: list[SceneNode]):
+    def _update_color_buffer(self, buffer_id: int, nodes: list[BaseNode]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         color_data = []
         for node in nodes:
@@ -243,15 +213,34 @@ class Renderer:
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
 
-    def _setup_model_matrix_attributes(self, buffer_id: int, start_index: int):
+    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        data = []
+        for node in nodes:
+            if node.parent is not None:
+                nd = node.parent.transform.data()
+                center = QVector3D(nd[12], nd[13], nd[14])
+                data.extend(list(center.toTuple()))
+            else:
+                data.extend([0.0, 0.0, 0.0])
+        array = np.array(data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
+
+    def _setup_model_matrix_attributes(self, buffer_id: int, index: int):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         # Setup instanced attributes for transformation matrices
         # 4x4 matrix takes 4 attributes (location 2, 3, 4, 5)
         stride = 16 * 4  # 16 floats * 4 bytes per float
         for i in range(4):
-            glEnableVertexAttribArray(start_index + i)
-            glVertexAttribPointer(start_index + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
-            glVertexAttribDivisor(start_index + i, 1)  # Updated for each instance
+            glEnableVertexAttribArray(index + i)
+            glVertexAttribPointer(index + i, 4, GL_FLOAT, False, stride, ctypes.c_void_p(i * 4 * 4))
+            glVertexAttribDivisor(index + i, 1)  # Updated for each instance
+
+    def _setup_local_position_attributes(self, buffer_id: int, index: int):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        glEnableVertexAttribArray(index)
+        glVertexAttribPointer(index, 3, GL_FLOAT, False, 0, None)
+        glVertexAttribDivisor(index, 1)
 
     def _setup_color_attributes(self, buffer_id: int, index: int):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
@@ -259,13 +248,7 @@ class Renderer:
         glVertexAttribPointer(index, 4, GL_FLOAT, False, 0, None)
         glVertexAttribDivisor(index, 1)
 
-    def _setup_local_pos_attributes(self, buffer_id: int, index: int):
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        glEnableVertexAttribArray(index)
-        glVertexAttribPointer(index, 3, GL_FLOAT, False, 0, None)
-        glVertexAttribDivisor(index, 1)
-
-    def _setup_center_attributes(self, buffer_id: int, index: int):
+    def _setup_parent_world_position_attributes(self, buffer_id: int, index: int):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         glEnableVertexAttribArray(index)
         glVertexAttribPointer(index, 3, GL_FLOAT, False, 0, None)
@@ -280,11 +263,11 @@ class Renderer:
         glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
 
-    def _get_node_depth(self, node: SceneNode) -> float:
+    def _get_node_depth(self, node: BaseNode) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * node.transform
         return self._resource_manager.current_camera.get_distance_to_point(point)
 
-    def _sort_by_depth(self, nodes: list[SceneNode]) -> list[SceneNode]:
+    def _sort_by_depth(self, nodes: list[BaseNode]) -> list[BaseNode]:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def render_to_image(
@@ -355,5 +338,5 @@ class Renderer:
         return self._picking_image
 
     def __del__(self):
-        for buffer1, buffer2, buffer3, buffer4, _ in self._transformation_buffers.values():
-            glDeleteBuffers(1, [buffer1, buffer2, buffer3, buffer4])
+        for buffers in self._transformation_buffers.values():
+            glDeleteBuffers(1, list(buffers))

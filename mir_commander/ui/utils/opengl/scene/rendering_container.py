@@ -1,22 +1,22 @@
 from typing import Hashable
 
-from .scene_node import SceneNode
+from .base_node import BaseNode
 
 
 class RenderingContainer:
     def __init__(self, name: str):
         self.name = name
-        self._batches: dict[Hashable, list[SceneNode]] = {}
+        self._batches: dict[Hashable, list[BaseNode]] = {}
         self.transform_dirty: dict[tuple, bool] = {}
 
     def __bool__(self):
         return bool(self._batches)
 
     @property
-    def batches(self) -> list[Hashable, list[SceneNode]]:
+    def batches(self) -> list[Hashable, list[BaseNode]]:
         return sorted(((group_id, nodes) for group_id, nodes in self._batches.items()))
 
-    def add_node(self, node: SceneNode):
+    def add_node(self, node: BaseNode):
         group_id = node.group_id
 
         if group_id not in self._batches:
@@ -26,7 +26,7 @@ class RenderingContainer:
             self.transform_dirty[group_id] = True
             self._batches[group_id].append(node)
 
-    def remove_node(self, node: SceneNode):
+    def remove_node(self, node: BaseNode):
         group_id = node.group_id
 
         try:
@@ -39,7 +39,7 @@ class RenderingContainer:
             # Node was already removed
             pass
 
-    def set_transform_dirty(self, node: SceneNode):
+    def set_transform_dirty(self, node: BaseNode):
         self.transform_dirty[node.group_id] = True
 
     def clear(self):
@@ -48,6 +48,13 @@ class RenderingContainer:
 
     def clear_transform_dirty(self):
         self.transform_dirty.clear()
+
+    def find_node_by_id(self, node_id: int) -> BaseNode | None:
+        for nodes in self._batches.values():
+            for node in nodes:
+                if node._id == node_id:
+                    return node
+        return None
 
     def __repr__(self) -> str:
         _batches = []

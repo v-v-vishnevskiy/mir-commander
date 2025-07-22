@@ -1,18 +1,18 @@
-from mir_commander.ui.utils.opengl.resource_manager import SceneNode
+from mir_commander.ui.utils.opengl.scene import TransparentNode
 
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ..config import SelectedAtom
 
 
-class BoundingSphere(SceneNode):
+class BoundingSphere(TransparentNode):
     def __init__(
         self,
         model_name: str,
         atom_color: Color4f,
         config: SelectedAtom,
     ):
-        super().__init__(transparent=True)
+        super().__init__(visible=True, picking_visible=False)
         self._atom_color = atom_color
 
         self.set_color(self._compute_color(config))

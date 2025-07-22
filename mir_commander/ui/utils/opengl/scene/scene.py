@@ -1,0 +1,43 @@
+from mir_commander.ui.utils.opengl.resource_manager.base import Resource
+
+from .rendering_container import RenderingContainer
+from .transform import Transform
+from .base_node import BaseNode
+from .root_node import RootNode
+
+
+class Scene(Resource):
+    __slots__ = ("_root_node", "transform")
+
+    def __init__(self, name: str):
+        super().__init__(name)
+
+        self._root_node = RootNode()
+
+        self.transform = Transform()
+
+    @property
+    def root_node(self) -> RootNode:
+        return self._root_node
+
+    @property
+    def containers(self) -> tuple[dict[str, RenderingContainer], RenderingContainer]:
+        return self._root_node.containers
+
+    def add_node(self, node: BaseNode):
+        self._root_node.add_node(node)
+
+    def remove_node(self, node: BaseNode):
+        self._root_node.remove_node(node)
+
+    def find_node_by_id(self, node_id: int) -> BaseNode | None:
+        if node_id == 0:
+            return None
+
+        return self._root_node.find_node_by_id(node_id)
+
+    def clear(self):
+        self._root_node.clear()
+
+    def __repr__(self):
+        return f"Scene(name={self.name}, root_node={self._root_node})"

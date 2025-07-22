@@ -21,13 +21,12 @@ from .resource_manager import (
     FragmentShader,
     Mesh,
     ResourceManager,
-    Scene,
-    SceneNode,
     ShaderProgram,
     Texture2D,
     VertexArrayObject,
     VertexShader,
 )
+from .scene import BaseNode, Scene
 from .utils import Color4f, color_to_id
 
 from time import monotonic
@@ -38,6 +37,8 @@ logger = logging.getLogger("OpenGL.Widget")
 class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent: QWidget, keymap: None | Keymap = None):
         super().__init__(parent)
+
+        self._is_initialized = False
 
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
@@ -145,6 +146,7 @@ class OpenGLWidget(QOpenGLWidget):
 
         try:
             self.post_init()
+            self._is_initialized = True
         except Exception:
             print(traceback.format_exc())
 
@@ -162,6 +164,9 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def paintGL(self):
+        if not self._is_initialized:
+            return
+
         start = monotonic()
         self.renderer.paint(PaintMode.Normal)
         end = monotonic()
@@ -260,7 +265,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> None | SceneNode:
+    def item_under_cursor(self) -> None | BaseNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

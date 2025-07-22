@@ -12,27 +12,18 @@ if TYPE_CHECKING:
     from .root_scene_node import RootSceneNode
 
 
-class SceneNode:
+class BaseNode:
     _id_counter = 0
+    node_type: str
 
-    def __init__(
-        self,
-        is_container: bool = False,
-        visible: bool = True,
-        transparent: bool = False,
-        picking_visible: bool = False,
-    ):
-        SceneNode._id_counter += 1
-        self._id = SceneNode._id_counter
+    def __init__(self, visible: bool, picking_visible: bool):
+        BaseNode._id_counter += 1
+        self._id = BaseNode._id_counter
 
         self._root_node: Optional["RootSceneNode"] = None
 
-        self._is_container = is_container
         self._visible = visible
-        self._transparent = transparent
         self._picking_visible = picking_visible
-        self._is_text = False
-
         self.picking_color = id_to_color(self._id)
 
         # True - transform has been changed, False - transform is up to date
@@ -49,31 +40,17 @@ class SceneNode:
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
         self._texture_name: None | str = None
 
-        self.center = QVector3D(0.0, 0.0, 0.0)
-
     @property
     def group_id(self) -> tuple[str, str, str]:
         return self._shader_name, self._texture_name, self._model_name
-
-    @property
-    def is_container(self) -> bool:
-        return self._is_container
 
     @property
     def visible(self) -> bool:
         return self._visible
 
     @property
-    def transparent(self) -> bool:
-        return self._transparent
-
-    @property
     def picking_visible(self) -> bool:
         return self._picking_visible
-
-    @property
-    def is_text(self) -> bool:
-        return self._is_text
 
     @property
     def transform(self) -> QMatrix4x4:
@@ -243,7 +220,6 @@ class SceneNode:
         return f"{self.__class__.__name__}(" \
             f"id={self._id}, " \
             f"visible={self._visible}, " \
-            f"transparent={self._transparent}, " \
             f"picking_visible={self._picking_visible}, " \
             f"shader='{self._shader_name}', " \
             f"model='{self._model_name}', " \

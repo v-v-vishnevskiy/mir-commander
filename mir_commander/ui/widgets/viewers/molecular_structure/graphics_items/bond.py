@@ -1,12 +1,12 @@
 from PySide6.QtGui import QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.resource_manager import SceneNode
+from mir_commander.ui.utils.opengl.scene import ContainerNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
 
 
-class BondItem(SceneNode):
+class BondItem(OpaqueNode):
     def __init__(
         self,
         model_name: str,
@@ -16,7 +16,7 @@ class BondItem(SceneNode):
         length: float,
         color: Color4f,
     ):
-        super().__init__()
+        super().__init__(visible=True, picking_visible=False)
         self.set_model(model_name)
         self.set_color(color)
         self.set_shader("default")
@@ -37,7 +37,7 @@ class BondItem(SceneNode):
         self.set_scale(QVector3D(radius, radius, self._length))
 
 
-class Bond(SceneNode):
+class Bond(ContainerNode):
     def __init__(
         self,
         model_name: str,
@@ -47,7 +47,7 @@ class Bond(SceneNode):
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__(is_container=True)
+        super().__init__(visible=True)
 
         self._model_name = model_name
         self._radius = radius
