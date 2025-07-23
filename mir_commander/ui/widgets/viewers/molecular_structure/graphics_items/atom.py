@@ -19,6 +19,7 @@ class AtomLabelType(Enum):
 class Atom(OpaqueNode):
     def __init__(
         self,
+        parent: BaseNode,
         model_name: str,
         index_num: int,
         atomic_num: int,
@@ -28,7 +29,7 @@ class Atom(OpaqueNode):
         color: Color4f,
         selected_atom_config: SelectedAtom,
     ):
-        super().__init__(visible=True, picking_visible=True)
+        super().__init__(parent=parent, visible=True, picking_visible=True)
         self.translate(position)
         self.set_scale(radius)
         self.set_color(color)
@@ -42,11 +43,9 @@ class Atom(OpaqueNode):
         self._related_bonds = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._bounding_sphere = AtomBoundingSphere(model_name, color, selected_atom_config)
-        self.add_node(self._bounding_sphere)
-        self._label = AtomLabel()
+        self._bounding_sphere = AtomBoundingSphere(self, model_name, color, selected_atom_config)
+        self._label = AtomLabel(self)
         self.set_label_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
-        self.add_node(self._label)
 
     def add_related_bond(self, bond: BaseNode):
         self._related_bonds.append(bond)

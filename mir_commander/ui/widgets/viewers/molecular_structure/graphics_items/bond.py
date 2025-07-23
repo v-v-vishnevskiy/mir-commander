@@ -1,6 +1,6 @@
 from PySide6.QtGui import QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.scene import ContainerNode, OpaqueNode
+from mir_commander.ui.utils.opengl.scene import BaseNode,ContainerNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .atom import Atom
@@ -9,6 +9,7 @@ from .atom import Atom
 class BondItem(OpaqueNode):
     def __init__(
         self,
+        parent: BaseNode,
         model_name: str,
         position: QVector3D,
         direction: QVector3D,
@@ -16,7 +17,7 @@ class BondItem(OpaqueNode):
         length: float,
         color: Color4f,
     ):
-        super().__init__(visible=True, picking_visible=False)
+        super().__init__(parent=parent, visible=True, picking_visible=False)
         self.set_model(model_name)
         self.set_color(color)
         self.set_shader("default")
@@ -40,6 +41,7 @@ class BondItem(OpaqueNode):
 class Bond(ContainerNode):
     def __init__(
         self,
+        parent: BaseNode,
         model_name: str,
         atom_1: Atom,
         atom_2: Atom,
@@ -47,7 +49,7 @@ class Bond(ContainerNode):
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__(visible=True)
+        super().__init__(parent=parent, visible=True)
 
         self._model_name = model_name
         self._radius = radius
@@ -56,7 +58,6 @@ class Bond(ContainerNode):
         self._smooth = True
         self._atoms_color = atoms_color
         self._color = color
-        self._items: list[BondItem] = []
 
         atom_1.add_related_bond(self)
         atom_2.add_related_bond(self)
@@ -96,7 +97,7 @@ class Bond(ContainerNode):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            self.add_node(BondItem(self._model_name, position, direction, self._radius, length, color))
+            BondItem(self, self._model_name, position, direction, self._radius, length, color)
 
     def update_bonds(self):
         bonds = self._build_bonds()

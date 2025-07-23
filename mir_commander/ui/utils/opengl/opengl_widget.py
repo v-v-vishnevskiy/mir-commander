@@ -40,8 +40,6 @@ class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent: QWidget, keymap: None | Keymap = None):
         super().__init__(parent)
 
-        self._is_initialized = False
-
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
@@ -54,15 +52,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager = ResourceManager()
         self.resource_manager.add_camera(Camera("main"))
         self.resource_manager.add_scene(Scene("main"))
-
         self.renderer = Renderer(self.projection_manager, self.resource_manager)
-
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
-        self._init_actions()
-
-    def post_init(self):
+        self.init_actions()
         self.init_shaders()
         self.init_font_atlas()
 
@@ -125,7 +119,7 @@ class OpenGLWidget(QOpenGLWidget):
     def clear(self):
         self.resource_manager.current_scene.clear()
 
-    def _init_actions(self):
+    def init_actions(self):
         self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
         self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
         self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
@@ -133,7 +127,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
-    def _setup_projection(self, w: int, h: int):
+    def _setup_viewport(self, w: int, h: int):
         glViewport(0, 0, w, h)
 
     @property
@@ -142,15 +136,8 @@ class OpenGLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         self.makeCurrent()
-        self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
-
-        try:
-            self.post_init()
-            self._is_initialized = True
-        except Exception:
-            print(traceback.format_exc())
 
     def resize(self, w: int, h: int):
         parent = self.parent()
@@ -162,13 +149,10 @@ class OpenGLWidget(QOpenGLWidget):
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
-        self._setup_projection(w, h)
+        self._setup_viewport(w, h)
         self.update()
 
     def paintGL(self):
-        if not self._is_initialized:
-            return
-
         start = monotonic()
         self.renderer.paint(PaintMode.Normal)
         end = monotonic()
@@ -224,20 +208,20 @@ class OpenGLWidget(QOpenGLWidget):
     def set_projection_mode(self, mode: ProjectionMode | str):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def toggle_projection_mode(self):
         self.makeCurrent()
         self.projection_manager.toggle_projection_mode()
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
         self.projection_manager.perspective_projection.set_fov(value)
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def set_scene_position(self, point: QVector3D):

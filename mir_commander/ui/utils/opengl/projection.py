@@ -86,6 +86,7 @@ class ProjectionManager:
         self.perspective_projection.setup_projection(width, height)
         self.orthographic_projection = OrthographicProjection()
         self.orthographic_projection.setup_projection(width, height)
+        self.build_projections(width, height)
 
     @property
     def projection_mode(self) -> ProjectionMode:

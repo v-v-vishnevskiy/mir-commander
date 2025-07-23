@@ -93,7 +93,7 @@ class Renderer:
 
             self._has_new_image = False
 
-        self._resource_manager.current_scene.root_node.clear_transform_dirty()
+        self._resource_manager.current_scene.root_node.clear_dirty()
 
     def _handle_text(self, text_rc: RenderingContainer):
         for group_id, nodes in text_rc.batches:
@@ -102,9 +102,9 @@ class Renderer:
                     node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name).info)
 
     def _paint_picking(self, rc: RenderingContainer):
-        prev_model_name = None
+        prev_model_name = ""
 
-        uniform_locations = self._setup_shader(None, "picking")
+        uniform_locations = self._setup_shader("", "picking")
 
         for group_id, nodes in rc.batches:
             _, _, model_name = group_id
@@ -119,9 +119,9 @@ class Renderer:
                 glDrawArrays(GL_TRIANGLES, 0, triangles_count)
 
     def _paint_normal(self, rc: RenderingContainer):
-        prev_shader_name = None
-        prev_texture_name = None
-        prev_model_name = None
+        prev_shader_name = ""
+        prev_texture_name = ""
+        prev_model_name = ""
 
         for group_id, nodes in rc.batches:
             shader_name, texture_name, model_name = group_id
@@ -134,12 +134,12 @@ class Renderer:
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
 
-            self._setup_instanced_rendering(rc, group_id, nodes, texture_name is not None)
+            self._setup_instanced_rendering(rc, group_id, nodes, texture_name != "")
 
             # OPTIMIZATION: Single draw call for all instances
             glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
 
-    def _setup_shader(self, prev_shader_name: None |str, shader_name: str) -> UniformLocations:
+    def _setup_shader(self, prev_shader_name: str, shader_name: str) -> UniformLocations:
         # OPTIMIZATION: Switch shader only when needed (expensive operation)
         shader = self._resource_manager.get_shader(shader_name)
         if shader_name != prev_shader_name:
@@ -148,20 +148,20 @@ class Renderer:
             self._setup_uniforms(uniform_locations)
         return shader.uniform_locations
 
-    def _setup_texture(self, prev_texture_name: None | str, texture_name: None | str):
+    def _setup_texture(self, prev_texture_name: str, texture_name: str):
         # OPTIMIZATION: Switch texture only when needed (expensive operation)
-        if texture_name is not None and texture_name != prev_texture_name:
+        if texture_name != "" and texture_name != prev_texture_name:
             texture = self._resource_manager.get_texture(texture_name)
             texture.bind()
             return texture_name
         # Unbind texture if needed
-        elif texture_name is None and prev_texture_name is not None:
+        elif texture_name == "" and prev_texture_name != "":
             texture = self._resource_manager.get_texture(prev_texture_name)
             texture.unbind()
             return texture_name
         return prev_texture_name
 
-    def _setup_vao(self, prev_model_name: None | str, model_name: str) -> int:
+    def _setup_vao(self, prev_model_name: str, model_name: str) -> int:
         # OPTIMIZATION: Switch VAO only when needed (expensive operation)
         vao = self._resource_manager.get_vertex_array_object(model_name)
         if model_name != prev_model_name:
@@ -173,7 +173,7 @@ class Renderer:
         model_matrix_buffer_id, local_position_buffer_id, parent_world_position_buffer_id,color_buffer_id = self._get_transformation_buffer(group_id)
 
         # Update buffers if needed
-        if rc.transform_dirty.get(group_id, False):
+        if rc._dirty.get(group_id, False):
             self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
             self._update_local_position_buffer(local_position_buffer_id, nodes)
             self._update_parent_world_position_buffer(parent_world_position_buffer_id, nodes)

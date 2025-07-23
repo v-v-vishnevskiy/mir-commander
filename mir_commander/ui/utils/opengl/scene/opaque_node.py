@@ -1,8 +1,5 @@
-from .base_node import BaseNode
+from .base_renderable_node import BaseRenderableNode
 
 
-class OpaqueNode(BaseNode):
+class OpaqueNode(BaseRenderableNode):
     node_type = "opaque"
-
-    def __init__(self, visible: bool, picking_visible: bool):
-        super().__init__(visible, picking_visible)

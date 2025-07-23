@@ -7,7 +7,7 @@ from PySide6.QtGui import QVector3D
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.models import cylinder, sphere
 from mir_commander.ui.utils.opengl.resource_manager import Mesh, ResourceManager, VertexArrayObject
-from mir_commander.ui.utils.opengl.scene import ContainerNode
+from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -23,10 +23,11 @@ logger = logging.getLogger("MoleculeStructure.Molecule")
 class Molecule(ContainerNode):
     def __init__(
         self,
+        parent: BaseNode,
         config: MolecularStructureViewerConfig,
         resource_manager: ResourceManager,
     ):
-        super().__init__(visible=True)
+        super().__init__(parent, visible=True)
 
         self._resource_manager = resource_manager
 
@@ -186,6 +187,7 @@ class Molecule(ContainerNode):
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
         item = Atom(
+            self,
             self._sphere_resource_name,
             index_num,
             atomic_num,
@@ -195,7 +197,6 @@ class Molecule(ContainerNode):
             color,
             selected_atom_config=self.style.current.selected_atom,
         )
-        self.add_node(item)
         self.atom_items.append(item)
 
         return item
@@ -208,6 +209,7 @@ class Molecule(ContainerNode):
             color = normalize_color(self.style.current.bond.color)
 
         item = Bond(
+            self,
             self._cylinder_resource_name,
             atom_1,
             atom_2,
@@ -215,7 +217,6 @@ class Molecule(ContainerNode):
             atoms_color,
             color,
         )
-        self.add_node(item)
         self.bond_items.append(item)
 
         return item
