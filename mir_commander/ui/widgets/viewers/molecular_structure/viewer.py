@@ -21,7 +21,7 @@ from ..base import BaseViewer
 
 from .build_bonds_dialog import BuildBondsDialog
 from .config import MolecularStructureViewerConfig
-from .graphics_items import Atom, LabelType
+from .graphics_items import Atom, AtomLabelType
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
 
@@ -755,27 +755,27 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         else:
             self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
 
-    def labels_show_for_all_atoms(self):
+    def atom_labels_show_for_all_atoms(self):
         for atom in self._molecule.atom_items:
             atom.set_label_visible(True)
         self.update()
 
-    def labels_hide_for_all_atoms(self):
+    def atom_labels_hide_for_all_atoms(self):
         for atom in self._molecule.atom_items:
             atom.set_label_visible(False)
         self.update()
 
-    def labels_show_for_selected_atoms(self):
+    def atom_labels_show_for_selected_atoms(self):
         for atom in self._molecule.selected_atom_items:
             atom.set_label_visible(True)
         self.update()
 
-    def labels_hide_for_selected_atoms(self):
+    def atom_labels_hide_for_selected_atoms(self):
         for atom in self._molecule.selected_atom_items:
             atom.set_label_visible(False)
         self.update()
 
-    def labels_set_type(self, value: LabelType):
+    def atom_labels_set_type(self, value: AtomLabelType):
         for atom in self._molecule.atom_items:
             atom.set_label_type(value)
         self.update()

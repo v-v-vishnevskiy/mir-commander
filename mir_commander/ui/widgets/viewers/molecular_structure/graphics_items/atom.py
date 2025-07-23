@@ -7,10 +7,10 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..config import SelectedAtom
 from .atom_label import AtomLabel
-from .bounding_sphere import BoundingSphere
+from .atom_bounding_sphere import AtomBoundingSphere
 
 
-class LabelType(Enum):
+class AtomLabelType(Enum):
     INDEX_NUMBER = 1
     ELEMENT_SYMBOL = 2
     ELEMENT_SYMBOL_AND_INDEX_NUMBER = 3
@@ -42,21 +42,20 @@ class Atom(OpaqueNode):
         self._related_bonds = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._bounding_sphere = BoundingSphere(model_name, color, selected_atom_config)
+        self._bounding_sphere = AtomBoundingSphere(model_name, color, selected_atom_config)
         self.add_node(self._bounding_sphere)
-        self._atom_label = AtomLabel()
-        self.set_label_type(LabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
-        self.add_node(self._atom_label)
+        self._label = AtomLabel()
+        self.set_label_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
+        self.add_node(self._label)
 
     def add_related_bond(self, bond: BaseNode):
         self._related_bonds.append(bond)
 
     def set_cloaked(self, value: bool):
         self._cloaked = value
-        self.notify_visible_changed()
-        self._atom_label.set_visible(not self._cloaked)
+        self.set_visible(not self._cloaked)
         for bond in self._related_bonds:
-            bond.notify_visible_changed()
+            bond.set_visible(not self._cloaked)
 
     @property
     def position(self) -> QVector3D:
@@ -65,10 +64,6 @@ class Atom(OpaqueNode):
     @property
     def cloaked(self) -> bool:
         return self._cloaked
-
-    @property
-    def visible(self) -> bool:
-        return super().visible and not self._cloaked
 
     def set_under_cursor(self, value: bool):
         if value:
@@ -94,22 +89,22 @@ class Atom(OpaqueNode):
 
     def set_selected(self, value: bool):
         self._selected = value
-        self._bounding_sphere.notify_visible_changed()
+        self._bounding_sphere.set_visible(value)
 
     def toggle_selection(self) -> bool:
         self.set_selected(not self._selected)
         return self._selected
 
     def set_label_visible(self, value: bool):
-        self._atom_label.set_visible(value)
+        self._label.set_visible(value)
 
-    def set_label_type(self, value: LabelType):
-        if value == LabelType.INDEX_NUMBER:
-            self._atom_label.set_text(f"{self.index_num + 1}")
-        elif value == LabelType.ELEMENT_SYMBOL:
-            self._atom_label.set_text(f"{self.element_symbol}")
-        elif value == LabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
-            self._atom_label.set_text(f"{self.element_symbol}{self.index_num + 1}")
+    def set_label_type(self, value: AtomLabelType):
+        if value == AtomLabelType.INDEX_NUMBER:
+            self._label.set_text(f"{self.index_num + 1}")
+        elif value == AtomLabelType.ELEMENT_SYMBOL:
+            self._label.set_text(f"{self.element_symbol}")
+        elif value == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
+            self._label.set_text(f"{self.element_symbol}{self.index_num + 1}")
 
     def __repr__(self) -> str:
         return (

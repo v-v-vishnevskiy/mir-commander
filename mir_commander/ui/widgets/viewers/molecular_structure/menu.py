@@ -7,7 +7,7 @@ from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
 from .config import Keymap
-from .graphics_items.atom import LabelType
+from .graphics_items.atom import AtomLabelType
 from .viewer import MolecularStructureViewer
 
 
@@ -43,16 +43,6 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         menu = BaseMenu(Menu.tr("Atom labels"))
         self.addMenu(menu)
 
-        show_all_act = Action(Action.tr("Show all"), self.parent())
-        show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
-        show_all_act.triggered.connect(self.labels_show_for_all_atoms_handler)
-        menu.addAction(show_all_act)
-
-        hide_all_act = Action(Action.tr("Hide all"), self.parent())
-        hide_all_act.setStatusTip(Action.tr("Hide labels for all atoms"))
-        hide_all_act.triggered.connect(self.labels_hide_for_all_atoms_handler)
-        menu.addAction(hide_all_act)
-
         show_for_selected_atoms_act = Action(Action.tr("Show for selected atoms"), self.parent())
         show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
         show_for_selected_atoms_act.triggered.connect(self.labels_show_for_selected_atoms_handler)
@@ -62,6 +52,8 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
         hide_for_selected_atoms_act.triggered.connect(self.labels_hide_for_selected_atoms_handler)
         menu.addAction(hide_for_selected_atoms_act)
+
+        menu.addSeparator()
 
         set_element_symbol_and_index_number_act = Action(Action.tr("Set element symbol and index number"), self.parent())
         set_element_symbol_and_index_number_act.setStatusTip(Action.tr("Show element symbol and index number as label"))
@@ -77,6 +69,18 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         set_element_symbol_act.setStatusTip(Action.tr("Show element symbol as label"))
         set_element_symbol_act.triggered.connect(self.labels_set_element_symbol_handler)
         menu.addAction(set_element_symbol_act)
+        
+        menu.addSeparator()
+
+        show_all_act = Action(Action.tr("Show all"), self.parent())
+        show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
+        show_all_act.triggered.connect(self.labels_show_for_all_atoms_handler)
+        menu.addAction(show_all_act)
+
+        hide_all_act = Action(Action.tr("Hide all"), self.parent())
+        hide_all_act.setStatusTip(Action.tr("Hide labels for all atoms"))
+        hide_all_act.triggered.connect(self.labels_hide_for_all_atoms_handler)
+        menu.addAction(hide_all_act)
 
     def _init_bonds_menu(self):
         bonds_menu = BaseMenu(Menu.tr("Bonds"))
@@ -363,28 +367,28 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def labels_show_for_all_atoms_handler(self):
-        self.widget.labels_show_for_all_atoms()
+        self.widget.atom_labels_show_for_all_atoms()
 
     @Slot()
     def labels_hide_for_all_atoms_handler(self):
-        self.widget.labels_hide_for_all_atoms()
+        self.widget.atom_labels_hide_for_all_atoms()
 
     @Slot()
     def labels_show_for_selected_atoms_handler(self):
-        self.widget.labels_show_for_selected_atoms()
+        self.widget.atom_labels_show_for_selected_atoms()
 
     @Slot()
     def labels_hide_for_selected_atoms_handler(self):
-        self.widget.labels_hide_for_selected_atoms()
+        self.widget.atom_labels_hide_for_selected_atoms()
 
     @Slot()
     def labels_set_element_symbol_and_index_number_handler(self):
-        self.widget.labels_set_type(LabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
+        self.widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
 
     @Slot()
     def labels_set_index_number_handler(self):
-        self.widget.labels_set_type(LabelType.INDEX_NUMBER)
+        self.widget.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)
 
     @Slot()
     def labels_set_element_symbol_handler(self):
-        self.widget.labels_set_type(LabelType.ELEMENT_SYMBOL)
+        self.widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)

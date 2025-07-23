@@ -58,12 +58,6 @@ class RootNode:
         if node.picking_visible:
             self._picking_container.set_transform_dirty(node)
 
-    def notify_visible_changed(self, node: BaseNode):
-        if node.visible:
-            self.notify_add_node(node)
-        else:
-            self.notify_remove_node(node)
-
     def find_node_by_id(self, node_id: int) -> BaseNode | None:
         node = self._picking_container.find_node_by_id(node_id)
         if node is not None:

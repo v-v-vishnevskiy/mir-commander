@@ -40,6 +40,8 @@ class BaseNode:
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
         self._texture_name: None | str = None
 
+        self._modify_children: bool = False
+
     @property
     def group_id(self) -> tuple[str, str, str]:
         return self._shader_name, self._texture_name, self._model_name
@@ -98,22 +100,18 @@ class BaseNode:
 
         return result
 
-    def notify_visible_changed(self):
-        root_node = self._root_node
-        for node in self._get_children(include_self=True):
-            if root_node is not None:
-                root_node.notify_visible_changed(node)
-
     def set_visible(self, value: bool):
         if self._visible == value:
             return
 
-        root_node = self._root_node
+        self._visible = value
+
+        fn = self._root_node.notify_add_node if value else self._root_node.notify_remove_node
+
         for node in self._get_children(include_self=True):
-            if node._visible != value:
+            if self._modify_children:
                 node._visible = value
-                if root_node is not None:
-                    root_node.notify_visible_changed(node)
+            fn(node)
 
     def add_node(self, node: Self):
         if node in self._nodes:

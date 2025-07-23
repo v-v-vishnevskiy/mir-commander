@@ -21,6 +21,8 @@ class TextNode(BaseNode):
         align: Literal["left", "center", "right"],
     ):
         super().__init__(visible, picking_visible)
+        self._modify_children = True
+
         self._font_atlas_name = font_atlas_name
         self._align = align
         self._text = ""
