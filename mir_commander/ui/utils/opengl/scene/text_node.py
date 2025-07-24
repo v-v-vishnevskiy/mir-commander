@@ -17,7 +17,6 @@ class TextNode(ContainerNode):
         "_text",
         "_font_atlas_name",
         "_align",
-        "_has_new_text",
         "_picking_visible",
         "_shader_name",
         "_color",
@@ -37,7 +36,6 @@ class TextNode(ContainerNode):
         self._text = ""
         self._font_atlas_name = font_atlas_name
         self._align = align
-        self._has_new_text = False
 
         self._picking_visible = picking_visible
         self._shader_name = ""
@@ -55,10 +53,6 @@ class TextNode(ContainerNode):
     def align(self) -> str:
         return self._align
 
-    @property
-    def has_new_text(self) -> bool:
-        return self._has_new_text
-
     def _build(self, text: str):
         for char in text:
             char_node = CharNode(parent=self, char=char, visible=self.visible, picking_visible=self._picking_visible)
@@ -69,9 +63,9 @@ class TextNode(ContainerNode):
 
     def set_text(self, text: str):
         self._text = text
-        self._has_new_text = True
         self.clear()
         self._build(text)
+        self._root_node.notify_add_node(self)
 
     def set_font_atlas_name(self, name: str):
         if self._font_atlas_name == name:
@@ -80,6 +74,7 @@ class TextNode(ContainerNode):
         self._font_atlas_name = name
         for node in self.children:
             node.set_texture(f"font_atlas_{name}")
+        self._root_node.notify_add_node(self)
 
     def set_shader(self, name: str):
         self._shader_name = name
@@ -100,7 +95,7 @@ class TextNode(ContainerNode):
             char_info = font_atlas_info.chars[char]
             half_width = char_info.width / char_info.height
             x = half_width + x_offset
-            children[i].translate(QVector3D(x, 0.0, 0.0))
+            children[i].set_translation(QVector3D(x, 0.0, 0.0))
             x_offset += half_width * 2
 
         if self._align == "center":
@@ -112,8 +107,6 @@ class TextNode(ContainerNode):
 
         for n in children:
             n.translate(vector)
-
-        self._has_new_text = False
 
     def __repr__(self):
         return f"TextNode(text={self._text}, font_atlas_name={self._font_atlas_name}, align={self._align})"
