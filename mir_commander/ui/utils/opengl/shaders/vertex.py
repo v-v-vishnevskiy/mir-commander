@@ -68,8 +68,6 @@ out vec2 fragment_texcoord;
 out vec4 fragment_color;
 
 void main() {
-    vec3 camera_pos = vec3(view_matrix[3][0], view_matrix[3][1], view_matrix[3][2]);
-
     vec3 scene_scale;
     scene_scale.x = length(vec3(scene_matrix[0][0], scene_matrix[0][1], scene_matrix[0][2]));
     scene_scale.y = length(vec3(scene_matrix[1][0], scene_matrix[1][1], scene_matrix[1][2]));

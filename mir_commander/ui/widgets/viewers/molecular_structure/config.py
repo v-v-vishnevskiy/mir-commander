@@ -24,9 +24,9 @@ class Atoms(BaseModel):
     scale_factor: float = 1
     radius: Literal["atomic", "bond"] = "atomic"
     atomic_radius: list[float] = [
-        0.1,
-        0.15,
-        0.17,
+        0.13,
+        0.17,  # H
+        0.18,
         0.20,
         0.22,
         0.24,

@@ -52,7 +52,6 @@ class OpenGLWidget(QOpenGLWidget):
 
         self.init_actions()
         self.init_shaders()
-        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
 
     def init_shaders(self):
         self.resource_manager.add_shader(
@@ -124,7 +123,7 @@ class OpenGLWidget(QOpenGLWidget):
         return self._cursor_pos.x(), self._cursor_pos.y()
 
     def initializeGL(self):
-        self.makeCurrent()
+        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
         self._setup_viewport(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
 

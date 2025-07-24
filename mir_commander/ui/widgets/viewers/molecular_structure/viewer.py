@@ -76,15 +76,15 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
-        self.init_molecule()
-
         self.update_window_title()
 
     def init_actions(self):
         super().init_actions()
         self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
 
-    def init_molecule(self):
+    def initializeGL(self):
+        super().initializeGL()
+
         self._molecule = Molecule(self.resource_manager.current_scene.root_node, self._config, self.resource_manager)
 
         self.build_molecule()
