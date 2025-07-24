@@ -27,8 +27,6 @@ from .resource_manager import (
 from .scene import BaseNode, Scene
 from .utils import Color4f, color_to_id
 
-from time import monotonic
-
 
 class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent: QWidget, keymap: None | Keymap = None):
@@ -141,10 +139,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def paintGL(self):
-        start = monotonic()
         self.renderer.paint(PaintMode.Normal)
-        end = monotonic()
-        print(f"paintGL: {end - start} seconds")
 
     def setWindowIcon(self, icon: QIcon):
         parent = self.parent()
