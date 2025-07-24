@@ -22,9 +22,9 @@ class SpecialAtoms(BaseModel):
 
 
 class AtomLabelType(Enum):
-    INDEX_NUMBER = 1
+    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 1
     ELEMENT_SYMBOL = 2
-    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 3
+    INDEX_NUMBER = 3
 
 
 class AtomLabelConfig(BaseModel):
@@ -356,3 +356,9 @@ class MolecularStructureViewerConfig(BaseModel):
         min_length=1,
         description="List of available styles for the molecular structure viewer.",
     )
+
+    def get_current_style(self) -> Style:
+        for style in self.styles:
+            if style.name == self.current_style:
+                return style
+        return self.styles[0]
