@@ -18,15 +18,11 @@ class BondItem(OpaqueNode):
         color: Color4f,
     ):
         super().__init__(parent=parent, visible=True, picking_visible=False)
+        self._length = length
+        self.set_shader("default")
         self.set_model(model_name)
         self.set_color(color)
-        self.set_shader("default")
-        self.set_transformation(position, direction, radius, length)
-        self._length = 0
-
-    def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
-        self._length = length
-        self.translate(position)
+        self.set_translation(position)
         self.set_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), direction))
         self.set_scale(QVector3D(radius, radius, length))
 
@@ -90,14 +86,6 @@ class Bond(ContainerNode):
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
             BondItem(self, self._model_name, position, direction, self._radius, length, color)
-
-    def update_bonds(self):
-        bonds = self._build_bonds()
-        direction = self._atom_1.position - self._atom_2.position
-        for i, bond in enumerate(self._children):
-            position, length, color = bonds[i]
-            bond.set_transformation(position, direction, self._radius, length)
-            bond.set_color(color)
 
     def set_radius(self, radius: float):
         self._radius = radius
