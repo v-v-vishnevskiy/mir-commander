@@ -94,14 +94,14 @@ class Bond(ContainerNode):
     def update_bonds(self):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
-        for i, bond in enumerate(self._nodes):
+        for i, bond in enumerate(self._children):
             position, length, color = bonds[i]
             bond.set_transformation(position, direction, self._radius, length)
             bond.set_color(color)
 
     def set_radius(self, radius: float):
         self._radius = radius
-        for bond in self._nodes:
+        for bond in self._children:
             bond.set_radius(radius)
 
     def set_atoms_color(self, value: bool):
@@ -115,7 +115,7 @@ class Bond(ContainerNode):
             self._atoms_color = False
             self._add_bonds()
         else:
-            for bond in self._nodes:
+            for bond in self._children:
                 bond.set_color(color)
 
     def __repr__(self) -> str:

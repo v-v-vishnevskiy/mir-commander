@@ -1,18 +1,25 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.scene import BaseNode, TextNode
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.utils.opengl.utils import color_to_color4f
+
+from ..config import AtomLabelConfig
 
 
 class AtomLabel(TextNode):
-    def __init__(self, parent: BaseNode, color: Color4f = (0.0, 0.0, 0.0, 1.0)):
+    def __init__(self, parent: BaseNode, config: AtomLabelConfig):
         super().__init__(
             parent=parent, 
-            visible=False, 
-            picking_visible=False, 
-            font_atlas_name="default",
+            visible=config.visible, 
+            picking_visible=False,
             align="center"
         )
-        self.set_scale(QVector3D(0.35, 0.35, 0.35))
+        self._config = config
+        self.set_scale(QVector3D(config.size, config.size, config.size))
         self.set_shader("text")
-        self.set_color(color)
+        self.set_color(color_to_color4f(config.color))
+
+    def set_config(self, config: AtomLabelConfig):
+        self.set_color(color_to_color4f(config.color))
+        self.set_scale(QVector3D(config.size, config.size, config.size))
+        self.set_font_atlas_name(config.font)

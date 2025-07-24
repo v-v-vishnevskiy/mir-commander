@@ -15,16 +15,17 @@ class AtomBoundingSphere(TransparentNode):
     ):
         super().__init__(parent=parent, visible=False, picking_visible=False)
         self._atom_color = atom_color
+        self._config = config
 
-        self.set_color(self._compute_color(config))
-        self.set_model(model_name)
+        self.set_scale(config.scale_factor)
         self.set_shader("transparent")
-
-        self.scale(config.scale_factor)
+        self.set_model(model_name)
+        self.set_color(self._compute_color(config))
 
     def set_config(self, config: SelectedAtom):
+        self._config = config
         self.set_color(self._compute_color(config))
-        self.scale(config.scale_factor)
+        self.set_scale(config.scale_factor)
 
     def _compute_color(self, config: SelectedAtom) -> Color4f:
         if config.color == "atom":

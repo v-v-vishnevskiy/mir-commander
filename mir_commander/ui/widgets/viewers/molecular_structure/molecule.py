@@ -51,20 +51,15 @@ class Molecule(ContainerNode):
         self.init_resources()
 
     def init_resources(self):
-        logger.debug("Initializing resources")
-
-        atom_mesh = self._get_atom_mesh()
-        atom_vao = self._get_atom_vao(atom_mesh)
+        atom_vao = self._get_atom_vao()
         self._resource_manager.add_vertex_array_object(atom_vao)
 
-        bond_mesh = self._get_bond_mesh()
-        bond_vao = self._get_bond_vao(bond_mesh)
+        bond_vao = self._get_bond_vao()
         self._resource_manager.add_vertex_array_object(bond_vao)
 
-        logger.debug("Resources initialized")
+    def _get_atom_vao(self) -> VertexArrayObject:
+        logger.debug("Initializing atom mesh data")
 
-    def _get_atom_mesh(self) -> Mesh:
-        logger.debug("Getting atom mesh data")
         mesh_quality = self._config.quality.mesh
         stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
         tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices)
@@ -74,12 +69,14 @@ class Molecule(ContainerNode):
             normals = compute_vertex_normals(vertices)
         else:
             normals = compute_face_normals(vertices)
-        return Mesh(self._sphere_resource_name, vertices, normals)
 
-    def _get_bond_mesh(self) -> Mesh:
-        logger.debug("Getting bond mesh data")
+        return VertexArrayObject(self._sphere_resource_name, vertices, normals)
+
+    def _get_bond_vao(self) -> VertexArrayObject:
+        logger.debug("Initializing bond mesh data")
+
         mesh_quality = self._config.quality.mesh
-        slices = int(cylinder.min_slices * (mesh_quality / 2))
+        slices = int(cylinder.min_slices * (mesh_quality))
         tmp_vertices = cylinder.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, caps=False)
         faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
         vertices = cylinder.unwind_vertices(tmp_vertices, faces)
@@ -87,13 +84,8 @@ class Molecule(ContainerNode):
             normals = compute_vertex_normals(vertices)
         else:
             normals = compute_face_normals(vertices)
-        return Mesh(self._cylinder_resource_name, vertices, normals)
 
-    def _get_atom_vao(self, mesh: Mesh) -> VertexArrayObject:
-        return VertexArrayObject(self._sphere_resource_name, mesh.vertices, mesh.normals)
-
-    def _get_bond_vao(self, mesh: Mesh) -> VertexArrayObject:
-        return VertexArrayObject(self._cylinder_resource_name, mesh.vertices, mesh.normals)
+        return VertexArrayObject(self._cylinder_resource_name, vertices, normals)
 
     def build(self, atomic_coordinates: AtomicCoordinates):
         """
@@ -131,6 +123,7 @@ class Molecule(ContainerNode):
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_selected_atom_config(self.style.current.selected_atom)
+            atom.set_label_config(self.style.current.atoms.label)
             atom.set_radius(radius)
             atom.set_color(color)
 
@@ -196,6 +189,7 @@ class Molecule(ContainerNode):
             radius,
             color,
             selected_atom_config=self.style.current.selected_atom,
+            label_config=self.style.current.atoms.label,
         )
         self.atom_items.append(item)
 

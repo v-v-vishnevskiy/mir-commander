@@ -1,19 +1,11 @@
-from enum import Enum
-
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.scene import BaseNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ..config import SelectedAtom
+from ..config import SelectedAtom, AtomLabelConfig, AtomLabelType
 from .atom_label import AtomLabel
 from .atom_bounding_sphere import AtomBoundingSphere
-
-
-class AtomLabelType(Enum):
-    INDEX_NUMBER = 1
-    ELEMENT_SYMBOL = 2
-    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 3
 
 
 class Atom(OpaqueNode):
@@ -28,6 +20,7 @@ class Atom(OpaqueNode):
         radius: float,
         color: Color4f,
         selected_atom_config: SelectedAtom,
+        label_config: AtomLabelConfig,
     ):
         super().__init__(parent=parent, visible=True, picking_visible=True)
         self.translate(position)
@@ -44,9 +37,9 @@ class Atom(OpaqueNode):
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
         self._bounding_sphere = AtomBoundingSphere(self, model_name, color, selected_atom_config)
-        self._label = AtomLabel(self)
+        self._label = AtomLabel(self, label_config)
         self._label.set_translation(QVector3D(0.0, 0.0, (1 + radius)))
-        self.set_label_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
+        self.set_label_type(label_config.type)
 
     def add_related_bond(self, bond: BaseNode):
         self._related_bonds.append(bond)
@@ -66,6 +59,14 @@ class Atom(OpaqueNode):
     def cloaked(self) -> bool:
         return self._cloaked
 
+    @property
+    def radius(self) -> float:
+        return self._radius
+
+    @property
+    def selected(self) -> bool:
+        return self._selected
+
     def set_under_cursor(self, value: bool):
         if value:
             radius = self.radius * 1.15
@@ -73,20 +74,9 @@ class Atom(OpaqueNode):
             radius = self.radius
         self.set_scale(radius)
 
-    @property
-    def radius(self) -> float:
-        return self._radius
-
     def set_radius(self, radius: float):
         self._radius = radius
         self.set_scale(radius)
-
-    def set_selected_atom_config(self, config: SelectedAtom):
-        self._bounding_sphere.set_config(config)
-
-    @property
-    def selected(self) -> bool:
-        return self._selected
 
     def set_selected(self, value: bool):
         self._selected = value
@@ -106,6 +96,12 @@ class Atom(OpaqueNode):
             self._label.set_text(f"{self.element_symbol}")
         elif value == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
             self._label.set_text(f"{self.element_symbol}{self.index_num + 1}")
+
+    def set_selected_atom_config(self, config: SelectedAtom):
+        self._bounding_sphere.set_config(config)
+
+    def set_label_config(self, config: AtomLabelConfig):
+        self._label.set_config(config)
 
     def __repr__(self) -> str:
         return (
