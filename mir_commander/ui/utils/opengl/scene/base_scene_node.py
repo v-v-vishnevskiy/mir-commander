@@ -27,6 +27,8 @@ class BaseSceneNode(BaseNode):
 
     @property
     def visible(self) -> bool:
+        if self.parent is not None:
+            return self._visible and self.parent.visible
         return self._visible
 
     @property
