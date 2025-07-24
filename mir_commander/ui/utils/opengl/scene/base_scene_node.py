@@ -40,11 +40,12 @@ class BaseSceneNode(BaseNode):
         if self._visible == value:
             return
 
-        self._visible = value
-
         fn = self._root_node.notify_add_node if value else self._root_node.notify_remove_node
 
-        for node in self._get_all_children(include_self=True):
+        self._visible = value
+        fn(self)
+
+        for node in self._get_all_children(include_self=False):
             if self._modify_children:
                 node._visible = value
             fn(node)

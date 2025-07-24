@@ -54,7 +54,8 @@ class Atom(OpaqueNode):
         self._cloaked = value
         self.set_visible(not self._cloaked)
         for bond in self._related_bonds:
-            bond.set_visible(not self._cloaked)
+            atom_1, atom_2 = bond.atoms
+            bond.set_visible(atom_1.visible and atom_2.visible)
 
     @property
     def position(self) -> QVector3D:

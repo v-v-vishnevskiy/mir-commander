@@ -24,10 +24,6 @@ class BondItem(OpaqueNode):
         self.set_transformation(position, direction, radius, length)
         self._length = 0
 
-    @property
-    def visible(self) -> bool:
-        return super().visible and self.parent.visible
-
     def set_transformation(self, position: QVector3D, direction: QVector3D, radius: float, length: float):
         self._length = length
         self.translate(position)
@@ -63,10 +59,6 @@ class Bond(ContainerNode):
         atom_2.add_related_bond(self)
 
         self._add_bonds()
-
-    @property
-    def visible(self) -> bool:
-        return super().visible and not self._atom_1.cloaked and not self._atom_2.cloaked
 
     @property
     def atoms(self) -> tuple[Atom, Atom]:
