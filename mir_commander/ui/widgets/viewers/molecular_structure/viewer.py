@@ -110,7 +110,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.set_projection_mode(self._molecule.style.current.projection.mode)
 
         self.resource_manager.current_camera.reset_to_default()
-        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3*self._molecule.radius/fov_factor))
+        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * self._molecule.radius/fov_factor))
 
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)

@@ -57,3 +57,6 @@ class Transform:
     def set_translation(self, translation: QVector3D):
         self._translation = translation
         self._dirty = True
+
+    def __repr__(self):
+        return f"Transform(scale={self._scale}, rotation={self._rotation}, translation={self._translation})"
