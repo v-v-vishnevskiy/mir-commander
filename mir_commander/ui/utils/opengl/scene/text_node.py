@@ -5,31 +5,43 @@ from PySide6.QtGui import QVector3D
 from mir_commander.ui.utils.opengl.resource_manager.font_atlas import FontAtlasInfo
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from .char_node import CharNode
-from .base_renderable_node import BaseRenderableNode
 from .base_node import BaseNode
+from .char_node import CharNode
+from .container_node import ContainerNode
 
 
-class TextNode(BaseRenderableNode):
+class TextNode(ContainerNode):
     node_type = "text"
 
-    __slots__ = ("_picking_visible", "_font_atlas_name", "_align", "_text", "_has_new_text")
+    __slots__ = (
+        "_text",
+        "_font_atlas_name",
+        "_align",
+        "_has_new_text",
+        "_picking_visible",
+        "_shader_name",
+        "_color",
+    )
 
     def __init__(
         self,
         parent: BaseNode,
-        visible: bool,
-        picking_visible: bool,
-        font_atlas_name: str,
-        align: Literal["left", "center", "right"],
+        visible: bool = True,
+        picking_visible: bool = True,
+        font_atlas_name: str = "default",
+        align: Literal["left", "center", "right"] = "center",
     ):
+        super().__init__(parent, visible)
+        self._modify_children = True
+
+        self._text = ""
         self._font_atlas_name = font_atlas_name
         self._align = align
-        self._text = ""
         self._has_new_text = False
 
-        super().__init__(parent, visible, picking_visible)
-        self._modify_children = True
+        self._picking_visible = picking_visible
+        self._shader_name = ""
+        self._color: Color4f = (0.0, 0.0, 0.0, 1.0)
 
     @property
     def text(self) -> str:
@@ -50,9 +62,9 @@ class TextNode(BaseRenderableNode):
     def _build(self, text: str):
         for char in text:
             char_node = CharNode(parent=self, char=char, visible=self.visible, picking_visible=self._picking_visible)
-            char_node.set_shader(self.shader_name)
-            char_node.set_texture(self.texture_name)
-            char_node.set_model(f"{self._font_atlas_name}_{char}")
+            char_node.set_shader(self._shader_name)
+            char_node.set_texture(f"font_atlas_{self._font_atlas_name}")
+            char_node.set_model(f"font_atlas_{self._font_atlas_name}_{char}")
             char_node.set_color(self._color)
 
     def set_text(self, text: str):
@@ -60,6 +72,19 @@ class TextNode(BaseRenderableNode):
         self._has_new_text = True
         self.clear()
         self._build(text)
+
+    def set_font_atlas_name(self, name: str):
+        if self._font_atlas_name == name:
+            return
+
+        self._font_atlas_name = name
+        for node in self.children:
+            node.set_texture(f"font_atlas_{name}")
+
+    def set_shader(self, name: str):
+        self._shader_name = name
+        for node in self.children:
+            node.set_shader(name)
 
     def set_color(self, color: Color4f):
         self._color = color
@@ -91,4 +116,4 @@ class TextNode(BaseRenderableNode):
         self._has_new_text = False
 
     def __repr__(self):
-        return f"TextNode(text={self._text}, font_atlas_name={self._font_atlas_name})"
+        return f"TextNode(text={self._text}, font_atlas_name={self._font_atlas_name}, align={self._align})"

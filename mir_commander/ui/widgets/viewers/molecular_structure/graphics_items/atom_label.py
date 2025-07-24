@@ -10,10 +10,9 @@ class AtomLabel(TextNode):
             parent=parent, 
             visible=False, 
             picking_visible=False, 
-            font_atlas_name="arial", 
+            font_atlas_name="default",
             align="center"
         )
         self.set_scale(QVector3D(0.35, 0.35, 0.35))
-        self.set_color(color)
         self.set_shader("text")
-        self.set_texture("font_atlas_arial")
+        self.set_color(color)

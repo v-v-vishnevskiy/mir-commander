@@ -62,9 +62,7 @@ class Renderer:
         self._bg_color = color
 
     def paint(self, paint_mode: PaintMode):
-        normal_containers, picking_rc = self._resource_manager.current_scene.containers
-
-        self._handle_text(normal_containers["text"])
+        normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
 
         glClearColor(*self._bg_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -76,6 +74,8 @@ class Renderer:
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
         else:
+            self._handle_text(text_rc)
+
             self._paint_normal(normal_containers["opaque"])
 
             if normal_containers["transparent"]:
@@ -96,7 +96,7 @@ class Renderer:
         self._resource_manager.current_scene.root_node.clear_dirty()
 
     def _handle_text(self, text_rc: RenderingContainer):
-        for group_id, nodes in text_rc.batches:
+        for _, nodes in text_rc.batches:
             for node in nodes:
                 if node.has_new_text:
                     node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name).info)

@@ -1,6 +1,3 @@
-import logging
-import traceback
-
 from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
@@ -21,7 +18,6 @@ from .resource_manager import (
     Camera,
     FontAtlas,
     FragmentShader,
-    Mesh,
     ResourceManager,
     ShaderProgram,
     Texture2D,
@@ -32,8 +28,6 @@ from .scene import BaseNode, Scene
 from .utils import Color4f, color_to_id
 
 from time import monotonic
-
-logger = logging.getLogger("OpenGL.Widget")
 
 
 class OpenGLWidget(QOpenGLWidget):
@@ -58,7 +52,7 @@ class OpenGLWidget(QOpenGLWidget):
 
         self.init_actions()
         self.init_shaders()
-        self.init_font_atlas()
+        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
 
     def init_shaders(self):
         self.resource_manager.add_shader(
@@ -90,14 +84,11 @@ class OpenGLWidget(QOpenGLWidget):
             )
         )
 
-    def init_font_atlas(self):
-        self.add_font_atlas(str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), "arial", "font_atlas_arial")
-
-    def add_font_atlas(self, font_name: str, font_atlas_name: str, font_atlas_texture_name: str):
+    def add_font_atlas(self, font_path: str, font_atlas_name: str):
         atlas_size = 512
-        data, atlas_info = create_font_atlas(font_name, atlas_size=atlas_size)
+        data, atlas_info = create_font_atlas(font_path, atlas_size=atlas_size)
         font_atlas = FontAtlas(font_atlas_name, atlas_info)
-        texture = Texture2D(name=font_atlas_texture_name, width=atlas_size, height=atlas_size, data=data)
+        texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
         self.resource_manager.add_font_atlas(font_atlas)
         self.resource_manager.add_texture(texture)
 
@@ -111,9 +102,7 @@ class OpenGLWidget(QOpenGLWidget):
 
             vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
             tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
-            mesh = Mesh(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
-            vao = VertexArrayObject(f"{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
-            self.resource_manager.add_mesh(mesh)
+            vao = VertexArrayObject(f"font_atlas_{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
             self.resource_manager.add_vertex_array_object(vao)
 
     def clear(self):

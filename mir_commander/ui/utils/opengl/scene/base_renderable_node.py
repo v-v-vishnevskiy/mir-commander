@@ -11,7 +11,11 @@ from .base_scene_node import BaseSceneNode
 class BaseRenderableNode(BaseSceneNode):
     _id_counter = 0
 
-    def __init__(self, parent: BaseNode, visible: bool, picking_visible: bool):
+    __slots__ = ("_id", "_picking_visible", "picking_color", "_shader_name", "_texture_name", "_model_name", "_color")
+
+    def __init__(self, parent: BaseNode, visible: bool = True, picking_visible: bool = True):
+        super().__init__(parent, visible)
+
         BaseRenderableNode._id_counter += 1
         self._id = BaseRenderableNode._id_counter
 
@@ -22,10 +26,6 @@ class BaseRenderableNode(BaseSceneNode):
         self._texture_name: str = ""
         self._model_name: str = ""
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
-
-        super().__init__(parent, visible)
-        if self._root_node is not None:
-            self._root_node.notify_add_node(self)
 
     @property
     def id(self) -> int:
@@ -44,16 +44,16 @@ class BaseRenderableNode(BaseSceneNode):
         return self._shader_name
 
     @property
+    def texture_name(self) -> None | str:
+        return self._texture_name
+
+    @property
     def model_name(self) -> None | str:
         return self._model_name
 
     @property
     def color(self) -> Color4f:
         return self._color
-
-    @property
-    def texture_name(self) -> None | str:
-        return self._texture_name
 
     def set_shader(self, shader_name: str):
         if self._shader_name == shader_name:

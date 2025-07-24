@@ -7,9 +7,11 @@ from .transform import Transform
 
 
 class BaseSceneNode(BaseNode):
-    __slots__ = ("_transform_dirty", "_transform", "_transform_matrix", "_modify_children")
+    __slots__ = ("_visible", "_transform_dirty", "_transform", "_transform_matrix", "_modify_children")
 
-    def __init__(self, parent: Self, visible: bool):
+    def __init__(self, parent: Self, visible: bool = True):
+        super().__init__(parent)
+
         self._visible = visible
 
         # True - transform has been changed, False - transform is up to date
@@ -18,8 +20,6 @@ class BaseSceneNode(BaseNode):
         self._transform_matrix = QMatrix4x4()
 
         self._modify_children: bool = False
-
-        super().__init__(parent)
 
     @property
     def group_id(self) -> Hashable:
