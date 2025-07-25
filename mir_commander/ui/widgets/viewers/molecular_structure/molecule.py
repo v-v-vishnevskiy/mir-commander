@@ -76,7 +76,7 @@ class Molecule(ContainerNode):
         logger.debug("Initializing bond mesh data")
 
         mesh_quality = self._config.quality.mesh
-        slices = int(cylinder.min_slices * (mesh_quality))
+        slices = int(cylinder.min_slices * (mesh_quality * 2))
         tmp_vertices = cylinder.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, caps=False)
         faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
         vertices = cylinder.unwind_vertices(tmp_vertices, faces)
