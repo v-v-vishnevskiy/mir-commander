@@ -170,41 +170,40 @@ class Renderer:
     def _setup_instanced_rendering(self, rc: RenderingContainer, group_id: Hashable, nodes: list[BaseNode], has_texture: bool):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
-            model_matrix_buffer_id, 
-            local_position_buffer_id, 
-            parent_world_position_buffer_id, 
-            parent_parent_world_position_buffer_id, 
-            color_buffer_id
+            color_buffer_id,
+            model_matrix_buffer_id,
+            local_position_buffer_id,
+            parent_local_position_buffer_id,
+            parent_world_position_buffer_id,
+            parent_parent_world_position_buffer_id,
         ) = self._get_transformation_buffer(group_id)
 
         # Update buffers if needed
         if rc._dirty.get(group_id, False):
+            self._update_color_buffer(color_buffer_id, nodes)
             self._update_model_matrix_buffer(model_matrix_buffer_id, nodes)
             self._update_local_position_buffer(local_position_buffer_id, nodes)
+            self._update_parent_local_position_buffer(parent_local_position_buffer_id, nodes)
             self._update_parent_world_position_buffer(parent_world_position_buffer_id, nodes)
             self._update_parent_parent_world_position_buffer(parent_parent_world_position_buffer_id, nodes)
-            self._update_color_buffer(color_buffer_id, nodes)
 
         # Setup instanced attributes
-        self._setup_model_matrix_attributes(model_matrix_buffer_id, 3 if has_texture else 2)
-        self._setup_position_attributes(local_position_buffer_id, 7 if has_texture else 6)
-        self._setup_position_attributes(parent_world_position_buffer_id, 8 if has_texture else 7)
-        self._setup_position_attributes(parent_parent_world_position_buffer_id, 9 if has_texture else 8)
-        self._setup_color_attributes(color_buffer_id, 10 if has_texture else 9)
+        self._setup_color_attributes(color_buffer_id, 3 if has_texture else 2)
+        self._setup_model_matrix_attributes(model_matrix_buffer_id, 4 if has_texture else 3)
+        self._setup_position_attributes(local_position_buffer_id, 8 if has_texture else 7)
+        self._setup_position_attributes(parent_local_position_buffer_id, 9 if has_texture else 8)
+        self._setup_position_attributes(parent_world_position_buffer_id, 10 if has_texture else 9)
+        self._setup_position_attributes(parent_parent_world_position_buffer_id, 11 if has_texture else 10)
 
     def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int]:
         if key not in self._transformation_buffers:
-            model_matrix_buffer_id = glGenBuffers(1)
-            local_position_buffer_id = glGenBuffers(1)
-            parent_world_position_buffer_id = glGenBuffers(1)
-            parent_parent_world_position_buffer_id = glGenBuffers(1)
-            color_buffer_id = glGenBuffers(1)
             self._transformation_buffers[key] = (
-                model_matrix_buffer_id,
-                local_position_buffer_id,
-                parent_world_position_buffer_id,
-                parent_parent_world_position_buffer_id,
-                color_buffer_id
+                glGenBuffers(1),
+                glGenBuffers(1),
+                glGenBuffers(1),
+                glGenBuffers(1),
+                glGenBuffers(1),
+                glGenBuffers(1),
             )
         return self._transformation_buffers[key]
 
@@ -231,6 +230,17 @@ class Renderer:
             color_data.extend(list(node.color))
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
+
+    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        data = []
+        for node in nodes:
+            if node.parent is not None:
+                data.extend(list(node.parent._transform._translation.toTuple()))
+            else:
+                data.extend([0.0, 0.0, 0.0])
+        array = np.array(data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
     def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)

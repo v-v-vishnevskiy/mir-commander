@@ -61,13 +61,6 @@ class OpenGLWidget(QOpenGLWidget):
         )
         self.resource_manager.add_shader(
             ShaderProgram(
-                "text", 
-                VertexShader(shaders.vertex.BILLBOARD_TEXT), 
-                FragmentShader(shaders.fragment.TEXTURE)
-            )
-        )
-        self.resource_manager.add_shader(
-            ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.FLAT_COLOR)

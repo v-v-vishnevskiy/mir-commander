@@ -16,7 +16,7 @@ class AtomLabel(TextNode):
         )
         self._config = config
         self.set_scale(QVector3D(config.size, config.size, config.size))
-        self.set_shader("text")
+        self.set_shader("atom_label")
         self.set_color(color_to_color4f(config.color))
 
     def set_config(self, config: AtomLabelConfig):

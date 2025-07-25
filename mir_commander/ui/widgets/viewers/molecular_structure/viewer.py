@@ -11,6 +11,8 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
+from mir_commander.ui.utils.opengl import shaders
+from mir_commander.ui.utils.opengl.resource_manager import ShaderProgram, VertexShader, FragmentShader
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.widget import TR
@@ -24,6 +26,7 @@ from .config import MolecularStructureViewerConfig
 from .graphics_items import Atom, AtomLabelType
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
+from .shaders.vertex import ATOM_LABEL
 
 logger = logging.getLogger("Viewers.MolecularStructure")
 
@@ -81,6 +84,16 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def init_actions(self):
         super().init_actions()
         self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
+
+    def init_shaders(self):
+        super().init_shaders()
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "atom_label", 
+                VertexShader(ATOM_LABEL), 
+                FragmentShader(shaders.fragment.TEXTURE)
+            )
+        )
 
     def initializeGL(self):
         super().initializeGL()
