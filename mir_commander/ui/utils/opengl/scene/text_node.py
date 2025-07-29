@@ -2,7 +2,7 @@ from typing import Literal
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.resource_manager.font_atlas import FontAtlasInfo
+from mir_commander.ui.utils.opengl.resource_manager.font_atlas import FontAtlas
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from .base_node import BaseNode
@@ -86,13 +86,13 @@ class TextNode(ContainerNode):
         for node in self.children:
             node.set_color(color)
 
-    def update_char_translation(self, font_atlas_info: FontAtlasInfo):
+    def update_char_translation(self, font_atlas: FontAtlas):
         x_offset = 0.0
         children = self.children
 
         x_offset = 0.0
         for i, char in enumerate(self._text):
-            char_info = font_atlas_info.chars[char]
+            char_info = font_atlas.chars[char]
             half_width = char_info.width / char_info.height
             x = half_width + x_offset
             children[i].set_translation(QVector3D(x, 0.0, 0.0))

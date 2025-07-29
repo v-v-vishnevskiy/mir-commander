@@ -9,7 +9,6 @@ from mir_commander.utils.consts import DIR
 from . import shaders
 from .action_handler import ActionHandler
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
-from .font_atlas import create_font_atlas
 from .keymap import Keymap
 from .models import rect
 from .projection import ProjectionManager
@@ -24,6 +23,7 @@ from .resource_manager import (
     VertexArrayObject,
     VertexShader,
 )
+from .resource_manager.font_atlas import create_font_atlas
 from .scene import BaseNode, Scene
 from .utils import Color4f, color_to_id
 
@@ -76,8 +76,7 @@ class OpenGLWidget(QOpenGLWidget):
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
         atlas_size = 512
-        data, atlas_info = create_font_atlas(font_path, atlas_size=atlas_size)
-        font_atlas = FontAtlas(font_atlas_name, atlas_info)
+        data, font_atlas = create_font_atlas(font_atlas_name, font_path, atlas_size=atlas_size)
         texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
         self.resource_manager.add_font_atlas(font_atlas)
         self.resource_manager.add_texture(texture)
@@ -85,7 +84,7 @@ class OpenGLWidget(QOpenGLWidget):
         self._build_font_atlas_geometry(font_atlas)
 
     def _build_font_atlas_geometry(self, font_atlas: FontAtlas):
-        for char, info in font_atlas.info.chars.items():
+        for char, info in font_atlas.chars.items():
             u_min, v_min = info.u_min, info.v_min
             u_max, v_max = info.u_max, info.v_max
             width = info.width / info.height

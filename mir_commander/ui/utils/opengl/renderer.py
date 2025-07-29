@@ -97,7 +97,7 @@ class Renderer:
     def _handle_text(self, text_rc: RenderingContainer):
         for _, nodes in text_rc.batches:
             for node in nodes:
-                node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name).info)
+                node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name))
         text_rc.clear()
 
     def _paint_picking(self, rc: RenderingContainer):
