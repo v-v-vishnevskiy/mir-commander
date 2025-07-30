@@ -1,9 +1,9 @@
 from mir_commander.ui.utils.opengl.resource_manager.base import Resource
 
-from .rendering_container import RenderingContainer
-from .transform import Transform
 from .base_node import BaseNode
+from .rendering_container import RenderingContainer
 from .root_node import RootNode
+from .transform import Transform
 
 
 class Scene(Resource):

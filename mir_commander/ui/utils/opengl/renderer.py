@@ -1,8 +1,8 @@
 import ctypes
 import logging
-import numpy as np
 from typing import Hashable
 
+import numpy as np
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
     GL_BLEND,
@@ -10,8 +10,8 @@ from OpenGL.GL import (
     GL_CULL_FACE,
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_TEST,
-    GL_FLOAT,
     GL_FALSE,
+    GL_FLOAT,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_SRC_ALPHA,
     GL_STATIC_DRAW,
@@ -33,8 +33,8 @@ from OpenGL.GL import (
     glUniform4f,
     glUniformMatrix4fv,
     glUseProgram,
-    glVertexAttribPointer,
     glVertexAttribDivisor,
+    glVertexAttribPointer,
     glViewport,
 )
 from PySide6.QtGui import QColor, QImage, QVector3D

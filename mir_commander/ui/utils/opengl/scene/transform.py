@@ -1,4 +1,4 @@
-from PySide6.QtGui import QMatrix4x4, QVector3D, QQuaternion
+from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
 
 class Transform:

@@ -6,11 +6,11 @@ from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.models import cylinder, sphere
-from mir_commander.ui.utils.opengl.resource_manager import Mesh, ResourceManager, VertexArrayObject
+from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
 from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
-from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color, compute_vertex_normals, compute_face_normals
-from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
+from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.utils.chem import atomic_number_to_symbol
+from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
 from .config import MolecularStructureViewerConfig
 from .graphics_items.atom import Atom

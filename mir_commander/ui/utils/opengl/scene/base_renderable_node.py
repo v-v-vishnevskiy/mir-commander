@@ -3,7 +3,6 @@ from typing import Hashable
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..utils import id_to_color
-
 from .base_node import BaseNode
 from .base_scene_node import BaseSceneNode
 

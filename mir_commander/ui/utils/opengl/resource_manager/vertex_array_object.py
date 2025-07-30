@@ -2,18 +2,18 @@ import logging
 
 import numpy as np
 from OpenGL.GL import (
-    GL_FLOAT,
     GL_ARRAY_BUFFER,
+    GL_FLOAT,
     GL_STATIC_DRAW,
     glBindBuffer,
+    glBindVertexArray,
     glBufferData,
     glDeleteBuffers,
-    glGenBuffers,
-    glEnableVertexAttribArray,
-    glVertexAttribPointer,
-    glBindVertexArray,
-    glGenVertexArrays,
     glDeleteVertexArrays,
+    glEnableVertexAttribArray,
+    glGenBuffers,
+    glGenVertexArrays,
+    glVertexAttribPointer,
 )
 
 from .base import Resource

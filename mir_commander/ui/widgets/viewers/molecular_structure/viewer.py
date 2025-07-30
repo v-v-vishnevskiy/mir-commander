@@ -4,15 +4,15 @@ from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot, QPoint
+from PySide6.QtCore import QPoint, Slot
 from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.ui.utils.opengl import shaders
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
-from mir_commander.ui.utils.opengl import shaders
-from mir_commander.ui.utils.opengl.resource_manager import ShaderProgram, VertexShader, FragmentShader
+from mir_commander.ui.utils.opengl.resource_manager import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.widget import TR
@@ -20,7 +20,6 @@ from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..base import BaseViewer
-
 from .build_bonds_dialog import BuildBondsDialog
 from .config import MolecularStructureViewerConfig
 from .graphics_items import Atom, AtomLabelType

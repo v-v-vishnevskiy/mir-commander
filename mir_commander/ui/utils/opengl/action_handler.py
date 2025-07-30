@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 

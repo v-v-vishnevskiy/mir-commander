@@ -1,5 +1,5 @@
-from .base_scene_node import BaseSceneNode
 from .base_renderable_node import BaseRenderableNode
+from .base_scene_node import BaseSceneNode
 
 
 class CharNode(BaseRenderableNode):

@@ -1,5 +1,4 @@
 from mir_commander.ui.utils.opengl.scene import BaseNode, TransparentNode
-
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ..config import SelectedAtom

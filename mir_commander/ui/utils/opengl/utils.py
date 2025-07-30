@@ -3,8 +3,7 @@ from ctypes import c_void_p
 import numpy as np
 from pydantic_extra_types.color import Color
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QColor, QVector3D, QImage
-
+from PySide6.QtGui import QColor, QImage, QVector3D
 
 Color4f = tuple[float, float, float, float]
 null = c_void_p(0)

@@ -3,9 +3,9 @@ from PySide6.QtGui import QVector3D
 from mir_commander.ui.utils.opengl.scene import BaseNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ..config import SelectedAtom, AtomLabelConfig, AtomLabelType
-from .atom_label import AtomLabel
+from ..config import AtomLabelConfig, AtomLabelType, SelectedAtom
 from .atom_bounding_sphere import AtomBoundingSphere
+from .atom_label import AtomLabel
 
 
 class Atom(OpaqueNode):
