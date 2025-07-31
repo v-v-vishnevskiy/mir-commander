@@ -216,12 +216,12 @@ class Molecule(ContainerNode):
         return item
 
     def remove_bond(self, index: int):
-        self.remove_node(self.bond_items[index])
+        self.bond_items[index].remove()
         self.bond_items.pop(index)
 
     def remove_bond_all(self):
         for bond in self.bond_items:
-            self.remove_node(bond)
+            bond.remove()
         self.bond_items.clear()
 
     def atom(self, index: int) -> Atom:
