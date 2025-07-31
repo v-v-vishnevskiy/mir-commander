@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -20,13 +21,28 @@ class SpecialAtoms(BaseModel):
     atomic_color: dict[int, Color] = {-1: Color("#00FBFF"), -2: Color("#BB9451")}
 
 
+class AtomLabelType(Enum):
+    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 1
+    ELEMENT_SYMBOL = 2
+    INDEX_NUMBER = 3
+
+
+class AtomLabelConfig(BaseModel):
+    color: Color = Color("#000000")
+    size: float = 0.4
+    font: str = "default"
+    type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
+    visible: bool = False
+
+
 class Atoms(BaseModel):
     scale_factor: float = 1
     radius: Literal["atomic", "bond"] = "atomic"
+    label: AtomLabelConfig = AtomLabelConfig()
     atomic_radius: list[float] = [
-        0.1,
-        0.15,
-        0.17,
+        0.13,
+        0.17,  # H
+        0.18,
         0.20,
         0.22,
         0.24,
@@ -329,7 +345,7 @@ class MolecularStructureViewerConfig(BaseModel):
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[
-            Style(name="Colored Bonds"),
+            Style(name="Colored Bonds", background=Background(color="#222222")),
             Style(name="Simple", bond=Bond(color="#888888")),
             Style(
                 name="Colored Bonds Only", 
@@ -340,3 +356,9 @@ class MolecularStructureViewerConfig(BaseModel):
         min_length=1,
         description="List of available styles for the molecular structure viewer.",
     )
+
+    def get_current_style(self) -> Style:
+        for style in self.styles:
+            if style.name == self.current_style:
+                return style
+        return self.styles[0]

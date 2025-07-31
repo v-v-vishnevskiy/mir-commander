@@ -1,6 +1,8 @@
 from OpenGL.GL import GL_FRAGMENT_SHADER, GL_VERTEX_SHADER, GLuint, glDeleteShader, glGetUniformLocation, glUseProgram
 from OpenGL.GL.shaders import compileProgram, compileShader
 
+from .base import Resource
+
 
 class UniformLocations:
     __slots__ = ("model_matrix", "scene_matrix", "view_matrix", "projection_matrix", "color")
@@ -13,21 +15,26 @@ class UniformLocations:
         self.color: GLuint | None = None
 
 class Shader:
+    __slots__ = ("_shader_type", "_code", "_shader")
+
     def __init__(self, shader_type, code: str):
-        self.__shader_type = shader_type
-        self.__code = code
-        self.__shader: GLuint | None = None
+        self._shader_type = shader_type
+        self._code = code
+        self._shader: GLuint | None = None
 
     @property
     def shader(self) -> GLuint:
-        if self.__shader is None:
-            self.__shader = compileShader(self.__code, self.__shader_type)
-        return self.__shader
+        if self._shader is None:
+            self._shader = compileShader(self._code, self._shader_type)
+        return self._shader
 
     def __del__(self):
-        if self.__shader is not None:
-            glDeleteShader(self.__shader)
-        self.__shader = None
+        if self._shader is not None:
+            glDeleteShader(self._shader)
+        self._shader = None
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id}, type={self._shader_type}, shader={self._shader})"
 
 
 class VertexShader(Shader):
@@ -40,8 +47,12 @@ class FragmentShader(Shader):
         super().__init__(GL_FRAGMENT_SHADER, code)
 
 
-class ShaderProgram:
-    def __init__(self, *shaders: VertexShader | FragmentShader):
+class ShaderProgram(Resource):
+    __slots__ = ("_shaders", "_program", "uniform_locations")
+
+    def __init__(self, name: str, *shaders: VertexShader | FragmentShader):
+        super().__init__(name)
+
         self._shaders = shaders
         self._program: GLuint | None = None
         self.uniform_locations = UniformLocations()
@@ -65,5 +76,5 @@ class ShaderProgram:
 
         glUseProgram(0)
 
-    def __del__(self):
-        pass
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name={self.name})"

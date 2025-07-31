@@ -157,6 +157,7 @@ class ProjectWindow(QMainWindow):
                 parent=self, 
                 mdi_area=self.mdi_area, 
                 keymap=self.config.widgets.viewers.molecular_structure.keymap,
+                style=self.config.widgets.viewers.molecular_structure.get_current_style(),
             )
         )
 

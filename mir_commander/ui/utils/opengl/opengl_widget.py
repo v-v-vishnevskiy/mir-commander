@@ -1,25 +1,35 @@
-import logging
-from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport, glMatrixMode, glLoadMatrixf, GL_PROJECTION, GL_MODELVIEW
+from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
+from mir_commander.utils.consts import DIR
+
+from . import shaders
 from .action_handler import ActionHandler
-from .camera import Camera
-from .graphics_items.item import Item
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
 from .keymap import Keymap
+from .models import rect
 from .projection import ProjectionManager
-from .renderer import FallbackRenderer, ModernRenderer
-from .scene_graph import SceneGraph
+from .renderer import Renderer
+from .resource_manager import (
+    Camera,
+    FontAtlas,
+    FragmentShader,
+    ResourceManager,
+    ShaderProgram,
+    Texture2D,
+    VertexArrayObject,
+    VertexShader,
+)
+from .resource_manager.font_atlas import create_font_atlas
+from .scene import BaseNode, Scene
 from .utils import Color4f, color_to_id
-
-logger = logging.getLogger("OpenGL.Widget")
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, parent: QWidget, keymap: None | Keymap = None, fallback_mode: bool = False):
+    def __init__(self, parent: QWidget, keymap: None | Keymap = None):
         super().__init__(parent)
 
         self._cursor_pos: QPoint = QPoint(0, 0)
@@ -27,31 +37,67 @@ class OpenGLWidget(QOpenGLWidget):
         self._wheel_mode = WheelMode.Scale
         self._rotation_speed = 1.0
         self._scale_speed = 1.0
-        self._fallback_mode = fallback_mode
 
         # Initialize components
         self.action_handler = ActionHandler(keymap)
-        self.camera = Camera()
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.scene_graph = SceneGraph()
-
-        if fallback_mode:
-            self.renderer = FallbackRenderer(self.projection_manager, self.scene_graph, self.camera)
-        else:
-            self.renderer = ModernRenderer(self.projection_manager, self.scene_graph, self.camera)
-
+        self.resource_manager = ResourceManager()
+        self.resource_manager.add_camera(Camera("main"))
+        self.resource_manager.add_scene(Scene("main"))
+        self.renderer = Renderer(self.projection_manager, self.resource_manager)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
-        self._init_actions()
+        self.init_actions()
+        self.init_shaders()
 
-    def post_init(self):
-        pass
+    def init_shaders(self):
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "default",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
+                FragmentShader(shaders.fragment.BLINN_PHONG)
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "transparent",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.FLAT_COLOR)
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "picking",
+                VertexShader(shaders.vertex.COMPUTE_POSITION),
+                FragmentShader(shaders.fragment.FLAT_COLOR)
+            )
+        )
+
+    def add_font_atlas(self, font_path: str, font_atlas_name: str):
+        atlas_size = 512
+        data, font_atlas = create_font_atlas(font_atlas_name, font_path, atlas_size=atlas_size)
+        texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
+        self.resource_manager.add_font_atlas(font_atlas)
+        self.resource_manager.add_texture(texture)
+
+        self._build_font_atlas_geometry(font_atlas)
+
+    def _build_font_atlas_geometry(self, font_atlas: FontAtlas):
+        for char, info in font_atlas.chars.items():
+            u_min, v_min = info.u_min, info.v_min
+            u_max, v_max = info.u_max, info.v_max
+            width = info.width / info.height
+
+            vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
+            tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
+            vao = VertexArrayObject(f"font_atlas_{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
+            self.resource_manager.add_vertex_array_object(vao)
 
     def clear(self):
-        self.scene_graph.clear()
+        self.resource_manager.current_scene.clear()
 
-    def _init_actions(self):
+    def init_actions(self):
         self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
         self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
         self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
@@ -59,23 +105,17 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
-    def _setup_projection(self, w: int, h: int):
+    def _setup_viewport(self, w: int, h: int):
         glViewport(0, 0, w, h)
-        if self._fallback_mode:
-            glMatrixMode(GL_PROJECTION)
-            glLoadMatrixf(self.projection_manager.active_projection.matrix.data())
-            glMatrixMode(GL_MODELVIEW)
 
     @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
 
     def initializeGL(self):
-        self.makeCurrent()
-        self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_projection(self.size().width(), self.size().height())
+        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
+        self._setup_viewport(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
-        self.post_init()
 
     def resize(self, w: int, h: int):
         parent = self.parent()
@@ -87,7 +127,7 @@ class OpenGLWidget(QOpenGLWidget):
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
-        self._setup_projection(w, h)
+        self._setup_viewport(w, h)
         self.update()
 
     def paintGL(self):
@@ -143,28 +183,28 @@ class OpenGLWidget(QOpenGLWidget):
     def set_projection_mode(self, mode: ProjectionMode | str):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def toggle_projection_mode(self):
         self.makeCurrent()
         self.projection_manager.toggle_projection_mode()
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
         self.projection_manager.perspective_projection.set_fov(value)
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_projection(self.size().width(), self.size().height())
+        self._setup_viewport(self.size().width(), self.size().height())
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.scene_graph.set_translation(point)
+        self.resource_manager.current_scene.transform.set_translation(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):
-        self.scene_graph.translate(vector)
+        self.resource_manager.current_scene.transform.translate(vector)
         self.update()
 
     def set_background_color(self, color: Color4f):
@@ -172,11 +212,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float = 0.0):
-        self.scene_graph.rotate(pitch, yaw, roll)
+        self.resource_manager.current_scene.transform.rotate(pitch, yaw, roll)
         self.update()
 
     def scale_scene(self, factor: float):
-        self.scene_graph.scale(factor)
+        self.resource_manager.current_scene.transform.scale(factor)
         self.update()
 
     def new_cursor_position(self, x: int, y: int):
@@ -186,7 +226,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> None | Item:
+    def item_under_cursor(self) -> BaseNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 
@@ -196,5 +236,4 @@ class OpenGLWidget(QOpenGLWidget):
         color = image.pixelColor(x, y)
         obj_id = color_to_id(color)
 
-        return self.scene_graph.find_item_by_id(obj_id)
-
+        return self.resource_manager.current_scene.find_node_by_id(obj_id)

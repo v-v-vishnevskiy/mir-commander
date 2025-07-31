@@ -1,17 +1,18 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.graphics_items import Item, MeshItem
-from mir_commander.ui.utils.opengl.mesh_object import MeshObject
+from mir_commander.ui.utils.opengl.scene import BaseNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ..config import SelectedAtom
-from .bounding_sphere import BoundingSphere
+from ..config import AtomLabelConfig, AtomLabelType, SelectedAtom
+from .atom_bounding_sphere import AtomBoundingSphere
+from .atom_label import AtomLabel
 
 
-class Atom(MeshItem):
+class Atom(OpaqueNode):
     def __init__(
         self,
-        mesh_object: MeshObject,
+        parent: BaseNode,
+        model_name: str,
         index_num: int,
         atomic_num: int,
         element_symbol: str,
@@ -19,72 +20,97 @@ class Atom(MeshItem):
         radius: float,
         color: Color4f,
         selected_atom_config: SelectedAtom,
+        label_config: AtomLabelConfig,
     ):
-        super().__init__(mesh_object, color=color)
-        self._radius = radius
+        super().__init__(parent=parent, visible=True, picking_visible=True)
         self.translate(position)
-        self.set_scale(QVector3D(radius, radius, radius))
+        self.set_scale(radius)
+        self.set_color(color)
+        self.set_model(model_name)
+        self.set_shader("default")
+
+        self._radius = radius
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self._related_bonds = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._bounding_sphere = BoundingSphere(mesh_object, radius, color, selected_atom_config)
-        self.add_child(self._bounding_sphere)
+        self._bounding_sphere = AtomBoundingSphere(self, model_name, color, selected_atom_config)
+        self._label = AtomLabel(self, label_config)
+        self._label.translate(QVector3D(0.0, 0.0, 2.0))
+        self.set_label_type(label_config.type)
 
-    def add_related_bond(self, bond: Item):
+    def add_related_bond(self, bond: BaseNode):
         self._related_bonds.append(bond)
 
     def set_cloaked(self, value: bool):
         self._cloaked = value
+        self.set_visible(not self._cloaked)
         for bond in self._related_bonds:
             atom_1, atom_2 = bond.atoms
-            bond.set_visible(bool((not atom_1.cloaked) * (not atom_2.cloaked)))
-        self.notify_parents_of_change()
+            bond.set_visible(atom_1.visible and atom_2.visible)
 
     @property
     def position(self) -> QVector3D:
-        return self._translation
+        return self._transform._translation
 
     @property
     def cloaked(self) -> bool:
         return self._cloaked
 
     @property
-    def visible(self) -> bool:
-        return super().visible and not self._cloaked
+    def radius(self) -> float:
+        return self._radius
+
+    @property
+    def selected(self) -> bool:
+        return self._selected
 
     def set_under_cursor(self, value: bool):
         if value:
             radius = self.radius * 1.15
         else:
             radius = self.radius
-        self.set_scale(QVector3D(radius, radius, radius))
-
-    @property
-    def radius(self) -> float:
-        return self._radius
+        self.set_scale(radius)
 
     def set_radius(self, radius: float):
         self._radius = radius
-        self.set_scale(QVector3D(radius, radius, radius))
+        self.set_scale(radius)
+
+    def set_selected(self, value: bool):
+        self._selected = value
+        self._bounding_sphere.set_visible(value)
+
+    def toggle_selection(self) -> bool:
+        self.set_selected(not self._selected)
+        return self._selected
+
+    def set_label_visible(self, value: bool):
+        self._label.set_visible(value)
+
+    def set_label_type(self, value: AtomLabelType):
+        if value == AtomLabelType.INDEX_NUMBER:
+            self._label.set_text(f"{self.index_num + 1}")
+        elif value == AtomLabelType.ELEMENT_SYMBOL:
+            self._label.set_text(f"{self.element_symbol}")
+        elif value == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
+            self._label.set_text(f"{self.element_symbol}{self.index_num + 1}")
 
     def set_selected_atom_config(self, config: SelectedAtom):
         self._bounding_sphere.set_config(config)
 
-    @property
-    def selected(self) -> bool:
-        return self._selected
-
-    def set_selected(self, value: bool):
-        self._selected = value
-        self.notify_parents_of_change()
-
-    def toggle_selection(self) -> bool:
-        self._selected = not self._selected
-        self.notify_parents_of_change()
-        return self._selected
+    def set_label_config(self, config: AtomLabelConfig):
+        self._label.set_config(config)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(id={self._id}, index_num={self.index_num + 1}, element_symbol={self.element_symbol})"
+        return (
+            f"{self.__class__.__name__}("
+            f"id={self._id}, "
+            f"visible={self.visible}, "
+            f"element_symbol={self.element_symbol}, "
+            f"index_num={self.index_num + 1}, "
+            f"selected={self.selected}, "
+            f"cloaked={self.cloaked}"
+            ")"
+        )

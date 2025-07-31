@@ -1,7 +1,7 @@
 import logging
 
 import OpenGL.GL as gl
-from PySide6.QtGui import QSurfaceFormat, QOpenGLContext
+from PySide6.QtGui import QOpenGLContext, QSurfaceFormat
 
 logger = logging.getLogger("OpenGL.Info")
 

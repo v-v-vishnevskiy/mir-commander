@@ -43,7 +43,6 @@ class Application(QApplication):
 
         self.apply_callbacks.add(self._set_translation)
 
-        self.opengl_fallback_mode = True
         self.setup_opengl()
 
     def setup_opengl(self):
@@ -54,23 +53,14 @@ class Application(QApplication):
             logger.error("Failed to get OpenGL info: %s", e)
             version = (2, 1)
 
-        if self.config.opengl.fallback_mode is True or version < (3, 3):
-            self.opengl_fallback_mode = True
-        else:
-            self.opengl_fallback_mode = False
-
-        if self.config.opengl.fallback_mode is False and self.opengl_fallback_mode is True:
-            logger.warning("Switching to fallback OpenGL mode")
-
         sf = QSurfaceFormat()
         if self.config.opengl.antialiasing:
             sf.setSamples(16)
         else:
             sf.setSamples(0)
 
-        if self.opengl_fallback_mode is False:
-            sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
-            sf.setVersion(*version)
+        sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        sf.setVersion(*version)
         QSurfaceFormat.setDefaultFormat(sf)
 
     def fix_palette(self):

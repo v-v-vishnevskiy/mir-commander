@@ -1,15 +1,19 @@
+import logging
 import math
 from itertools import combinations
 from typing import Optional
 
 import OpenGL.error
-from PySide6.QtCore import Slot, QPoint, QCoreApplication
+from PySide6.QtCore import QPoint, Slot
 from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.ui.utils.opengl import shaders
+from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
+from mir_commander.ui.utils.opengl.resource_manager import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.widget import TR
@@ -17,12 +21,14 @@ from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..base import BaseViewer
-
 from .build_bonds_dialog import BuildBondsDialog
 from .config import MolecularStructureViewerConfig
-from .graphics_items import Atom
+from .graphics_items import Atom, AtomLabelType
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
+from .shaders.vertex import ATOM_LABEL
+
+logger = logging.getLogger("Viewers.MolecularStructure")
 
 
 class InteratomicDistance:
@@ -60,11 +66,7 @@ class InteratomicOutOfPlane:
 
 class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
-        super().__init__(
-            parent=parent, 
-            keymap=Keymap(config.keymap.viewer.model_dump()), 
-            fallback_mode=QCoreApplication.instance().opengl_fallback_mode,
-        )
+        super().__init__(parent=parent, keymap=Keymap(config.keymap.viewer.model_dump()))
         self._config = config
 
         self.item = item
@@ -77,13 +79,26 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._draw_item = None
         self._set_draw_item()
 
-        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
-
         self.update_window_title()
 
-    def post_init(self):
-        self._molecule = Molecule(self._config)
-        self.scene_graph.add_item(self._molecule)
+    def init_actions(self):
+        super().init_actions()
+        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
+
+    def init_shaders(self):
+        super().init_shaders()
+        self.resource_manager.add_shader(
+            ShaderProgram(
+                "atom_label", 
+                VertexShader(ATOM_LABEL), 
+                FragmentShader(shaders.fragment.TEXTURE)
+            )
+        )
+
+    def initializeGL(self):
+        super().initializeGL()
+
+        self._molecule = Molecule(self.resource_manager.current_scene.root_node, self._config, self.resource_manager)
 
         self.build_molecule()
 
@@ -95,33 +110,45 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.set_background_color(normalize_color(self._molecule.style.current.background.color))
 
-        self.projection_manager.orthographic_projection.set_view_bounds(self._molecule.radius + self._molecule.radius*0.10)
+        self.projection_manager.orthographic_projection.set_view_bounds(
+            self._molecule.radius + self._molecule.radius * 0.10
+        )
         current_fov = self._molecule.style.current.projection.perspective.fov
         self.set_perspective_projection_fov(current_fov)
-        fov_factor = current_fov/45.0
-        self.projection_manager.perspective_projection.set_near_far_plane(self._molecule.radius/fov_factor, 4*self._molecule.radius/fov_factor)
+        fov_factor = current_fov / 45.0
+        self.projection_manager.perspective_projection.set_near_far_plane(
+            self._molecule.radius/fov_factor,
+            8 * self._molecule.radius/fov_factor,
+        )
         self.set_projection_mode(self._molecule.style.current.projection.mode)
 
-        self.camera.reset_to_default()
-        self.camera.set_position(QVector3D(0, 0, 3*self._molecule.radius/fov_factor))
-
+        self.resource_manager.current_camera.reset_to_default()
+        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * self._molecule.radius/fov_factor))
 
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
 
     def toggle_atom_selection_under_cursor(self):
-        if item := self.item_under_cursor():
+        try:
+            item = self.item_under_cursor()
             if isinstance(item, Atom):
                 if item.toggle_selection():
                     self._molecule.selected_atom_items.append(item)
                 else:
                     self._molecule.selected_atom_items.remove(item)
                 self.update()
+        except NodeNotFoundError:
+            pass
 
     def new_cursor_position(self, x: int, y: int):
-        item = self.item_under_cursor()
+        try:
+            item = self.item_under_cursor()
+        except NodeNotFoundError:
+            item = None
+
         if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
             self.update()
+
         if isinstance(item, Atom):
             self._under_cursor_overlay.set_text(f"Atom: {item.element_symbol}{item.index_num + 1}")
             size = self._under_cursor_overlay.size()
@@ -747,3 +774,28 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             self._molecule.current_geom_bond_tolerance = dlg.current_tol
         else:
             self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
+
+    def atom_labels_show_for_all_atoms(self):
+        for atom in self._molecule.atom_items:
+            atom.set_label_visible(True)
+        self.update()
+
+    def atom_labels_hide_for_all_atoms(self):
+        for atom in self._molecule.atom_items:
+            atom.set_label_visible(False)
+        self.update()
+
+    def atom_labels_show_for_selected_atoms(self):
+        for atom in self._molecule.selected_atom_items:
+            atom.set_label_visible(True)
+        self.update()
+
+    def atom_labels_hide_for_selected_atoms(self):
+        for atom in self._molecule.selected_atom_items:
+            atom.set_label_visible(False)
+        self.update()
+
+    def atom_labels_set_type(self, value: AtomLabelType):
+        for atom in self._molecule.atom_items:
+            atom.set_label_type(value)
+        self.update()

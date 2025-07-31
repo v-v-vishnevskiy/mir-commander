@@ -1,7 +1,9 @@
 from ctypes import c_void_p
-from pydantic_extra_types.color import Color
-from PySide6.QtGui import QColor
 
+import numpy as np
+from pydantic_extra_types.color import Color
+from PySide6.QtCore import QRect
+from PySide6.QtGui import QColor, QImage, QVector3D
 
 Color4f = tuple[float, float, float, float]
 null = c_void_p(0)
@@ -36,3 +38,72 @@ def color_to_id(color: QColor) -> int:
     g = int(color.green())
     b = int(color.blue())
     return b | (g << 8) | (r << 16)
+
+
+def compute_vertex_normals(vertices: np.ndarray) -> np.ndarray:
+    normals = []
+    for i in range(0, len(vertices), 3):
+        norm = QVector3D(*vertices[i : i + 3])
+        norm.normalize()
+        normals.extend([norm.x(), norm.y(), norm.z()])
+    return np.array(normals, dtype=np.float32)
+
+
+def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
+    normals = []
+    for i in range(0, len(vertices), 9):
+        norm = QVector3D().normal(
+            QVector3D(*vertices[i : i + 3]),
+            QVector3D(*vertices[i + 3 : i + 6]),
+            QVector3D(*vertices[i + 6 : i + 9]),
+        )
+        norm = [norm.x(), norm.y(), norm.z()] * 3
+        normals.extend(norm)
+    return np.array(normals, dtype=np.float32)
+
+
+def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
+    # Need this hack with the fake 1x1 image to take into account the format of our real image
+    # so we know the value of the background color as it is represented in the image.
+    bg_image = QImage(1, 1, image.format())
+    bg_image.setPixelColor(0, 0, bg_color)
+    bg_color_value = bg_image.pixel(0, 0)
+    xmin = ymin = xmax = ymax = -1
+
+    for y in range(image.height()):
+        for x in range(image.width()):
+            if image.pixel(x, y) != bg_color_value:
+                ymin = y
+                break
+        if ymin >= 0:
+            break
+
+    for y in reversed(range(image.height())):
+        for x in range(image.width()):
+            if image.pixel(x, y) != bg_color_value:
+                ymax = y
+                break
+        if ymax >= 0:
+            break
+
+    for x in range(image.width()):
+        for y in range(image.height()):
+            if image.pixel(x, y) != bg_color_value:
+                xmin = x
+                break
+        if xmin >= 0:
+            break
+
+    for x in reversed(range(image.width())):
+        for y in range(image.height()):
+            if image.pixel(x, y) != bg_color_value:
+                xmax = x
+                break
+        if xmax >= 0:
+            break
+
+    if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
+        crop_area = QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
+        image = image.copy(crop_area)
+
+    return image
