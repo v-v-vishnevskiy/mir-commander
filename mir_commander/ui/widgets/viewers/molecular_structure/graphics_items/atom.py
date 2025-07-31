@@ -38,7 +38,7 @@ class Atom(OpaqueNode):
         self._selected = False
         self._bounding_sphere = AtomBoundingSphere(self, model_name, color, selected_atom_config)
         self._label = AtomLabel(self, label_config)
-        self._label.translate(QVector3D(0.0, 0.0, 1.01))
+        self._label.translate(QVector3D(0.0, 0.0, 2.0))
         self.set_label_type(label_config.type)
 
     def add_related_bond(self, bond: BaseNode):
