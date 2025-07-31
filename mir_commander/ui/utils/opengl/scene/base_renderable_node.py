@@ -39,15 +39,15 @@ class BaseRenderableNode(BaseSceneNode):
         return self._picking_visible
 
     @property
-    def shader_name(self) -> None | str:
+    def shader_name(self) -> str:
         return self._shader_name
 
     @property
-    def texture_name(self) -> None | str:
+    def texture_name(self) -> str:
         return self._texture_name
 
     @property
-    def model_name(self) -> None | str:
+    def model_name(self) -> str:
         return self._model_name
 
     @property

@@ -226,7 +226,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> None | BaseNode:
+    def item_under_cursor(self) -> BaseNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

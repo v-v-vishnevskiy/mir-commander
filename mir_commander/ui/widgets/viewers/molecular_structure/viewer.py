@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl import shaders
+from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
 from mir_commander.ui.utils.opengl.resource_manager import FragmentShader, ShaderProgram, VertexShader
@@ -128,16 +129,22 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self._molecule.build(self._draw_item.data().data)
 
     def toggle_atom_selection_under_cursor(self):
-        if item := self.item_under_cursor():
+        try:
+            item = self.item_under_cursor()
             if isinstance(item, Atom):
                 if item.toggle_selection():
                     self._molecule.selected_atom_items.append(item)
                 else:
                     self._molecule.selected_atom_items.remove(item)
                 self.update()
+        except NodeNotFoundError:
+            pass
 
     def new_cursor_position(self, x: int, y: int):
-        item = self.item_under_cursor()
+        try:
+            item = self.item_under_cursor()
+        except NodeNotFoundError:
+            item = None
 
         if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
             self.update()

@@ -1,5 +1,7 @@
 from typing import Hashable
 
+from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
+
 from .base_node import BaseNode
 
 
@@ -53,15 +55,15 @@ class RenderingContainer:
     def clear_dirty(self):
         self._dirty.clear()
 
-    def find_node_by_id(self, node_id: int) -> BaseNode | None:
+    def find_node_by_id(self, node_id: int) -> BaseNode:
         if node_id == 0:
-            return None
+            raise NodeNotFoundError(str(node_id))
 
         for nodes in self._batches.values():
             for node in nodes:
                 if node.id == node_id:
                     return node
-        return None
+        raise NodeNotFoundError(str(node_id))
 
     def __repr__(self) -> str:
         _batches = []

@@ -67,7 +67,7 @@ class RootNode(BaseNode):
             if node.picking_visible:
                 self._picking_container.set_dirty(node)
 
-    def find_node_by_id(self, node_id: int) -> BaseNode | None:
+    def find_node_by_id(self, node_id: int) -> BaseNode:
         return self._picking_container.find_node_by_id(node_id)
 
     def __repr__(self):
