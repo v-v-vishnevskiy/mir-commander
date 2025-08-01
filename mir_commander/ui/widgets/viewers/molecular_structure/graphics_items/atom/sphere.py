@@ -22,9 +22,10 @@ class Sphere(OpaqueNode):
         self._radius = radius
         self.set_scale(QVector3D(radius, radius, radius))
 
-    def highlight(self, value: bool):
+    def highlight(self, value: bool) -> float:
         if value:
             radius = self._radius * 1.15
         else:
             radius = self._radius
         self.set_scale(QVector3D(radius, radius, radius))
+        return radius

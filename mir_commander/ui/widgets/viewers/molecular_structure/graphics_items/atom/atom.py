@@ -35,7 +35,7 @@ class Atom(ContainerNode):
         self._sphere = Sphere(self, model_name, radius, color)
         self._bounding_sphere = BoundingSphere(self._sphere, model_name, color, selected_atom_config)
         self._label = Label(self, label_config)
-        self._label.translate(QVector3D(0.0, 0.0, radius * 1.01))
+        self._label.set_translation(QVector3D(0.0, 0.0, radius * 1.01))
         self.set_label_type(label_config.type)
 
     def add_related_bond(self, bond: BaseNode):
@@ -69,7 +69,8 @@ class Atom(ContainerNode):
         return self._selected
 
     def highlight(self, value: bool):
-        self._sphere.highlight(value)
+        r = self._sphere.highlight(value)
+        self._label.set_translation(QVector3D(0.0, 0.0, r * 1.01))
 
     def set_radius(self, radius: float):
         self._sphere.set_radius(radius)
