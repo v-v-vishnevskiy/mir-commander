@@ -807,3 +807,9 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         for atom in self._molecule.atom_items:
             atom.set_label_size(size)
         self.update()
+
+    def set_label_offset_for_all_atoms(self, offset: float):
+        self._config.atom_label.offset = offset
+        for atom in self._molecule.atom_items:
+            atom.set_label_offset(offset)
+        self.update()

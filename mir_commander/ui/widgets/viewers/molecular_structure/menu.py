@@ -430,6 +430,8 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
     @Slot()
     def labels_size_settings_handler(self):
         size = self._config.atom_label.size
-        dlg = LabelSettingsDialog(self._config.atom_label.size, self.widget)
+        offset = self._config.atom_label.offset
+        dlg = LabelSettingsDialog(self._config.atom_label.size, self._config.atom_label.offset, self.widget)
         if not dlg.exec():
             self.widget.set_label_size_for_all_atoms(size=size)
+            self.widget.set_label_offset_for_all_atoms(offset=offset)
