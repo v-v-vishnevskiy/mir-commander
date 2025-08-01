@@ -9,7 +9,6 @@ from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl import shaders
 from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
@@ -21,12 +20,12 @@ from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..base import BaseViewer
+from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType, MolecularStructureViewerConfig
 from .graphics_items import Atom
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
-from .shaders.vertex import ATOM_LABEL
 
 logger = logging.getLogger("Viewers.MolecularStructure")
 
@@ -88,7 +87,9 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def init_shaders(self):
         super().init_shaders()
         self.resource_manager.add_shader(
-            ShaderProgram("atom_label", VertexShader(ATOM_LABEL), FragmentShader(shaders.fragment.TEXTURE))
+            ShaderProgram(
+                "atom_label", VertexShader(shaders.vertex.ATOM_LABEL), FragmentShader(shaders.fragment.ATOM_LABEL)
+            )
         )
 
     def initializeGL(self):

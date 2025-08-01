@@ -29,7 +29,7 @@ class AtomLabelType(Enum):
 
 class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
-    size: float = 0.08
+    size: float = Field(default=0.08, ge=0.01, le=1.0, description="In atomic radius units")
     font: str = "default"
     type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
     visible: bool = False

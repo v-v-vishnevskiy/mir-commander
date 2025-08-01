@@ -167,7 +167,9 @@ class Renderer:
             vao.bind()
         return vao.triangles_count
 
-    def _setup_instanced_rendering(self, rc: RenderingContainer, group_id: Hashable, nodes: list[BaseNode], has_texture: bool):
+    def _setup_instanced_rendering(
+        self, rc: RenderingContainer, group_id: Hashable, nodes: list[BaseNode], has_texture: bool
+    ):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
             color_buffer_id,
@@ -312,12 +314,12 @@ class Renderer:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def render_to_image(
-        self, 
-        width: int, 
-        height: int, 
-        transparent_bg: bool = False, 
+        self,
+        width: int,
+        height: int,
+        transparent_bg: bool = False,
         crop_to_content: bool = False,
-        make_current_callback=None
+        make_current_callback=None,
     ) -> QImage:
         if make_current_callback:
             make_current_callback()
