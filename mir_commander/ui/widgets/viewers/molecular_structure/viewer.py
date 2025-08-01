@@ -797,6 +797,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update()
 
     def atom_labels_set_type(self, value: AtomLabelType):
+        self._config.atom_label.type = value
         for atom in self._molecule.atom_items:
             atom.set_label_type(value)
         self.update()
