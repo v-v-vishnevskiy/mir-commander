@@ -100,6 +100,9 @@ class Atom(ContainerNode):
     def set_label_config(self, config: AtomLabelConfig):
         self._label.set_config(config)
 
+    def set_label_size(self, size: int):
+        self._label.set_size(size)
+
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("

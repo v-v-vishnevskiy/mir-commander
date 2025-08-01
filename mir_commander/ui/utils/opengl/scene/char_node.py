@@ -4,7 +4,7 @@ from .base_scene_node import BaseSceneNode
 
 class CharNode(BaseRenderableNode):
     node_type = "char"
- 
+
     __slots__ = ("_char",)
 
     def __init__(self, parent: BaseSceneNode, char: str, visible: bool = True, picking_visible: bool = True):

@@ -24,6 +24,7 @@ from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType, MolecularStructureViewerConfig
 from .graphics_items import Atom
+from .label_settings_dialog import LabelSettingsDialog
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
 
@@ -799,4 +800,9 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def atom_labels_set_type(self, value: AtomLabelType):
         for atom in self._molecule.atom_items:
             atom.set_label_type(value)
+        self.update()
+
+    def set_label_size_for_all_atoms(self, size: int):
+        for atom in self._molecule.atom_items:
+            atom.set_label_size(size)
         self.update()

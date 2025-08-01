@@ -86,12 +86,14 @@ class BaseRenderableNode(BaseSceneNode):
         self._root_node.notify_set_dirty(self)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(" \
-            f"id={self._id}, " \
-            f"visible={self.visible}, " \
-            f"picking_visible={self._picking_visible}, " \
-            f"shader='{self._shader_name}', " \
-            f"texture='{self._texture_name}', " \
-            f"model='{self._model_name}', " \
-            f"color={self._color}" \
+        return (
+            f"{self.__class__.__name__}("
+            f"id={self._id}, "
+            f"visible={self.visible}, "
+            f"picking_visible={self._picking_visible}, "
+            f"shader='{self._shader_name}', "
+            f"texture='{self._texture_name}', "
+            f"model='{self._model_name}', "
+            f"color={self._color}"
             ")"
+        )
