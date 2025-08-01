@@ -1,14 +1,15 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, OpaqueNode
+from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ..config import AtomLabelConfig, AtomLabelType, SelectedAtom
-from .atom_bounding_sphere import AtomBoundingSphere
-from .atom_label import AtomLabel
+from ...config import AtomLabelConfig, AtomLabelType, SelectedAtom
+from .bounding_sphere import BoundingSphere
+from .label import Label
+from .sphere import Sphere
 
 
-class Atom(OpaqueNode):
+class Atom(ContainerNode):
     def __init__(
         self,
         parent: BaseNode,
@@ -22,23 +23,20 @@ class Atom(OpaqueNode):
         selected_atom_config: SelectedAtom,
         label_config: AtomLabelConfig,
     ):
-        super().__init__(parent=parent, visible=True, picking_visible=True)
+        super().__init__(parent=parent, visible=True)
         self.translate(position)
-        self.set_scale(radius)
-        self.set_color(color)
-        self.set_model(model_name)
-        self.set_shader("default")
 
-        self._radius = radius
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
         self._related_bonds = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._bounding_sphere = AtomBoundingSphere(self, model_name, color, selected_atom_config)
-        self._label = AtomLabel(self, label_config)
+        self._sphere = Sphere(self, model_name, radius, color)
+        self._bounding_sphere = BoundingSphere(self._sphere, model_name, color, selected_atom_config)
+        self._label = Label(self, label_config)
         self._label.translate(QVector3D(0.0, 0.0, 2.0))
+        self._label.set_size(label_config.size)
         self.set_label_type(label_config.type)
 
     def add_related_bond(self, bond: BaseNode):
@@ -56,27 +54,26 @@ class Atom(OpaqueNode):
         return self._transform._translation
 
     @property
+    def color(self) -> Color4f:
+        return self._sphere.color
+
+    @property
     def cloaked(self) -> bool:
         return self._cloaked
 
     @property
     def radius(self) -> float:
-        return self._radius
+        return self._sphere.radius
 
     @property
     def selected(self) -> bool:
         return self._selected
 
-    def set_under_cursor(self, value: bool):
-        if value:
-            radius = self.radius * 1.15
-        else:
-            radius = self.radius
-        self.set_scale(radius)
+    def highlight(self, value: bool):
+        self._sphere.highlight(value)
 
     def set_radius(self, radius: float):
-        self._radius = radius
-        self.set_scale(radius)
+        self._sphere.set_radius(radius)
 
     def set_selected(self, value: bool):
         self._selected = value

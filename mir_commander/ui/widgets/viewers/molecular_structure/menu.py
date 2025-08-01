@@ -6,8 +6,7 @@ from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
 from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
-from .config import Keymap, Style
-from .graphics_items.atom import AtomLabelType
+from .config import AtomLabelType, Keymap, Style
 from .viewer import MolecularStructureViewer
 
 
@@ -62,8 +61,12 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
             checkable=True,
             checked=self._style.atoms.label.type == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER,
         )
-        self.set_element_symbol_and_index_number_act.setStatusTip(Action.tr("Show element symbol and index number as label"))
-        self.set_element_symbol_and_index_number_act.triggered.connect(self.labels_set_element_symbol_and_index_number_handler)
+        self.set_element_symbol_and_index_number_act.setStatusTip(
+            Action.tr("Show element symbol and index number as label")
+        )
+        self.set_element_symbol_and_index_number_act.triggered.connect(
+            self.labels_set_element_symbol_and_index_number_handler
+        )
         menu.addAction(self.set_element_symbol_and_index_number_act)
 
         self.set_element_symbol_act = Action(
@@ -234,7 +237,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         uncloak_all_act = Action(Action.tr("Uncloak all"), self.parent())
         uncloak_all_act.triggered.connect(self.uncloak_all_handler)
         cloaking_menu.addAction(uncloak_all_act)
-    
+
     def _switch_atomic_coordinates_menu(self):
         menu = BaseMenu(Menu.tr("Coordinates set"))
         self.addMenu(menu)

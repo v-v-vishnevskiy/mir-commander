@@ -55,22 +55,20 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.add_shader(
             ShaderProgram(
                 "default",
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
-                FragmentShader(shaders.fragment.BLINN_PHONG)
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.BLINN_PHONG),
             )
         )
         self.resource_manager.add_shader(
             ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.FLAT_COLOR)
+                FragmentShader(shaders.fragment.FLAT_COLOR),
             )
         )
         self.resource_manager.add_shader(
             ShaderProgram(
-                "picking",
-                VertexShader(shaders.vertex.COMPUTE_POSITION),
-                FragmentShader(shaders.fragment.FLAT_COLOR)
+                "picking", VertexShader(shaders.vertex.COMPUTE_POSITION), FragmentShader(shaders.fragment.FLAT_COLOR)
             )
         )
 
@@ -226,7 +224,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> BaseNode:
+    def node_under_cursor(self) -> BaseNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

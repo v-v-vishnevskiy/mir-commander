@@ -29,7 +29,7 @@ class AtomLabelType(Enum):
 
 class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
-    size: float = 0.4
+    size: float = 0.08
     font: str = "default"
     type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
     visible: bool = False
@@ -348,7 +348,7 @@ class MolecularStructureViewerConfig(BaseModel):
             Style(name="Colored Bonds", background=Background(color="#222222")),
             Style(name="Simple", bond=Bond(color="#888888")),
             Style(
-                name="Colored Bonds Only", 
+                name="Colored Bonds Only",
                 atoms=Atoms(radius="bond"),
                 selected_atom=SelectedAtom(scale_factor=3.0),
             ),

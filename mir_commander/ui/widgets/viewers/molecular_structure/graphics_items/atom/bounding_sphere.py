@@ -1,10 +1,12 @@
+from PySide6.QtGui import QVector3D
+
 from mir_commander.ui.utils.opengl.scene import BaseNode, TransparentNode
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
-from ..config import SelectedAtom
+from ...config import SelectedAtom
 
 
-class AtomBoundingSphere(TransparentNode):
+class BoundingSphere(TransparentNode):
     def __init__(
         self,
         parent: BaseNode,
@@ -16,7 +18,7 @@ class AtomBoundingSphere(TransparentNode):
         self._atom_color = atom_color
         self._config = config
 
-        self.set_scale(config.scale_factor)
+        self.set_scale(QVector3D(config.scale_factor, config.scale_factor, config.scale_factor))
         self.set_shader("transparent")
         self.set_model(model_name)
         self.set_color(self._compute_color(config))
@@ -24,7 +26,7 @@ class AtomBoundingSphere(TransparentNode):
     def set_config(self, config: SelectedAtom):
         self._config = config
         self.set_color(self._compute_color(config))
-        self.set_scale(config.scale_factor)
+        self.set_scale(QVector3D(config.scale_factor, config.scale_factor, config.scale_factor))
 
     def _compute_color(self, config: SelectedAtom) -> Color4f:
         if config.color == "atom":

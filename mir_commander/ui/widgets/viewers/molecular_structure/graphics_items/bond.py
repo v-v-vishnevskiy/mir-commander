@@ -3,7 +3,7 @@ from PySide6.QtGui import QQuaternion, QVector3D
 from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode, OpaqueNode
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from .atom import Atom
+from .atom.atom import Atom
 
 
 class BondItem(OpaqueNode):

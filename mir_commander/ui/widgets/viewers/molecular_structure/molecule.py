@@ -13,8 +13,7 @@ from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
 from .config import MolecularStructureViewerConfig
-from .graphics_items.atom import Atom
-from .graphics_items.bond import Bond
+from .graphics_items import Atom, Bond
 from .style import Style
 
 logger = logging.getLogger("MoleculeStructure.Molecule")
@@ -172,7 +171,11 @@ class Molecule(ContainerNode):
                     continue
                 crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[atomic_coordinates.atomic_num[j]]
                 crad_sum = crad_i + crad_j
-                dist_ij = math.sqrt((atomic_coordinates.x[i] - atomic_coordinates.x[j]) ** 2 + (atomic_coordinates.y[i] - atomic_coordinates.y[j]) ** 2 + (atomic_coordinates.z[i] - atomic_coordinates.z[j]) ** 2)
+                dist_ij = math.sqrt(
+                    (atomic_coordinates.x[i] - atomic_coordinates.x[j]) ** 2
+                    + (atomic_coordinates.y[i] - atomic_coordinates.y[j]) ** 2
+                    + (atomic_coordinates.z[i] - atomic_coordinates.z[j]) ** 2
+                )
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tolerance):
                     self.add_bond(self.atom(i), self.atom(j))
 
@@ -245,8 +248,8 @@ class Molecule(ContainerNode):
             return False
 
         if atom is not None:
-            atom.set_under_cursor(True)
+            atom.highlight(True)
         if old_atom is not None:
-            old_atom.set_under_cursor(False)
+            old_atom.highlight(False)
 
         return True
