@@ -7,7 +7,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QMdiSubWindow, QTabWidget, QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.core import Project
@@ -15,15 +15,15 @@ from mir_commander.core.errors import LoadFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
+from .utils.sub_window_menu import SubWindowMenu
+from .utils.sub_window_toolbar import SubWindowToolBar
+from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
 from .widgets.settings.settings_dialog import SettingsDialog
 from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
-from .utils.sub_window_menu import SubWindowMenu
-from .utils.sub_window_toolbar import SubWindowToolBar
-from .utils.widget import Action, Menu, StatusBar
 
 logger = logging.getLogger("ProjectWindow")
 
@@ -39,7 +39,13 @@ class ProjectWindow(QMainWindow):
     close_project_signal = Signal(QMainWindow)
     quit_application_signal = Signal()
 
-    def __init__(self, app_config: AppConfig, app_apply_callbacks: ApplyCallbacks, project: Project, init_msg: None | list[str] = None):
+    def __init__(
+        self,
+        app_config: AppConfig,
+        app_apply_callbacks: ApplyCallbacks,
+        project: Project,
+        init_msg: None | list[str] = None,
+    ):
         logger.debug("Initializing main window ...")
         super().__init__(None)
         self.project = project
@@ -117,8 +123,8 @@ class ProjectWindow(QMainWindow):
 
         self.docks = Docks(
             ProjectDock(
-                parent=self, 
-                config=self.config.widgets.docks.project, 
+                parent=self,
+                config=self.config.widgets.docks.project,
                 project=self.project,
             ),
             ObjectDock(parent=self),
@@ -137,7 +143,7 @@ class ProjectWindow(QMainWindow):
         # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
         self.sub_window_toolbars.append(
             MolStructToolBar(
-                parent=self, 
+                parent=self,
                 mdi_area=self.mdi_area,
                 config=self.config.widgets.toolbars,
             )
@@ -154,10 +160,9 @@ class ProjectWindow(QMainWindow):
         # Here is the same logic as for toolbars of particular widgets.
         self.sub_window_menus.append(
             MolStructMenu(
-                parent=self, 
-                mdi_area=self.mdi_area, 
-                keymap=self.config.widgets.viewers.molecular_structure.keymap,
-                style=self.config.widgets.viewers.molecular_structure.get_current_style(),
+                parent=self,
+                mdi_area=self.mdi_area,
+                config=self.config.widgets.viewers.molecular_structure,
             )
         )
 
@@ -212,10 +217,10 @@ class ProjectWindow(QMainWindow):
         action.setMenuRole(Action.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
-            parent=self, 
-            app_apply_callbacks=self.app_apply_callbacks, 
-            mw_apply_callbacks=self.apply_callbacks, 
-            app_config=self.app_config, 
+            parent=self,
+            app_apply_callbacks=self.app_apply_callbacks,
+            mw_apply_callbacks=self.apply_callbacks,
+            app_config=self.app_config,
             project_config=self.project.config,
         )
         action.triggered.connect(settings_dialog.show)
@@ -350,7 +355,9 @@ class ProjectWindow(QMainWindow):
                 self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
             except LoadFileError as e:
                 logger.error(f"Failed to import file {file_path}: {e}")
-                self.append_to_console(self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e))
+                self.append_to_console(
+                    self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e)
+                )
                 self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
 
     @Slot()

@@ -122,7 +122,6 @@ class Molecule(ContainerNode):
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_selected_atom_config(self.style.current.selected_atom)
-            atom.set_label_config(self.style.current.atoms.label)
             atom.set_radius(radius)
             atom.set_color(color)
 
@@ -192,7 +191,7 @@ class Molecule(ContainerNode):
             radius,
             color,
             selected_atom_config=self.style.current.selected_atom,
-            label_config=self.style.current.atoms.label,
+            label_config=self._config.atom_label,
         )
         self.atom_items.append(item)
 

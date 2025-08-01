@@ -6,18 +6,19 @@ from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
 from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
-from .config import AtomLabelType, Keymap, Style
+from .config import AtomLabelType, MolecularStructureViewerConfig
 from .label_settings_dialog import LabelSettingsDialog
 from .viewer import MolecularStructureViewer
 
 
 class Menu(SubWindowMenu[MolecularStructureViewer]):
-    def __init__(self, parent: QWidget, mdi_area: QMdiArea, keymap: Keymap, style: Style):
+    def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: MolecularStructureViewerConfig):
         super().__init__(Menu.tr("&Molecule"), parent, mdi_area)
         self.setObjectName("Molecular Structure Menu")
 
-        self._keymap = keymap.menu
-        self._style = style
+        self._config = config
+        self._keymap = config.keymap.menu
+        self._style = config.get_current_style()
 
         self._init_atom_labels_menu()
         self._init_bonds_menu()
@@ -60,7 +61,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
             Action.tr("Set element symbol and index number"),
             self.parent(),
             checkable=True,
-            checked=self._style.atoms.label.type == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER,
+            checked=self._config.atom_label.type == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER,
         )
         self.set_element_symbol_and_index_number_act.setStatusTip(
             Action.tr("Show element symbol and index number as label")
@@ -74,7 +75,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
             Action.tr("Set element symbol"),
             self.parent(),
             checkable=True,
-            checked=self._style.atoms.label.type == AtomLabelType.ELEMENT_SYMBOL,
+            checked=self._config.atom_label.type == AtomLabelType.ELEMENT_SYMBOL,
         )
         self.set_element_symbol_act.setStatusTip(Action.tr("Show element symbol as label"))
         self.set_element_symbol_act.triggered.connect(self.labels_set_element_symbol_handler)
@@ -84,7 +85,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
             Action.tr("Set index number"),
             self.parent(),
             checkable=True,
-            checked=self._style.atoms.label.type == AtomLabelType.INDEX_NUMBER,
+            checked=self._config.atom_label.type == AtomLabelType.INDEX_NUMBER,
         )
         self.set_index_number_act.setStatusTip(Action.tr("Show index number as label"))
         self.set_index_number_act.triggered.connect(self.labels_set_index_number_handler)
@@ -428,6 +429,5 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def labels_size_settings_handler(self):
-        current_size = self._style.atoms.label.size
-        dlg = LabelSettingsDialog(current_size, self.widget)
+        dlg = LabelSettingsDialog(self._config.atom_label.size, self.widget)
         dlg.exec()

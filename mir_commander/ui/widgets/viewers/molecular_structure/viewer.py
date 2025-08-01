@@ -24,7 +24,6 @@ from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType, MolecularStructureViewerConfig
 from .graphics_items import Atom
-from .label_settings_dialog import LabelSettingsDialog
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
 

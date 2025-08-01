@@ -38,7 +38,6 @@ class AtomLabelConfig(BaseModel):
 class Atoms(BaseModel):
     scale_factor: float = 1
     radius: Literal["atomic", "bond"] = "atomic"
-    label: AtomLabelConfig = AtomLabelConfig()
     atomic_radius: list[float] = [
         0.13,
         0.17,  # H
@@ -356,6 +355,7 @@ class MolecularStructureViewerConfig(BaseModel):
         min_length=1,
         description="List of available styles for the molecular structure viewer.",
     )
+    atom_label: AtomLabelConfig = AtomLabelConfig()
 
     def get_current_style(self) -> Style:
         for style in self.styles:
