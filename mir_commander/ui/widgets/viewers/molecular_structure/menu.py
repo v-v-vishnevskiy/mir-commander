@@ -429,5 +429,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def labels_size_settings_handler(self):
+        size = self._config.atom_label.size
         dlg = LabelSettingsDialog(self._config.atom_label.size, self.widget)
-        dlg.exec()
+        if not dlg.exec():
+            self.widget.set_label_size_for_all_atoms(size=size)
