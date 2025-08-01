@@ -72,6 +72,9 @@ class Atom(ContainerNode):
         r = self._sphere.highlight(value)
         self._label.set_translation(QVector3D(0.0, 0.0, r * 1.01))
 
+    def set_color(self, color: Color4f):
+        self._sphere.set_color(color)
+
     def set_radius(self, radius: float):
         self._sphere.set_radius(radius)
 
