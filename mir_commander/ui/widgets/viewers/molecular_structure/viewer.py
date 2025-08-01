@@ -802,6 +802,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update()
 
     def set_label_size_for_all_atoms(self, size: int):
+        self._config.atom_label.size = size
         for atom in self._molecule.atom_items:
             atom.set_label_size(size)
         self.update()
