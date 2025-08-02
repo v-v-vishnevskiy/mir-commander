@@ -283,155 +283,155 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
     @Slot()
     def toggle_projection_action_handler(self):
-        self.widget.toggle_projection_mode()
+        self.active_widget.toggle_projection_mode()
 
     @Slot()
     def save_img_action_handler(self):
-        self.widget.save_img_action_handler()
+        self.active_widget.save_img_action_handler()
 
     @Slot()
     def bonds_add_selected_handler(self):
-        self.widget.add_bonds_for_selected_atoms()
+        self.active_widget.add_bonds_for_selected_atoms()
 
     @Slot()
     def bonds_remove_selected_handler(self):
-        self.widget.remove_bonds_for_selected_atoms()
+        self.active_widget.remove_bonds_for_selected_atoms()
 
     @Slot()
     def bonds_toggle_selected_handler(self):
-        self.widget.toggle_bonds_for_selected_atoms()
+        self.active_widget.toggle_bonds_for_selected_atoms()
 
     @Slot()
     def bonds_rebuild_all_handler(self):
-        self.widget.rebuild_bonds()
+        self.active_widget.rebuild_bonds()
 
     @Slot()
     def bonds_rebuild_default_handler(self):
-        self.widget.rebuild_bonds_default()
+        self.active_widget.rebuild_bonds_default()
 
     @Slot()
     def bonds_build_dynamically_handler(self):
-        self.widget.rebuild_bonds_dynamic()
+        self.active_widget.rebuild_bonds_dynamic()
 
     @Slot()
     def select_all_atoms_handler(self):
-        self.widget.select_all_atoms()
+        self.active_widget.select_all_atoms()
 
     @Slot()
     def unselect_all_atoms_handler(self):
-        self.widget.unselect_all_atoms()
+        self.active_widget.unselect_all_atoms()
 
     @Slot()
     def select_toggle_all_atoms_handler(self):
-        self.widget.select_toggle_all_atoms()
+        self.active_widget.select_toggle_all_atoms()
 
     @Slot()
     def calc_interat_distance_handler(self):
-        self.widget.calc_distance_last2sel_atoms()
+        self.active_widget.calc_distance_last2sel_atoms()
 
     @Slot()
     def calc_interat_angle_handler(self):
-        self.widget.calc_angle_last3sel_atoms()
+        self.active_widget.calc_angle_last3sel_atoms()
 
     @Slot()
     def calc_torsion_angle_handler(self):
-        self.widget.calc_torsion_last4sel_atoms()
+        self.active_widget.calc_torsion_last4sel_atoms()
 
     @Slot()
     def calc_oop_angle_handler(self):
-        self.widget.calc_oop_last4sel_atoms()
+        self.active_widget.calc_oop_last4sel_atoms()
 
     @Slot()
     def calc_auto_parameter_handler(self):
-        self.widget.calc_auto_lastsel_atoms()
+        self.active_widget.calc_auto_lastsel_atoms()
 
     @Slot()
     def calc_sel_fragments_handler(self):
-        self.widget.calc_all_parameters_selected_atoms()
+        self.active_widget.calc_all_parameters_selected_atoms()
 
     @Slot()
     def cloak_selected_handler(self):
-        self.widget.cloak_selected_atoms()
+        self.active_widget.cloak_selected_atoms()
 
     @Slot()
     def cloak_not_selected_handler(self):
-        self.widget.cloak_not_selected_atoms()
+        self.active_widget.cloak_not_selected_atoms()
 
     @Slot()
     def cloak_h_atoms_handler(self):
-        self.widget.cloak_h_atoms()
+        self.active_widget.cloak_h_atoms()
 
     @Slot()
     def cloak_notsel_h_atoms_handler(self):
-        self.widget.cloak_not_selected_h_atoms()
+        self.active_widget.cloak_not_selected_h_atoms()
 
     @Slot()
     def cloak_toggle_h_atoms_handler(self):
-        self.widget.cloak_toggle_h_atoms()
+        self.active_widget.cloak_toggle_h_atoms()
 
     @Slot()
     def cloak_atoms_by_type_handler(self):
-        self.widget.cloak_atoms_by_atnum()
+        self.active_widget.cloak_atoms_by_atnum()
 
     @Slot()
     def uncloak_all_handler(self):
-        self.widget.uncloak_all_atoms()
+        self.active_widget.uncloak_all_atoms()
 
     @Slot()
     def next_atomic_coordinates_handler(self):
-        self.widget.set_next_atomic_coordinates()
+        self.active_widget.set_next_atomic_coordinates()
 
     @Slot()
     def prev_atomic_coordinates_handler(self):
-        self.widget.set_prev_atomic_coordinates()
+        self.active_widget.set_prev_atomic_coordinates()
 
     @Slot()
     def next_style_handler(self):
-        self.widget.set_next_style()
+        self.active_widget.set_next_style()
 
     @Slot()
     def prev_style_handler(self):
-        self.widget.set_prev_style()
+        self.active_widget.set_prev_style()
 
     @Slot()
     def labels_show_for_all_atoms_handler(self):
-        self.widget.atom_labels_show_for_all_atoms()
+        self.active_widget.atom_labels_show_for_all_atoms()
 
     @Slot()
     def labels_hide_for_all_atoms_handler(self):
-        self.widget.atom_labels_hide_for_all_atoms()
+        self.active_widget.atom_labels_hide_for_all_atoms()
 
     @Slot()
     def labels_show_for_selected_atoms_handler(self):
-        self.widget.atom_labels_show_for_selected_atoms()
+        self.active_widget.atom_labels_show_for_selected_atoms()
 
     @Slot()
     def labels_hide_for_selected_atoms_handler(self):
-        self.widget.atom_labels_hide_for_selected_atoms()
+        self.active_widget.atom_labels_hide_for_selected_atoms()
 
     @Slot()
     def labels_set_element_symbol_and_index_number_handler(self):
         self.set_index_number_act.setChecked(False)
         self.set_element_symbol_act.setChecked(False)
-        self.widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
+        self.active_widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
 
     @Slot()
     def labels_set_element_symbol_handler(self):
         self.set_element_symbol_and_index_number_act.setChecked(False)
         self.set_index_number_act.setChecked(False)
-        self.widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)
+        self.active_widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)
 
     @Slot()
     def labels_set_index_number_handler(self):
         self.set_element_symbol_and_index_number_act.setChecked(False)
         self.set_element_symbol_act.setChecked(False)
-        self.widget.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)
+        self.active_widget.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)
 
     @Slot()
     def labels_size_settings_handler(self):
         size = self._config.atom_label.size
         offset = self._config.atom_label.offset
-        dlg = LabelSettingsDialog(self._config.atom_label.size, self._config.atom_label.offset, self.widget)
+        dlg = LabelSettingsDialog(self._config.atom_label.size, self._config.atom_label.offset, self.active_widget)
         if not dlg.exec():
-            self.widget.set_label_size_for_all_atoms(size=size)
-            self.widget.set_label_offset_for_all_atoms(offset=offset)
+            self.active_widget.set_label_size_for_all_atoms(size=size)
+            self.active_widget.set_label_offset_for_all_atoms(offset=offset)
