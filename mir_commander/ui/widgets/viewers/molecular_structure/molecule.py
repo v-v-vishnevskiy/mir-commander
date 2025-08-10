@@ -158,7 +158,7 @@ class Molecule(ContainerNode):
     def clear(self):
         self.atom_items.clear()
         self.bond_items.clear()
-        self.clear()
+        super().clear()
 
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
         for i in range(len(atomic_coordinates.atomic_num)):
