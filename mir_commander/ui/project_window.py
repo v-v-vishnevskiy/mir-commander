@@ -106,7 +106,7 @@ class ProjectWindow(QMainWindow):
             self.__fix_sub_window = None
 
     def setup_mdi_area(self):
-        def added_viewer_slot(viewer: BaseViewer):
+        def opened_viewer_slot(viewer: BaseViewer):
             viewer.short_msg_signal.connect(self.status_bar.showMessage)
             viewer.long_msg_signal.connect(self.docks.console.append)
 
@@ -115,7 +115,7 @@ class ProjectWindow(QMainWindow):
         )
         self.mdi_area.subWindowActivated.connect(self.update_menus)
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
-        self.mdi_area.added_viewer_signal.connect(added_viewer_slot)
+        self.mdi_area.opened_viewer_signal.connect(opened_viewer_slot)
         self.setCentralWidget(self.mdi_area)
 
         self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)

@@ -1,26 +1,27 @@
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
 
 from mir_commander.ui.utils.widget import GroupBox, Label
 
 if TYPE_CHECKING:
     from ..viewer import MolecularStructureViewer
+    from .settings import Settings
 
 
 class Labels(GroupBox):
-    def __init__(self, parent: QWidget, viewer: "MolecularStructureViewer"):
+    def __init__(self, parent: "Settings"):
         super().__init__(GroupBox.tr("Labels"))
 
-        self._viewer = viewer
+        self._settings = parent
 
         # Size slider
         self.size_slider = QSlider(Qt.Orientation.Horizontal)
         self.size_slider.setMinimum(1)
         self.size_slider.setMaximum(100)
         self.size_slider.setSingleStep(1)
-        self.size_slider.setSliderPosition(self._viewer.config.atom_label.size)
+        self.size_slider.setSliderPosition(1)
         self.size_slider.setTickPosition(QSlider.TicksBelow)
         self.size_slider.setTickInterval(25)
         self.size_slider.valueChanged.connect(self.size_slider_value_changed_handler)
@@ -29,7 +30,7 @@ class Labels(GroupBox):
         self.size_double_spinbox.setRange(1.0, 100.0)
         self.size_double_spinbox.setSingleStep(1.0)
         self.size_double_spinbox.setDecimals(0)
-        self.size_double_spinbox.setValue(self._viewer.config.atom_label.size)
+        self.size_double_spinbox.setValue(1.0)
         self.size_double_spinbox.valueChanged.connect(self.size_double_spinbox_value_changed_handler)
 
         # Offset slider
@@ -37,7 +38,7 @@ class Labels(GroupBox):
         self.offset_slider.setMinimum(101)  # 1.01 * 100
         self.offset_slider.setMaximum(500)  # 5.0 * 100
         self.offset_slider.setSingleStep(10)  # 0.1 * 100
-        self.offset_slider.setSliderPosition(int(self._viewer.config.atom_label.offset * 100))
+        self.offset_slider.setSliderPosition(int(1.01 * 100))
         self.offset_slider.setTickPosition(QSlider.TicksBelow)
         self.offset_slider.setTickInterval(50)
         self.offset_slider.valueChanged.connect(self.offset_slider_value_changed_handler)
@@ -46,7 +47,7 @@ class Labels(GroupBox):
         self.offset_double_spinbox.setRange(1.01, 5.0)
         self.offset_double_spinbox.setSingleStep(0.1)
         self.offset_double_spinbox.setDecimals(2)
-        self.offset_double_spinbox.setValue(self._viewer.config.atom_label.offset)
+        self.offset_double_spinbox.setValue(1.01)
         self.offset_double_spinbox.valueChanged.connect(self.offset_double_spinbox_value_changed_handler)
 
         # Size layout
@@ -88,24 +89,34 @@ class Labels(GroupBox):
         self.main_layout.addLayout(offset_layout)
         self.setLayout(self.main_layout)
 
+    def set_active_viewer(self, viewer: "MolecularStructureViewer"):
+        self.size_slider.setValue(viewer.config.atom_label.size)
+        self.size_double_spinbox.setValue(viewer.config.atom_label.size)
+
+        self.offset_slider.setValue(int(viewer.config.atom_label.offset * 100))
+        self.offset_double_spinbox.setValue(viewer.config.atom_label.offset)
+
+    def apply_settings(self, viewers: list["MolecularStructureViewer"]):
+        for viewer in viewers:
+            viewer.set_label_size_for_all_atoms(size=self.size_slider.value())
+            viewer.set_label_offset_for_all_atoms(offset=self.offset_slider.value() / 100)
+
     @Slot()
     def size_slider_value_changed_handler(self, i: int):
-        self._viewer.config.atom_label.size = i
-        self.size_double_spinbox.setValue(self._viewer.config.atom_label.size)
-        self._viewer.set_label_size_for_all_atoms(size=self._viewer.config.atom_label.size)
+        self.size_double_spinbox.setValue(i)
+        for viewer in self._settings.viewers:
+            viewer.set_label_size_for_all_atoms(size=i)
 
     @Slot()
     def size_double_spinbox_value_changed_handler(self, value: int):
-        self._viewer.config.atom_label.size = value
-        self.size_slider.setValue(self._viewer.config.atom_label.size)
+        self.size_slider.setValue(value)
 
     @Slot()
     def offset_slider_value_changed_handler(self, i: int):
-        self._viewer.config.atom_label.offset = i / 100.0
-        self.offset_double_spinbox.setValue(self._viewer.config.atom_label.offset)
-        self._viewer.set_label_offset_for_all_atoms(offset=self._viewer.config.atom_label.offset)
+        self.offset_double_spinbox.setValue(i / 100)
+        for viewer in self._settings.viewers:
+            viewer.set_label_offset_for_all_atoms(offset=i / 100)
 
     @Slot()
     def offset_double_spinbox_value_changed_handler(self, value: float):
-        self._viewer.config.atom_label.offset = value
-        self.offset_slider.setValue(int(self._viewer.config.atom_label.offset * 100))
+        self.offset_slider.setValue(int(value * 100))

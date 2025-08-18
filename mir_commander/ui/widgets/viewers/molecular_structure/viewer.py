@@ -65,10 +65,11 @@ class InteratomicOutOfPlane:
 
 
 class MolecularStructureViewer(OpenGLWidget, BaseViewer):
+    settings = Settings
+
     def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
         super().__init__(parent=parent, keymap=Keymap(config.keymap.viewer.model_dump()))
-        self.config = config
-        self.settings = Settings(self)
+        self.config = config.model_copy(deep=True)
 
         self.item = item
         self._all = all
