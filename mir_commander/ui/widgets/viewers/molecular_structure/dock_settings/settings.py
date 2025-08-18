@@ -27,6 +27,7 @@ class Settings(BaseViewerSettings):
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.apply_for_all_checkbox)
+        self.main_layout.addSpacing(10)
         self.main_layout.addWidget(self.labels)
         self.main_layout.addStretch()
 
