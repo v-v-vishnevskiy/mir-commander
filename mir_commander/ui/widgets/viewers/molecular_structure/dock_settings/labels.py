@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class Labels(GroupBox):
     def __init__(self, parent: "Settings"):
-        super().__init__(GroupBox.tr("Labels"))
+        super().__init__(self.tr("Labels"))
 
         self._settings = parent
 
