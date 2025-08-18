@@ -23,6 +23,7 @@ from ..base import BaseViewer
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType, MolecularStructureViewerConfig
+from .dock_settings.settings import Settings
 from .graphics_items import Atom
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
@@ -66,13 +67,14 @@ class InteratomicOutOfPlane:
 class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
         super().__init__(parent=parent, keymap=Keymap(config.keymap.viewer.model_dump()))
-        self._config = config
+        self.config = config
+        self.settings = Settings(self)
 
         self.item = item
         self._all = all
 
-        self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
-        self.resize(self._config.size[0], self._config.size[1])
+        self.setMinimumSize(self.config.min_size[0], self.config.min_size[1])
+        self.resize(self.config.size[0], self.config.size[1])
 
         self._molecule_index = 0
         self._draw_item = None
@@ -95,7 +97,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def initializeGL(self):
         super().initializeGL()
 
-        self._molecule = Molecule(self.resource_manager.current_scene.root_node, self._config, self.resource_manager)
+        self._molecule = Molecule(self.resource_manager.current_scene.root_node, self.config, self.resource_manager)
 
         self.build_molecule()
 
@@ -766,7 +768,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
-        self._molecule.current_geom_bond_tolerance = self._config.geom_bond_tolerance
+        self._molecule.current_geom_bond_tolerance = self.config.geom_bond_tolerance
         self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
 
     def rebuild_bonds_dynamic(self):
@@ -797,19 +799,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update()
 
     def atom_labels_set_type(self, value: AtomLabelType):
-        self._config.atom_label.type = value
+        self.config.atom_label.type = value
         for atom in self._molecule.atom_items:
             atom.set_label_type(value)
         self.update()
 
     def set_label_size_for_all_atoms(self, size: int):
-        self._config.atom_label.size = size
+        self.config.atom_label.size = size
         for atom in self._molecule.atom_items:
             atom.set_label_size(size)
         self.update()
 
     def set_label_offset_for_all_atoms(self, offset: float):
-        self._config.atom_label.offset = offset
+        self.config.atom_label.offset = offset
         for atom in self._molecule.atom_items:
             atom.set_label_offset(offset)
         self.update()

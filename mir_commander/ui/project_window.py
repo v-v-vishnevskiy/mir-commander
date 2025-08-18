@@ -19,7 +19,7 @@ from .utils.sub_window_menu import SubWindowMenu
 from .utils.sub_window_toolbar import SubWindowToolBar
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
-from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock
+from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock, ViewerSettingsDock
 from .widgets.settings.settings_dialog import SettingsDialog
 from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
@@ -33,6 +33,7 @@ class Docks:
     project: ProjectDock
     object: ObjectDock
     console: ConsoleDock
+    viewer_settings: ViewerSettingsDock
 
 
 class ProjectWindow(QMainWindow):
@@ -60,9 +61,9 @@ class ProjectWindow(QMainWindow):
 
         self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
+        self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()
         self.setup_toolbars()  # Note, we create toolbars before menus
-        self.setup_docks()  # Create docks before menus
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
@@ -109,11 +110,15 @@ class ProjectWindow(QMainWindow):
             viewer.short_msg_signal.connect(self.status_bar.showMessage)
             viewer.long_msg_signal.connect(self.docks.console.append)
 
-        self.mdi_area = MdiArea(parent=self, viewers_config=self.config.widgets.viewers)
+        self.mdi_area = MdiArea(
+            parent=self, viewer_settings_dock=self.docks.viewer_settings, viewers_config=self.config.widgets.viewers
+        )
         self.mdi_area.subWindowActivated.connect(self.update_menus)
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.mdi_area.added_viewer_signal.connect(added_viewer_slot)
         self.setCentralWidget(self.mdi_area)
+
+        self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_docks(self):
         self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -129,12 +134,12 @@ class ProjectWindow(QMainWindow):
             ),
             ObjectDock(parent=self),
             ConsoleDock(parent=self),
+            ViewerSettingsDock(parent=self),
         )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
-
-        self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_toolbars(self):
         # N.B.: toolbar(s) of the main window will be also created in this function.

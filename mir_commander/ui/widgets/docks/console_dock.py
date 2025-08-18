@@ -23,6 +23,7 @@ class ConsoleDock(BaseDock):
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
+        self.setMinimumHeight(50)
         self.setWidget(self.text)
 
     def append(self, text: str):

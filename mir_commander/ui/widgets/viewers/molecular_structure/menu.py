@@ -7,7 +7,6 @@ from mir_commander.ui.utils.widget import Action
 from mir_commander.ui.utils.widget import Menu as BaseMenu
 
 from .config import AtomLabelType, MolecularStructureViewerConfig
-from .label_settings_dialog import LabelSettingsDialog
 from .viewer import MolecularStructureViewer
 
 
@@ -102,13 +101,6 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         hide_all_act.setStatusTip(Action.tr("Hide labels for all atoms"))
         hide_all_act.triggered.connect(self.labels_hide_for_all_atoms_handler)
         menu.addAction(hide_all_act)
-
-        menu.addSeparator()
-
-        label_size_act = Action(Action.tr("Label size settings..."), self.parent())
-        label_size_act.setStatusTip(Action.tr("Adjust label size for all atoms"))
-        label_size_act.triggered.connect(self.labels_size_settings_handler)
-        menu.addAction(label_size_act)
 
     def _init_bonds_menu(self):
         bonds_menu = BaseMenu(Menu.tr("Bonds"))
@@ -426,12 +418,3 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         self.set_element_symbol_and_index_number_act.setChecked(False)
         self.set_element_symbol_act.setChecked(False)
         self.active_widget.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)
-
-    @Slot()
-    def labels_size_settings_handler(self):
-        size = self._config.atom_label.size
-        offset = self._config.atom_label.offset
-        dlg = LabelSettingsDialog(self._config.atom_label.size, self._config.atom_label.offset, self.active_widget)
-        if not dlg.exec():
-            self.active_widget.set_label_size_for_all_atoms(size=size)
-            self.active_widget.set_label_offset_for_all_atoms(offset=offset)
