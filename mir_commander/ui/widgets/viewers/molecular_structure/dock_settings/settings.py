@@ -34,7 +34,7 @@ class Settings(BaseViewerSettings):
 
     def set_active_viewer(self, viewer: "MolecularStructureViewer"):
         super().set_active_viewer(viewer)
-        self.labels.set_active_viewer(viewer)
+        self.labels.update_values(viewer)
 
     @property
     def viewers(self) -> list["MolecularStructureViewer"]:

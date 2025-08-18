@@ -89,7 +89,7 @@ class Labels(GroupBox):
         self.main_layout.addLayout(offset_layout)
         self.setLayout(self.main_layout)
 
-    def set_active_viewer(self, viewer: "MolecularStructureViewer"):
+    def update_values(self, viewer: "MolecularStructureViewer"):
         self.size_slider.setValue(viewer.config.atom_label.size)
         self.size_double_spinbox.setValue(viewer.config.atom_label.size)
 
