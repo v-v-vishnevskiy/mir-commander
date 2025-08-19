@@ -140,7 +140,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             else:
                 self._selected_nodes[item.__class__].remove(item)
             self.update()
-        except NodeNotFoundError:
+        except (NodeNotFoundError, ValueError):
+            # ValueError is raised when node is not found in `_selected_nodes`
             pass
 
     def new_cursor_position(self, x: int, y: int):
