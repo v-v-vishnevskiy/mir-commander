@@ -1,5 +1,6 @@
 import logging
 import math
+from collections import defaultdict
 from itertools import combinations
 from typing import Optional
 
@@ -24,7 +25,7 @@ from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType, MolecularStructureViewerConfig
 from .dock_settings.settings import Settings
-from .graphics_items import Atom
+from .graphics_nodes import Atom, BaseGraphicsNode
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
 
@@ -73,6 +74,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
         self.item = item
         self._all = all
+        self._node_under_cursor: BaseGraphicsNode | None = None
+        self._selected_nodes: defaultdict[type[BaseGraphicsNode], list[BaseGraphicsNode]] = defaultdict(list)
 
         self.setMinimumSize(self.config.min_size[0], self.config.min_size[1])
         self.resize(self.config.size[0], self.config.size[1])
@@ -85,7 +88,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def init_actions(self):
         super().init_actions()
-        self.action_handler.add_action("toggle_atom_selection", False, self.toggle_atom_selection_under_cursor)
+        self.action_handler.add_action("toggle_node_selection", False, self.toggle_node_selection_under_cursor)
 
     def init_shaders(self):
         super().init_shaders()
@@ -128,37 +131,43 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
 
-    def toggle_atom_selection_under_cursor(self):
+    def toggle_node_selection_under_cursor(self):
         try:
-            # TODO: refactor this
-            item = self.node_under_cursor().parent
-            if isinstance(item, Atom):
-                if item.toggle_selection():
-                    self._molecule.selected_atom_items.append(item)
-                else:
-                    self._molecule.selected_atom_items.remove(item)
-                self.update()
+            node = self.node_under_cursor()
+            item = node.parent
+            if node.toggle_selection():
+                self._selected_nodes[item.__class__].append(item)
+            else:
+                self._selected_nodes[item.__class__].remove(item)
+            self.update()
         except NodeNotFoundError:
             pass
 
     def new_cursor_position(self, x: int, y: int):
+        self._handle_node_under_cursor(x, y)
+
+    def _handle_node_under_cursor(self, x: int, y: int):
         try:
-            # TODO: refactor this
-            node = self.node_under_cursor().parent
+            if self._node_under_cursor is not None:
+                self._node_under_cursor.set_under_cursor(False)
+
+            self._node_under_cursor = self.node_under_cursor()
+            self._node_under_cursor.set_under_cursor(True)
+
+            if text := self._node_under_cursor.get_text():
+                self._under_cursor_overlay.set_text(text)
+                size = self._under_cursor_overlay.size()
+                self._under_cursor_overlay.set_position(QPoint(x, y - size.height()))
+                self._under_cursor_overlay.show()
+            else:
+                self._under_cursor_overlay.set_text("")
+                self._under_cursor_overlay.hide()
         except NodeNotFoundError:
-            node = None
-
-        if self._molecule.highlight_atom_under_cursor(node if type(node) is Atom else None):
-            self.update()
-
-        if isinstance(node, Atom):
-            self._under_cursor_overlay.set_text(f"Atom: {node.element_symbol}{node.index_num + 1}")
-            size = self._under_cursor_overlay.size()
-            self._under_cursor_overlay.set_position(QPoint(x, y - size.height()))
-            self._under_cursor_overlay.show()
-        else:
+            if self._node_under_cursor is not None:
+                self._node_under_cursor.set_under_cursor(False)
             self._under_cursor_overlay.set_text("")
             self._under_cursor_overlay.hide()
+        self.update()
 
     def set_next_style(self):
         if self._molecule.style.set_next_style():
@@ -240,13 +249,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def select_all_atoms(self):
         for atom in self._molecule.atom_items:
             atom.set_selected(True)
-        self._molecule.selected_atom_items = self._molecule.atom_items.copy()
+        self._selected_nodes[Atom] = self._molecule.atom_items.copy()
         self.update()
 
     def unselect_all_atoms(self):
         for atom in self._molecule.atom_items:
             atom.set_selected(False)
-        self._molecule.selected_atom_items = []
+        self._selected_nodes[Atom] = []
         self.update()
 
     def select_toggle_all_atoms(self):
@@ -254,7 +263,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         Unselect all atoms if at least one atom selected,
         otherwise select all.
         """
-        if len(self._molecule.selected_atom_items) > 0:
+
+        if len(self._selected_nodes[Atom]) > 0:
             self.unselect_all_atoms()
         else:
             self.select_all_atoms()
@@ -362,9 +372,11 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Calculate and print distance (in internal units) between last two selected atoms.
         """
-        if len(self._molecule.selected_atom_items) >= 2:
-            atom1 = self._molecule.selected_atom_items[-2]
-            atom2 = self._molecule.selected_atom_items[-1]
+
+        atoms = self._selected_nodes[Atom]
+        if len(atoms) >= 2:
+            atom1 = atoms[-2]
+            atom2 = atoms[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
@@ -383,10 +395,12 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Calculate and print angle (in degrees) formed by last three selected atoms: a1-a2-a3
         """
-        if len(self._molecule.selected_atom_items) >= 3:
-            atom1 = self._molecule.selected_atom_items[-3]
-            atom2 = self._molecule.selected_atom_items[-2]
-            atom3 = self._molecule.selected_atom_items[-1]
+
+        atoms = self._selected_nodes[Atom]
+        if len(atoms) >= 3:
+            atom1 = atoms[-3]
+            atom2 = atoms[-2]
+            atom3 = atoms[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -409,11 +423,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Calculate and print torsion angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
-        if len(self._molecule.selected_atom_items) >= 4:
-            atom1 = self._molecule.selected_atom_items[-4]
-            atom2 = self._molecule.selected_atom_items[-3]
-            atom3 = self._molecule.selected_atom_items[-2]
-            atom4 = self._molecule.selected_atom_items[-1]
+
+        atoms = self._selected_nodes[Atom]
+        if len(atoms) >= 4:
+            atom1 = atoms[-4]
+            atom2 = atoms[-3]
+            atom3 = atoms[-2]
+            atom4 = atoms[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -448,11 +464,13 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Calculate and print out-of-plane angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
-        if len(self._molecule.selected_atom_items) >= 4:
-            atom1 = self._molecule.selected_atom_items[-4]
-            atom2 = self._molecule.selected_atom_items[-3]
-            atom3 = self._molecule.selected_atom_items[-2]
-            atom4 = self._molecule.selected_atom_items[-1]
+
+        atoms = self._selected_nodes[Atom]
+        if len(atoms) >= 4:
+            atom1 = atoms[-4]
+            atom2 = atoms[-3]
+            atom3 = atoms[-2]
+            atom4 = atoms[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             pos3 = atom3.position
@@ -488,7 +506,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         Calculate and print internal geometrical parameter,
         distance, angle or torsion angle, depending on the number of selected atoms.
         """
-        num_selected = len(self._molecule.selected_atom_items)
+
+        num_selected = len(self._selected_nodes[Atom])
         if num_selected == 2:
             self.calc_distance_last2sel_atoms()
         elif num_selected == 3:
@@ -507,6 +526,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Calculate and print all parameters formed by all selected atoms
         """
+
         distances = []
         angles = []
         torsions = []
@@ -719,6 +739,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Create and add or remove bonds between selected atoms.
         """
+
         selected_atoms = list(filter(lambda x: x.selected, self._molecule.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
             idx = self._molecule.bond_index(atom1, atom2)
@@ -732,6 +753,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Create and add bonds between selected atoms.
         """
+
         selected_atoms = list(filter(lambda x: x.selected, self._molecule.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
             idx = self._molecule.bond_index(atom1, atom2)
@@ -743,6 +765,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Remove bonds between selected atoms.
         """
+
         selected_atoms = list(filter(lambda x: x.selected, self._molecule.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
             idx = self._molecule.bond_index(atom1, atom2)
@@ -754,6 +777,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new a set of bonds
         """
+
         if not self._draw_item:
             return None
 
@@ -769,6 +793,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
+
         self._molecule.current_geom_bond_tolerance = self.config.geom_bond_tolerance
         self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
 
@@ -790,12 +815,12 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update()
 
     def atom_labels_show_for_selected_atoms(self):
-        for atom in self._molecule.selected_atom_items:
+        for atom in self._selected_nodes[Atom]:
             atom.set_label_visible(True)
         self.update()
 
     def atom_labels_hide_for_selected_atoms(self):
-        for atom in self._molecule.selected_atom_items:
+        for atom in self._selected_nodes[Atom]:
             atom.set_label_visible(False)
         self.update()
 

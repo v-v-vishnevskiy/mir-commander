@@ -323,7 +323,7 @@ class ViewerKeymap(BaseModel):
     rotate_up: list[str] = ["up"]
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
-    toggle_atom_selection: list[str] = ["mb_1"]
+    toggle_node_selection: list[str] = ["mb_1"]
 
 
 class Keymap(BaseModel):

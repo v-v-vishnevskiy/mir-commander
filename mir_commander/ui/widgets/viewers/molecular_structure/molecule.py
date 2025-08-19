@@ -13,7 +13,7 @@ from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
 from .config import MolecularStructureViewerConfig
-from .graphics_items import Atom, Bond
+from .graphics_nodes import Atom, Bond
 from .style import Style
 
 logger = logging.getLogger("MoleculeStructure.Molecule")
@@ -40,7 +40,6 @@ class Molecule(ContainerNode):
         self.current_geom_bond_tolerance = config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
-        self.selected_atom_items: list[Atom] = []
 
         self.apply_style()
 
@@ -238,17 +237,3 @@ class Molecule(ContainerNode):
             if (bond._atom_1 == atom1 and bond._atom_2 == atom2) or (bond._atom_1 == atom2 and bond._atom_2 == atom1):
                 return idx
         return -1
-
-    def highlight_atom_under_cursor(self, atom: None | Atom) -> bool:
-        old_atom = self._atom_index_under_cursor
-        self._atom_index_under_cursor = atom
-
-        if atom == old_atom:
-            return False
-
-        if atom is not None:
-            atom.highlight(True)
-        if old_atom is not None:
-            old_atom.highlight(False)
-
-        return True
