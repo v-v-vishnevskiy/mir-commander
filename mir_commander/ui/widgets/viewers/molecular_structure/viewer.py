@@ -9,7 +9,6 @@ from PySide6.QtGui import QStandardItem, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.utils.opengl import shaders
 from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
@@ -21,12 +20,13 @@ from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..base import BaseViewer
+from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
-from .config import MolecularStructureViewerConfig
-from .graphics_items import Atom, AtomLabelType
+from .config import AtomLabelType, MolecularStructureViewerConfig
+from .dock_settings.settings import Settings
+from .graphics_items import Atom
 from .molecule import Molecule
 from .save_image_dialog import SaveImageDialog
-from .shaders.vertex import ATOM_LABEL
 
 logger = logging.getLogger("Viewers.MolecularStructure")
 
@@ -65,15 +65,17 @@ class InteratomicOutOfPlane:
 
 
 class MolecularStructureViewer(OpenGLWidget, BaseViewer):
+    settings = Settings
+
     def __init__(self, parent: QWidget, config: MolecularStructureViewerConfig, item: QStandardItem, all: bool = False):
         super().__init__(parent=parent, keymap=Keymap(config.keymap.viewer.model_dump()))
-        self._config = config
+        self.config = config.model_copy(deep=True)
 
         self.item = item
         self._all = all
 
-        self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
-        self.resize(self._config.size[0], self._config.size[1])
+        self.setMinimumSize(self.config.min_size[0], self.config.min_size[1])
+        self.resize(self.config.size[0], self.config.size[1])
 
         self._molecule_index = 0
         self._draw_item = None
@@ -89,16 +91,14 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         super().init_shaders()
         self.resource_manager.add_shader(
             ShaderProgram(
-                "atom_label", 
-                VertexShader(ATOM_LABEL), 
-                FragmentShader(shaders.fragment.TEXTURE)
+                "atom_label", VertexShader(shaders.vertex.ATOM_LABEL), FragmentShader(shaders.fragment.ATOM_LABEL)
             )
         )
 
     def initializeGL(self):
         super().initializeGL()
 
-        self._molecule = Molecule(self.resource_manager.current_scene.root_node, self._config, self.resource_manager)
+        self._molecule = Molecule(self.resource_manager.current_scene.root_node, self.config, self.resource_manager)
 
         self.build_molecule()
 
@@ -117,20 +117,21 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.set_perspective_projection_fov(current_fov)
         fov_factor = current_fov / 45.0
         self.projection_manager.perspective_projection.set_near_far_plane(
-            self._molecule.radius/fov_factor,
-            8 * self._molecule.radius/fov_factor,
+            self._molecule.radius / fov_factor,
+            8 * self._molecule.radius / fov_factor,
         )
         self.set_projection_mode(self._molecule.style.current.projection.mode)
 
         self.resource_manager.current_camera.reset_to_default()
-        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * self._molecule.radius/fov_factor))
+        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * self._molecule.radius / fov_factor))
 
     def build_molecule(self):
         self._molecule.build(self._draw_item.data().data)
 
     def toggle_atom_selection_under_cursor(self):
         try:
-            item = self.item_under_cursor()
+            # TODO: refactor this
+            item = self.node_under_cursor().parent
             if isinstance(item, Atom):
                 if item.toggle_selection():
                     self._molecule.selected_atom_items.append(item)
@@ -142,15 +143,16 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
 
     def new_cursor_position(self, x: int, y: int):
         try:
-            item = self.item_under_cursor()
+            # TODO: refactor this
+            node = self.node_under_cursor().parent
         except NodeNotFoundError:
-            item = None
+            node = None
 
-        if self._molecule.highlight_atom_under_cursor(item if type(item) is Atom else None):
+        if self._molecule.highlight_atom_under_cursor(node if type(node) is Atom else None):
             self.update()
 
-        if isinstance(item, Atom):
-            self._under_cursor_overlay.set_text(f"Atom: {item.element_symbol}{item.index_num + 1}")
+        if isinstance(node, Atom):
+            self._under_cursor_overlay.set_text(f"Atom: {node.element_symbol}{node.index_num + 1}")
             size = self._under_cursor_overlay.size()
             self._under_cursor_overlay.set_position(QPoint(x, y - size.height()))
             self._under_cursor_overlay.show()
@@ -161,13 +163,17 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
     def set_next_style(self):
         if self._molecule.style.set_next_style():
             self._molecule.apply_style()
-            self._under_cursor_overlay.set_config(self._molecule.style.current.under_cursor_text_overlay, skip_position=True)
+            self._under_cursor_overlay.set_config(
+                self._molecule.style.current.under_cursor_text_overlay, skip_position=True
+            )
             self.update()
 
     def set_prev_style(self):
         if self._molecule.style.set_prev_style():
             self._molecule.apply_style()
-            self._under_cursor_overlay.set_config(self._molecule.style.current.under_cursor_text_overlay, skip_position=True)
+            self._under_cursor_overlay.set_config(
+                self._molecule.style.current.under_cursor_text_overlay, skip_position=True
+            )
             self.update()
 
     def _atomic_coordinates_item(
@@ -273,9 +279,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             if save_flag:
                 image = None
                 try:
-                    image = self.render_to_image(
-                        dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content
-                    )
+                    image = self.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content)
                 except OpenGL.error.GLError as error:
                     message_box = QMessageBox(
                         QMessageBox.Critical,
@@ -365,7 +369,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
             self.long_msg_signal.emit(
-                f"r({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1})={distance:.3f}"
+                f"r({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1})={distance:.3f}"
             )
         else:
             QMessageBox.critical(
@@ -390,8 +394,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
             self.long_msg_signal.emit(
-                f"a({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
-                f"{atom3.element_symbol}{atom3.index_num+1})={angle:.1f}"
+                f"a({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
+                f"{atom3.element_symbol}{atom3.index_num + 1})={angle:.1f}"
             )
         else:
             QMessageBox.critical(
@@ -429,8 +433,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
                 pos4.z(),
             ) * (180.0 / math.pi)
             self.long_msg_signal.emit(
-                f"t({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}-"
-                f"{atom3.element_symbol}{atom3.index_num+1}-{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
+                f"t({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
+                f"{atom3.element_symbol}{atom3.index_num + 1}-{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
             )
         else:
             QMessageBox.critical(
@@ -468,8 +472,8 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
                 pos4.z(),
             ) * (180.0 / math.pi)
             self.long_msg_signal.emit(
-                f"o({atom1.element_symbol}{atom1.index_num+1}-{atom2.element_symbol}{atom2.index_num+1}<"
-                f"{atom3.element_symbol}{atom3.index_num+1}/{atom4.element_symbol}{atom4.index_num+1})={angle:.1f}"
+                f"o({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}<"
+                f"{atom3.element_symbol}{atom3.index_num + 1}/{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
             )
         else:
             QMessageBox.critical(
@@ -681,32 +685,32 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         out_str = ""
         for dist in distances:
             out_str += (
-                f"r({dist.atom1.element_symbol}{dist.atom1.index_num+1}-"
-                f"{dist.atom2.element_symbol}{dist.atom2.index_num+1})={dist.value:.3f}, "
+                f"r({dist.atom1.element_symbol}{dist.atom1.index_num + 1}-"
+                f"{dist.atom2.element_symbol}{dist.atom2.index_num + 1})={dist.value:.3f}, "
             )
 
         for angle in angles:
             out_str += (
-                f"a({angle.atom1.element_symbol}{angle.atom1.index_num+1}-"
-                f"{angle.atom2.element_symbol}{angle.atom2.index_num+1}-"
-                f"{angle.atom3.element_symbol}{angle.atom3.index_num+1})={angle.value:.1f}, "
+                f"a({angle.atom1.element_symbol}{angle.atom1.index_num + 1}-"
+                f"{angle.atom2.element_symbol}{angle.atom2.index_num + 1}-"
+                f"{angle.atom3.element_symbol}{angle.atom3.index_num + 1})={angle.value:.1f}, "
             )
 
         for torsion in torsions:
             out_str += (
-                f"t({torsion.atom1.element_symbol}{torsion.atom1.index_num+1}-"
-                f"{torsion.atom2.element_symbol}{torsion.atom2.index_num+1}-"
-                f"{torsion.atom3.element_symbol}{torsion.atom3.index_num+1}-"
-                f"{torsion.atom4.element_symbol}{torsion.atom4.index_num+1})={torsion.value:.1f}, "
+                f"t({torsion.atom1.element_symbol}{torsion.atom1.index_num + 1}-"
+                f"{torsion.atom2.element_symbol}{torsion.atom2.index_num + 1}-"
+                f"{torsion.atom3.element_symbol}{torsion.atom3.index_num + 1}-"
+                f"{torsion.atom4.element_symbol}{torsion.atom4.index_num + 1})={torsion.value:.1f}, "
             )
 
         for outofplane in outofplanes:
             if abs(outofplane.value) <= 10.0:
                 out_str += (
-                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index_num+1}-"
-                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index_num+1}<"
-                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index_num+1}/"
-                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num+1})={outofplane.value:.1f}, "
+                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index_num + 1}-"
+                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index_num + 1}<"
+                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index_num + 1}/"
+                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num + 1})={outofplane.value:.1f}, "
                 )
 
         self.long_msg_signal.emit(out_str.rstrip(", "))
@@ -765,7 +769,7 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         """
         Delete all old bonds and generate new set of bonds using default settings
         """
-        self._molecule.current_geom_bond_tolerance = self._config.geom_bond_tolerance
+        self._molecule.current_geom_bond_tolerance = self.config.geom_bond_tolerance
         self.rebuild_bonds(self._molecule.current_geom_bond_tolerance)
 
     def rebuild_bonds_dynamic(self):
@@ -796,6 +800,19 @@ class MolecularStructureViewer(OpenGLWidget, BaseViewer):
         self.update()
 
     def atom_labels_set_type(self, value: AtomLabelType):
+        self.config.atom_label.type = value
         for atom in self._molecule.atom_items:
             atom.set_label_type(value)
+        self.update()
+
+    def set_label_size_for_all_atoms(self, size: int):
+        self.config.atom_label.size = size
+        for atom in self._molecule.atom_items:
+            atom.set_label_size(size)
+        self.update()
+
+    def set_label_offset_for_all_atoms(self, offset: float):
+        self.config.atom_label.offset = offset
+        for atom in self._molecule.atom_items:
+            atom.set_label_offset(offset)
         self.update()

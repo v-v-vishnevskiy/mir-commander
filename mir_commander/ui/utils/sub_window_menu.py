@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from .widget import Menu
 
-
 T = TypeVar("T", bound=QWidget)
 
 
@@ -19,8 +18,17 @@ class SubWindowMenu(Generic[T], Menu):
         self._mdi_area = mdi_area
 
     @property
-    def widget(self) -> T:
+    def active_widget(self) -> T:
         return self._mdi_area.activeSubWindow().widget()
+
+    @property
+    def all_widgets(self) -> list[T]:
+        result = []
+        for window in self._mdi_area.subWindowList():
+            widget = window.widget()
+            if type(widget) is self._type_T:
+                result.append(widget)
+        return result
 
     def update_state(self, window: None | QMdiSubWindow):
         if window and type(window.widget()) is self._type_T:

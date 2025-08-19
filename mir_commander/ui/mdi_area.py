@@ -4,19 +4,23 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
+from .widgets.docks import ViewerSettingsDock
 from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.config import ViewersConfig
 
 
 class MdiArea(QMdiArea):
-    added_viewer_signal = Signal(BaseViewer)
+    opened_viewer_signal = Signal(BaseViewer)
 
-    def __init__(self, parent: QWidget, viewers_config: ViewersConfig):
+    def __init__(self, parent: QWidget, viewer_settings_dock: ViewerSettingsDock, viewers_config: ViewersConfig):
         super().__init__(parent)
+        self._viewer_settings_dock = viewer_settings_dock
         self._viewers_config = viewers_config
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        self.subWindowActivated.connect(self.sub_window_activated_handler)
 
     def open_viewer(self, item: QStandardItem, viewer_cls: type[BaseViewer], kwargs: dict[str, Any]):
         for sub_window in self.subWindowList():
@@ -26,15 +30,24 @@ class MdiArea(QMdiArea):
                 viewer = sub_window.widget()
                 break
         else:
+            self._viewer_settings_dock.add_viewer_settings_widget(viewer_cls)
             sub_window = QMdiSubWindow(self)
             sub_window.setAttribute(Qt.WA_DeleteOnClose)
             viewer = viewer_cls(
-                parent=sub_window, 
-                config=self._viewers_config.get_viewer_config(viewer_cls), 
-                item=item, 
+                parent=sub_window,
+                config=self._viewers_config.get_viewer_config(viewer_cls),
+                item=item,
                 **kwargs,
             )
-            self.added_viewer_signal.emit(viewer)
+            self.opened_viewer_signal.emit(viewer)
             sub_window.setWidget(viewer)
             self.addSubWindow(sub_window)
         viewer.showNormal()
+
+    def sub_window_activated_handler(self, window: None | QMdiSubWindow):
+        viewers = []
+        for sub_window in self.subWindowList():
+            viewers.append(sub_window.widget())
+        self._viewer_settings_dock.update_viewers_list(viewers)
+
+        self._viewer_settings_dock.set_viewer_settings_widget(None if window is None else window.widget())

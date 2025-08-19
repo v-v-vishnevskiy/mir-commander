@@ -20,8 +20,8 @@ class FontAtlas(BaseModel):
 def create_font_atlas(
     name: str,
     file: str,
-    font_size: int = 62,
-    atlas_size: int = 512,
+    font_size: int = 124,
+    atlas_size: int = 1024,
     chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?-+=/\\|#()[]{}*&$%^@~",
 ) -> tuple[np.ndarray, FontAtlas]:
     """
@@ -58,7 +58,7 @@ def create_font_atlas(
             row += 1
 
         # Draw the character
-        draw.text((x, y), char, font=font, fill=(255, 255, 255, 255))
+        draw.text((x - bbox[0], y), char, font=font, fill=(255, 255, 255, 255))
 
         # Save the character information
         atlas_info.chars[char] = CharInfo(
@@ -70,6 +70,6 @@ def create_font_atlas(
             v_max=(atlas_size - ((row - 1) * max_height)) / atlas_size,
         )
 
-        x += char_width
+        x += char_width + 1
 
     return np.array(atlas), atlas_info

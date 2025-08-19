@@ -29,16 +29,16 @@ class AtomLabelType(Enum):
 
 class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
-    size: float = 0.4
+    size: int = Field(default=8, ge=1, le=100)
     font: str = "default"
     type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
+    offset: float = Field(default=2.00, ge=1.01, le=5.0)
     visible: bool = False
 
 
 class Atoms(BaseModel):
     scale_factor: float = 1
     radius: Literal["atomic", "bond"] = "atomic"
-    label: AtomLabelConfig = AtomLabelConfig()
     atomic_radius: list[float] = [
         0.13,
         0.17,  # H
@@ -348,7 +348,7 @@ class MolecularStructureViewerConfig(BaseModel):
             Style(name="Colored Bonds", background=Background(color="#222222")),
             Style(name="Simple", bond=Bond(color="#888888")),
             Style(
-                name="Colored Bonds Only", 
+                name="Colored Bonds Only",
                 atoms=Atoms(radius="bond"),
                 selected_atom=SelectedAtom(scale_factor=3.0),
             ),
@@ -356,6 +356,7 @@ class MolecularStructureViewerConfig(BaseModel):
         min_length=1,
         description="List of available styles for the molecular structure viewer.",
     )
+    atom_label: AtomLabelConfig = AtomLabelConfig()
 
     def get_current_style(self) -> Style:
         for style in self.styles:

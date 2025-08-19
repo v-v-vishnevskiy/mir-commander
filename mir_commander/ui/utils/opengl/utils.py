@@ -17,13 +17,16 @@ def normalize_color(value: Color) -> Color4f:
     r, g, b = value.as_rgb_tuple()
     return r / 255, g / 255, b / 255, 1.0
 
+
 def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
     r, g, b, a = value.as_rgb_tuple(alpha=True)
     return QColor(r, g, b, a * 255 if alpha else 255)
 
+
 def color_to_color4f(value: Color, alpha: bool = True) -> Color4f:
     r, g, b, a = value.as_rgb_tuple(alpha=True)
     return r / 255, g / 255, b / 255, a if alpha else 1.0
+
 
 def id_to_color(obj_id: int) -> Color4f:
     # Supports up to 256³ = 16,777,216 objects
@@ -63,16 +66,11 @@ def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
 
 
 def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
-    # Need this hack with the fake 1x1 image to take into account the format of our real image
-    # so we know the value of the background color as it is represented in the image.
-    bg_image = QImage(1, 1, image.format())
-    bg_image.setPixelColor(0, 0, bg_color)
-    bg_color_value = bg_image.pixel(0, 0)
     xmin = ymin = xmax = ymax = -1
 
     for y in range(image.height()):
         for x in range(image.width()):
-            if image.pixel(x, y) != bg_color_value:
+            if image.pixelColor(x, y) != bg_color:
                 ymin = y
                 break
         if ymin >= 0:
@@ -80,7 +78,7 @@ def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
 
     for y in reversed(range(image.height())):
         for x in range(image.width()):
-            if image.pixel(x, y) != bg_color_value:
+            if image.pixelColor(x, y) != bg_color:
                 ymax = y
                 break
         if ymax >= 0:
@@ -88,7 +86,7 @@ def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
 
     for x in range(image.width()):
         for y in range(image.height()):
-            if image.pixel(x, y) != bg_color_value:
+            if image.pixelColor(x, y) != bg_color:
                 xmin = x
                 break
         if xmin >= 0:
@@ -96,7 +94,7 @@ def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
 
     for x in reversed(range(image.width())):
         for y in range(image.height()):
-            if image.pixel(x, y) != bg_color_value:
+            if image.pixelColor(x, y) != bg_color:
                 xmax = x
                 break
         if xmax >= 0:

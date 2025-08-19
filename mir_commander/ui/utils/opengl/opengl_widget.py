@@ -55,27 +55,25 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.add_shader(
             ShaderProgram(
                 "default",
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED), 
-                FragmentShader(shaders.fragment.BLINN_PHONG)
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.BLINN_PHONG),
             )
         )
         self.resource_manager.add_shader(
             ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.FLAT_COLOR)
+                FragmentShader(shaders.fragment.FLAT_COLOR),
             )
         )
         self.resource_manager.add_shader(
             ShaderProgram(
-                "picking",
-                VertexShader(shaders.vertex.COMPUTE_POSITION),
-                FragmentShader(shaders.fragment.FLAT_COLOR)
+                "picking", VertexShader(shaders.vertex.COMPUTE_POSITION), FragmentShader(shaders.fragment.FLAT_COLOR)
             )
         )
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
-        atlas_size = 512
+        atlas_size = 1024
         data, font_atlas = create_font_atlas(font_atlas_name, font_path, atlas_size=atlas_size)
         texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
         self.resource_manager.add_font_atlas(font_atlas)
@@ -226,7 +224,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def item_under_cursor(self) -> BaseNode:
+    def node_under_cursor(self) -> BaseNode:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

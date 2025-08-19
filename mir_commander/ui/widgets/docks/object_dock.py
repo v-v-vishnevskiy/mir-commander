@@ -12,3 +12,5 @@ class ObjectDock(BaseDock):
 
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Object"), parent)
+
+        self.setMinimumWidth(200)

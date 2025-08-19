@@ -1,4 +1,11 @@
-from OpenGL.GL import GL_FRAGMENT_SHADER, GL_VERTEX_SHADER, GLuint, glDeleteShader, glGetUniformLocation, glUseProgram
+from OpenGL.GL import (
+    GL_FRAGMENT_SHADER,
+    GL_VERTEX_SHADER,
+    GLuint,
+    glDeleteProgram,
+    glGetUniformLocation,
+    glUseProgram,
+)
 from OpenGL.GL.shaders import compileProgram, compileShader
 
 from .base import Resource
@@ -14,6 +21,7 @@ class UniformLocations:
         self.projection_matrix: GLuint | None = None
         self.color: GLuint | None = None
 
+
 class Shader:
     __slots__ = ("_shader_type", "_code", "_shader")
 
@@ -27,11 +35,6 @@ class Shader:
         if self._shader is None:
             self._shader = compileShader(self._code, self._shader_type)
         return self._shader
-
-    def __del__(self):
-        if self._shader is not None:
-            glDeleteShader(self._shader)
-        self._shader = None
 
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id}, type={self._shader_type}, shader={self._shader})"
@@ -75,6 +78,11 @@ class ShaderProgram(Resource):
         self.uniform_locations.color = glGetUniformLocation(program, "color")
 
         glUseProgram(0)
+
+    def __del__(self):
+        if self._program is not None:
+            glDeleteProgram(self._program)
+            self._program = None
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name})"

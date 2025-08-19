@@ -13,8 +13,7 @@ from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
 from .config import MolecularStructureViewerConfig
-from .graphics_items.atom import Atom
-from .graphics_items.bond import Bond
+from .graphics_items import Atom, Bond
 from .style import Style
 
 logger = logging.getLogger("MoleculeStructure.Molecule")
@@ -123,7 +122,6 @@ class Molecule(ContainerNode):
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
             atom.set_selected_atom_config(self.style.current.selected_atom)
-            atom.set_label_config(self.style.current.atoms.label)
             atom.set_radius(radius)
             atom.set_color(color)
 
@@ -160,7 +158,7 @@ class Molecule(ContainerNode):
     def clear(self):
         self.atom_items.clear()
         self.bond_items.clear()
-        self.clear()
+        super().clear()
 
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
         for i in range(len(atomic_coordinates.atomic_num)):
@@ -172,7 +170,11 @@ class Molecule(ContainerNode):
                     continue
                 crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[atomic_coordinates.atomic_num[j]]
                 crad_sum = crad_i + crad_j
-                dist_ij = math.sqrt((atomic_coordinates.x[i] - atomic_coordinates.x[j]) ** 2 + (atomic_coordinates.y[i] - atomic_coordinates.y[j]) ** 2 + (atomic_coordinates.z[i] - atomic_coordinates.z[j]) ** 2)
+                dist_ij = math.sqrt(
+                    (atomic_coordinates.x[i] - atomic_coordinates.x[j]) ** 2
+                    + (atomic_coordinates.y[i] - atomic_coordinates.y[j]) ** 2
+                    + (atomic_coordinates.z[i] - atomic_coordinates.z[j]) ** 2
+                )
                 if dist_ij < (crad_sum + crad_sum * geom_bond_tolerance):
                     self.add_bond(self.atom(i), self.atom(j))
 
@@ -189,7 +191,7 @@ class Molecule(ContainerNode):
             radius,
             color,
             selected_atom_config=self.style.current.selected_atom,
-            label_config=self.style.current.atoms.label,
+            label_config=self._config.atom_label,
         )
         self.atom_items.append(item)
 
@@ -245,8 +247,8 @@ class Molecule(ContainerNode):
             return False
 
         if atom is not None:
-            atom.set_under_cursor(True)
+            atom.highlight(True)
         if old_atom is not None:
-            old_atom.set_under_cursor(False)
+            old_atom.highlight(False)
 
         return True
