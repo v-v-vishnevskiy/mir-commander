@@ -47,7 +47,7 @@ class TextOverlay(QWidget):
         font.setBold(self._config.font_bold)
         font.setFamily(self._config.font_family)
         return font
-    
+
     def _update_size(self):
         temp_label = QLabel()
         temp_label.setFont(self._get_font())
@@ -62,7 +62,7 @@ class TextOverlay(QWidget):
         style = f"""
             QLabel {{
                 color: rgb({self._color.red()}, {self._color.green()}, {self._color.blue()});
-                background-color: rgba({self._background_color.red()}, {self._background_color.green()}, 
+                background-color: rgba({self._background_color.red()}, {self._background_color.green()},
                                         {self._background_color.blue()}, {self._background_color.alpha()});
                 border-radius: 5px;
                 padding: 2px;

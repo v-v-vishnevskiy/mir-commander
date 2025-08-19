@@ -15,7 +15,7 @@ out vec4 fragment_color;
 
 void main() {
     gl_Position = projection_matrix * view_matrix * scene_matrix * model_matrix * vec4(position, 1.0);
-    
+
     // Transform normal to world space
     normal = mat3(transpose(inverse(scene_matrix * model_matrix))) * in_normal;
     fragment_color = color;

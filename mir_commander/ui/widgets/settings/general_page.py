@@ -20,13 +20,13 @@ class General(BasePage):
         layout.addStretch(1)
 
         return layout
-    
+
     def backup_data(self):
         self._backup["language"] = self.app_config.language
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
-    
+
     def restore_defaults(self):
         self.app_config.language = AppConfig().language
         self.setup_data()

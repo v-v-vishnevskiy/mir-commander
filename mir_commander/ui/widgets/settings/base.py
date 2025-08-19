@@ -30,7 +30,7 @@ class BasePage(QWidget):
 
     def setup_ui(self):
         raise NotImplementedError()
-    
+
     def backup_data(self):
         pass
 

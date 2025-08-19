@@ -29,8 +29,8 @@ class TextOverlayConfig(BaseModel):
     color: Color = Color("#C8C8C8")
     background_color: Color = Color("#00000000")
     text_alignment: list[Literal["left", "right", "top", "bottom", "center"]] = Field(
-        default_factory=lambda: ["left", "top"], 
-        min_length=1, 
+        default_factory=lambda: ["left", "top"],
+        min_length=1,
         max_length=2,
-        description="Alignment of the text overlay. Can be a combination of 'left', 'right', 'top', 'bottom', 'center'"
+        description="Alignment of the text overlay. Can be a combination of 'left', 'right', 'top', 'bottom', 'center'",
     )

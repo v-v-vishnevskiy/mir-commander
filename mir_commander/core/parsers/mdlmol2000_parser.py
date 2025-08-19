@@ -10,6 +10,7 @@ from .consts import babushka_priehala
 
 logger = logging.getLogger("Parsers.MDLMol2000Parser")
 
+
 class MDLMolV2000ParserState(Enum):
     INIT = 0
     CONTROL = 1
@@ -104,9 +105,9 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                     at_coord_item = Item(
                         name=title,
                         data=AtomicCoordinates(
-                            atomic_num=atom_atomic_num, 
-                            x=atom_coord_x, 
-                            y=atom_coord_y, 
+                            atomic_num=atom_atomic_num,
+                            x=atom_coord_x,
+                            y=atom_coord_y,
                             z=atom_coord_z,
                         ),
                     )

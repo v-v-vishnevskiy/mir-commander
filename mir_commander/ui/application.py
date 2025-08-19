@@ -139,9 +139,9 @@ class Application(QApplication):
 
         messages.insert(0, f"{path}")
         project_window = ProjectWindow(
-            app_config=self.config, 
-            app_apply_callbacks=self.apply_callbacks, 
-            project=project, 
+            app_config=self.config,
+            app_apply_callbacks=self.apply_callbacks,
+            project=project,
             init_msg=messages,
         )
         project_window.close_project_signal.connect(self.close_project)

@@ -58,9 +58,9 @@ def load_cfour(path: Path, logs: list) -> Item:
                 at_coord_item = Item(
                     name=f"Set#{cart_set_number}",
                     data=AtomicCoordinates(
-                        atomic_num=atomic_num, 
-                        x=atom_coord_x, 
-                        y=atom_coord_y, 
+                        atomic_num=atomic_num,
+                        x=atom_coord_x,
+                        y=atom_coord_y,
                         z=atom_coord_z,
                     ),
                 )

@@ -18,7 +18,14 @@ class SettingsDialog(Dialog):
     which may be translated on the fly.
     """
 
-    def __init__(self, parent: QWidget, app_apply_callbacks: ApplyCallbacks, mw_apply_callbacks: ApplyCallbacks, app_config: AppConfig, project_config: ProjectConfig):
+    def __init__(
+        self,
+        parent: QWidget,
+        app_apply_callbacks: ApplyCallbacks,
+        mw_apply_callbacks: ApplyCallbacks,
+        app_config: AppConfig,
+        project_config: ProjectConfig,
+    ):
         super().__init__(parent)
 
         self.app_apply_callbacks = app_apply_callbacks

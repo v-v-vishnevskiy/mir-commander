@@ -1,5 +1,5 @@
 class Resource:
-    __slots__ = ("name")
+    __slots__ = "name"
 
     def __init__(self, name: str):
         self.name = name

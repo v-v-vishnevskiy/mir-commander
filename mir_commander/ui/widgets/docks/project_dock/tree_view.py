@@ -46,15 +46,15 @@ class TreeView(QTreeView):
         view_structures_menu = Menu(Menu.tr("View Structures"), result)
         view_structures_menu.addAction(
             Action(
-                text=Action.tr("VS_Child"), 
-                parent=view_structures_menu, 
+                text=Action.tr("VS_Child"),
+                parent=view_structures_menu,
                 triggered=lambda: self.view_item.emit(item, MolecularStructureViewer, {"all": False}),
             )
         )
         view_structures_menu.addAction(
             Action(
-                text=Action.tr("VS_All"), 
-                parent=view_structures_menu, 
+                text=Action.tr("VS_All"),
+                parent=view_structures_menu,
                 triggered=lambda: self.view_item.emit(item, MolecularStructureViewer, {"all": True}),
             )
         )
@@ -69,7 +69,7 @@ class TreeView(QTreeView):
             self.view_item.emit(item, item.default_viewer, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
-    
+
     def add_item_to_root(self, item: Item):
         root_item = self.model().invisibleRootItem()
         if type(item.data) is models.AtomicCoordinates:

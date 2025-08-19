@@ -51,8 +51,6 @@ class BaseNode:
         self._children.clear()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(" \
-            f"parent={self.parent}, " \
-            f"root_node={self._root_node}, " \
-            f"children={self._children}" \
-            ")"
+        return (
+            f"{self.__class__.__name__}(parent={self.parent}, root_node={self._root_node}, children={self._children})"
+        )
