@@ -3,7 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "cclib>=1.8.1",
     "numpydantic>=1.6.9",
@@ -24,12 +24,12 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15.0",
-    "pre-commit>=4.2.0",
-    "pre-commit-hooks>=5.0.0",
-    "pytest>=8.3.5",
-    "pytest-cov>=6.1.1",
-    "ruff>=0.11.10",
+    "mypy>=1.17.1",
+    "pre-commit>=4.3.0",
+    "pre-commit-hooks>=6.0.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.9",
 ]
 
 [tool.mypy]
