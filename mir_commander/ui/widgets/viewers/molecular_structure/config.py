@@ -32,7 +32,7 @@ class AtomLabelConfig(BaseModel):
     size: int = Field(default=8, ge=1, le=100)
     font: str = "default"
     type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
-    offset: float = Field(default=1.01, ge=1.01, le=5.0)
+    offset: float = Field(default=2.00, ge=1.01, le=5.0)
     visible: bool = False
 
 
