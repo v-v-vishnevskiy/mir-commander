@@ -1,28 +1,22 @@
-from typing import TypeVar
+from typing import Generic, TypeVar
 
-from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
+from .viewer import Viewer
 
-class BaseViewer:
-    short_msg_signal = Signal(str)
-    long_msg_signal = Signal(str)
-    settings: type[QWidget] | None = None
+T = TypeVar("T", bound=Viewer)
 
 
-T = TypeVar("T")
-
-
-class BaseViewerSettings[T: BaseViewer](QWidget):
+class ViewerDockSettings(Generic[T], QWidget):
     def __init__(self):
         super().__init__()
 
         self._active_viewer: None | T = None
         self._all_viewers: list[T] = []
 
-    def viewers(self, only_active: bool) -> list[T]:
+    def get_viewers(self, only_active: bool) -> list[T]:
         if only_active:
-            return [self._active_viewer]
+            return [self._active_viewer] if self._active_viewer is not None else []
         else:
             return self._all_viewers
 

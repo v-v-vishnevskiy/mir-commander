@@ -1,7 +1,7 @@
 from time import monotonic
 from typing import Any, Self
 
-from PySide6.QtCore import QCoreApplication, QEvent
+from PySide6.QtCore import QCoreApplication, QEvent, QObject
 from PySide6.QtGui import QAction, QStandardItem
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -22,8 +22,8 @@ from PySide6.QtWidgets import (
 
 
 class TrString(str):
-    format_args = tuple()
-    format_kwargs = dict()
+    format_args: tuple[Any, ...] = tuple()
+    format_kwargs: dict[str, Any] = dict()
 
     def format(self, *args: Any, **kwargs: Any) -> Self:
         self.format_args = args
@@ -39,10 +39,10 @@ class Translator:
     """
 
     @staticmethod
-    def tr(value: str) -> TrString:
+    def tr(value: str, *args: Any, **kwargs: Any) -> TrString:
         return TrString(value)
 
-    def _tr(self, text: str) -> str:
+    def _tr(self, text: str | TrString) -> str:
         if not text or type(text) is str:
             return text
         return QCoreApplication.translate(self.__class__.__name__, text).format(*text.format_args, **text.format_kwargs)
@@ -50,7 +50,7 @@ class Translator:
 
 class TR:
     @staticmethod
-    def tr(value: str) -> TrString:
+    def tr(value: str) -> str:
         return QCoreApplication.translate("TR", value)
 
 
@@ -65,7 +65,7 @@ class Widget(Translator):
     def changeEvent(self, event: QEvent):
         """Handling only LanguageChange events and calling retranslate_ui"""
 
-        if event.type() == QEvent.LanguageChange:
+        if event.type() == QEvent.Type.LanguageChange:
             self.retranslate_ui()
         super().changeEvent(event)  # type: ignore
 
@@ -163,7 +163,7 @@ class ComboBox(Widget, QComboBox):
         super().__init__(parent)
         self.__items: list[str] = []
 
-    def addItem(self, text: str, userData: Any = None):
+    def addItem(self, text: str, /, userData: Any = None):
         self.__items.append(text)
         super().addItem(self._tr(text), userData)
 
@@ -215,7 +215,7 @@ class TabWidget(Widget, QTabWidget):
 
 
 class Action(Translator, QAction):
-    def __init__(self, text: str, parent: QWidget | None = None, *args, **kwargs):
+    def __init__(self, text: str, parent: QObject | None = None, *args, **kwargs):
         super().__init__(self._tr(text), parent, *args, **kwargs)
         self.__text = text
 

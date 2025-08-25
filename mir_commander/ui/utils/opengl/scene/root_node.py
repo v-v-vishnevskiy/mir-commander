@@ -1,4 +1,5 @@
 from .base_node import BaseNode
+from .base_scene_node import BaseSceneNode
 from .rendering_container import RenderingContainer
 
 
@@ -34,7 +35,7 @@ class RootNode(BaseNode):
         self._text_container.clear_dirty()
         self._picking_container.clear_dirty()
 
-    def notify_add_node(self, node: BaseNode):
+    def notify_add_node(self, node: BaseSceneNode):
         if node.node_type is None or node.visible is False:
             return
 
@@ -45,7 +46,7 @@ class RootNode(BaseNode):
             if node.picking_visible:
                 self._picking_container.add_node(node)
 
-    def notify_remove_node(self, node: BaseNode):
+    def notify_remove_node(self, node: BaseSceneNode):
         if node.node_type is None:
             return
 
@@ -56,7 +57,7 @@ class RootNode(BaseNode):
             if node.picking_visible:
                 self._picking_container.remove_node(node)
 
-    def notify_set_dirty(self, node: BaseNode):
+    def notify_set_dirty(self, node: BaseSceneNode):
         if node.node_type is None:
             return
 
@@ -67,7 +68,7 @@ class RootNode(BaseNode):
             if node.picking_visible:
                 self._picking_container.set_dirty(node)
 
-    def find_node_by_id(self, node_id: int) -> BaseNode:
+    def find_node_by_id(self, node_id: int) -> BaseSceneNode:
         return self._picking_container.find_node_by_id(node_id)
 
     def __repr__(self):

@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.widgets.viewers.base import BaseViewer
+from mir_commander.ui.utils.viewer.viewer import Viewer
 
 from .base import BaseDock
 
@@ -18,14 +18,14 @@ class ViewerSettingsDock(BaseDock):
         super().__init__(self.tr("Viewer Settings"), parent)
         self.setMinimumWidth(200)
 
-        self._viewer_settings_widgets: dict[type[BaseViewer], BaseViewer] = {}
-        self._all_viewers: dict[type[BaseViewer], list[BaseViewer]] = defaultdict(list)
+        self._viewer_settings_widgets: dict[type[Viewer], QWidget] = {}
+        self._all_viewers: dict[type[Viewer], list[Viewer]] = defaultdict(list)
 
-    def add_viewer_settings_widget(self, viewer: type[BaseViewer]):
+    def add_viewer_settings_widget(self, viewer: type[Viewer]):
         if viewer not in self._viewer_settings_widgets:
             self._viewer_settings_widgets[viewer] = viewer.settings() if viewer.settings is not None else None
 
-    def set_viewer_settings_widget(self, viewer: None | BaseViewer):
+    def set_viewer_settings_widget(self, viewer: None | Viewer):
         viewer_cls = viewer.__class__
         if viewer_cls in self._viewer_settings_widgets:
             settings = self._viewer_settings_widgets[viewer_cls]
@@ -35,7 +35,7 @@ class ViewerSettingsDock(BaseDock):
         else:
             self.setWidget(None)
 
-    def update_viewers_list(self, viewers: list[BaseViewer]):
+    def update_viewers_list(self, viewers: list[Viewer]):
         self._all_viewers.clear()
         for viewer in viewers:
             if viewer not in self._viewer_settings_widgets:

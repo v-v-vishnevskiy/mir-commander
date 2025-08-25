@@ -3,6 +3,7 @@ import logging
 from typing import Hashable
 
 import numpy as np
+import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
     GL_BLEND,
@@ -40,6 +41,7 @@ from OpenGL.GL import (
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
+from .errors import Error
 from .enums import PaintMode
 from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
@@ -313,7 +315,7 @@ class Renderer:
     def _sort_by_depth(self, nodes: list[BaseNode]) -> list[BaseNode]:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
-    def render_to_image(
+    def _render_to_image(
         self,
         width: int,
         height: int,
@@ -351,6 +353,19 @@ class Renderer:
             image = crop_image_to_content(image, bg_color)
 
         return image
+
+    def render_to_image(
+        self,
+        width: int,
+        height: int,
+        transparent_bg: bool = False,
+        crop_to_content: bool = False,
+        make_current_callback=None,
+    ) -> QImage:
+        try:
+            return self._render_to_image(width, height, transparent_bg, crop_to_content, make_current_callback)
+        except OpenGL.error.GLError as e:
+            raise Error(f"Error rendering to image: {e}")
 
     def picking_image(self, width: int, height: int) -> QImage:
         if self._has_new_image:

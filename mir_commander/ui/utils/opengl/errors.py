@@ -1,2 +1,6 @@
-class NodeNotFoundError(LookupError):
+class Error(Exception):
+    pass
+
+
+class NodeNotFoundError(Error):
     pass

@@ -11,7 +11,7 @@ from mir_commander.ui.utils.widget import CheckBox, Dialog, GroupBox, Label, Pus
 class SaveImageDialog(Dialog):
     file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
 
-    def __init__(self, img_width: int, img_height: int, filename: str, parent: QWidget):
+    def __init__(self, parent: QWidget, img_width: int, img_height: int, filename: str):
         super().__init__(parent)
 
         self.img_width = 0

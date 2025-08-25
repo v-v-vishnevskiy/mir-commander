@@ -21,7 +21,7 @@ class Scene(Resource):
         return self._root_node
 
     @property
-    def containers(self) -> tuple[dict[str, RenderingContainer], RenderingContainer]:
+    def containers(self) -> tuple[dict[str, RenderingContainer], RenderingContainer, RenderingContainer]:
         return self._root_node.containers
 
     def find_node_by_id(self, node_id: int) -> BaseNode:

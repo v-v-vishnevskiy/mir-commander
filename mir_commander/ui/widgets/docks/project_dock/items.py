@@ -2,7 +2,7 @@ from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import models
-from mir_commander.ui.widgets.viewers.molecular_structure import MolecularStructureViewer
+from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructureViewer
 
 
 class Item(QStandardItem):
@@ -40,6 +40,8 @@ class Item(QStandardItem):
                 self.appendRow(Molecule(item))
             elif type(item.data) is models.Unex:
                 self.appendRow(Unex(item))
+            elif type(item.data) is models.VolCube:
+                self.appendRow(VolCube(item))
             else:
                 self.appendRow(Container(item))
 

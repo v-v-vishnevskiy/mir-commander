@@ -5,37 +5,32 @@ import numpy as np
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.models import cylinder, sphere
-from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
+from mir_commander.ui.utils.opengl.resource_manager import VertexArrayObject
 from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
 from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
-from .config import MolecularStructureViewerConfig
-from .graphics_nodes import Atom, Bond
-from .style import Style
+from ..style import Style
+from .atom.atom import Atom
+from .bond.bond import Bond
 
-logger = logging.getLogger("MoleculeStructure.Molecule")
+logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 
 
 class Molecule(ContainerNode):
-    def __init__(
-        self,
-        parent: BaseNode,
-        config: MolecularStructureViewerConfig,
-        resource_manager: ResourceManager,
-    ):
+    def __init__(self, parent: BaseNode, app_config: AppConfig):
         super().__init__(parent, visible=True)
 
-        self._resource_manager = resource_manager
+        self._config = app_config.project_window.widgets.viewers.molecular_structure
 
-        self._config = config
-        self.style = Style(config)
+        self.style = Style(self._config)
         self.center = QVector3D(0, 0, 0)
         self.radius = 0
 
-        self.current_geom_bond_tolerance = config.geom_bond_tolerance
+        self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
 
@@ -44,16 +39,7 @@ class Molecule(ContainerNode):
         self._sphere_resource_name = "sphere"
         self._cylinder_resource_name = "cylinder"
 
-        self.init_resources()
-
-    def init_resources(self):
-        atom_vao = self._get_atom_vao()
-        self._resource_manager.add_vertex_array_object(atom_vao)
-
-        bond_vao = self._get_bond_vao()
-        self._resource_manager.add_vertex_array_object(bond_vao)
-
-    def _get_atom_vao(self) -> VertexArrayObject:
+    def get_atom_vao(self) -> VertexArrayObject:
         logger.debug("Initializing atom mesh data")
 
         mesh_quality = self._config.quality.mesh
@@ -68,7 +54,7 @@ class Molecule(ContainerNode):
 
         return VertexArrayObject(self._sphere_resource_name, vertices, normals)
 
-    def _get_bond_vao(self) -> VertexArrayObject:
+    def get_bond_vao(self) -> VertexArrayObject:
         logger.debug("Initializing bond mesh data")
 
         mesh_quality = self._config.quality.mesh
@@ -87,6 +73,8 @@ class Molecule(ContainerNode):
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
+
+        self.clear()
 
         center = QVector3D(
             np.sum(atomic_coordinates.x) / len(atomic_coordinates.x),

@@ -58,7 +58,7 @@ class ResourceManager:
         try:
             return self._shaders[name]
         except KeyError:
-            raise ValueError(f"Shader `{name}` not found")
+            raise ValueError(f"ShaderProgram `{name}` not found")
 
     def add_mesh(self, mesh: Mesh):
         self._meshes[mesh.name] = mesh
@@ -76,7 +76,7 @@ class ResourceManager:
         try:
             return self._vertex_array_objects[name]
         except KeyError:
-            raise ValueError(f"Vertex array object `{name}` not found")
+            raise ValueError(f"VertexArrayObject `{name}` not found")
 
     def add_texture(self, texture: Texture2D):
         self._textures[texture.name] = texture
@@ -85,7 +85,7 @@ class ResourceManager:
         try:
             return self._textures[name]
         except KeyError:
-            raise ValueError(f"Texture `{name}` not found")
+            raise ValueError(f"Texture2D `{name}` not found")
 
     def add_font_atlas(self, font_atlas: FontAtlas):
         self._font_atlases[font_atlas.name] = font_atlas
@@ -94,7 +94,7 @@ class ResourceManager:
         try:
             return self._font_atlases[name]
         except KeyError:
-            raise ValueError(f"Font atlas `{name}` not found")
+            raise ValueError(f"FontAtlas `{name}` not found")
 
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))

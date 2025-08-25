@@ -2,12 +2,13 @@ from typing import Any, Generic, TypeVar, get_args
 
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
-from .widget import Menu
+from ..widget import Menu
+from .viewer import Viewer
 
-T = TypeVar("T", bound=QWidget)
+T = TypeVar("T", bound=Viewer)
 
 
-class SubWindowMenu(Generic[T], Menu):
+class ViewerMenu(Generic[T], Menu):
     _type_T: Any
 
     def __init_subclass__(cls) -> None:
@@ -18,20 +19,11 @@ class SubWindowMenu(Generic[T], Menu):
         self._mdi_area = mdi_area
 
     @property
-    def active_widget(self) -> T:
-        return self._mdi_area.activeSubWindow().widget()
-
-    @property
-    def all_widgets(self) -> list[T]:
-        result = []
-        for window in self._mdi_area.subWindowList():
-            widget = window.widget()
-            if type(widget) is self._type_T:
-                result.append(widget)
-        return result
+    def active_viewer(self) -> T:
+        return self._mdi_area.activeSubWindow()
 
     def update_state(self, window: None | QMdiSubWindow):
-        if window and type(window.widget()) is self._type_T:
+        if window and type(window) is self._type_T:
             self.set_enabled_actions(True)
         else:
             self.set_enabled_actions(False)

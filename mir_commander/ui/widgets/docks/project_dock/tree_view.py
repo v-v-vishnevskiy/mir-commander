@@ -1,14 +1,15 @@
 import logging
+from typing import cast
 
-from PySide6.QtCore import Signal, QModelIndex, QPoint, QSize, Qt
+from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QTreeView, QWidget
 
 from mir_commander.core import models
 from mir_commander.core.parsers.consts import babushka_priehala
-from mir_commander.ui.widgets.viewers.base import BaseViewer
-from mir_commander.ui.widgets.viewers.molecular_structure import MolecularStructureViewer
+from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructureViewer
 
 from .config import TreeConfig
 from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Item, Molecule, Unex, VolCube
@@ -17,8 +18,7 @@ logger = logging.getLogger("ProjectDock.TreeView")
 
 
 class TreeView(QTreeView):
-    # TODO: In fact BaseViewer should be as type[BaseViewer]. There is a bug PySide6
-    view_item = Signal(QStandardItem, BaseViewer, dict)
+    view_item = Signal(QStandardItem, Viewer.__class__, dict)  # type: ignore[arg-type]
 
     def __init__(self, parent: QWidget, data: models.Data, config: TreeConfig):
         super().__init__(parent)
@@ -32,10 +32,11 @@ class TreeView(QTreeView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
         self.doubleClicked.connect(self._item_double_clicked)
-        self.setModel(QStandardItemModel(parent=self))
+        self._model = QStandardItemModel(parent=self)
+        self.setModel(self._model)
 
     def _show_context_menu(self, pos: QPoint):
-        item: Item = self.model().itemFromIndex(self.indexAt(pos))
+        item: Item = cast(Item, self._model.itemFromIndex(self.indexAt(pos)))
         if item and item.context_menu:
             menu = self._build_context_menu(item)
             menu.exec(self.mapToGlobal(pos))
@@ -64,27 +65,26 @@ class TreeView(QTreeView):
         return result
 
     def _item_double_clicked(self, index: QModelIndex):
-        item = self.model().itemFromIndex(index)
+        item: Item = cast(Item, self._model.itemFromIndex(index))
         if item.default_viewer:
             self.view_item.emit(item, item.default_viewer, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
-    def add_item_to_root(self, item: Item):
-        root_item = self.model().invisibleRootItem()
+    def add_item_to_root(self, item: models.Item):
+        root_item = self._model.invisibleRootItem()
         if type(item.data) is models.AtomicCoordinates:
-            tree_item = AtomicCoordinates(item)
+            root_item.appendRow(AtomicCoordinates(item))
         elif type(item.data) is models.AtomicCoordinatesGroup:
-            tree_item = AtomicCoordinatesGroup(item)
+            root_item.appendRow(AtomicCoordinatesGroup(item))
         elif type(item.data) is models.Molecule:
-            tree_item = Molecule(item)
+            root_item.appendRow(Molecule(item))
         elif type(item.data) is models.Unex:
-            tree_item = Unex(item)
+            root_item.appendRow(Unex(item))
         elif type(item.data) is models.VolCube:
-            tree_item = VolCube(item)
+            root_item.appendRow(VolCube(item))
         else:
-            tree_item = Container(item)
-        root_item.appendRow(tree_item)
+            root_item.appendRow(Container(item))
 
     def load_data(self):
         logger.debug("Loading data ...")

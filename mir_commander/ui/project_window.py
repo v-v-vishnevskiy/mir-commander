@@ -15,13 +15,16 @@ from mir_commander.core.errors import LoadFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
-from .utils.sub_window_menu import SubWindowMenu
-from .utils.sub_window_toolbar import SubWindowToolBar
+from .utils.viewer.viewer import Viewer
+from .utils.viewer.viewer_menu import ViewerMenu
+from .utils.viewer.viewer_toolbar import ViewerToolBar
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
-from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock, ViewerSettingsDock
+from .widgets.docks.console_dock import ConsoleDock
+from .widgets.docks.object_dock import ObjectDock
+from .widgets.docks.project_dock.project_dock import ProjectDock
+from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
 from .widgets.settings.settings_dialog import SettingsDialog
-from .widgets.viewers.base import BaseViewer
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 
@@ -52,8 +55,8 @@ class ProjectWindow(QMainWindow):
         self.project = project
         self.app_config = app_config
         self.config = app_config.project_window
-        self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
-        self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
+        self.sub_window_menus: list[ViewerMenu] = []  # Menus of SubWindows
+        self.sub_window_toolbars: list[ViewerToolBar] = []  # Toolbars of SubWindows
         self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
@@ -106,12 +109,12 @@ class ProjectWindow(QMainWindow):
             self.__fix_sub_window = None
 
     def setup_mdi_area(self):
-        def opened_viewer_slot(viewer: BaseViewer):
+        def opened_viewer_slot(viewer: Viewer):
             viewer.short_msg_signal.connect(self.status_bar.showMessage)
             viewer.long_msg_signal.connect(self.docks.console.append)
 
         self.mdi_area = MdiArea(
-            parent=self, viewer_settings_dock=self.docks.viewer_settings, viewers_config=self.config.widgets.viewers
+            parent=self, viewer_settings_dock=self.docks.viewer_settings, app_config=self.app_config
         )
         self.mdi_area.subWindowActivated.connect(self.update_menus)
         self.mdi_area.subWindowActivated.connect(self.update_toolbars)
@@ -147,11 +150,7 @@ class ProjectWindow(QMainWindow):
         # Here we collect classes of widgets, which create their own toolbars for the main window.
         # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
         self.sub_window_toolbars.append(
-            MolStructToolBar(
-                parent=self,
-                mdi_area=self.mdi_area,
-                config=self.config.widgets.toolbars,
-            )
+            MolStructToolBar(parent=self, mdi_area=self.mdi_area, app_config=self.app_config)
         )
 
         for toolbar in self.sub_window_toolbars:
@@ -163,13 +162,7 @@ class ProjectWindow(QMainWindow):
     def setup_menubar(self):
         # Collect all additional menus from viewers.
         # Here is the same logic as for toolbars of particular widgets.
-        self.sub_window_menus.append(
-            MolStructMenu(
-                parent=self,
-                mdi_area=self.mdi_area,
-                config=self.config.widgets.viewers.molecular_structure,
-            )
-        )
+        self.sub_window_menus.append(MolStructMenu(parent=self, mdi_area=self.mdi_area, app_config=self.app_config))
 
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())
@@ -219,7 +212,7 @@ class ProjectWindow(QMainWindow):
 
     def _settings_action(self) -> Action:
         action = Action(Action.tr("Settings..."), self)
-        action.setMenuRole(Action.PreferencesRole)
+        action.setMenuRole(Action.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
             parent=self,
@@ -233,14 +226,14 @@ class ProjectWindow(QMainWindow):
 
     def _quit_action(self) -> Action:
         action = Action(Action.tr("Quit"), self)
-        action.setMenuRole(Action.QuitRole)
-        action.setShortcut(QKeySequence.Quit)
+        action.setMenuRole(Action.MenuRole.QuitRole)
+        action.setShortcut(QKeySequence.StandardKey.Quit)
         action.triggered.connect(self.quit_application_signal.emit)
         return action
 
     def _about_action(self) -> Action:
         action = Action(Action.tr("About"), self)
-        action.setMenuRole(Action.AboutRole)
+        action.setMenuRole(Action.MenuRole.AboutRole)
         action.triggered.connect(About(self).show)
         return action
 
