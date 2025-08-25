@@ -13,7 +13,7 @@ from .consts import babushka_priehala
 logger = logging.getLogger("Parsers.CCLibParser")
 
 
-def load_cclib(path: Path, logs: list) -> Molecule:
+def load_cclib(path: Path, logs: list) -> Item:
     """
     Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
@@ -33,7 +33,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
     logs.append(f"cclib {cclib.__version__}")
 
     kwargs = {"future": True}
-    data = ccread(path, **kwargs)
+    data = ccread(str(path), **kwargs)
     if data is None:
         raise LoadFileError(f"cclib cannot determine the format of file: {path}")
 

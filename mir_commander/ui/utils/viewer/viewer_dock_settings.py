@@ -1,10 +1,11 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, TYPE_CHECKING
 
 from PySide6.QtWidgets import QWidget
 
-from .viewer import Viewer
+if TYPE_CHECKING:
+    from .viewer import Viewer
 
-T = TypeVar("T", bound=Viewer)
+T = TypeVar("T", bound="Viewer")
 
 
 class ViewerDockSettings(Generic[T], QWidget):
@@ -29,3 +30,7 @@ class ViewerDockSettings(Generic[T], QWidget):
     def __del__(self):
         self._active_viewer = None
         self._all_viewers.clear()
+
+
+class EmptyViewerDockSettings(ViewerDockSettings):
+    pass

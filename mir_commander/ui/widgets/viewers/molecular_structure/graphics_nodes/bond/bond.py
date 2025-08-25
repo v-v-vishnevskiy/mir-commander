@@ -84,4 +84,4 @@ class Bond(ContainerNode):
                 bond.set_color(color)
 
     def __repr__(self) -> str:
-        return f"Bond(id={self._id}, atom_1={self._atom_1}, atom_2={self._atom_2})"
+        return f"Bond(atom_1={self._atom_1}, atom_2={self._atom_2})"

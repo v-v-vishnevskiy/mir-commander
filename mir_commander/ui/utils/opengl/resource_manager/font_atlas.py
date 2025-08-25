@@ -49,7 +49,7 @@ def create_font_atlas(
     for char in chars:
         # Get the size of the character
         bbox = draw.textbbox((0, 0), char, font=font)
-        char_width = bbox[2] - bbox[0]
+        char_width = int(bbox[2] - bbox[0])
 
         # Check if the character fits in the current row
         if x + char_width > atlas_size:

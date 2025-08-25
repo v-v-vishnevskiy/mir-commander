@@ -99,9 +99,9 @@ def load_gaucube(path: Path, logs: list) -> Item:
             if int(d[0]) != 1:
                 raise LoadFileError(f"Unsupported number of identifiers per voxel {int(data[4])} in cube file.")
 
-        data = f.read()
+        rest_data = f.read()
 
-    vcub.cube_data = np.array([float(x) for x in data.split()]).reshape(
+    vcub.cube_data = np.array([float(x) for x in rest_data.split()]).reshape(
         [vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]]
     )
 

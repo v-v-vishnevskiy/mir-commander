@@ -16,7 +16,7 @@ class SaveImageDialog(Dialog):
 
         self.img_width = 0
         self.img_height = 0
-        self.img_file_path = ""
+        self.img_file_path = Path()
         self.transparent_bg = True
         self.crop_to_content = True
         self.img_file_name_init = self.sanitize_file_name(filename)
@@ -80,7 +80,7 @@ class SaveImageDialog(Dialog):
         file_path_layout.addWidget(self.file_path_button)
         self.main_layout.addLayout(file_path_layout)
 
-        QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
+        QBtn = QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
 
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.accept_handler)

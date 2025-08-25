@@ -1,6 +1,7 @@
 import math
 from collections import defaultdict
 from itertools import combinations
+from typing import cast
 
 from PySide6.QtCore import QPoint, Slot
 from PySide6.QtGui import QVector3D
@@ -14,6 +15,7 @@ from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
 from mir_commander.ui.utils.opengl.resource_manager import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
+from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
@@ -111,14 +113,15 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         self._handle_node_under_cursor(x, y)
 
     def _handle_node_under_cursor(self, x: int, y: int):
+        if self._node_under_cursor is not None:
+            self._node_under_cursor.set_under_cursor(False)
+
         try:
-            if self._node_under_cursor is not None:
-                self._node_under_cursor.set_under_cursor(False)
+            node_under_cursor = cast(BaseGraphicsNode, self.node_under_cursor())
+            node_under_cursor.set_under_cursor(True)
+            self._node_under_cursor = node_under_cursor
 
-            self._node_under_cursor = self.node_under_cursor()
-            self._node_under_cursor.set_under_cursor(True)
-
-            if text := self._node_under_cursor.get_text():
+            if text := node_under_cursor.get_text():
                 self._under_cursor_overlay.set_text(text)
                 size = self._under_cursor_overlay.size()
                 self._under_cursor_overlay.set_position(QPoint(x, y - size.height()))
@@ -129,6 +132,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         except NodeNotFoundError:
             if self._node_under_cursor is not None:
                 self._node_under_cursor.set_under_cursor(False)
+                self._node_under_cursor = None
             self._under_cursor_overlay.set_text("")
             self._under_cursor_overlay.hide()
         self.update()
@@ -150,9 +154,9 @@ class AtomicCoordinatesViewer(OpenGLWidget):
                     self.tr("The file already exists:")
                     + f"\n{dlg.img_file_path}\n"
                     + self.tr("Do you want to overwrite it?"),
-                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 )
-                if ret != QMessageBox.Yes:
+                if ret != QMessageBox.StandardButton.Yes:
                     save_flag = False
 
             if save_flag:
@@ -161,17 +165,18 @@ class AtomicCoordinatesViewer(OpenGLWidget):
                     image = self.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content)
                 except Error as e:
                     message_box = QMessageBox(
-                        QMessageBox.Critical,
+                        QMessageBox.Icon.Critical,
                         self.tr("Error image rendering"),
                         self.tr("Cannot create image."),
-                        QMessageBox.Close,
+                        QMessageBox.StandardButton.Close,
                     )
                     message_box.setDetailedText(str(e))
                     message_box.exec()
 
                 if image is not None:
                     if image.save(str(dlg.img_file_path)):
-                        self.parent().short_msg_signal.emit(TR.tr("Image saved"))
+                        parent = cast(Viewer, self.parent())
+                        parent.short_msg_signal.emit(TR.tr("Image saved"))
                     else:
                         QMessageBox.critical(
                             self,

@@ -1,5 +1,5 @@
 from time import monotonic
-from typing import Any, Self
+from typing import Any, Self, cast
 
 from PySide6.QtCore import QCoreApplication, QEvent, QObject
 from PySide6.QtGui import QAction, QStandardItem
@@ -238,7 +238,7 @@ class Menu(Widget, QMenu):
 
     def set_enabled_actions(self, flag: bool):
         for action in self.actions():
-            menu = action.menu()
+            menu = cast(Menu, action.menu())
             if menu:
                 menu.set_enabled_actions(flag)
             action.setEnabled(flag)
@@ -251,7 +251,7 @@ class Menu(Widget, QMenu):
 
 
 class StatusBar(Widget, QStatusBar):
-    def showMessage(self, message: str, timeout: int = 10000):
+    def showMessage(self, message: str, timeout: int | None = 10000):
         self.__message = message
         self.__timeout = timeout
         self.__monotonic = monotonic()

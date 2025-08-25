@@ -1,4 +1,4 @@
-from typing import Hashable, Self
+from typing import Hashable
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
@@ -9,7 +9,7 @@ from .transform import Transform
 class BaseSceneNode(BaseNode):
     __slots__ = ("_visible", "_transform_dirty", "_transform", "_transform_matrix", "_modify_children")
 
-    def __init__(self, parent: Self, visible: bool = True):
+    def __init__(self, parent: BaseNode, visible: bool = True):
         super().__init__(parent)
 
         self._visible = visible
