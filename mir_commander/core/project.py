@@ -7,10 +7,11 @@ from .models import Data, Item
 
 
 class Project:
-    def __init__(self, path: None | Path = None):
+    def __init__(self, path: Path = Path(), temporary: bool = False):
         self.path = path
         self.data = Data.load(path / "data.yaml") if path else Data()
         self.config = ProjectConfig.load(path / "config.yaml") if path else ProjectConfig()
+        self._is_temporary = temporary
 
     @property
     def name(self) -> str:
@@ -18,7 +19,7 @@ class Project:
 
     @property
     def is_temporary(self) -> bool:
-        return self.path is None
+        return self._is_temporary
 
     def import_file(self, file_path: Path, logs: list[str]) -> Item:
         imported_item = load_file(file_path, logs)

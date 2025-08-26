@@ -298,7 +298,7 @@ class Style(BaseModel):
     atoms: Atoms = Atoms()
     selected_atom: SelectedAtom = SelectedAtom()
     under_cursor_text_overlay: TextOverlayConfig = TextOverlayConfig(
-        alignment=["center"],
+        text_alignment=["center"],
         background_color=Color("#44444499"),
     )
 
@@ -345,8 +345,8 @@ class MolecularStructureViewerConfig(BaseModel):
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[
-            Style(name="Colored Bonds", background=Background(color="#222222")),
-            Style(name="Simple", bond=Bond(color="#888888")),
+            Style(name="Colored Bonds", background=Background(color=Color("#222222"))),
+            Style(name="Simple", bond=Bond(color=Color("#888888"))),
             Style(
                 name="Colored Bonds Only",
                 atoms=Atoms(radius="bond"),

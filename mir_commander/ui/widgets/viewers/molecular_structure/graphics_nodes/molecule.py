@@ -2,6 +2,7 @@ import logging
 import math
 
 import numpy as np
+from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
@@ -183,11 +184,12 @@ class Molecule(ContainerNode):
         return item
 
     def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
-        atoms_color = self.style.current.bond.color == "atoms"
-        if atoms_color:
-            color = (0.5, 0.5, 0.5, 1.0)
-        else:
+        if type(self.style.current.bond.color) is Color:
             color = normalize_color(self.style.current.bond.color)
+            atoms_color = False
+        else:
+            color = (0.5, 0.5, 0.5, 1.0)
+            atoms_color = True
 
         item = Bond(
             self,

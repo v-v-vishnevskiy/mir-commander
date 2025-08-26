@@ -43,9 +43,11 @@ class Translator:
         return TrString(value)
 
     def _tr(self, text: str | TrString) -> str:
-        if not text or type(text) is str:
-            return text
-        return QCoreApplication.translate(self.__class__.__name__, text).format(*text.format_args, **text.format_kwargs)
+        if text and isinstance(text, TrString):
+            return QCoreApplication.translate(self.__class__.__name__, text).format(
+                *text.format_args, **text.format_kwargs
+            )
+        return text
 
 
 class TR:

@@ -1,3 +1,4 @@
+from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
 from mir_commander.ui.utils.opengl.scene import BaseNode, TransparentNode
@@ -29,9 +30,7 @@ class BoundingSphere(TransparentNode):
         self.set_scale(QVector3D(config.scale_factor, config.scale_factor, config.scale_factor))
 
     def _compute_color(self, config: SelectedAtom) -> Color4f:
-        if config.color == "atom":
-            color = (self._atom_color[0], self._atom_color[1], self._atom_color[2], config.opacity)
-        else:
+        if type(config.color) is Color:
             r, g, b, _ = color_to_color4f(config.color)
-            color = (r, g, b, config.opacity)
-        return color
+            return r, g, b, config.opacity
+        return self._atom_color[0], self._atom_color[1], self._atom_color[2], config.opacity
