@@ -51,9 +51,6 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         )
         self._under_cursor_overlay.hide()
 
-        self.setMinimumSize(self.config.min_size[0], self.config.min_size[1])
-        self.resize(self.config.size[0], self.config.size[1])
-
     def init_actions(self):
         super().init_actions()
         self.action_handler.add_action("toggle_node_selection", False, self.toggle_node_selection_under_cursor)

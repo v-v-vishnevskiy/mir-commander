@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 
 class CharInfo(BaseModel):
-    width: int
-    height: int
+    width: float
+    height: float
     u_min: float
     u_max: float
     v_min: float
@@ -34,22 +34,23 @@ def create_font_atlas(
     font = ImageFont.truetype(file, font_size)
 
     atlas_info = FontAtlas(name=name, chars={})
-    max_height = 0
-    min_top_padding = None
 
-    for char in chars:
+    bbox = draw.textbbox((0, 0), chars[0], font=font)
+    min_top_padding = bbox[1]
+    max_height = bbox[3] - bbox[1]
+    for char in chars[1:]:
         bbox = draw.textbbox((0, 0), char, font=font)
-        if min_top_padding is None or bbox[1] < min_top_padding:
+        if bbox[1] < min_top_padding:
             min_top_padding = bbox[1]
         if max_height < bbox[3] - bbox[1]:
             max_height = bbox[3] - bbox[1]
 
-    x, y = 0, -min_top_padding
+    x, y = 0.0, -min_top_padding
     row = 1
     for char in chars:
         # Get the size of the character
         bbox = draw.textbbox((0, 0), char, font=font)
-        char_width = int(bbox[2] - bbox[0])
+        char_width = bbox[2] - bbox[0]
 
         # Check if the character fits in the current row
         if x + char_width > atlas_size:

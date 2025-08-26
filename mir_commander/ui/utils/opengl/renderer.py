@@ -41,8 +41,8 @@ from OpenGL.GL import (
 from PySide6.QtGui import QColor, QImage, QVector3D
 from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
 
-from .errors import Error
 from .enums import PaintMode
+from .errors import Error
 from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
 from .scene import BaseNode, RenderingContainer
@@ -56,8 +56,9 @@ class Renderer:
         self._projection_manager = projection_manager
         self._resource_manager = resource_manager
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
-        self._picking_image: None | QImage = None
-        self._has_new_image = False
+        self._picking_image = QImage()
+        self._picking_image.fill(QColor(0, 0, 0, 0))
+        self._update_picking_image = True
         self._transformation_buffers: dict[Hashable, tuple[int, int]] = {}
 
     def set_background_color(self, color: Color4f):
@@ -92,7 +93,7 @@ class Renderer:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 self._paint_normal(normal_containers["char"])
 
-            self._has_new_image = False
+            self._update_picking_image = True
 
         self._resource_manager.current_scene.root_node.clear_dirty()
 
@@ -328,7 +329,7 @@ class Renderer:
 
         fbo_format = QOpenGLFramebufferObjectFormat()
         fbo_format.setSamples(16)
-        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
         fbo = QOpenGLFramebufferObject(width, height, fbo_format)
         fbo.bind()
 
@@ -368,11 +369,11 @@ class Renderer:
             raise Error(f"Error rendering to image: {e}")
 
     def picking_image(self, width: int, height: int) -> QImage:
-        if self._has_new_image:
+        if not self._update_picking_image:
             return self._picking_image
 
         fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setAttachment(QOpenGLFramebufferObject.CombinedDepthStencil)
+        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
         fbo = QOpenGLFramebufferObject(width, height, fbo_format)
         fbo.bind()
 
@@ -388,7 +389,7 @@ class Renderer:
         fbo.release()
 
         self._picking_image = fbo.toImage()
-        self._has_new_image = True
+        self._update_picking_image = False
 
         return self._picking_image
 

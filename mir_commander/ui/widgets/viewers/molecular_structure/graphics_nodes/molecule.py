@@ -28,7 +28,7 @@ class Molecule(ContainerNode):
 
         self.style = Style(self._config)
         self.center = QVector3D(0, 0, 0)
-        self.radius = 0
+        self.radius: float = 0
 
         self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
         self.atom_items: list[Atom] = []

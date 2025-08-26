@@ -49,7 +49,7 @@ def get_faces(stacks: int, slices: int) -> np.ndarray:
 
 
 def unwind_vertices(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
-    new_vertices = []
+    new_vertices: list[float] = []
     for i in range(0, len(faces), 3):
         for j in range(3):
             idx = faces[i + j]

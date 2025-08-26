@@ -14,8 +14,8 @@ from .dock_settings.settings import Settings
 class MolecularStructureViewer(Viewer):
     settings = Settings
 
-    def __init__(self, parent: QWidget, app_config: AppConfig, item: QStandardItem, all: bool = False):
-        super().__init__(parent=parent, item=item)
+    def __init__(self, parent: QWidget, item: QStandardItem, app_config: AppConfig, all: bool = False):
+        super().__init__(parent=parent, item=item, app_config=app_config)
 
         self._all = all
 
@@ -29,6 +29,10 @@ class MolecularStructureViewer(Viewer):
         self.setWidget(self.ac_viewer)
 
         self.update_window_title()
+
+        config = app_config.project_window.widgets.viewers.molecular_structure
+        self.setMinimumSize(config.min_size[0], config.min_size[1])
+        self.resize(config.size[0], config.size[1])
 
     def update_window_title(self):
         title = self._draw_item.text()

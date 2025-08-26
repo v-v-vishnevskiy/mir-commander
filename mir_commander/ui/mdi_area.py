@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, cast
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QStandardItem
-from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QMdiArea, QWidget
 
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
@@ -41,9 +41,9 @@ class MdiArea(QMdiArea):
             self.addSubWindow(viewer)
         viewer.show()
 
-    def sub_window_activated_handler(self, window: None | QMdiSubWindow):
-        viewers = []
+    def sub_window_activated_handler(self, window: None | Viewer):
+        viewers: list[Viewer] = []
         for viewer in self.subWindowList():
-            viewers.append(viewer)
+            viewers.append(cast(Viewer, viewer))
         self._viewer_settings_dock.update_viewers_list(viewers)
         self._viewer_settings_dock.set_viewer_settings_widget(window)

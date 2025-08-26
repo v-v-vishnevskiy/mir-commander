@@ -1,19 +1,20 @@
 from pathlib import Path
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Signal, Slot
-from PySide6.QtGui import QMoveEvent, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QMouseEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout
 
 from mir_commander.utils.consts import DIR
-from ..utils.widget import Dialog as BaseDialog, PushButton
 
+from ..utils.widget import Dialog as BaseDialog
+from ..utils.widget import PushButton
 from .config import ProjectConfig, RecentProjectsConfig
 
 
 class ListView(QListView):
-    def mouseMoveEvent(self, event: QMoveEvent) -> None:
+    def mouseMoveEvent(self, event: QMouseEvent):
         index = self.indexAt(event.pos())
-        item = self.model().itemFromIndex(index)
+        item = self.model().itemFromIndex(index)  # type: ignore[attr-defined]
         if item:
             self.setCurrentIndex(index)
             self.setCursor(Qt.CursorShape.PointingHandCursor)

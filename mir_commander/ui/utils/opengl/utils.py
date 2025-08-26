@@ -14,17 +14,17 @@ def normalize_color(value: Color) -> Color4f:
     Converts #RRGGBB string to tuple, where each component represented from 0.0 to 1.0
     """
 
-    r, g, b = value.as_rgb_tuple()
+    r, g, b = value.as_rgb_tuple()  # type: ignore[misc]
     return r / 255, g / 255, b / 255, 1.0
 
 
 def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
-    r, g, b, a = value.as_rgb_tuple(alpha=True)
-    return QColor(r, g, b, a * 255 if alpha else 255)
+    r, g, b, a = value.as_rgb_tuple(alpha=True)  # type: ignore[misc]
+    return QColor(r, g, b, int(a * 255) if alpha else 255)
 
 
 def color_to_color4f(value: Color, alpha: bool = True) -> Color4f:
-    r, g, b, a = value.as_rgb_tuple(alpha=True)
+    r, g, b, a = value.as_rgb_tuple(alpha=True)  # type: ignore[misc]
     return r / 255, g / 255, b / 255, a if alpha else 1.0
 
 
@@ -53,15 +53,14 @@ def compute_vertex_normals(vertices: np.ndarray) -> np.ndarray:
 
 
 def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
-    normals = []
+    normals: list[float] = []
     for i in range(0, len(vertices), 9):
-        norm = QVector3D().normal(
+        normal = QVector3D().normal(
             QVector3D(*vertices[i : i + 3]),
             QVector3D(*vertices[i + 3 : i + 6]),
             QVector3D(*vertices[i + 6 : i + 9]),
         )
-        norm = [norm.x(), norm.y(), norm.z()] * 3
-        normals.extend(norm)
+        normals.extend([normal.x(), normal.y(), normal.z()] * 3)
     return np.array(normals, dtype=np.float32)
 
 

@@ -1,14 +1,19 @@
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QDialogButtonBox, QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDialogButtonBox, QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
 
 from mir_commander.ui.utils.widget import Dialog, Label
 
+if TYPE_CHECKING:
+    from .atomic_coordinates_viewer import AtomicCoordinatesViewer
+
 
 class BuildBondsDialog(Dialog):
-    def __init__(self, current_tol: float, parent: QWidget):
+    def __init__(self, current_tol: float, parent: "AtomicCoordinatesViewer"):
         super().__init__(parent)
 
-        self.viewer_widget = parent
+        self.ac_viewer = parent
         self.current_tol = current_tol
 
         self.setWindowTitle(self.tr("Build bonds"))
@@ -60,7 +65,7 @@ class BuildBondsDialog(Dialog):
     def slider_value_changed_handler(self, i: int):
         self.current_tol = float(i) / 100.0
         self.double_spinbox.setValue(self.current_tol)
-        self.viewer_widget.rebuild_bonds(tol=self.current_tol)
+        self.ac_viewer.rebuild_bonds(tol=self.current_tol)
 
     @Slot()
     def double_spinbox_value_changed_handler(self, value: float):

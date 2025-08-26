@@ -9,17 +9,17 @@ from .vertex_array_object import VertexArrayObject
 
 
 class ResourceManager:
-    def __init__(self):
-        self._cameras: dict[str, Camera] = {}
-        self._scenes: dict[str, Scene] = {}
+    def __init__(self, camera: Camera, scene: Scene):
+        self._cameras: dict[str, Camera] = {camera.name: camera}
+        self._scenes: dict[str, Scene] = {scene.name: scene}
         self._shaders: dict[str, ShaderProgram] = {}
         self._meshes: dict[str, Mesh] = {}
         self._vertex_array_objects: dict[str, VertexArrayObject] = {}
         self._textures: dict[str, Texture2D] = {}
         self._font_atlases: dict[str, FontAtlas] = {}
 
-        self._current_camera: None | Camera = None
-        self._current_scene: None | Scene = None
+        self._current_camera = camera
+        self._current_scene = scene
 
     @property
     def current_camera(self) -> Camera:
