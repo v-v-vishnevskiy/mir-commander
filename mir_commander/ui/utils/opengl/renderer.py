@@ -1,6 +1,6 @@
 import ctypes
 import logging
-from typing import Hashable
+from typing import Hashable, cast
 
 import numpy as np
 import OpenGL.error
@@ -45,7 +45,7 @@ from .enums import PaintMode
 from .errors import Error
 from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
-from .scene import Node, NodeType, RenderingContainer
+from .scene import Node, NodeType, RenderingContainer, TextNode
 from .utils import Color4f, crop_image_to_content
 
 logger = logging.getLogger("OpenGL.Renderer")
@@ -59,7 +59,7 @@ class Renderer:
         self._picking_image = QImage()
         self._picking_image.fill(QColor(0, 0, 0, 0))
         self._update_picking_image = True
-        self._transformation_buffers: dict[Hashable, tuple[int, int]] = {}
+        self._transformation_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -97,19 +97,19 @@ class Renderer:
 
         self._resource_manager.current_scene.root_node.clear_dirty()
 
-    def _handle_text(self, text_rc: RenderingContainer):
+    def _handle_text(self, text_rc: RenderingContainer[TextNode]):
         for _, nodes in text_rc.batches:
             for node in nodes:
                 node.update_char_translation(self._resource_manager.get_font_atlas(node.font_atlas_name))
         text_rc.clear()
 
-    def _paint_picking(self, rc: RenderingContainer):
+    def _paint_picking(self, rc: RenderingContainer[Node]):
         prev_model_name = ""
 
         uniform_locations = self._setup_shader("", "picking")
 
         for group_id, nodes in rc.batches:
-            _, _, model_name = group_id
+            _, _, model_name = cast(tuple[None, None, str], group_id)
 
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
@@ -120,13 +120,13 @@ class Renderer:
                 glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
                 glDrawArrays(GL_TRIANGLES, 0, triangles_count)
 
-    def _paint_normal(self, rc: RenderingContainer):
+    def _paint_normal(self, rc: RenderingContainer[Node]):
         prev_shader_name = ""
         prev_texture_name = ""
         prev_model_name = ""
 
         for group_id, nodes in rc.batches:
-            shader_name, texture_name, model_name = group_id
+            shader_name, texture_name, model_name = cast(tuple[str, str, str], group_id)
 
             self._setup_shader(prev_shader_name, shader_name)
             prev_shader_name = shader_name
@@ -171,7 +171,7 @@ class Renderer:
         return vao.triangles_count
 
     def _setup_instanced_rendering(
-        self, rc: RenderingContainer, group_id: Hashable, nodes: list[Node], has_texture: bool
+        self, rc: RenderingContainer[Node], group_id: Hashable, nodes: list[Node], has_texture: bool
     ):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
@@ -200,7 +200,7 @@ class Renderer:
         self._setup_position_attributes(parent_world_position_buffer_id, 10 if has_texture else 9)
         self._setup_position_attributes(parent_parent_world_position_buffer_id, 11 if has_texture else 10)
 
-    def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int]:
+    def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int, int, int, int, int]:
         if key not in self._transformation_buffers:
             self._transformation_buffers[key] = (
                 glGenBuffers(1),
@@ -268,11 +268,11 @@ class Renderer:
                 if node.parent.parent is not None:
                     nd = node.parent.parent.transform.data()
                     center = QVector3D(nd[12], nd[13], nd[14])
-                    data.extend(list(center.toTuple()))
+                    data.extend(list(center.toTuple()))  # type: ignore[call-overload]
                 else:
                     nd = node.parent.transform.data()
                     center = QVector3D(nd[12], nd[13], nd[14])
-                    data.extend(list(center.toTuple()))
+                    data.extend(list(center.toTuple()))  # type: ignore[call-overload]
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)

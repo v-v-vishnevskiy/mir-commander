@@ -1,21 +1,27 @@
+from typing import cast
+
+
 from .node import Node, NodeType
 from .rendering_container import RenderingContainer
+from .text_node import TextNode
 
 
 class RootNode:
     __slots__ = ("_normal_containers", "_text_container", "_picking_container")
 
     def __init__(self):
-        self._normal_containers: dict[NodeType, RenderingContainer] = {
+        self._normal_containers: dict[NodeType, RenderingContainer[Node]] = {
             NodeType.CHAR: RenderingContainer("char"),
             NodeType.OPAQUE: RenderingContainer("opaque"),
             NodeType.TRANSPARENT: RenderingContainer("transparent"),
         }
-        self._text_container: RenderingContainer = RenderingContainer("text")
-        self._picking_container: RenderingContainer = RenderingContainer("picking")
+        self._text_container: RenderingContainer[TextNode] = RenderingContainer("text")
+        self._picking_container: RenderingContainer[Node] = RenderingContainer("picking")
 
     @property
-    def containers(self) -> tuple[dict[str, RenderingContainer], RenderingContainer, RenderingContainer]:
+    def containers(
+        self,
+    ) -> tuple[dict[NodeType, RenderingContainer[Node]], RenderingContainer[TextNode], RenderingContainer[Node]]:
         return self._normal_containers, self._text_container, self._picking_container
 
     def clear(self):
@@ -35,7 +41,7 @@ class RootNode:
             return
 
         if node.node_type == NodeType.TEXT:
-            self._text_container.add_node(node)
+            self._text_container.add_node(cast(TextNode, node))
         else:
             self._normal_containers[node.node_type].add_node(node)
             if node.picking_visible:
@@ -46,7 +52,7 @@ class RootNode:
             return
 
         if node.node_type == NodeType.TEXT:
-            self._text_container.remove_node(node)
+            self._text_container.remove_node(cast(TextNode, node))
         else:
             self._normal_containers[node.node_type].remove_node(node)
             if node.picking_visible:
@@ -57,7 +63,7 @@ class RootNode:
             return
 
         if node.node_type == NodeType.TEXT:
-            self._text_container.set_dirty(node)
+            self._text_container.set_dirty(cast(TextNode, node))
         else:
             self._normal_containers[node.node_type].set_dirty(node)
             if node.picking_visible:
