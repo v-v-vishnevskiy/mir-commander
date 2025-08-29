@@ -45,7 +45,7 @@ from .enums import PaintMode
 from .errors import Error
 from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
-from .scene import BaseNode, RenderingContainer
+from .scene import Node, NodeType, RenderingContainer
 from .utils import Color4f, crop_image_to_content
 
 logger = logging.getLogger("OpenGL.Renderer")
@@ -79,19 +79,19 @@ class Renderer:
         else:
             self._handle_text(text_rc)
 
-            self._paint_normal(normal_containers["opaque"])
+            self._paint_normal(normal_containers[NodeType.OPAQUE])
 
-            if normal_containers["transparent"]:
+            if normal_containers[NodeType.TRANSPARENT]:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 glDepthMask(GL_FALSE)
-                self._paint_normal(normal_containers["transparent"])
+                self._paint_normal(normal_containers[NodeType.TRANSPARENT])
                 glDepthMask(GL_TRUE)
 
-            if normal_containers["char"]:
+            if normal_containers[NodeType.CHAR]:
                 glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self._paint_normal(normal_containers["char"])
+                self._paint_normal(normal_containers[NodeType.CHAR])
 
             self._update_picking_image = True
 
@@ -171,7 +171,7 @@ class Renderer:
         return vao.triangles_count
 
     def _setup_instanced_rendering(
-        self, rc: RenderingContainer, group_id: Hashable, nodes: list[BaseNode], has_texture: bool
+        self, rc: RenderingContainer, group_id: Hashable, nodes: list[Node], has_texture: bool
     ):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
@@ -212,7 +212,7 @@ class Renderer:
             )
         return self._transformation_buffers[key]
 
-    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data = []
         for node in nodes:
@@ -220,7 +220,7 @@ class Renderer:
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
-    def _update_local_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -228,7 +228,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_color_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_color_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         color_data = []
         for node in nodes:
@@ -236,7 +236,7 @@ class Renderer:
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
 
-    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -247,20 +247,20 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
             if node.parent is not None:
                 nd = node.parent.transform.data()
                 center = QVector3D(nd[12], nd[13], nd[14])
-                data.extend(list(center.toTuple()))
+                data.extend(list(center.toTuple()))  # type: ignore[call-overload]
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: list[BaseNode]):
+    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -309,11 +309,11 @@ class Renderer:
         glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
         glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
 
-    def _get_node_depth(self, node: BaseNode) -> float:
+    def _get_node_depth(self, node: Node) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * node.transform
         return self._resource_manager.current_camera.get_distance_to_point(point)
 
-    def _sort_by_depth(self, nodes: list[BaseNode]) -> list[BaseNode]:
+    def _sort_by_depth(self, nodes: list[Node]) -> list[Node]:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def _render_to_image(

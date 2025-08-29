@@ -24,7 +24,7 @@ from .resource_manager import (
     VertexShader,
 )
 from .resource_manager.font_atlas import create_font_atlas
-from .scene import BaseNode, Scene
+from .scene import Node, Scene
 from .utils import Color4f, color_to_id
 
 
@@ -208,7 +208,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def node_under_cursor(self) -> BaseNode:
+    def node_under_cursor(self) -> Node:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

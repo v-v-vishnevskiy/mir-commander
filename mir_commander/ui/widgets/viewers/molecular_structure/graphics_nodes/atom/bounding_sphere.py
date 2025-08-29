@@ -1,21 +1,21 @@
 from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, TransparentNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ...config import SelectedAtom
 
 
-class BoundingSphere(TransparentNode):
+class BoundingSphere(Node):
     def __init__(
         self,
-        parent: BaseNode,
+        parent: Node,
         model_name: str,
         atom_color: Color4f,
         config: SelectedAtom,
     ):
-        super().__init__(parent=parent, visible=False, picking_visible=False)
+        super().__init__(parent=parent, node_type=NodeType.TRANSPARENT, visible=False, picking_visible=False)
         self._atom_color = atom_color
         self._config = config
 

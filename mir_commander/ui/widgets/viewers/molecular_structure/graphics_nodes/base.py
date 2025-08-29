@@ -1,7 +1,7 @@
-from mir_commander.ui.utils.opengl.scene import OpaqueNode
+from mir_commander.ui.utils.opengl.scene import Node
 
 
-class BaseGraphicsNode(OpaqueNode):
+class BaseGraphicsNode(Node):
     def set_under_cursor(self, value: bool):
         pass
 

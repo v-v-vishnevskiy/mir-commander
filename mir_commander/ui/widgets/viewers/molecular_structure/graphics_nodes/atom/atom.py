@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ...config import AtomLabelConfig, AtomLabelType, SelectedAtom
@@ -14,10 +14,10 @@ if TYPE_CHECKING:
     from ..bond.bond import Bond
 
 
-class Atom(ContainerNode):
+class Atom(Node):
     def __init__(
         self,
-        parent: BaseNode,
+        parent: Node,
         model_name: str,
         index_num: int,
         atomic_num: int,
@@ -28,7 +28,7 @@ class Atom(ContainerNode):
         selected_atom_config: SelectedAtom,
         label_config: AtomLabelConfig,
     ):
-        super().__init__(parent=parent, visible=True)
+        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
         self.translate(position)
 
         self.index_num = index_num

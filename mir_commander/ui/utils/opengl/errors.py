@@ -2,5 +2,9 @@ class Error(Exception):
     pass
 
 
-class NodeNotFoundError(Error):
+class NodeError(Error):
+    pass
+
+
+class NodeNotFoundError(NodeError):
     pass

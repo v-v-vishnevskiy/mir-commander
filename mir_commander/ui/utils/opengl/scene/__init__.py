@@ -1,21 +1,14 @@
-from .base_node import BaseNode
-from .char_node import CharNode
-from .container_node import ContainerNode
-from .opaque_node import OpaqueNode
+from .node import Node, NodeType
 from .rendering_container import RenderingContainer
 from .root_node import RootNode
 from .scene import Scene
 from .text_node import TextNode
-from .transparent_node import TransparentNode
 
 __all__ = [
-    "BaseNode",
-    "CharNode",
-    "ContainerNode",
-    "OpaqueNode",
-    "RenderingContainer",
+    "Node",
+    "NodeType",
     "RootNode",
     "Scene",
     "TextNode",
-    "TransparentNode",
+    "RenderingContainer",
 ]

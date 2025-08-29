@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QQuaternion, QVector3D
 
+from mir_commander.ui.utils.opengl.scene import NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..base import BaseGraphicsNode
@@ -21,7 +22,7 @@ class Cylinder(BaseGraphicsNode):
         length: float,
         color: Color4f,
     ):
-        super().__init__(parent=parent, visible=True, picking_visible=False)
+        super().__init__(parent=parent, node_type=NodeType.OPAQUE, visible=True, picking_visible=False)
         self._length = length
         self.set_shader("default")
         self.set_model(model_name)

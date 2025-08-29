@@ -5,10 +5,10 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
+from mir_commander.utils.consts import DIR
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -157,7 +157,7 @@ class Application(QApplication):
     def close_project(self, project_window: ProjectWindow):
         del self._open_projects[id(project_window)]
 
-        project_window.project.config.dump()
+        project_window.project.save()
 
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_recent(project_window.project)

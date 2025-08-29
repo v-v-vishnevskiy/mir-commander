@@ -1,14 +1,14 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, TextNode
+from mir_commander.ui.utils.opengl.scene import Node, TextNode
 from mir_commander.ui.utils.opengl.utils import color_to_color4f
 
 from ...config import AtomLabelConfig
 
 
 class Label(TextNode):
-    def __init__(self, parent: BaseNode, config: AtomLabelConfig):
-        super().__init__(parent=parent, visible=config.visible, picking_visible=False, align="center")
+    def __init__(self, parent: Node, config: AtomLabelConfig):
+        super().__init__(parent=parent, visible=config.visible, align="center")
         self._config = config
         s = config.size / 100.0
         self.set_scale(QVector3D(s, s, s))

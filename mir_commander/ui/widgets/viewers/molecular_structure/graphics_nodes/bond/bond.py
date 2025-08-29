@@ -1,16 +1,16 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..atom.atom import Atom
 from .cylinder import Cylinder
 
 
-class Bond(ContainerNode):
+class Bond(Node):
     def __init__(
         self,
-        parent: BaseNode,
+        parent: Node,
         model_name: str,
         atom_1: Atom,
         atom_2: Atom,
@@ -18,7 +18,7 @@ class Bond(ContainerNode):
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__(parent=parent, visible=True)
+        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
 
         self._model_name = model_name
         self._radius = radius

@@ -9,7 +9,7 @@ from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.models import cylinder, sphere
 from mir_commander.ui.utils.opengl.resource_manager import VertexArrayObject
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType, RootNode
 from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
@@ -21,9 +21,9 @@ from .bond.bond import Bond
 logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 
 
-class Molecule(ContainerNode):
-    def __init__(self, parent: BaseNode, app_config: AppConfig):
-        super().__init__(parent, visible=True)
+class Molecule(Node):
+    def __init__(self, root_node: RootNode, app_config: AppConfig):
+        super().__init__(root_node=root_node, node_type=NodeType.OPAQUE, visible=True)
 
         self._config = app_config.project_window.widgets.viewers.molecular_structure
 
