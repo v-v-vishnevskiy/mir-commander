@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from PySide6.QtGui import QVector3D
 
@@ -37,7 +37,9 @@ class Sphere(BaseGraphicsNode):
         self.set_scale(QVector3D(radius, radius, radius))
 
     def get_text(self) -> str:
-        return f"Atom: {self.parent.element_symbol}{self.parent.index_num + 1}"
+        atom = cast("Atom", self.parent)
+        return f"Atom: {atom.element_symbol}{atom.index_num + 1}"
 
     def toggle_selection(self) -> bool:
-        return self.parent.toggle_selection()
+        atom = cast("Atom", self.parent)
+        return atom.toggle_selection()

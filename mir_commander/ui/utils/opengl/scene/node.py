@@ -48,7 +48,7 @@ class Node:
     def __init__(
         self,
         node_type: NodeType,
-        parent: None | Self = None,
+        parent: Optional["Node"] = None,
         root_node: Optional["RootNode"] = None,
         visible: bool = True,
         picking_visible: bool = False,
@@ -58,7 +58,7 @@ class Node:
         if root_node is None and parent is None:
             raise NodeError("Root node is required when parent is not provided")
 
-        self._root_node: "RootNode" = root_node if root_node is not None else parent._root_node
+        self._root_node: "RootNode" = root_node if root_node is not None else parent._root_node  # type: ignore[union-attr]
 
         self.parent = parent
         if parent is not None:

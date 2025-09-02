@@ -165,7 +165,7 @@ class ComboBox(Widget, QComboBox):
         super().__init__(parent)
         self.__items: list[str] = []
 
-    def addItem(self, text: str, /, userData: Any = None):
+    def addItem(self, text: str, /, userData: Any = None):  # type: ignore[override]
         self.__items.append(text)
         super().addItem(self._tr(text), userData)
 
@@ -203,7 +203,7 @@ class TabWidget(Widget, QTabWidget):
         super().__init__(parent)
         self.__labels: list[str] = []
 
-    def addTab(self, page: QWidget, label: str):
+    def addTab(self, page: QWidget, label: str, /):  # type: ignore[override]
         self.__labels.append(label)
         super().addTab(page, self._tr(label))
 
