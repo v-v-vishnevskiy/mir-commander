@@ -24,7 +24,10 @@ class MolecularStructureViewer(Viewer):
         self._set_draw_item()
 
         self.ac_viewer = AtomicCoordinatesViewer(
-            parent=self, atomic_coordinates=self._draw_item.data().data, app_config=app_config
+            parent=self,
+            atomic_coordinates=self._draw_item.data().data,
+            app_config=app_config,
+            title=self._draw_item.text(),
         )
         self.setWidget(self.ac_viewer)
 
@@ -40,6 +43,7 @@ class MolecularStructureViewer(Viewer):
         while parent_item:
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
+        self.ac_viewer.set_title(title)
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
 

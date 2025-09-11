@@ -21,8 +21,9 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
-        self.setAttribute(Qt.AA_ShareOpenGLContexts)
+        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
+        self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
         self.register_resources()

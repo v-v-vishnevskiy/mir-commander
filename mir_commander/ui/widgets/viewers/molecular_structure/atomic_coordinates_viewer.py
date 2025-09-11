@@ -3,8 +3,8 @@ from collections import defaultdict
 from itertools import combinations
 from typing import cast
 
-from PySide6.QtCore import QPoint, Slot
-from PySide6.QtGui import QVector3D
+from PySide6.QtCore import QPoint
+from PySide6.QtGui import QContextMenuEvent, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
@@ -23,19 +23,21 @@ from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
+from .context_menu import ContextMenu
 from .graphics_nodes import Atom, BaseGraphicsNode, Molecule
 from .save_image_dialog import SaveImageDialog
 from .utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane, InteratomicTorsion
 
 
 class AtomicCoordinatesViewer(OpenGLWidget):
-    def __init__(self, parent: QWidget, atomic_coordinates: AtomicCoordinates, app_config: AppConfig):
+    def __init__(self, parent: QWidget, atomic_coordinates: AtomicCoordinates, app_config: AppConfig, title: str):
         super().__init__(
             parent=parent,
             keymap=Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.viewer.model_dump()),
         )
 
         self.config = app_config.project_window.widgets.viewers.molecular_structure.model_copy(deep=True)
+        self._title = title
 
         self._atomic_coordinates: AtomicCoordinates = atomic_coordinates
 
@@ -50,6 +52,8 @@ class AtomicCoordinatesViewer(OpenGLWidget):
             config=self._molecule.style.current.under_cursor_text_overlay,
         )
         self._under_cursor_overlay.hide()
+
+        self._context_menu = ContextMenu(parent=self, app_config=app_config)
 
     def init_actions(self):
         super().init_actions()
@@ -93,6 +97,9 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         self._molecule.build(self._atomic_coordinates)
         self.update()
 
+    def set_title(self, title: str):
+        self._title = title
+
     def toggle_node_selection_under_cursor(self):
         try:
             node = self.node_under_cursor()
@@ -134,14 +141,11 @@ class AtomicCoordinatesViewer(OpenGLWidget):
             self._under_cursor_overlay.hide()
         self.update()
 
-    # TODO: uncomment when context menu is implemented
-    # def contextMenuEvent(self, event: QContextMenuEvent):
-    #    # Show the context menu
-    #    self.context_menu.exec(event.globalPos())
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        self._context_menu.exec(event.globalPos())
 
-    @Slot()
-    def save_img_action_handler(self, filename: str):
-        dlg = SaveImageDialog(self, self.size().width(), self.size().height(), filename)
+    def save_img_action_handler(self):
+        dlg = SaveImageDialog(self, self.size().width(), self.size().height(), self._title)
         if dlg.exec():
             save_flag = True
             if dlg.img_file_path.exists():

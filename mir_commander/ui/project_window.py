@@ -17,7 +17,6 @@ from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
 from .utils.viewer.viewer import Viewer
 from .utils.viewer.viewer_menu import ViewerMenu
-from .utils.viewer.viewer_toolbar import ViewerToolBar
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
@@ -26,7 +25,6 @@ from .widgets.docks.project_dock.project_dock import ProjectDock
 from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
 from .widgets.settings.settings_dialog import SettingsDialog
 from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
-from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 
 logger = logging.getLogger("ProjectWindow")
 
@@ -56,7 +54,6 @@ class ProjectWindow(QMainWindow):
         self.app_config = app_config
         self.config = app_config.project_window
         self.sub_window_menus: list[ViewerMenu] = []  # Menus of SubWindows
-        self.sub_window_toolbars: list[ViewerToolBar] = []  # Toolbars of SubWindows
         self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
@@ -66,7 +63,6 @@ class ProjectWindow(QMainWindow):
 
         self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()
-        self.setup_toolbars()  # Note, we create toolbars before menus
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
@@ -117,7 +113,6 @@ class ProjectWindow(QMainWindow):
             parent=self, viewer_settings_dock=self.docks.viewer_settings, app_config=self.app_config
         )
         self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.mdi_area.opened_viewer_signal.connect(opened_viewer_slot)
         self.setCentralWidget(self.mdi_area)
 
@@ -143,18 +138,6 @@ class ProjectWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
-
-    def setup_toolbars(self):
-        # N.B.: toolbar(s) of the main window will be also created in this function.
-
-        # Here we collect classes of widgets, which create their own toolbars for the main window.
-        # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.sub_window_toolbars.append(
-            MolStructToolBar(parent=self, mdi_area=self.mdi_area, app_config=self.app_config)
-        )
-
-        for toolbar in self.sub_window_toolbars:
-            self.addToolBar(toolbar)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
@@ -188,9 +171,6 @@ class ProjectWindow(QMainWindow):
         menu.addAction(self.docks.project.toggleViewAction())
         menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
-        menu.addSeparator()
-        for toolbar in self.sub_window_toolbars:
-            menu.addAction(toolbar.toggleViewAction())
         return menu
 
     def _setup_menubar_window(self) -> Menu:
@@ -322,11 +302,6 @@ class ProjectWindow(QMainWindow):
 
         for menu in self.sub_window_menus:
             menu.update_state(window)
-
-    @Slot()
-    def update_toolbars(self, window: None | QMdiSubWindow):
-        for toolbar in self.sub_window_toolbars:
-            toolbar.update_state(window)
 
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
