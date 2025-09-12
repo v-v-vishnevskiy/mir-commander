@@ -14,7 +14,6 @@ class OpenGLInfo:
         fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         self.context.setFormat(fmt)
         self.context.create()
-        self.context.makeCurrent(None)
 
         self.format = self.context.format()
         self.version = (self.format.majorVersion(), self.format.minorVersion())

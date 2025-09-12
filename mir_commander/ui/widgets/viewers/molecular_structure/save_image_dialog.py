@@ -113,8 +113,8 @@ class SaveImageDialog(Dialog):
     @Slot()
     def file_path_button_handler(self):
         fileDialog = QFileDialog(self, self.tr("Choose file"), str(self.initial_file_path))
-        fileDialog.setAcceptMode(QFileDialog.AcceptSave)
-        fileDialog.setFileMode(QFileDialog.AnyFile)
+        fileDialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        fileDialog.setFileMode(QFileDialog.FileMode.AnyFile)
         fileDialog.setDirectory(str(self.initial_file_path))
         mime_types = []
 
@@ -124,7 +124,7 @@ class SaveImageDialog(Dialog):
         fileDialog.selectMimeTypeFilter("image/png")
         fileDialog.setDefaultSuffix("png")
 
-        if fileDialog.exec() == QDialog.Accepted:
+        if fileDialog.exec() == QDialog.DialogCode.Accepted:
             file_name = fileDialog.selectedFiles()[0]
             self.file_path_editbox.setText(file_name)
 

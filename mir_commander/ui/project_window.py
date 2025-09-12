@@ -116,10 +116,10 @@ class ProjectWindow(QMainWindow):
         self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_docks(self):
-        self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
-        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
-        self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
-        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setTabPosition(Qt.DockWidgetArea.BottomDockWidgetArea, QTabWidget.TabPosition.North)
+        self.setTabPosition(Qt.DockWidgetArea.LeftDockWidgetArea, QTabWidget.TabPosition.West)
+        self.setTabPosition(Qt.DockWidgetArea.RightDockWidgetArea, QTabWidget.TabPosition.East)
+        self.setCorner(Qt.Corner.BottomLeftCorner, Qt.DockWidgetArea.LeftDockWidgetArea)
 
         self.docks = Docks(
             ProjectDock(
@@ -131,10 +131,10 @@ class ProjectWindow(QMainWindow):
             ConsoleDock(parent=self),
             ViewerSettingsDock(parent=self),
         )
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.viewer_settings)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
@@ -241,7 +241,7 @@ class ProjectWindow(QMainWindow):
         self._win_next_act = Action(
             Action.tr("Ne&xt"),
             self,
-            shortcut=QKeySequence.NextChild,
+            shortcut=QKeySequence.StandardKey.NextChild,
             statusTip=self.tr("Move the focus to the next window"),
             triggered=self.mdi_area.activateNextSubWindow,
         )
@@ -249,7 +249,7 @@ class ProjectWindow(QMainWindow):
         self._win_previous_act = Action(
             Action.tr("Pre&vious"),
             self,
-            shortcut=QKeySequence.PreviousChild,
+            shortcut=QKeySequence.StandardKey.PreviousChild,
             statusTip=self.tr("Move the focus to the previous window"),
             triggered=self.mdi_area.activatePreviousSubWindow,
         )
@@ -296,10 +296,10 @@ class ProjectWindow(QMainWindow):
     def _import_file(self):
         """Import a file into the current project."""
         dialog = QFileDialog(self, self.tr("Import File"))
-        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         dialog.setNameFilter(self.tr("All files (*)"))
 
-        if dialog.exec() == QFileDialog.Accepted:
+        if dialog.exec() == QFileDialog.DialogCode.Accepted:
             file_path = Path(dialog.selectedFiles()[0])
             try:
                 logs = []

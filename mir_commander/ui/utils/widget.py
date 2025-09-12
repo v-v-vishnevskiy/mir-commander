@@ -261,7 +261,11 @@ class StatusBar(Widget, QStatusBar):
 
     def retranslate_ui(self):
         if self.currentMessage():
-            self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))
+            if self.__timeout is not None:
+                timeout = self.__timeout - (int(monotonic() - self.__monotonic) * 1000)
+            else:
+                timeout = None
+            self.showMessage(self.__message, timeout)
 
 
 class ToolBar(Widget, QToolBar):

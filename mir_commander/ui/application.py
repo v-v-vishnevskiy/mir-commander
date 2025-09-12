@@ -74,8 +74,8 @@ class Application(QApplication):
         It is also possible, that the bug will be fixed at some point in Adwaita, so we will not need this hack anymore.
         """
         palette = self.palette()
-        color_windowtext = palette.color(QPalette.WindowText)
-        color_disabledwindowtext = palette.color(QPalette.Disabled, QPalette.WindowText)
+        color_windowtext = palette.color(QPalette.ColorRole.WindowText)
+        color_disabledwindowtext = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText)
 
         # This combination is specific to Adwaita and High-Contrast:
         if (
@@ -86,7 +86,7 @@ class Application(QApplication):
             and color_disabledwindowtext.green() == 74
             and color_disabledwindowtext.blue() == 74
         ):
-            palette.setColor(QPalette.WindowText, QColor(46, 52, 54))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(46, 52, 54))
             self.setPalette(palette)
         # specific to Adwaita-dark:
         elif (
@@ -97,7 +97,7 @@ class Application(QApplication):
             and color_disabledwindowtext.green() == 72
             and color_disabledwindowtext.blue() == 72
         ):
-            palette.setColor(QPalette.WindowText, QColor(238, 238, 236))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(238, 238, 236))
             self.setPalette(palette)
 
     def register_resources(self):
@@ -118,7 +118,7 @@ class Application(QApplication):
             self._translator_app = translator
 
         translator = QTranslator(self)
-        path = Path(QLibraryInfo.location(QLibraryInfo.TranslationsPath)) / f"qtbase_{language}"
+        path = Path(QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)) / f"qtbase_{language}"
         if translator.load(str(path)):
             self.removeTranslator(self._translator_qt)
             self.installTranslator(translator)
