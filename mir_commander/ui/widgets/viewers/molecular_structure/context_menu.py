@@ -8,14 +8,15 @@ from mir_commander.ui.utils.widget import Action, Menu
 from .config import AtomLabelType
 
 if TYPE_CHECKING:
-    from .atomic_coordinates_viewer import AtomicCoordinatesViewer
+    from .viewer import MolecularStructureViewer
 
 
 class ContextMenu(Menu):
-    def __init__(self, parent: "AtomicCoordinatesViewer", app_config: AppConfig):
+    def __init__(self, parent: "MolecularStructureViewer", app_config: AppConfig):
         super().__init__(parent=parent)
 
-        self._ac_viewer = parent
+        self._viewer = parent
+        self._ac_viewer = parent.ac_viewer
         self._app_config = app_config
         self._config = app_config.project_window.widgets.viewers.molecular_structure
         self._keymap = self._config.keymap.menu
@@ -25,6 +26,7 @@ class ContextMenu(Menu):
         self._init_selection_menu()
         self._init_calculate_menu()
         self._init_cloaking_menu()
+        self._switch_atomic_coordinates_menu()
         self.addSeparator()
         self._init_actions()
 
@@ -275,6 +277,22 @@ class ContextMenu(Menu):
         uncloak_all_act = Action(Action.tr("Uncloak all"), self.parent())
         uncloak_all_act.triggered.connect(self._ac_viewer.uncloak_all_atoms)
         cloaking_menu.addAction(uncloak_all_act)
+
+    def _switch_atomic_coordinates_menu(self):
+        menu = Menu(Menu.tr("Coordinates set"))
+        self.addMenu(menu)
+
+        next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
+        next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
+        next_atomic_coordinates_act.triggered.connect(self._viewer.set_next_atomic_coordinates)
+        menu.addAction(next_atomic_coordinates_act)
+        self._viewer.addAction(next_atomic_coordinates_act)
+
+        prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
+        prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
+        prev_atomic_coordinates_act.triggered.connect(self._viewer.set_prev_atomic_coordinates)
+        menu.addAction(prev_atomic_coordinates_act)
+        self._viewer.addAction(prev_atomic_coordinates_act)
 
     def labels_set_element_symbol_and_index_number_handler(self):
         self.set_index_number_act.setChecked(False)

@@ -16,7 +16,6 @@ from mir_commander.core.errors import LoadFileError
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
 from .utils.viewer.viewer import Viewer
-from .utils.viewer.viewer_menu import ViewerMenu
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
@@ -24,7 +23,6 @@ from .widgets.docks.object_dock import ObjectDock
 from .widgets.docks.project_dock.project_dock import ProjectDock
 from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
 from .widgets.settings.settings_dialog import SettingsDialog
-from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
 
 logger = logging.getLogger("ProjectWindow")
 
@@ -53,7 +51,6 @@ class ProjectWindow(QMainWindow):
         self.project = project
         self.app_config = app_config
         self.config = app_config.project_window
-        self.sub_window_menus: list[ViewerMenu] = []  # Menus of SubWindows
         self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
@@ -143,18 +140,10 @@ class ProjectWindow(QMainWindow):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
 
     def setup_menubar(self):
-        # Collect all additional menus from viewers.
-        # Here is the same logic as for toolbars of particular widgets.
-        self.sub_window_menus.append(MolStructMenu(parent=self, mdi_area=self.mdi_area, app_config=self.app_config))
-
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())
         menubar.addMenu(self._setup_menubar_view())
         menubar.addMenu(self._setup_menubar_window())
-
-        for menu in self.sub_window_menus:
-            menubar.addMenu(menu)
-
         menubar.addMenu(self._setup_menubar_help())
 
     def _setup_menubar_file(self) -> Menu:
@@ -299,9 +288,6 @@ class ProjectWindow(QMainWindow):
         self._win_next_act.setEnabled(has_mdi_child)
         self._win_previous_act.setEnabled(has_mdi_child)
         self._win_separator_act.setVisible(has_mdi_child)
-
-        for menu in self.sub_window_menus:
-            menu.update_state(window)
 
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:

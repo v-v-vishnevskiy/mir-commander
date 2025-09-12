@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide6.QtGui import QStandardItem
+from PySide6.QtGui import QContextMenuEvent, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core.models import AtomicCoordinates
@@ -8,6 +8,7 @@ from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
 from .atomic_coordinates_viewer import AtomicCoordinatesViewer
+from .context_menu import ContextMenu
 from .dock_settings.settings import Settings
 
 
@@ -29,6 +30,9 @@ class MolecularStructureViewer(Viewer):
             app_config=app_config,
             title=self._draw_item.text(),
         )
+
+        self._context_menu = ContextMenu(parent=self, app_config=app_config)
+
         self.setWidget(self.ac_viewer)
 
         self.update_window_title()
@@ -36,6 +40,9 @@ class MolecularStructureViewer(Viewer):
         config = app_config.project_window.widgets.viewers.molecular_structure
         self.setMinimumSize(config.min_size[0], config.min_size[1])
         self.resize(config.size[0], config.size[1])
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        self._context_menu.exec(event.globalPos())
 
     def update_window_title(self):
         title = self._draw_item.text()
