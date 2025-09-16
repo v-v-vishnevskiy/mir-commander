@@ -107,7 +107,7 @@ class Application(QApplication):
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
 
-        language = self.config.language
+        language: str = self.config.language
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
@@ -146,7 +146,7 @@ class Application(QApplication):
             init_msg=messages,
         )
         project_window.close_project_signal.connect(self.close_project)
-        project_window.quit_application_signal.connect(self.quit)
+        project_window.quit_application_signal.connect(self.close_app)
         self._open_projects[id(project_window)] = project_window
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project)
@@ -168,12 +168,6 @@ class Application(QApplication):
         if not self._open_projects:
             self._recent_projects_dialog.show()
 
-    def quit(self):
-        self._quitting = True
-        for value in list(self._open_projects.values()):
-            value.close()
-        super().quit()
-
     def run(self, project_path: Path) -> int:
         if project_path != Path(""):
             self.open_project(project_path)
@@ -184,3 +178,9 @@ class Application(QApplication):
             if not self._open_projects:
                 self._recent_projects_dialog.show()
         return self.exec()
+
+    def close_app(self):
+        self._quitting = True
+        for value in list(self._open_projects.values()):
+            value.close()
+        self.quit()

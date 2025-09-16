@@ -16,7 +16,7 @@ class About(Dialog):
         label = QLabel(self)
         pixmap = QPixmap(":/icons/general/app.svg")
         label.setPixmap(pixmap.scaledToWidth(150, mode=Qt.TransformationMode.SmoothTransformation))
-        layout.addWidget(label, 100, Qt.AlignCenter)
+        layout.addWidget(label, 100, Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(QLabel(f"Mir Commander {__version__}"), 100, Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(Label(Label.tr("Yury V. Vishnevskiy"), self), 0, Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(Label(Label.tr("Valery V. Vishnevskiy"), self), 0, Qt.AlignmentFlag.AlignCenter)

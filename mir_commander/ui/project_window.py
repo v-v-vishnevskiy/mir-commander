@@ -6,7 +6,6 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
@@ -78,8 +77,6 @@ class ProjectWindow(QMainWindow):
             for msg in init_msg:
                 self.append_to_console(msg)
 
-        self._fix_window_composition()
-
         self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
 
         if project.is_temporary:
@@ -88,18 +85,6 @@ class ProjectWindow(QMainWindow):
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
-
-    def _fix_window_composition(self):
-        widget = QOpenGLWidget()
-        widget.item = None
-        self.__fix_sub_window = self.mdi_area.addSubWindow(widget)
-        self.__fix_sub_window.hide()
-
-    def show(self):
-        super().show()
-        if self.__fix_sub_window:
-            self.mdi_area.removeSubWindow(self.__fix_sub_window)
-            self.__fix_sub_window = None
 
     def setup_mdi_area(self):
         def opened_viewer_slot(viewer: Viewer):
@@ -266,8 +251,8 @@ class ProjectWindow(QMainWindow):
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self.config.pos or [geometry.width() * 0.125, geometry.height() * 0.125]
-        size = self.config.size or [geometry.width() * 0.75, geometry.height() * 0.75]
+        pos = self.config.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
+        size = self.config.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
         self.setGeometry(pos[0], pos[1], size[0], size[1])
         if state := self.config.state:
             self.restoreState(base64.b64decode(state))
@@ -302,7 +287,7 @@ class ProjectWindow(QMainWindow):
         if dialog.exec() == QFileDialog.DialogCode.Accepted:
             file_path = Path(dialog.selectedFiles()[0])
             try:
-                logs = []
+                logs: list[str] = []
                 imported_item = self.project.import_file(file_path, logs)
                 self.docks.project.add_item_to_root(imported_item)
 

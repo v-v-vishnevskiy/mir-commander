@@ -119,7 +119,8 @@ class SaveImageDialog(Dialog):
         mime_types = []
 
         for bf in QImageWriter.supportedMimeTypes():
-            mime_types.append(bf.data().decode("utf8"))
+            data: bytes = bf.data()
+            mime_types.append(data.decode("utf8"))
         fileDialog.setMimeTypeFilters(mime_types)
         fileDialog.selectMimeTypeFilter("image/png")
         fileDialog.setDefaultSuffix("png")

@@ -26,7 +26,7 @@ class Settings(ViewerDockSettings["MolecularStructureViewer"]):
         self.labels = Labels(self)
 
         self.main_layout = QVBoxLayout()
-        self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignHCenter)
+        self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addSpacing(10)
         self.main_layout.addWidget(self.labels)
         self.main_layout.addStretch()
