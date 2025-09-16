@@ -139,7 +139,7 @@ class Molecule(Node):
             if self.style.current.bond.color == "atoms":
                 bond.set_atoms_color(True)
             else:
-                bond.set_color(normalize_color(self.style.current.bond.color))
+                bond.set_color(normalize_color(self.style.current.bond.color))  # type: ignore[arg-type]
 
     def clear(self):
         self.atom_items.clear()

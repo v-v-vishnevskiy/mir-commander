@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
 from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout, QWidget
@@ -36,6 +38,7 @@ class SettingsDialog(Dialog):
 
         self._config = self.app_config.settings
         self._pages: list[BasePage] = []
+        self._pages_model = QStandardItemModel(self)
 
         self.setWindowTitle(self.tr("Settings"))
         self.setWindowIcon(QIcon(":/icons/general/settings.png"))
@@ -60,7 +63,7 @@ class SettingsDialog(Dialog):
         layout = QHBoxLayout()
         self.pages = ListView(self)
         self.pages.setFixedWidth(150)
-        self.pages.setModel(QStandardItemModel(self))
+        self.pages.setModel(self._pages_model)
 
         self.area = QStackedLayout()
 
@@ -92,17 +95,17 @@ class SettingsDialog(Dialog):
     def setup_data(self):
         """Generation of particular pages (as tab widgets) with controls for settings."""
 
-        self.page_items = [
+        page_items: list[dict[str, Any]] = [
             {"title": StandardItem.tr("Project"), "tabs": [(Project, "")]},
             {"title": StandardItem.tr("General"), "tabs": [(General, "")]},
         ]
 
-        root = self.pages.model().invisibleRootItem()
-        for i, section in enumerate(self.page_items):
+        root = self._pages_model.invisibleRootItem()
+        for i, section in enumerate(page_items):
             # Setup self.categories
             item = StandardItem(section["title"])
             item.setEditable(False)
-            item.position = i
+            item.setData({"position": i})
             root.appendRow(item)
 
             # setup self.area
@@ -122,7 +125,8 @@ class SettingsDialog(Dialog):
 
         self.pages.clicked.connect(self.page_changed)
         for i in range(self.area.count()):
-            self.area.widget(i).currentChanged.connect(self.tab_changed)
+            widget = cast(TabWidget, self.area.widget(i))
+            widget.currentChanged.connect(self.tab_changed)
 
         self.pb_restore_defaults.clicked.connect(self.restore_defaults_clicked)
         self.pb_apply.clicked.connect(self.apply_clicked)
@@ -131,10 +135,10 @@ class SettingsDialog(Dialog):
 
     @Slot()
     def page_changed(self, index: QModelIndex):
-        item = self.pages.model().itemFromIndex(index)
-        self.area.setCurrentIndex(item.position)
-        self._config.current_page = item.position
-        self._config.current_tab = self.area.currentWidget().currentIndex()
+        item = self._pages_model.itemFromIndex(index)
+        self.area.setCurrentIndex(item.data()["position"])
+        self._config.current_page = item.data()["position"]
+        self._config.current_tab = cast(TabWidget, self.area.currentWidget()).currentIndex()
 
     @Slot()
     def tab_changed(self, index: int):
@@ -176,7 +180,7 @@ class SettingsDialog(Dialog):
 
         current_page = self._config.current_page
         if current_page:
-            item = self.pages.model().invisibleRootItem().child(current_page)
+            item = self._pages_model.invisibleRootItem().child(current_page)
             if item:
                 index = item.index()
                 self.pages.setCurrentIndex(index)
@@ -184,7 +188,7 @@ class SettingsDialog(Dialog):
 
             current_tab = self._config.current_tab
             if current_tab:
-                self.area.currentWidget().setCurrentIndex(current_tab)
+                cast(TabWidget, self.area.currentWidget()).setCurrentIndex(current_tab)
 
     def moveEvent(self, event: QMoveEvent):
         self._config.pos = [event.pos().x(), event.pos().y()]

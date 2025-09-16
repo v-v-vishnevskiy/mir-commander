@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PySide6.QtGui import QContextMenuEvent, QStandardItem
 from PySide6.QtWidgets import QWidget
 
@@ -56,14 +54,15 @@ class MolecularStructureViewer(Viewer):
 
     def _atomic_coordinates_item(
         self, index: int, parent: QStandardItem, counter: int = -1
-    ) -> tuple[bool, int, Optional[QStandardItem]]:
+    ) -> tuple[bool, int, QStandardItem]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
+
         index = max(0, index)
-        last_item = None
+        last_item = parent
         if not parent.hasChildren() and isinstance(parent.data().data, AtomicCoordinates):
-            return True, 0, parent
+            return True, 0, last_item
         else:
             for i in range(parent.rowCount()):
                 item = parent.child(i)

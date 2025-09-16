@@ -93,13 +93,13 @@ class TreeView(QTreeView):
 
     def expand_top_items(self):
         logger.debug("Expanding top items ...")
-        root_item = self.model().invisibleRootItem()
+        root_item = self._model.invisibleRootItem()
         for i in range(root_item.rowCount()):
-            self.setExpanded(self.model().indexFromItem(root_item.child(i)), True)
+            self.setExpanded(self._model.indexFromItem(root_item.child(i)), True)
 
     def view_babushka(self):
         logger.debug("Opening items in respective viewers ...")
-        self._view_babushka(self.model().invisibleRootItem())
+        self._view_babushka(self._model.invisibleRootItem())
 
     def _view_babushka(self, item):
         data = item.data()
