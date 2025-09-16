@@ -180,7 +180,7 @@ class ComboBox(Widget, QComboBox):
 
 class ListView(Widget, QListView):
     def retranslate_ui(self):
-        root = self.model().invisibleRootItem()
+        root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
         for i in range(root.rowCount()):
             root.child(i).retranslate()
 

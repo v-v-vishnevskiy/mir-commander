@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Signal, Slot
 from PySide6.QtGui import QMouseEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout, QWidget
 
 from mir_commander.utils.consts import DIR
 
@@ -12,9 +12,26 @@ from .config import ProjectConfig, RecentProjectsConfig
 
 
 class ListView(QListView):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self._model = QStandardItemModel(parent)
+        self.setModel(self._model)
+        self.setMouseTracking(True)
+
+    def clear(self):
+        root = self._model.invisibleRootItem()
+        root.removeRows(0, root.rowCount())
+
+    def add_item(self, item: QStandardItem):
+        root = self._model.invisibleRootItem()
+        root.appendRow(item)
+
+    def item_from_index(self, index: QModelIndex) -> QStandardItem:
+        return self._model.itemFromIndex(index)
+
     def mouseMoveEvent(self, event: QMouseEvent):
         index = self.indexAt(event.pos())
-        item = self.model().itemFromIndex(index)  # type: ignore[attr-defined]
+        item = self._model.itemFromIndex(index)
         if item:
             self.setCurrentIndex(index)
             self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -49,8 +66,6 @@ class RecentProjectsDialog(BaseDialog):
         self.setMinimumHeight(450)
 
         self._recent = ListView(self)
-        self._recent.setMouseTracking(True)
-        self._recent.setModel(QStandardItemModel(self))
 
         self._pb_open_project = PushButton(PushButton.tr("Open"), self)
         self._pb_cancel = PushButton(PushButton.tr("Cancel"), self)
@@ -65,20 +80,15 @@ class RecentProjectsDialog(BaseDialog):
         self.setLayout(layout)
 
     def _load_data(self):
-        self._clear_data()
-        root = self._recent.model().invisibleRootItem()
+        self._recent.clear()
         for project in self._config.recent:
             msg = ""
             if not project.exists:
                 msg = " (unavailable)"
             item = QStandardItem(f"{project.name}{msg}\n{project.path}")
-            item.project_path = project.path
+            item.setData({"project_path": project.path})
             item.setEditable(False)
-            root.appendRow(item)
-
-    def _clear_data(self):
-        root = self._recent.model().invisibleRootItem()
-        root.removeRows(0, root.rowCount())
+            self._recent.add_item(item)
 
     def _setup_signals(self):
         self._recent.clicked.connect(self._recent_open)
@@ -95,13 +105,13 @@ class RecentProjectsDialog(BaseDialog):
 
     @Slot()
     def _recent_open(self, index: QModelIndex):
-        item = self._recent.model().itemFromIndex(index)
+        item = self._recent.item_from_index(index)
         if item.isEnabled():
-            self.open_project_signal.emit(item.project_path)
+            self.open_project_signal.emit(item.data()["project_path"])
 
     @Slot()
     def _pb_open_clicked(self, *args, **kwargs):
         dialog = QFileDialog(self, self.tr("Open Project"), QDir.homePath())
         dialog.setFileMode(QFileDialog.FileMode.Directory)
         if dialog.exec():
-            self._open_project(Path(dialog.selectedFiles()[0]))
+            self.open_project_signal.emit(Path(dialog.selectedFiles()[0]))

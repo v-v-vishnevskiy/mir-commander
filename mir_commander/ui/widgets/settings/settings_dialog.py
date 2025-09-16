@@ -102,13 +102,11 @@ class SettingsDialog(Dialog):
 
         root = self._pages_model.invisibleRootItem()
         for i, section in enumerate(page_items):
-            # Setup self.categories
             item = StandardItem(section["title"])
             item.setEditable(False)
             item.setData({"position": i})
             root.appendRow(item)
 
-            # setup self.area
             tabwidget = TabWidget()
             tabwidget.setTabBarAutoHide(True)
             for tab in section["tabs"]:
