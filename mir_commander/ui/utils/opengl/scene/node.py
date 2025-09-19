@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Hashable, Optional, Self
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.errors import NodeError
+from mir_commander.ui.utils.opengl.errors import NodeError, NodeParentError
 from mir_commander.ui.utils.opengl.utils import Color4f, id_to_color
 
 from .transform import Transform
@@ -28,7 +28,7 @@ class Node:
     __slots__ = (
         "_id",
         "_root_node",
-        "parent",
+        "_parent",
         "_node_type",
         "_visible",
         "_transform_dirty",
@@ -60,7 +60,7 @@ class Node:
 
         self._root_node: "RootNode" = root_node if root_node is not None else parent._root_node  # type: ignore[union-attr]
 
-        self.parent = parent
+        self._parent = parent
         if parent is not None:
             parent._children.append(self)
 
@@ -94,13 +94,19 @@ class Node:
         return self._id
 
     @property
+    def parent(self) -> "Node":
+        if self._parent is None:
+            raise NodeParentError("Parent is not set")
+        return self._parent
+
+    @property
     def node_type(self) -> NodeType:
         return self._node_type
 
     @property
     def visible(self) -> bool:
-        if self.parent is not None:
-            return self._visible and self.parent.visible
+        if self._parent is not None:
+            return self._visible and self._parent.visible
         return self._visible
 
     @property
@@ -158,15 +164,15 @@ class Node:
         return result
 
     def _update_transform(self):
-        if self.parent:
-            self._transform_matrix = self.parent.transform * self._transform.matrix
+        if self._parent:
+            self._transform_matrix = self._parent.transform * self._transform.matrix
         else:
             self._transform_matrix = self._transform.matrix
 
     def remove(self):
-        if self.parent is not None:
-            self.parent._children.remove(self)
-            self.parent = None
+        if self._parent is not None:
+            self._parent._children.remove(self)
+            self._parent = None
 
         self.clear()
         self._root_node.notify_remove_node(self)

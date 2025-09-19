@@ -9,21 +9,23 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError
+from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
 from mir_commander.ui.utils.opengl.resource_manager import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.ui.utils.opengl.scene import Node
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import normalize_color
 from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
+from mir_commander.utils.message_channel import MessageChannel
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
-from .graphics_nodes import Atom, BaseGraphicsNode, Molecule
+from .graphics_nodes import Atom, BaseGraphicsNode, Bond, Molecule
 from .save_image_dialog import SaveImageDialog
 from .utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane, InteratomicTorsion
 
@@ -41,7 +43,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         self._atomic_coordinates: AtomicCoordinates = atomic_coordinates
 
         self._node_under_cursor: BaseGraphicsNode | None = None
-        self._selected_nodes: defaultdict[type[BaseGraphicsNode], list[BaseGraphicsNode]] = defaultdict(list)
+        self._selected_nodes: dict[type, list[Node]] = defaultdict(list)
 
         self._molecule = Molecule(self.resource_manager.current_scene.root_node, app_config)
         self._molecule.build(self._atomic_coordinates)
@@ -51,6 +53,8 @@ class AtomicCoordinatesViewer(OpenGLWidget):
             config=self._molecule.style.current.under_cursor_text_overlay,
         )
         self._under_cursor_overlay.hide()
+
+        self.message_channel = MessageChannel()
 
     def init_actions(self):
         super().init_actions()
@@ -99,15 +103,16 @@ class AtomicCoordinatesViewer(OpenGLWidget):
 
     def toggle_node_selection_under_cursor(self):
         try:
-            node = self.node_under_cursor()
-            item = node.parent
+            node = cast(BaseGraphicsNode, self.node_under_cursor())
+            item = cast(Atom | Bond, node.parent)
             if node.toggle_selection():
                 self._selected_nodes[item.__class__].append(item)
             else:
                 self._selected_nodes[item.__class__].remove(item)
             self.update()
-        except (NodeNotFoundError, ValueError):
+        except (NodeNotFoundError, ValueError, NodeParentError):
             # ValueError is raised when node is not found in `_selected_nodes`
+            # NodeParentError is raised when node has no parent
             pass
 
     def new_cursor_position(self, x: int, y: int):
@@ -200,7 +205,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
     def select_all_atoms(self):
         for atom in self._molecule.atom_items:
             atom.set_selected(True)
-        self._selected_nodes[Atom] = self._molecule.atom_items.copy()
+        self._selected_nodes[Atom] = self._molecule.atom_items.copy()  # type: ignore[assignment]
         self.update()
 
     def unselect_all_atoms(self):
@@ -263,7 +268,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
 
     def cloak_atoms_by_atnum(self):
         el_symbol, ok = QInputDialog.getText(
-            self, self.tr("Cloak atoms by type"), self.tr("Enter element symbol:"), QLineEdit.Normal, ""
+            self, self.tr("Cloak atoms by type"), self.tr("Enter element symbol:"), QLineEdit.EchoMode.Normal, ""
         )
         if ok:
             try:
@@ -281,14 +286,14 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         Calculate and print distance (in internal units) between last two selected atoms.
         """
 
-        atoms = self._selected_nodes[Atom]
+        atoms: list[Atom] = self._selected_nodes[Atom]  # type: ignore[assignment]
         if len(atoms) >= 2:
             atom1 = atoms[-2]
             atom2 = atoms[-1]
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
-            self.parent().long_msg_signal.emit(
+            self.message_channel.send(
                 f"r({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1})={distance:.3f}"
             )
         else:
@@ -304,7 +309,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         Calculate and print angle (in degrees) formed by last three selected atoms: a1-a2-a3
         """
 
-        atoms = self._selected_nodes[Atom]
+        atoms: list[Atom] = self._selected_nodes[Atom]  # type: ignore[assignment]
         if len(atoms) >= 3:
             atom1 = atoms[-3]
             atom2 = atoms[-2]
@@ -315,7 +320,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
             angle = geom_angle_xyz(
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
-            self.parent().long_msg_signal.emit(
+            self.message_channel.send(
                 f"a({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
                 f"{atom3.element_symbol}{atom3.index_num + 1})={angle:.1f}"
             )
@@ -332,7 +337,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         Calculate and print torsion angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
 
-        atoms = self._selected_nodes[Atom]
+        atoms: list[Atom] = self._selected_nodes[Atom]  # type: ignore[assignment]
         if len(atoms) >= 4:
             atom1 = atoms[-4]
             atom2 = atoms[-3]
@@ -356,7 +361,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self.parent().long_msg_signal.emit(
+            self.message_channel.send(
                 f"t({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
                 f"{atom3.element_symbol}{atom3.index_num + 1}-{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
             )
@@ -373,7 +378,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         Calculate and print out-of-plane angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
         """
 
-        atoms = self._selected_nodes[Atom]
+        atoms: list[Atom] = self._selected_nodes[Atom]  # type: ignore[assignment]
         if len(atoms) >= 4:
             atom1 = atoms[-4]
             atom2 = atoms[-3]
@@ -397,7 +402,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
                 pos4.y(),
                 pos4.z(),
             ) * (180.0 / math.pi)
-            self.parent().long_msg_signal.emit(
+            self.message_channel.send(
                 f"o({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}<"
                 f"{atom3.element_symbol}{atom3.index_num + 1}/{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
             )
@@ -435,10 +440,10 @@ class AtomicCoordinatesViewer(OpenGLWidget):
         Calculate and print all parameters formed by all selected atoms
         """
 
-        distances = []
-        angles = []
-        torsions = []
-        outofplanes = []
+        distances: list[InteratomicDistance] = []
+        angles: list[InteratomicAngle] = []
+        torsions: list[InteratomicTorsion] = []
+        outofplanes: list[InteratomicOutOfPlane] = []
 
         # Generate list of distances, which are bonds formed by selected atoms
         for bond in self._molecule.bond_items:
@@ -641,7 +646,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
                     f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num + 1})={outofplane.value:.1f}, "
                 )
 
-        self.parent().long_msg_signal.emit(out_str.rstrip(", "))
+        self.message_channel.send(out_str.rstrip(", "))
 
     def toggle_bonds_for_selected_atoms(self):
         """
@@ -719,12 +724,12 @@ class AtomicCoordinatesViewer(OpenGLWidget):
 
     def atom_labels_show_for_selected_atoms(self):
         for atom in self._selected_nodes[Atom]:
-            atom.set_label_visible(True)
+            atom.set_label_visible(True)  # type: ignore[attr-defined]
         self.update()
 
     def atom_labels_hide_for_selected_atoms(self):
         for atom in self._selected_nodes[Atom]:
-            atom.set_label_visible(False)
+            atom.set_label_visible(False)  # type: ignore[attr-defined]
         self.update()
 
     def atom_labels_set_type(self, value: AtomLabelType):

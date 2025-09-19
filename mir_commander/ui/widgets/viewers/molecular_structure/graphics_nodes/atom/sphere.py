@@ -37,9 +37,9 @@ class Sphere(BaseGraphicsNode):
         self.set_scale(QVector3D(radius, radius, radius))
 
     def get_text(self) -> str:
-        atom = cast("Atom", self.parent)
+        atom = cast("Atom", self._parent)
         return f"Atom: {atom.element_symbol}{atom.index_num + 1}"
 
     def toggle_selection(self) -> bool:
-        atom = cast("Atom", self.parent)
+        atom = cast("Atom", self._parent)
         return atom.toggle_selection()

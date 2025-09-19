@@ -29,6 +29,8 @@ class MolecularStructureViewer(Viewer):
             title=self._draw_item.text(),
         )
 
+        self.ac_viewer.message_channel.connect(self.long_msg_signal.emit)
+
         self._context_menu = ContextMenu(parent=self, app_config=app_config)
 
         self.setWidget(self.ac_viewer)

@@ -224,7 +224,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            data.extend(list(node._transform._translation.toTuple()))
+            data.extend(list(node._transform._translation.toTuple()))  # type: ignore[call-overload]
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
@@ -240,8 +240,8 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            if node.parent is not None:
-                data.extend(list(node.parent._transform._translation.toTuple()))
+            if node._parent is not None:
+                data.extend(list(node._parent._transform._translation.toTuple()))  # type: ignore[call-overload]
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
@@ -251,8 +251,8 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            if node.parent is not None:
-                nd = node.parent.transform.data()
+            if node._parent is not None:
+                nd = node._parent.transform.data()
                 center = QVector3D(nd[12], nd[13], nd[14])
                 data.extend(list(center.toTuple()))  # type: ignore[call-overload]
             else:
@@ -264,13 +264,13 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            if node.parent is not None:
-                if node.parent.parent is not None:
-                    nd = node.parent.parent.transform.data()
+            if node._parent is not None:
+                if node._parent._parent is not None:
+                    nd = node._parent._parent.transform.data()
                     center = QVector3D(nd[12], nd[13], nd[14])
                     data.extend(list(center.toTuple()))  # type: ignore[call-overload]
                 else:
-                    nd = node.parent.transform.data()
+                    nd = node._parent.transform.data()
                     center = QVector3D(nd[12], nd[13], nd[14])
                     data.extend(list(center.toTuple()))  # type: ignore[call-overload]
             else:
