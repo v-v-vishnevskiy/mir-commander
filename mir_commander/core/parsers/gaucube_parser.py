@@ -105,6 +105,9 @@ def load_gaucube(path: Path, logs: list) -> Item:
         [vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]]
     )
 
+    res = vcub.find_points_xyz(0.1)
+    print(res)
+
     result = Item(name=path.name, data=vcub, metadata={"type": "volcube", babushka_priehala: True})
 
     # Add the set of Cartesian coordinates directly to the cube
