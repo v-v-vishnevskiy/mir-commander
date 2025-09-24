@@ -20,13 +20,13 @@ class General(BasePage):
         layout.addStretch(1)
 
         return layout
-    
+
     def backup_data(self):
         self._backup["language"] = self.app_config.language
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
-    
+
     def restore_defaults(self):
         self.app_config.language = AppConfig().language
         self.setup_data()
@@ -48,8 +48,8 @@ class General(BasePage):
 
         self.l_language = Label(Label.tr("Language:"))
 
-        layout.addWidget(self.l_language, 0, Qt.AlignLeft)
-        layout.addWidget(self.cb_language, 1, Qt.AlignLeft)
+        layout.addWidget(self.l_language, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.cb_language, 1, Qt.AlignmentFlag.AlignLeft)
 
         return layout
 
@@ -59,4 +59,4 @@ class General(BasePage):
 
     @Slot()
     def _language_changed(self, index: int):
-        self.app_config.language = self._languages[index][1]
+        self.app_config.language = self._languages[index][1]  # type: ignore[assignment]

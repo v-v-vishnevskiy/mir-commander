@@ -298,12 +298,12 @@ class Style(BaseModel):
     atoms: Atoms = Atoms()
     selected_atom: SelectedAtom = SelectedAtom()
     under_cursor_text_overlay: TextOverlayConfig = TextOverlayConfig(
-        alignment=["center"],
+        text_alignment=["center"],
         background_color=Color("#44444499"),
     )
 
 
-class MenuKeymap(BaseModel):
+class Keymap(BaseModel):
     save_image: str = "s"
     toggle_projection: str = "ctrl+p"
     toggle_selected: str = "b"
@@ -314,21 +314,13 @@ class MenuKeymap(BaseModel):
     prev_atomic_coordinates: str = "ctrl+left"
     next_style: str = "ctrl+down"
     prev_style: str = "ctrl+up"
-
-
-class ViewerKeymap(BaseModel):
     rotate_down: list[str] = ["down"]
     rotate_left: list[str] = ["left"]
     rotate_right: list[str] = ["right"]
     rotate_up: list[str] = ["up"]
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
-    toggle_atom_selection: list[str] = ["mb_1"]
-
-
-class Keymap(BaseModel):
-    menu: MenuKeymap = MenuKeymap()
-    viewer: ViewerKeymap = ViewerKeymap()
+    toggle_node_selection: list[str] = ["mb_1"]
 
 
 class Quality(BaseModel):
@@ -345,8 +337,8 @@ class MolecularStructureViewerConfig(BaseModel):
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[
-            Style(name="Colored Bonds", background=Background(color="#222222")),
-            Style(name="Simple", bond=Bond(color="#888888")),
+            Style(name="Colored Bonds", background=Background(color=Color("#222222"))),
+            Style(name="Simple", bond=Bond(color=Color("#888888"))),
             Style(
                 name="Colored Bonds Only",
                 atoms=Atoms(radius="bond"),

@@ -6,7 +6,6 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
@@ -15,15 +14,14 @@ from mir_commander.core.errors import LoadFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
-from .utils.sub_window_menu import SubWindowMenu
-from .utils.sub_window_toolbar import SubWindowToolBar
+from .utils.viewer.viewer import Viewer
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
-from .widgets.docks import ConsoleDock, ObjectDock, ProjectDock, ViewerSettingsDock
+from .widgets.docks.console_dock import ConsoleDock
+from .widgets.docks.object_dock import ObjectDock
+from .widgets.docks.project_dock.project_dock import ProjectDock
+from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
 from .widgets.settings.settings_dialog import SettingsDialog
-from .widgets.viewers.base import BaseViewer
-from .widgets.viewers.molecular_structure.menu import Menu as MolStructMenu
-from .widgets.viewers.molecular_structure.toolbar import ToolBar as MolStructToolBar
 
 logger = logging.getLogger("ProjectWindow")
 
@@ -52,8 +50,6 @@ class ProjectWindow(QMainWindow):
         self.project = project
         self.app_config = app_config
         self.config = app_config.project_window
-        self.sub_window_menus: list[SubWindowMenu] = []  # Menus of SubWindows
-        self.sub_window_toolbars: list[SubWindowToolBar] = []  # Toolbars of SubWindows
         self.app_apply_callbacks = app_apply_callbacks
         self.apply_callbacks = ApplyCallbacks()
 
@@ -63,7 +59,6 @@ class ProjectWindow(QMainWindow):
 
         self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()
-        self.setup_toolbars()  # Note, we create toolbars before menus
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
@@ -82,8 +77,6 @@ class ProjectWindow(QMainWindow):
             for msg in init_msg:
                 self.append_to_console(msg)
 
-        self._fix_window_composition()
-
         self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
 
         if project.is_temporary:
@@ -93,38 +86,25 @@ class ProjectWindow(QMainWindow):
     def append_to_console(self, text: str):
         self.docks.console.append(text)
 
-    def _fix_window_composition(self):
-        widget = QOpenGLWidget()
-        widget.item = None
-        self.__fix_sub_window = self.mdi_area.addSubWindow(widget)
-        self.__fix_sub_window.hide()
-
-    def show(self):
-        super().show()
-        if self.__fix_sub_window:
-            self.mdi_area.removeSubWindow(self.__fix_sub_window)
-            self.__fix_sub_window = None
-
     def setup_mdi_area(self):
-        def opened_viewer_slot(viewer: BaseViewer):
+        def opened_viewer_slot(viewer: Viewer):
             viewer.short_msg_signal.connect(self.status_bar.showMessage)
             viewer.long_msg_signal.connect(self.docks.console.append)
 
         self.mdi_area = MdiArea(
-            parent=self, viewer_settings_dock=self.docks.viewer_settings, viewers_config=self.config.widgets.viewers
+            parent=self, viewer_settings_dock=self.docks.viewer_settings, app_config=self.app_config
         )
         self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.subWindowActivated.connect(self.update_toolbars)
         self.mdi_area.opened_viewer_signal.connect(opened_viewer_slot)
         self.setCentralWidget(self.mdi_area)
 
         self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
 
     def setup_docks(self):
-        self.setTabPosition(Qt.BottomDockWidgetArea, QTabWidget.TabPosition.North)
-        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.TabPosition.West)
-        self.setTabPosition(Qt.RightDockWidgetArea, QTabWidget.TabPosition.East)
-        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setTabPosition(Qt.DockWidgetArea.BottomDockWidgetArea, QTabWidget.TabPosition.North)
+        self.setTabPosition(Qt.DockWidgetArea.LeftDockWidgetArea, QTabWidget.TabPosition.West)
+        self.setTabPosition(Qt.DockWidgetArea.RightDockWidgetArea, QTabWidget.TabPosition.East)
+        self.setCorner(Qt.Corner.BottomLeftCorner, Qt.DockWidgetArea.LeftDockWidgetArea)
 
         self.docks = Docks(
             ProjectDock(
@@ -136,49 +116,19 @@ class ProjectWindow(QMainWindow):
             ConsoleDock(parent=self),
             ViewerSettingsDock(parent=self),
         )
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docks.project)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.object)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.docks.viewer_settings)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.docks.console)
-
-    def setup_toolbars(self):
-        # N.B.: toolbar(s) of the main window will be also created in this function.
-
-        # Here we collect classes of widgets, which create their own toolbars for the main window.
-        # The logic for such toolbars is implemented inside particular classes, see MolViewer for an example.
-        self.sub_window_toolbars.append(
-            MolStructToolBar(
-                parent=self,
-                mdi_area=self.mdi_area,
-                config=self.config.widgets.toolbars,
-            )
-        )
-
-        for toolbar in self.sub_window_toolbars:
-            self.addToolBar(toolbar)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
 
     def setup_menubar(self):
-        # Collect all additional menus from viewers.
-        # Here is the same logic as for toolbars of particular widgets.
-        self.sub_window_menus.append(
-            MolStructMenu(
-                parent=self,
-                mdi_area=self.mdi_area,
-                config=self.config.widgets.viewers.molecular_structure,
-            )
-        )
-
         menubar = self.menuBar()
         menubar.addMenu(self._setup_menubar_file())
         menubar.addMenu(self._setup_menubar_view())
         menubar.addMenu(self._setup_menubar_window())
-
-        for menu in self.sub_window_menus:
-            menubar.addMenu(menu)
-
         menubar.addMenu(self._setup_menubar_help())
 
     def _setup_menubar_file(self) -> Menu:
@@ -195,9 +145,6 @@ class ProjectWindow(QMainWindow):
         menu.addAction(self.docks.project.toggleViewAction())
         menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
-        menu.addSeparator()
-        for toolbar in self.sub_window_toolbars:
-            menu.addAction(toolbar.toggleViewAction())
         return menu
 
     def _setup_menubar_window(self) -> Menu:
@@ -219,7 +166,7 @@ class ProjectWindow(QMainWindow):
 
     def _settings_action(self) -> Action:
         action = Action(Action.tr("Settings..."), self)
-        action.setMenuRole(Action.PreferencesRole)
+        action.setMenuRole(Action.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
             parent=self,
@@ -233,14 +180,14 @@ class ProjectWindow(QMainWindow):
 
     def _quit_action(self) -> Action:
         action = Action(Action.tr("Quit"), self)
-        action.setMenuRole(Action.QuitRole)
-        action.setShortcut(QKeySequence.Quit)
+        action.setMenuRole(Action.MenuRole.QuitRole)
+        action.setShortcut(QKeySequence.StandardKey.Quit)
         action.triggered.connect(self.quit_application_signal.emit)
         return action
 
     def _about_action(self) -> Action:
         action = Action(Action.tr("About"), self)
-        action.setMenuRole(Action.AboutRole)
+        action.setMenuRole(Action.MenuRole.AboutRole)
         action.triggered.connect(About(self).show)
         return action
 
@@ -279,7 +226,7 @@ class ProjectWindow(QMainWindow):
         self._win_next_act = Action(
             Action.tr("Ne&xt"),
             self,
-            shortcut=QKeySequence.NextChild,
+            shortcut=QKeySequence.StandardKey.NextChild,
             statusTip=self.tr("Move the focus to the next window"),
             triggered=self.mdi_area.activateNextSubWindow,
         )
@@ -287,7 +234,7 @@ class ProjectWindow(QMainWindow):
         self._win_previous_act = Action(
             Action.tr("Pre&vious"),
             self,
-            shortcut=QKeySequence.PreviousChild,
+            shortcut=QKeySequence.StandardKey.PreviousChild,
             statusTip=self.tr("Move the focus to the previous window"),
             triggered=self.mdi_area.activatePreviousSubWindow,
         )
@@ -304,8 +251,8 @@ class ProjectWindow(QMainWindow):
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self.config.pos or [geometry.width() * 0.125, geometry.height() * 0.125]
-        size = self.config.size or [geometry.width() * 0.75, geometry.height() * 0.75]
+        pos = self.config.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
+        size = self.config.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
         self.setGeometry(pos[0], pos[1], size[0], size[1])
         if state := self.config.state:
             self.restoreState(base64.b64decode(state))
@@ -327,14 +274,6 @@ class ProjectWindow(QMainWindow):
         self._win_previous_act.setEnabled(has_mdi_child)
         self._win_separator_act.setVisible(has_mdi_child)
 
-        for menu in self.sub_window_menus:
-            menu.update_state(window)
-
-    @Slot()
-    def update_toolbars(self, window: None | QMdiSubWindow):
-        for toolbar in self.sub_window_toolbars:
-            toolbar.update_state(window)
-
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
             self.mdi_area.setActiveSubWindow(window)
@@ -342,13 +281,13 @@ class ProjectWindow(QMainWindow):
     def _import_file(self):
         """Import a file into the current project."""
         dialog = QFileDialog(self, self.tr("Import File"))
-        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         dialog.setNameFilter(self.tr("All files (*)"))
 
-        if dialog.exec() == QFileDialog.Accepted:
+        if dialog.exec() == QFileDialog.DialogCode.Accepted:
             file_path = Path(dialog.selectedFiles()[0])
             try:
-                logs = []
+                logs: list[str] = []
                 imported_item = self.project.import_file(file_path, logs)
                 self.docks.project.add_item_to_root(imported_item)
 

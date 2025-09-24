@@ -1,6 +1,8 @@
+from typing import TYPE_CHECKING
+
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ...config import AtomLabelConfig, AtomLabelType, SelectedAtom
@@ -8,11 +10,14 @@ from .bounding_sphere import BoundingSphere
 from .label import Label
 from .sphere import Sphere
 
+if TYPE_CHECKING:
+    from ..bond.bond import Bond
 
-class Atom(ContainerNode):
+
+class Atom(Node):
     def __init__(
         self,
-        parent: BaseNode,
+        parent: Node,
         model_name: str,
         index_num: int,
         atomic_num: int,
@@ -23,13 +28,13 @@ class Atom(ContainerNode):
         selected_atom_config: SelectedAtom,
         label_config: AtomLabelConfig,
     ):
-        super().__init__(parent=parent, visible=True)
+        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
         self.translate(position)
 
         self.index_num = index_num
         self.atomic_num = atomic_num
         self.element_symbol = element_symbol
-        self._related_bonds = []
+        self._related_bonds: list["Bond"] = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
         self._sphere = Sphere(self, model_name, radius, color)
@@ -39,7 +44,7 @@ class Atom(ContainerNode):
         self._label.set_translation(QVector3D(0.0, 0.0, radius * label_config.offset))
         self.set_label_type(label_config.type)
 
-    def add_related_bond(self, bond: BaseNode):
+    def add_related_bond(self, bond: "Bond"):
         self._related_bonds.append(bond)
 
     def set_cloaked(self, value: bool):
@@ -68,10 +73,6 @@ class Atom(ContainerNode):
     @property
     def selected(self) -> bool:
         return self._selected
-
-    def highlight(self, value: bool):
-        r = self._sphere.highlight(value)
-        self._label.set_translation(QVector3D(0.0, 0.0, r * self._label_config.offset))
 
     def set_color(self, color: Color4f):
         self._sphere.set_color(color)

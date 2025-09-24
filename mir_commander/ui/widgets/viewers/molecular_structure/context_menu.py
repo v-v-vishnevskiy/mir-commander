@@ -1,23 +1,25 @@
-from PySide6.QtCore import Slot
-from PySide6.QtGui import QIcon, QKeySequence
-from PySide6.QtWidgets import QMdiArea, QWidget
+from typing import TYPE_CHECKING
 
-from mir_commander.ui.utils.sub_window_menu import SubWindowMenu
-from mir_commander.ui.utils.widget import Action
-from mir_commander.ui.utils.widget import Menu as BaseMenu
+from PySide6.QtGui import QKeySequence
 
-from .config import AtomLabelType, MolecularStructureViewerConfig
-from .viewer import MolecularStructureViewer
+from mir_commander.ui.config import AppConfig
+from mir_commander.ui.utils.widget import Action, Menu
+
+from .config import AtomLabelType
+
+if TYPE_CHECKING:
+    from .viewer import MolecularStructureViewer
 
 
-class Menu(SubWindowMenu[MolecularStructureViewer]):
-    def __init__(self, parent: QWidget, mdi_area: QMdiArea, config: MolecularStructureViewerConfig):
-        super().__init__(Menu.tr("&Molecule"), parent, mdi_area)
-        self.setObjectName("Molecular Structure Menu")
+class ContextMenu(Menu):
+    def __init__(self, parent: "MolecularStructureViewer", app_config: AppConfig):
+        super().__init__(parent=parent)
 
-        self._config = config
-        self._keymap = config.keymap.menu
-        self._style = config.get_current_style()
+        self._viewer = parent
+        self._ac_viewer = parent.ac_viewer
+        self._app_config = app_config
+        self._config = app_config.project_window.widgets.viewers.molecular_structure
+        self._keymap = self._config.keymap
 
         self._init_atom_labels_menu()
         self._init_bonds_menu()
@@ -25,33 +27,50 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         self._init_calculate_menu()
         self._init_cloaking_menu()
         self._switch_atomic_coordinates_menu()
-        self._style_menu()
+        self.addSeparator()
+        self._init_actions()
+
+    def _init_actions(self):
+        save_img_act = Action(Action.tr("Save image..."), self.parent())
+        save_img_act.setShortcut(QKeySequence(self._keymap.save_image))
+        save_img_act.triggered.connect(self._ac_viewer.save_img_action_handler)
+        self.addAction(save_img_act)
+        self._ac_viewer.addAction(save_img_act)
+
+        self.addSeparator()
+
+        next_style_act = Action(Action.tr("Next style"), self.parent())
+        next_style_act.setShortcut(QKeySequence(self._keymap.next_style))
+        next_style_act.triggered.connect(self._ac_viewer.set_next_style)
+        self.addAction(next_style_act)
+        self._ac_viewer.addAction(next_style_act)
+
+        prev_style_act = Action(Action.tr("Previous style"), self.parent())
+        prev_style_act.setShortcut(QKeySequence(self._keymap.prev_style))
+        prev_style_act.triggered.connect(self._ac_viewer.set_prev_style)
+        self.addAction(prev_style_act)
+        self._ac_viewer.addAction(prev_style_act)
+
+        self.addSeparator()
 
         projection_act = Action(Action.tr("Toggle projection"), self.parent())
         projection_act.setShortcut(QKeySequence(self._keymap.toggle_projection))
-        projection_act.triggered.connect(self.toggle_projection_action_handler)
+        projection_act.triggered.connect(self._ac_viewer.toggle_projection_mode)
         self.addAction(projection_act)
-
-        save_img_act = Action(Action.tr("Save image..."), self.parent())
-        save_img_act.setShortcut(QKeySequence(self._keymap.save_image))
-        save_img_act.setIcon(QIcon(":/icons/actions/saveimage.png"))
-        save_img_act.triggered.connect(self.save_img_action_handler)
-        self.addAction(save_img_act)
-
-        self.set_enabled_actions(False)
+        self._ac_viewer.addAction(projection_act)
 
     def _init_atom_labels_menu(self):
-        menu = BaseMenu(Menu.tr("Atom labels"))
+        menu = Menu(Menu.tr("Atom labels"))
         self.addMenu(menu)
 
         show_for_selected_atoms_act = Action(Action.tr("Show for selected atoms"), self.parent())
         show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
-        show_for_selected_atoms_act.triggered.connect(self.labels_show_for_selected_atoms_handler)
+        show_for_selected_atoms_act.triggered.connect(self._ac_viewer.atom_labels_show_for_selected_atoms)
         menu.addAction(show_for_selected_atoms_act)
 
         hide_for_selected_atoms_act = Action(Action.tr("Hide for selected atoms"), self.parent())
         hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
-        hide_for_selected_atoms_act.triggered.connect(self.labels_hide_for_selected_atoms_handler)
+        hide_for_selected_atoms_act.triggered.connect(self._ac_viewer.atom_labels_hide_for_selected_atoms)
         menu.addAction(hide_for_selected_atoms_act)
 
         menu.addSeparator()
@@ -94,80 +113,82 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
 
         show_all_act = Action(Action.tr("Show all"), self.parent())
         show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
-        show_all_act.triggered.connect(self.labels_show_for_all_atoms_handler)
+        show_all_act.triggered.connect(self._ac_viewer.atom_labels_show_for_all_atoms)
         menu.addAction(show_all_act)
 
         hide_all_act = Action(Action.tr("Hide all"), self.parent())
         hide_all_act.setStatusTip(Action.tr("Hide labels for all atoms"))
-        hide_all_act.triggered.connect(self.labels_hide_for_all_atoms_handler)
+        hide_all_act.triggered.connect(self._ac_viewer.atom_labels_hide_for_all_atoms)
         menu.addAction(hide_all_act)
 
     def _init_bonds_menu(self):
-        bonds_menu = BaseMenu(Menu.tr("Bonds"))
+        bonds_menu = Menu(Menu.tr("Bonds"))
         self.addMenu(bonds_menu)
 
         add_selected_act = Action(Action.tr("Add selected"), self.parent())
         add_selected_act.setStatusTip(Action.tr("Add new bonds between selected atoms"))
-        add_selected_act.triggered.connect(self.bonds_add_selected_handler)
+        add_selected_act.triggered.connect(self._ac_viewer.add_bonds_for_selected_atoms)
         bonds_menu.addAction(add_selected_act)
 
         remove_selected_act = Action(Action.tr("Remove selected"), self.parent())
         remove_selected_act.setStatusTip(Action.tr("Remove existing bonds between selected atoms"))
-        remove_selected_act.triggered.connect(self.bonds_remove_selected_handler)
+        remove_selected_act.triggered.connect(self._ac_viewer.remove_bonds_for_selected_atoms)
         bonds_menu.addAction(remove_selected_act)
 
         toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
         toggle_selected_act.setShortcut(QKeySequence(self._keymap.toggle_selected))
         toggle_selected_act.setStatusTip(Action.tr("Add new or remove existing bonds between selected atoms"))
-        toggle_selected_act.triggered.connect(self.bonds_toggle_selected_handler)
+        toggle_selected_act.triggered.connect(self._ac_viewer.toggle_bonds_for_selected_atoms)
         bonds_menu.addAction(toggle_selected_act)
+        self._ac_viewer.addAction(toggle_selected_act)
 
         build_dynamically_act = Action(Action.tr("Build dynamically..."), self.parent())
         build_dynamically_act.setStatusTip(Action.tr("Build bonds in dynamic mode by adjusting settings"))
-        build_dynamically_act.triggered.connect(self.bonds_build_dynamically_handler)
+        build_dynamically_act.triggered.connect(self._ac_viewer.rebuild_bonds_dynamic)
         bonds_menu.addAction(build_dynamically_act)
 
         rebuild_all_act = Action(Action.tr("Rebuild all"), self.parent())
         rebuild_all_act.setStatusTip(Action.tr("Remove all current bonds and automatically create a new set of bonds"))
-        rebuild_all_act.triggered.connect(self.bonds_rebuild_all_handler)
+        rebuild_all_act.triggered.connect(self._ac_viewer.rebuild_bonds)
         bonds_menu.addAction(rebuild_all_act)
 
         rebuild_default_act = Action(Action.tr("Rebuild default"), self.parent())
         rebuild_default_act.setStatusTip(Action.tr("Rebuild bonds automatically using default settings"))
-        rebuild_default_act.triggered.connect(self.bonds_rebuild_default_handler)
+        rebuild_default_act.triggered.connect(self._ac_viewer.rebuild_bonds_default)
         bonds_menu.addAction(rebuild_default_act)
 
     def _init_selection_menu(self):
-        selection_menu = BaseMenu(Menu.tr("Selection"))
+        selection_menu = Menu(Menu.tr("Selection"))
         self.addMenu(selection_menu)
 
         select_all_atoms_act = Action(Action.tr("Select all atoms"), self.parent())
-        select_all_atoms_act.triggered.connect(self.select_all_atoms_handler)
+        select_all_atoms_act.triggered.connect(self._ac_viewer.select_all_atoms)
         selection_menu.addAction(select_all_atoms_act)
 
         unselect_all_atoms_act = Action(Action.tr("Unselect all atoms"), self.parent())
-        unselect_all_atoms_act.triggered.connect(self.unselect_all_atoms_handler)
+        unselect_all_atoms_act.triggered.connect(self._ac_viewer.unselect_all_atoms)
         selection_menu.addAction(unselect_all_atoms_act)
 
         select_toggle_all_atoms_act = Action(Action.tr("Toggle all atoms"), self.parent())
         select_toggle_all_atoms_act.setShortcut(QKeySequence(self._keymap.select_toggle_all))
-        select_toggle_all_atoms_act.triggered.connect(self.select_toggle_all_atoms_handler)
+        select_toggle_all_atoms_act.triggered.connect(self._ac_viewer.select_toggle_all_atoms)
         selection_menu.addAction(select_toggle_all_atoms_act)
+        self._ac_viewer.addAction(select_toggle_all_atoms_act)
 
     def _init_calculate_menu(self):
-        calc_menu = BaseMenu(Menu.tr("Calculate"))
+        calc_menu = Menu(Menu.tr("Calculate"))
         self.addMenu(calc_menu)
 
         calc_interat_distance_act = Action(Action.tr("Interatomic distance"), self.parent())
         calc_interat_distance_act.setStatusTip(Action.tr("Distance between last two selected atoms a1-a2"))
-        calc_interat_distance_act.triggered.connect(self.calc_interat_distance_handler)
+        calc_interat_distance_act.triggered.connect(self._ac_viewer.calc_distance_last2sel_atoms)
         calc_menu.addAction(calc_interat_distance_act)
 
         calc_interat_angle_act = Action(Action.tr("Interatomic angle"), self.parent())
         calc_interat_angle_act.setStatusTip(
             Action.tr("Angle between two lines formed by last three selected atoms a1-a2-a3")
         )
-        calc_interat_angle_act.triggered.connect(self.calc_interat_angle_handler)
+        calc_interat_angle_act.triggered.connect(self._ac_viewer.calc_angle_last3sel_atoms)
         calc_menu.addAction(calc_interat_angle_act)
 
         calc_torsion_angle_act = Action(Action.tr("Torsion angle"), self.parent())
@@ -177,7 +198,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
                 "defined on the basis of last four selected atoms"
             )
         )
-        calc_torsion_angle_act.triggered.connect(self.calc_torsion_angle_handler)
+        calc_torsion_angle_act.triggered.connect(self._ac_viewer.calc_torsion_last4sel_atoms)
         calc_menu.addAction(calc_torsion_angle_act)
 
         calc_oop_angle_act = Action(Action.tr("Out-of-plane angle"), self.parent())
@@ -186,7 +207,7 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
                 "Angle between the vector (a1-a2) and plane (a3-a2-a4) defined on the basis of last four selected atoms"
             )
         )
-        calc_oop_angle_act.triggered.connect(self.calc_oop_angle_handler)
+        calc_oop_angle_act.triggered.connect(self._ac_viewer.calc_oop_last4sel_atoms)
         calc_menu.addAction(calc_oop_angle_act)
 
         calc_auto_parameter_act = Action(Action.tr("Auto parameter"), self.parent())
@@ -194,227 +215,80 @@ class Menu(SubWindowMenu[MolecularStructureViewer]):
         calc_auto_parameter_act.setStatusTip(
             Action.tr("Interatomic distance, angle or torsion angle if two, three or four atoms are selected")
         )
-        calc_auto_parameter_act.triggered.connect(self.calc_auto_parameter_handler)
+        calc_auto_parameter_act.triggered.connect(self._ac_viewer.calc_auto_lastsel_atoms)
         calc_menu.addAction(calc_auto_parameter_act)
+        self._ac_viewer.addAction(calc_auto_parameter_act)
 
         calc_sel_fragments_act = Action(Action.tr("Selected fragments"), self.parent())
         calc_sel_fragments_act.setStatusTip(
             Action.tr("Calculate all geometric parameters for fragments with selected atoms")
         )
-        calc_sel_fragments_act.triggered.connect(self.calc_sel_fragments_handler)
+        calc_sel_fragments_act.triggered.connect(self._ac_viewer.calc_all_parameters_selected_atoms)
         calc_menu.addAction(calc_sel_fragments_act)
 
     def _init_cloaking_menu(self):
-        cloaking_menu = BaseMenu(Menu.tr("Cloaking"))
+        cloaking_menu = Menu(Menu.tr("Cloaking"))
         self.addMenu(cloaking_menu)
 
         cloak_selected_act = Action(Action.tr("Cloak all selected"), self.parent())
-        cloak_selected_act.triggered.connect(self.cloak_selected_handler)
+        cloak_selected_act.triggered.connect(self._ac_viewer.cloak_selected_atoms)
         cloaking_menu.addAction(cloak_selected_act)
 
         cloak_not_selected_act = Action(Action.tr("Cloak all not selected"), self.parent())
-        cloak_not_selected_act.triggered.connect(self.cloak_not_selected_handler)
+        cloak_not_selected_act.triggered.connect(self._ac_viewer.cloak_not_selected_atoms)
         cloaking_menu.addAction(cloak_not_selected_act)
 
         cloak_h_atoms_act = Action(Action.tr("Cloak all H atoms"), self.parent())
-        cloak_h_atoms_act.triggered.connect(self.cloak_h_atoms_handler)
+        cloak_h_atoms_act.triggered.connect(self._ac_viewer.cloak_h_atoms)
         cloaking_menu.addAction(cloak_h_atoms_act)
 
         cloak_notsel_h_atoms_act = Action(Action.tr("Cloak not selected H atoms"), self.parent())
-        cloak_notsel_h_atoms_act.triggered.connect(self.cloak_notsel_h_atoms_handler)
+        cloak_notsel_h_atoms_act.triggered.connect(self._ac_viewer.cloak_not_selected_h_atoms)
         cloaking_menu.addAction(cloak_notsel_h_atoms_act)
 
         cloak_toggle_h_atoms_act = Action(Action.tr("Toggle all H atoms"), self.parent())
         cloak_toggle_h_atoms_act.setShortcut(QKeySequence(self._keymap.cloak_toggle_h_atoms))
-        cloak_toggle_h_atoms_act.triggered.connect(self.cloak_toggle_h_atoms_handler)
+        cloak_toggle_h_atoms_act.triggered.connect(self._ac_viewer.cloak_toggle_h_atoms)
         cloaking_menu.addAction(cloak_toggle_h_atoms_act)
+        self._ac_viewer.addAction(cloak_toggle_h_atoms_act)
 
         cloak_at_by_type_act = Action(Action.tr("Cloak atoms by type..."), self.parent())
-        cloak_at_by_type_act.triggered.connect(self.cloak_atoms_by_type_handler)
+        cloak_at_by_type_act.triggered.connect(self._ac_viewer.cloak_atoms_by_atnum)
         cloaking_menu.addAction(cloak_at_by_type_act)
 
         cloaking_menu.addSeparator()
 
         uncloak_all_act = Action(Action.tr("Uncloak all"), self.parent())
-        uncloak_all_act.triggered.connect(self.uncloak_all_handler)
+        uncloak_all_act.triggered.connect(self._ac_viewer.uncloak_all_atoms)
         cloaking_menu.addAction(uncloak_all_act)
 
     def _switch_atomic_coordinates_menu(self):
-        menu = BaseMenu(Menu.tr("Coordinates set"))
+        menu = Menu(Menu.tr("Coordinates set"))
         self.addMenu(menu)
 
         next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
         next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
-        next_atomic_coordinates_act.triggered.connect(self.next_atomic_coordinates_handler)
+        next_atomic_coordinates_act.triggered.connect(self._viewer.set_next_atomic_coordinates)
         menu.addAction(next_atomic_coordinates_act)
+        self._viewer.addAction(next_atomic_coordinates_act)
 
         prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
         prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
-        prev_atomic_coordinates_act.triggered.connect(self.prev_atomic_coordinates_handler)
+        prev_atomic_coordinates_act.triggered.connect(self._viewer.set_prev_atomic_coordinates)
         menu.addAction(prev_atomic_coordinates_act)
+        self._viewer.addAction(prev_atomic_coordinates_act)
 
-    def _style_menu(self):
-        menu = BaseMenu(Menu.tr("Style"))
-        self.addMenu(menu)
-
-        next_style_act = Action(Action.tr("Next"), self.parent())
-        next_style_act.setShortcut(QKeySequence(self._keymap.next_style))
-        next_style_act.triggered.connect(self.next_style_handler)
-        menu.addAction(next_style_act)
-
-        prev_style_act = Action(Action.tr("Previous"), self.parent())
-        prev_style_act.setShortcut(QKeySequence(self._keymap.prev_style))
-        prev_style_act.triggered.connect(self.prev_style_handler)
-        menu.addAction(prev_style_act)
-
-    # Note, callbacks are only triggered, when the respective action is enabled.
-    # Whether this is the case, is determined by the update_state method of the SubWindowMenu class.
-    # This method receives the window parameter, so it is possible to determine the currently active type
-    # of widget. Thus, it is guaranteed that self.widget is actually a MolecularStructure instance
-    # and we may call our respective action handler.
-
-    @Slot()
-    def toggle_projection_action_handler(self):
-        self.active_widget.toggle_projection_mode()
-
-    @Slot()
-    def save_img_action_handler(self):
-        self.active_widget.save_img_action_handler()
-
-    @Slot()
-    def bonds_add_selected_handler(self):
-        self.active_widget.add_bonds_for_selected_atoms()
-
-    @Slot()
-    def bonds_remove_selected_handler(self):
-        self.active_widget.remove_bonds_for_selected_atoms()
-
-    @Slot()
-    def bonds_toggle_selected_handler(self):
-        self.active_widget.toggle_bonds_for_selected_atoms()
-
-    @Slot()
-    def bonds_rebuild_all_handler(self):
-        self.active_widget.rebuild_bonds()
-
-    @Slot()
-    def bonds_rebuild_default_handler(self):
-        self.active_widget.rebuild_bonds_default()
-
-    @Slot()
-    def bonds_build_dynamically_handler(self):
-        self.active_widget.rebuild_bonds_dynamic()
-
-    @Slot()
-    def select_all_atoms_handler(self):
-        self.active_widget.select_all_atoms()
-
-    @Slot()
-    def unselect_all_atoms_handler(self):
-        self.active_widget.unselect_all_atoms()
-
-    @Slot()
-    def select_toggle_all_atoms_handler(self):
-        self.active_widget.select_toggle_all_atoms()
-
-    @Slot()
-    def calc_interat_distance_handler(self):
-        self.active_widget.calc_distance_last2sel_atoms()
-
-    @Slot()
-    def calc_interat_angle_handler(self):
-        self.active_widget.calc_angle_last3sel_atoms()
-
-    @Slot()
-    def calc_torsion_angle_handler(self):
-        self.active_widget.calc_torsion_last4sel_atoms()
-
-    @Slot()
-    def calc_oop_angle_handler(self):
-        self.active_widget.calc_oop_last4sel_atoms()
-
-    @Slot()
-    def calc_auto_parameter_handler(self):
-        self.active_widget.calc_auto_lastsel_atoms()
-
-    @Slot()
-    def calc_sel_fragments_handler(self):
-        self.active_widget.calc_all_parameters_selected_atoms()
-
-    @Slot()
-    def cloak_selected_handler(self):
-        self.active_widget.cloak_selected_atoms()
-
-    @Slot()
-    def cloak_not_selected_handler(self):
-        self.active_widget.cloak_not_selected_atoms()
-
-    @Slot()
-    def cloak_h_atoms_handler(self):
-        self.active_widget.cloak_h_atoms()
-
-    @Slot()
-    def cloak_notsel_h_atoms_handler(self):
-        self.active_widget.cloak_not_selected_h_atoms()
-
-    @Slot()
-    def cloak_toggle_h_atoms_handler(self):
-        self.active_widget.cloak_toggle_h_atoms()
-
-    @Slot()
-    def cloak_atoms_by_type_handler(self):
-        self.active_widget.cloak_atoms_by_atnum()
-
-    @Slot()
-    def uncloak_all_handler(self):
-        self.active_widget.uncloak_all_atoms()
-
-    @Slot()
-    def next_atomic_coordinates_handler(self):
-        self.active_widget.set_next_atomic_coordinates()
-
-    @Slot()
-    def prev_atomic_coordinates_handler(self):
-        self.active_widget.set_prev_atomic_coordinates()
-
-    @Slot()
-    def next_style_handler(self):
-        self.active_widget.set_next_style()
-
-    @Slot()
-    def prev_style_handler(self):
-        self.active_widget.set_prev_style()
-
-    @Slot()
-    def labels_show_for_all_atoms_handler(self):
-        self.active_widget.atom_labels_show_for_all_atoms()
-
-    @Slot()
-    def labels_hide_for_all_atoms_handler(self):
-        self.active_widget.atom_labels_hide_for_all_atoms()
-
-    @Slot()
-    def labels_show_for_selected_atoms_handler(self):
-        self.active_widget.atom_labels_show_for_selected_atoms()
-
-    @Slot()
-    def labels_hide_for_selected_atoms_handler(self):
-        self.active_widget.atom_labels_hide_for_selected_atoms()
-
-    @Slot()
     def labels_set_element_symbol_and_index_number_handler(self):
         self.set_index_number_act.setChecked(False)
         self.set_element_symbol_act.setChecked(False)
-        self.active_widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
+        self._ac_viewer.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
 
-    @Slot()
     def labels_set_element_symbol_handler(self):
         self.set_element_symbol_and_index_number_act.setChecked(False)
         self.set_index_number_act.setChecked(False)
-        self.active_widget.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)
+        self._ac_viewer.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)
 
-    @Slot()
     def labels_set_index_number_handler(self):
         self.set_element_symbol_and_index_number_act.setChecked(False)
         self.set_element_symbol_act.setChecked(False)
-        self.active_widget.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)
+        self._ac_viewer.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)

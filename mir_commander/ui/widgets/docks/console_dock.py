@@ -9,8 +9,8 @@ class Text(QPlainTextEdit):
     For example, such widgets may be used for showing results of calculations.
     """
 
-    def __init__(self, parent: QWidget = None):
-        super().__init__(parent)
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent=parent)
         self.setReadOnly(True)
 
 

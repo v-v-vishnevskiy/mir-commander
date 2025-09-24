@@ -10,12 +10,8 @@ def init_logging():
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
-                "console": {
-                    "format": "%(levelname)-7s %(message)s"
-                },
-                "file": {
-                    "format": "%(asctime)s %(levelname)-7s %(name)s - %(message)s"
-                }
+                "console": {"format": "%(levelname)-7s %(message)s"},
+                "file": {"format": "%(asctime)s %(levelname)-7s %(name)s - %(message)s"},
             },
             "handlers": {
                 "console": {
@@ -31,12 +27,9 @@ def init_logging():
                     "mode": "w",
                     "encoding": "utf-8",
                     "backupCount": 1,
-                    "maxBytes": 5 * 1024 * 1024
-                }
+                    "maxBytes": 5 * 1024 * 1024,
+                },
             },
-            "root": {
-                "level": "DEBUG",
-                "handlers": ["console", "file"]
-            }
+            "root": {"level": "DEBUG", "handlers": ["console", "file"]},
         }
     )

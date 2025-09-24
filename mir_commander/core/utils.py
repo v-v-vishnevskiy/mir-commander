@@ -15,7 +15,7 @@ def load_project(path: Path) -> tuple[Project, list[str]]:
     # and we can try to import its data and create a project on the fly.
     if path.is_file():
         logs: list[str] = []
-        project = Project()
+        project = Project(temporary=True)
         project.import_file(path, logs)
         project.config.name = path.name
 

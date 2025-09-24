@@ -37,7 +37,7 @@ class Shader:
         return self._shader
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self.id}, type={self._shader_type}, shader={self._shader})"
+        return f"{self.__class__.__name__}(type={self._shader_type}, shader={self._shader})"
 
 
 class VertexShader(Shader):

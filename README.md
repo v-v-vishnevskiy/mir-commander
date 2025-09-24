@@ -19,8 +19,9 @@ make init
 
 In case of problems with finding the default expected version of python you may want to indicate your version explicitly as,
 for example
+
 ```shell
-PYTHON=python3.11 make init
+PYTHON=python3.12 make init
 ```
 
 The development version of Mir Commander can now be started as

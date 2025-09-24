@@ -13,10 +13,10 @@ class Project(BasePage):
         layout.addStretch(1)
 
         return layout
-    
+
     def backup_data(self):
         self._backup["project_name"] = self.project_config.name
-    
+
     def restore_backup_data(self):
         self.project_config.name = self._backup["project_name"]
 
@@ -33,8 +33,8 @@ class Project(BasePage):
         self.l_project_name = Label(Label.tr("Project name:"))
         self.le_project_name = QLineEdit()
 
-        layout.addWidget(self.l_project_name, 0, Qt.AlignLeft)
-        layout.addWidget(self.le_project_name, 1, Qt.AlignLeft)
+        layout.addWidget(self.l_project_name, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.le_project_name, 1, Qt.AlignmentFlag.AlignLeft)
 
         return layout
 

@@ -1,5 +1,3 @@
-from typing import Any
-
 from .config import MolecularStructureViewerConfig
 
 
@@ -8,9 +6,6 @@ class Style:
         self._styles = config.styles
         self.current = config.styles[0]
         self.set_style(config.current_style)
-
-    def __getitem__(self, index: int) -> Any:
-        return self.current[index]
 
     def set_style(self, name: str):
         for style in self._styles:

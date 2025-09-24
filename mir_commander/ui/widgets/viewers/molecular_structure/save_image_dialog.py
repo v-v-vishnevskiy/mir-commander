@@ -11,12 +11,12 @@ from mir_commander.ui.utils.widget import CheckBox, Dialog, GroupBox, Label, Pus
 class SaveImageDialog(Dialog):
     file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
 
-    def __init__(self, img_width: int, img_height: int, filename: str, parent: QWidget):
+    def __init__(self, parent: QWidget, img_width: int, img_height: int, filename: str):
         super().__init__(parent)
 
         self.img_width = 0
         self.img_height = 0
-        self.img_file_path = ""
+        self.img_file_path = Path()
         self.transparent_bg = True
         self.crop_to_content = True
         self.img_file_name_init = self.sanitize_file_name(filename)
@@ -80,7 +80,7 @@ class SaveImageDialog(Dialog):
         file_path_layout.addWidget(self.file_path_button)
         self.main_layout.addLayout(file_path_layout)
 
-        QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
+        QBtn = QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
 
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.accept_handler)
@@ -113,18 +113,19 @@ class SaveImageDialog(Dialog):
     @Slot()
     def file_path_button_handler(self):
         fileDialog = QFileDialog(self, self.tr("Choose file"), str(self.initial_file_path))
-        fileDialog.setAcceptMode(QFileDialog.AcceptSave)
-        fileDialog.setFileMode(QFileDialog.AnyFile)
+        fileDialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        fileDialog.setFileMode(QFileDialog.FileMode.AnyFile)
         fileDialog.setDirectory(str(self.initial_file_path))
         mime_types = []
 
         for bf in QImageWriter.supportedMimeTypes():
-            mime_types.append(bf.data().decode("utf8"))
+            data: bytes = bf.data()
+            mime_types.append(data.decode("utf8"))
         fileDialog.setMimeTypeFilters(mime_types)
         fileDialog.selectMimeTypeFilter("image/png")
         fileDialog.setDefaultSuffix("png")
 
-        if fileDialog.exec() == QDialog.Accepted:
+        if fileDialog.exec() == QDialog.DialogCode.Accepted:
             file_name = fileDialog.selectedFiles()[0]
             self.file_path_editbox.setText(file_name)
 

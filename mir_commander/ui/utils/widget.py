@@ -1,7 +1,7 @@
 from time import monotonic
-from typing import Any, Self
+from typing import Any, Self, cast
 
-from PySide6.QtCore import QCoreApplication, QEvent
+from PySide6.QtCore import QCoreApplication, QEvent, QObject
 from PySide6.QtGui import QAction, QStandardItem
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -22,8 +22,8 @@ from PySide6.QtWidgets import (
 
 
 class TrString(str):
-    format_args = tuple()
-    format_kwargs = dict()
+    format_args: tuple[Any, ...] = tuple()
+    format_kwargs: dict[str, Any] = dict()
 
     def format(self, *args: Any, **kwargs: Any) -> Self:
         self.format_args = args
@@ -39,18 +39,20 @@ class Translator:
     """
 
     @staticmethod
-    def tr(value: str) -> TrString:
+    def tr(value: str, *args: Any, **kwargs: Any) -> TrString:
         return TrString(value)
 
-    def _tr(self, text: str) -> str:
-        if not text or type(text) is str:
-            return text
-        return QCoreApplication.translate(self.__class__.__name__, text).format(*text.format_args, **text.format_kwargs)
+    def _tr(self, text: str | TrString) -> str:
+        if text and isinstance(text, TrString):
+            return QCoreApplication.translate(self.__class__.__name__, text).format(
+                *text.format_args, **text.format_kwargs
+            )
+        return text
 
 
 class TR:
     @staticmethod
-    def tr(value: str) -> TrString:
+    def tr(value: str) -> str:
         return QCoreApplication.translate("TR", value)
 
 
@@ -65,7 +67,7 @@ class Widget(Translator):
     def changeEvent(self, event: QEvent):
         """Handling only LanguageChange events and calling retranslate_ui"""
 
-        if event.type() == QEvent.LanguageChange:
+        if event.type() == QEvent.Type.LanguageChange:
             self.retranslate_ui()
         super().changeEvent(event)  # type: ignore
 
@@ -163,7 +165,7 @@ class ComboBox(Widget, QComboBox):
         super().__init__(parent)
         self.__items: list[str] = []
 
-    def addItem(self, text: str, userData: Any = None):
+    def addItem(self, text: str, /, userData: Any = None):  # type: ignore[override]
         self.__items.append(text)
         super().addItem(self._tr(text), userData)
 
@@ -178,7 +180,7 @@ class ComboBox(Widget, QComboBox):
 
 class ListView(Widget, QListView):
     def retranslate_ui(self):
-        root = self.model().invisibleRootItem()
+        root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
         for i in range(root.rowCount()):
             root.child(i).retranslate()
 
@@ -201,7 +203,7 @@ class TabWidget(Widget, QTabWidget):
         super().__init__(parent)
         self.__labels: list[str] = []
 
-    def addTab(self, page: QWidget, label: str):
+    def addTab(self, page: QWidget, label: str, /):  # type: ignore[override]
         self.__labels.append(label)
         super().addTab(page, self._tr(label))
 
@@ -215,7 +217,7 @@ class TabWidget(Widget, QTabWidget):
 
 
 class Action(Translator, QAction):
-    def __init__(self, text: str, parent: QWidget | None = None, *args, **kwargs):
+    def __init__(self, text: str, parent: QObject | None = None, *args, **kwargs):
         super().__init__(self._tr(text), parent, *args, **kwargs)
         self.__text = text
 
@@ -238,7 +240,7 @@ class Menu(Widget, QMenu):
 
     def set_enabled_actions(self, flag: bool):
         for action in self.actions():
-            menu = action.menu()
+            menu = cast(Menu, action.menu())
             if menu:
                 menu.set_enabled_actions(flag)
             action.setEnabled(flag)
@@ -251,7 +253,7 @@ class Menu(Widget, QMenu):
 
 
 class StatusBar(Widget, QStatusBar):
-    def showMessage(self, message: str, timeout: int = 10000):
+    def showMessage(self, message: str, timeout: int | None = 10000):
         self.__message = message
         self.__timeout = timeout
         self.__monotonic = monotonic()
@@ -259,7 +261,11 @@ class StatusBar(Widget, QStatusBar):
 
     def retranslate_ui(self):
         if self.currentMessage():
-            self.showMessage(self.__message, self.__timeout - (int(monotonic() - self.__monotonic) * 1000))
+            if self.__timeout is not None:
+                timeout = self.__timeout - (int(monotonic() - self.__monotonic) * 1000)
+            else:
+                timeout = None
+            self.showMessage(self.__message, timeout)
 
 
 class ToolBar(Widget, QToolBar):

@@ -15,6 +15,7 @@ card_validator = re.compile(
     r"^([A-Z][a-z]?|[0-9]+)([\s]+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?){3}$"  # For example Ca 1.0 -2.0 +0.1e-01
 )
 
+
 class ParserState(Enum):
     INIT = 0
     COMMENT = 1
@@ -28,7 +29,7 @@ def is_xyz(lines: list[str]) -> bool:
         return False
 
     # in XYZ format second line is comment, it may be anything, even empty
-    for line in lines[2:numat+2]:
+    for line in lines[2 : numat + 2]:
         if not card_validator.match(line.strip()):
             return False
 
@@ -106,9 +107,9 @@ def load_xyz(path: Path, logs: list) -> Item:
                     at_coord_item = Item(
                         name=title,
                         data=AtomicCoordinates(
-                            atomic_num=atom_atomic_num, 
-                            x=atom_coord_x, 
-                            y=atom_coord_y, 
+                            atomic_num=atom_atomic_num,
+                            x=atom_coord_x,
+                            y=atom_coord_y,
                             z=atom_coord_z,
                         ),
                     )

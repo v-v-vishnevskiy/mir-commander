@@ -2,61 +2,45 @@ import logging
 import math
 
 import numpy as np
+from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.models import cylinder, sphere
-from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode
+from mir_commander.ui.utils.opengl.resource_manager import VertexArrayObject
+from mir_commander.ui.utils.opengl.scene import Node, NodeType, RootNode
 from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 
-from .config import MolecularStructureViewerConfig
-from .graphics_items import Atom, Bond
-from .style import Style
+from ..style import Style
+from .atom.atom import Atom
+from .bond.bond import Bond
 
-logger = logging.getLogger("MoleculeStructure.Molecule")
+logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 
 
-class Molecule(ContainerNode):
-    def __init__(
-        self,
-        parent: BaseNode,
-        config: MolecularStructureViewerConfig,
-        resource_manager: ResourceManager,
-    ):
-        super().__init__(parent, visible=True)
+class Molecule(Node):
+    def __init__(self, root_node: RootNode, app_config: AppConfig):
+        super().__init__(root_node=root_node, node_type=NodeType.OPAQUE, visible=True)
 
-        self._resource_manager = resource_manager
+        self._config = app_config.project_window.widgets.viewers.molecular_structure
 
-        self._config = config
-        self.style = Style(config)
+        self.style = Style(self._config)
         self.center = QVector3D(0, 0, 0)
-        self.radius = 0
+        self.radius: float = 0
 
-        self._atom_index_under_cursor: None | Atom = None
-
-        self.current_geom_bond_tolerance = config.geom_bond_tolerance
+        self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
-        self.selected_atom_items: list[Atom] = []
 
         self.apply_style()
 
         self._sphere_resource_name = "sphere"
         self._cylinder_resource_name = "cylinder"
 
-        self.init_resources()
-
-    def init_resources(self):
-        atom_vao = self._get_atom_vao()
-        self._resource_manager.add_vertex_array_object(atom_vao)
-
-        bond_vao = self._get_bond_vao()
-        self._resource_manager.add_vertex_array_object(bond_vao)
-
-    def _get_atom_vao(self) -> VertexArrayObject:
+    def get_atom_vao(self) -> VertexArrayObject:
         logger.debug("Initializing atom mesh data")
 
         mesh_quality = self._config.quality.mesh
@@ -71,7 +55,7 @@ class Molecule(ContainerNode):
 
         return VertexArrayObject(self._sphere_resource_name, vertices, normals)
 
-    def _get_bond_vao(self) -> VertexArrayObject:
+    def get_bond_vao(self) -> VertexArrayObject:
         logger.debug("Initializing bond mesh data")
 
         mesh_quality = self._config.quality.mesh
@@ -90,6 +74,8 @@ class Molecule(ContainerNode):
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
+
+        self.clear()
 
         center = QVector3D(
             np.sum(atomic_coordinates.x) / len(atomic_coordinates.x),
@@ -153,7 +139,7 @@ class Molecule(ContainerNode):
             if self.style.current.bond.color == "atoms":
                 bond.set_atoms_color(True)
             else:
-                bond.set_color(normalize_color(self.style.current.bond.color))
+                bond.set_color(normalize_color(self.style.current.bond.color))  # type: ignore[arg-type]
 
     def clear(self):
         self.atom_items.clear()
@@ -198,11 +184,12 @@ class Molecule(ContainerNode):
         return item
 
     def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
-        atoms_color = self.style.current.bond.color == "atoms"
-        if atoms_color:
-            color = (0.5, 0.5, 0.5, 1.0)
-        else:
+        if type(self.style.current.bond.color) is Color:
             color = normalize_color(self.style.current.bond.color)
+            atoms_color = False
+        else:
+            color = (0.5, 0.5, 0.5, 1.0)
+            atoms_color = True
 
         item = Bond(
             self,
@@ -238,17 +225,3 @@ class Molecule(ContainerNode):
             if (bond._atom_1 == atom1 and bond._atom_2 == atom2) or (bond._atom_1 == atom2 and bond._atom_2 == atom1):
                 return idx
         return -1
-
-    def highlight_atom_under_cursor(self, atom: None | Atom) -> bool:
-        old_atom = self._atom_index_under_cursor
-        self._atom_index_under_cursor = atom
-
-        if atom == old_atom:
-            return False
-
-        if atom is not None:
-            atom.highlight(True)
-        if old_atom is not None:
-            old_atom.highlight(False)
-
-        return True

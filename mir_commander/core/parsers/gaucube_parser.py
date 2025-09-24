@@ -9,6 +9,7 @@ from .consts import babushka_priehala
 
 logger = logging.getLogger("Parsers.GauCubeParser")
 
+
 def is_gaucube(path: Path) -> bool:
     if path.suffix == ".cube":
         return True
@@ -89,21 +90,23 @@ def load_gaucube(path: Path, logs: list) -> Item:
         for ia in range(natm):
             d = f.readline().split()
             atom_atomic_num.append(int(d[0]))
-            atom_coord_x.append(float(d[2])*consts.BOHR2ANGSTROM)
-            atom_coord_y.append(float(d[3])*consts.BOHR2ANGSTROM)
-            atom_coord_z.append(float(d[4])*consts.BOHR2ANGSTROM)
+            atom_coord_x.append(float(d[2]) * consts.BOHR2ANGSTROM)
+            atom_coord_y.append(float(d[3]) * consts.BOHR2ANGSTROM)
+            atom_coord_z.append(float(d[4]) * consts.BOHR2ANGSTROM)
 
         if dset_ids:
             d = f.readline().split()
             if int(d[0]) != 1:
                 raise LoadFileError(f"Unsupported number of identifiers per voxel {int(data[4])} in cube file.")
 
-        data = f.read()
+        rest_data = f.read()
 
-    vcub.cube_data = np.array([float(x) for x in data.split()]).reshape([vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]])
+    vcub.cube_data = np.array([float(x) for x in rest_data.split()]).reshape(
+        [vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]]
+    )
 
     result = Item(name=path.name, data=vcub, metadata={"type": "volcube", babushka_priehala: True})
-    
+
     # Add the set of Cartesian coordinates directly to the cube
     at_coord_item = Item(
         name="CubeMol",
@@ -113,9 +116,8 @@ def load_gaucube(path: Path, logs: list) -> Item:
             y=atom_coord_y,
             z=atom_coord_z,
         ),
-        metadata={babushka_priehala: True}
+        metadata={babushka_priehala: True},
     )
     result.items.append(at_coord_item)
 
     return result
-

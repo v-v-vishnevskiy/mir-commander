@@ -1,8 +1,8 @@
 from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QIcon, QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QWidget
 
 from mir_commander.utils.consts import DIR
 
@@ -24,7 +24,7 @@ from .resource_manager import (
     VertexShader,
 )
 from .resource_manager.font_atlas import create_font_atlas
-from .scene import BaseNode, Scene
+from .scene import Node, Scene
 from .utils import Color4f, color_to_id
 
 
@@ -41,9 +41,7 @@ class OpenGLWidget(QOpenGLWidget):
         # Initialize components
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.resource_manager = ResourceManager()
-        self.resource_manager.add_camera(Camera("main"))
-        self.resource_manager.add_scene(Scene("main"))
+        self.resource_manager = ResourceManager(Camera("main"), Scene("main"))
         self.renderer = Renderer(self.projection_manager, self.resource_manager)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
@@ -115,13 +113,6 @@ class OpenGLWidget(QOpenGLWidget):
         self._setup_viewport(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
 
-    def resize(self, w: int, h: int):
-        parent = self.parent()
-        if isinstance(parent, QMdiSubWindow):
-            parent.resize(w, h)
-        else:
-            super().resize(w, h)
-
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
@@ -131,13 +122,6 @@ class OpenGLWidget(QOpenGLWidget):
     def paintGL(self):
         self.renderer.paint(PaintMode.Normal)
 
-    def setWindowIcon(self, icon: QIcon):
-        parent = self.parent()
-        if isinstance(parent, QMdiSubWindow):
-            parent.setWindowIcon(icon)
-        else:
-            super().setWindowIcon(icon)
-
     def keyPressEvent(self, event: QKeyEvent):
         self.action_handler.call_action(event, self.action_handler.keymap.match_key_event)
 
@@ -145,7 +129,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.stop_action(event, self.action_handler.keymap.match_key_event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        pos = event.position()
+        pos = event.position().toPoint()
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
@@ -175,10 +159,10 @@ class OpenGLWidget(QOpenGLWidget):
         elif delta < 0:
             events.append("wheel_down")
 
-        for event in events:
-            self.action_handler.call_action(event, self.action_handler.keymap.match_wheel_event)
+        for e in events:
+            self.action_handler.call_action(event=e, match_fn=self.action_handler.keymap.match_wheel_event)
 
-    def set_projection_mode(self, mode: ProjectionMode | str):
+    def set_projection_mode(self, mode: ProjectionMode):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
         self._setup_viewport(self.size().width(), self.size().height())
@@ -214,7 +198,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def scale_scene(self, factor: float):
-        self.resource_manager.current_scene.transform.scale(factor)
+        self.resource_manager.current_scene.transform.scale(QVector3D(factor, factor, factor))
         self.update()
 
     def new_cursor_position(self, x: int, y: int):
@@ -224,7 +208,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
-    def node_under_cursor(self) -> BaseNode:
+    def node_under_cursor(self) -> Node:
         self.makeCurrent()
         image = self.renderer.picking_image(self.size().width(), self.size().height())
 

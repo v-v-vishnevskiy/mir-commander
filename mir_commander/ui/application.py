@@ -5,10 +5,10 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.utils.consts import DIR
 from mir_commander.core import load_project
 from mir_commander.core.errors import LoadFileError, LoadProjectError
 from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
+from mir_commander.utils.consts import DIR
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -21,8 +21,9 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
-        self.setAttribute(Qt.AA_ShareOpenGLContexts)
+        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
+        self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
         self.register_resources()
@@ -73,8 +74,8 @@ class Application(QApplication):
         It is also possible, that the bug will be fixed at some point in Adwaita, so we will not need this hack anymore.
         """
         palette = self.palette()
-        color_windowtext = palette.color(QPalette.WindowText)
-        color_disabledwindowtext = palette.color(QPalette.Disabled, QPalette.WindowText)
+        color_windowtext = palette.color(QPalette.ColorRole.WindowText)
+        color_disabledwindowtext = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText)
 
         # This combination is specific to Adwaita and High-Contrast:
         if (
@@ -85,7 +86,7 @@ class Application(QApplication):
             and color_disabledwindowtext.green() == 74
             and color_disabledwindowtext.blue() == 74
         ):
-            palette.setColor(QPalette.WindowText, QColor(46, 52, 54))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(46, 52, 54))
             self.setPalette(palette)
         # specific to Adwaita-dark:
         elif (
@@ -96,7 +97,7 @@ class Application(QApplication):
             and color_disabledwindowtext.green() == 72
             and color_disabledwindowtext.blue() == 72
         ):
-            palette.setColor(QPalette.WindowText, QColor(238, 238, 236))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(238, 238, 236))
             self.setPalette(palette)
 
     def register_resources(self):
@@ -106,7 +107,7 @@ class Application(QApplication):
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
 
-        language = self.config.language
+        language: str = self.config.language
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
@@ -117,7 +118,7 @@ class Application(QApplication):
             self._translator_app = translator
 
         translator = QTranslator(self)
-        path = Path(QLibraryInfo.location(QLibraryInfo.TranslationsPath)) / f"qtbase_{language}"
+        path = Path(QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)) / f"qtbase_{language}"
         if translator.load(str(path)):
             self.removeTranslator(self._translator_qt)
             self.installTranslator(translator)
@@ -139,13 +140,13 @@ class Application(QApplication):
 
         messages.insert(0, f"{path}")
         project_window = ProjectWindow(
-            app_config=self.config, 
-            app_apply_callbacks=self.apply_callbacks, 
-            project=project, 
+            app_config=self.config,
+            app_apply_callbacks=self.apply_callbacks,
+            project=project,
             init_msg=messages,
         )
         project_window.close_project_signal.connect(self.close_project)
-        project_window.quit_application_signal.connect(self.quit)
+        project_window.quit_application_signal.connect(self.close_app)
         self._open_projects[id(project_window)] = project_window
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project)
@@ -157,7 +158,7 @@ class Application(QApplication):
     def close_project(self, project_window: ProjectWindow):
         del self._open_projects[id(project_window)]
 
-        project_window.project.config.dump()
+        project_window.project.save()
 
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_recent(project_window.project)
@@ -166,12 +167,6 @@ class Application(QApplication):
 
         if not self._open_projects:
             self._recent_projects_dialog.show()
-
-    def quit(self):
-        self._quitting = True
-        for value in list(self._open_projects.values()):
-            value.close()
-        super().quit()
 
     def run(self, project_path: Path) -> int:
         if project_path != Path(""):
@@ -183,3 +178,9 @@ class Application(QApplication):
             if not self._open_projects:
                 self._recent_projects_dialog.show()
         return self.exec()
+
+    def close_app(self):
+        self._quitting = True
+        for value in list(self._open_projects.values()):
+            value.close()
+        self.quit()

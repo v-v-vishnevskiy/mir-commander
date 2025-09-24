@@ -1,39 +1,16 @@
-from PySide6.QtGui import QQuaternion, QVector3D
+from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import BaseNode, ContainerNode, OpaqueNode
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from .atom.atom import Atom
+from ..atom.atom import Atom
+from .cylinder import Cylinder
 
 
-class BondItem(OpaqueNode):
+class Bond(Node):
     def __init__(
         self,
-        parent: BaseNode,
-        model_name: str,
-        position: QVector3D,
-        direction: QVector3D,
-        radius: float,
-        length: float,
-        color: Color4f,
-    ):
-        super().__init__(parent=parent, visible=True, picking_visible=False)
-        self._length = length
-        self.set_shader("default")
-        self.set_model(model_name)
-        self.set_color(color)
-        self.set_translation(position)
-        self.set_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, -1.0), direction))
-        self.set_scale(QVector3D(radius, radius, length))
-
-    def set_radius(self, radius: float):
-        self.set_scale(QVector3D(radius, radius, self._length))
-
-
-class Bond(ContainerNode):
-    def __init__(
-        self,
-        parent: BaseNode,
+        parent: Node,
         model_name: str,
         atom_1: Atom,
         atom_2: Atom,
@@ -41,7 +18,7 @@ class Bond(ContainerNode):
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
     ):
-        super().__init__(parent=parent, visible=True)
+        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
 
         self._model_name = model_name
         self._radius = radius
@@ -85,7 +62,7 @@ class Bond(ContainerNode):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            BondItem(self, self._model_name, position, direction, self._radius, length, color)
+            Cylinder(self, self._model_name, position, direction, self._radius, length, color)
 
     def set_radius(self, radius: float):
         self._radius = radius
@@ -107,4 +84,4 @@ class Bond(ContainerNode):
                 bond.set_color(color)
 
     def __repr__(self) -> str:
-        return f"Bond(id={self._id}, atom_1={self._atom_1}, atom_2={self._atom_2})"
+        return f"Bond(atom_1={self._atom_1}, atom_2={self._atom_2})"

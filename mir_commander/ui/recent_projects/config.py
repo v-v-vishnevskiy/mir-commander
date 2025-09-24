@@ -2,8 +2,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
-from mir_commander.utils.config import BaseConfig
 from mir_commander.core import Project
+from mir_commander.utils.config import BaseConfig
 
 
 class ProjectConfig(BaseModel):
@@ -13,7 +13,7 @@ class ProjectConfig(BaseModel):
     @field_validator("path", mode="before")
     @classmethod
     def _path_converter(cls, v: str | Path) -> Path:
-        if type(v) is str:
+        if type(v) is not Path:
             return Path(v)
         return v
 
@@ -36,16 +36,25 @@ class RecentProjectsConfig(BaseConfig):
         return result
 
     def add_opened(self, project: Project):
-        self.remove_opened(project.path, dump=False)
+        if project.is_temporary:
+            return
+
+        self.remove_opened(project, dump=False)
         self.opened.insert(0, ProjectConfig(name=project.name, path=project.path))
         self.dump()
 
     def add_recent(self, project: Project):
-        self.remove_recent(project.path, dump=False)
+        if project.is_temporary:
+            return
+
+        self.remove_recent(project, dump=False)
         self.recent.insert(0, ProjectConfig(name=project.name, path=project.path))
         self.dump()
 
     def remove_opened(self, project: Project, dump: bool = True):
+        if project.is_temporary:
+            return
+
         for i, item in enumerate(self.opened):
             if item.path == project.path:
                 self.opened.pop(i)
@@ -54,6 +63,9 @@ class RecentProjectsConfig(BaseConfig):
             self.dump()
 
     def remove_recent(self, project: Project, dump: bool = True):
+        if project.is_temporary:
+            return
+
         for i, item in enumerate(self.recent):
             if item.path == project.path:
                 self.recent.pop(i)

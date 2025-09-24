@@ -13,10 +13,12 @@ from .consts import babushka_priehala
 logger = logging.getLogger("Parsers.UnexParser")
 version_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
 
+
 class Unex2XyzFormat(Enum):
     INVALID = 0
     UNEX = 1
     MOL = 2
+
 
 def is_unex(lines: list[str]) -> int:
     """
@@ -27,7 +29,7 @@ def is_unex(lines: list[str]) -> int:
         re_result = version_validator.match(lines[0].split()[1])
         if re_result is not None:
             groups = re_result.groups()
-            return 1000000*int(groups[0]) + 10000*int(groups[1]) + int(groups[2])
+            return 1000000 * int(groups[0]) + 10000 * int(groups[1]) + int(groups[2])
         else:
             return 0
     else:
@@ -44,9 +46,6 @@ def load_unex(version: int, path: Path, logs: list) -> Item:
 
     result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
 
-    molecules: dict[str, Item] = {}
-    mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
-
     # UNEX 1.x
     if version < 2000000:
         result = load_unex1x(path, logs)
@@ -59,7 +58,7 @@ def load_unex(version: int, path: Path, logs: list) -> Item:
         # Currently it is assumed that molecules may contain only sets of Cartesian coordinates
         if item.items:
             item.items[-1].metadata[babushka_priehala] = True
-            
+
     return result
 
 
@@ -125,7 +124,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
     mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
     with path.open("r") as input_file:
-        for line_number , line in enumerate(input_file):
+        for line_number, line in enumerate(input_file):
             if line_number == 0:
                 logs.append(line.strip())  # First string is the UNEX version.
 
@@ -134,7 +133,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
                 if molecule_name in molecules:
                     molecule = molecules[molecule_name]
                 else:
-                    molecule = Item(name=molecule_name , data=Molecule())
+                    molecule = Item(name=molecule_name, data=Molecule())
                     molecules[molecule_name] = molecule
                     result.items.append(molecule)
 
@@ -143,7 +142,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
                 xyz_format = Unex2XyzFormat.INVALID
                 delimeter_number = 0
                 # Read header to determine format
-                for block_line_number , block_line in enumerate(input_file):
+                for block_line_number, block_line in enumerate(input_file):
                     if "Format:" in block_line:
                         format_str = block_line.split(" ")[1].strip()
                         if format_str == "UNEX":
@@ -151,8 +150,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
                         elif format_str == "MOL":
                             xyz_format = Unex2XyzFormat.MOL
                         else:
-                            raise LoadFileError(
-                                f"Invalid or unknown XYZ format {format_str}")
+                            raise LoadFileError(f"Invalid or unknown XYZ format {format_str}")
                     elif "--" in block_line:
                         if xyz_format == Unex2XyzFormat.UNEX:
                             delimeter_number += 1
@@ -163,7 +161,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
 
                 if xyz_format == Unex2XyzFormat.MOL:
                     # Skip header of the MOL format (2 lines)
-                    for block_line_number , block_line in enumerate(input_file):
+                    for block_line_number, block_line in enumerate(input_file):
                         if block_line_number > 0:
                             break
 
@@ -201,13 +199,13 @@ def load_unex2x(path: Path, logs: list) -> Item:
 
                 # Add the set of Cartesian coordinates directly to the molecule
                 at_coord_data = Item(
-                    name=f"Set#{mol_cart_set_number[molecule_name]}" ,
+                    name=f"Set#{mol_cart_set_number[molecule_name]}",
                     data=AtomicCoordinates(
-                        atomic_num=atomic_num ,
-                        x=atom_coord_x ,
-                        y=atom_coord_y ,
-                        z=atom_coord_z ,
-                    ) ,
+                        atomic_num=atomic_num,
+                        x=atom_coord_x,
+                        y=atom_coord_y,
+                        z=atom_coord_z,
+                    ),
                 )
                 molecule.items.append(at_coord_data)
 

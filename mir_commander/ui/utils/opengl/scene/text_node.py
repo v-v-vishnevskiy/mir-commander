@@ -5,41 +5,27 @@ from PySide6.QtGui import QVector3D
 from mir_commander.ui.utils.opengl.resource_manager.font_atlas import FontAtlas
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from .base_node import BaseNode
-from .char_node import CharNode
-from .container_node import ContainerNode
+from .node import Node, NodeType
 
 
-class TextNode(ContainerNode):
-    node_type = "text"
-
-    __slots__ = (
-        "_text",
-        "_font_atlas_name",
-        "_align",
-        "_picking_visible",
-        "_shader_name",
-        "_color",
-    )
+class TextNode(Node):
+    __slots__ = ("_text", "_font_atlas_name", "_align")
 
     def __init__(
         self,
-        parent: BaseNode,
+        parent: Node,
         visible: bool = True,
-        picking_visible: bool = True,
+        picking_visible: bool = False,
         font_atlas_name: str = "default",
         align: Literal["left", "center", "right"] = "center",
     ):
-        super().__init__(parent, visible)
+        super().__init__(parent=parent, node_type=NodeType.TEXT, visible=visible, picking_visible=picking_visible)
+        self.set_color((0.0, 0.0, 0.0, 1.0))
         self._modify_children = True
 
         self._text = ""
         self._font_atlas_name = font_atlas_name
         self._align = align
-
-        self._picking_visible = picking_visible
-        self._shader_name = ""
-        self._color: Color4f = (0.0, 0.0, 0.0, 1.0)
 
     @property
     def text(self) -> str:
@@ -55,11 +41,17 @@ class TextNode(ContainerNode):
 
     def _build(self, text: str):
         for char in text:
-            char_node = CharNode(parent=self, char=char, visible=self.visible, picking_visible=self._picking_visible)
-            char_node.set_shader(self._shader_name)
-            char_node.set_texture(f"font_atlas_{self._font_atlas_name}")
-            char_node.set_model(f"font_atlas_{self._font_atlas_name}_{char}")
+            char_node = Node(
+                parent=self,
+                node_type=NodeType.CHAR,
+                visible=self.visible,
+                picking_visible=self.picking_visible,
+            )
+            char_node.set_shader(self.shader_name)
+            char_node.set_texture(f"font_atlas_{self.font_atlas_name}")
+            char_node.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
             char_node.set_color(self._color)
+            char_node.metadata["char"] = char
 
     def set_text(self, text: str):
         self._text = text

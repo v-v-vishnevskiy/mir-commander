@@ -13,7 +13,7 @@ from .consts import babushka_priehala
 logger = logging.getLogger("Parsers.CCLibParser")
 
 
-def load_cclib(path: Path, logs: list) -> Molecule:
+def load_cclib(path: Path, logs: list) -> Item:
     """
     Import data from file using cclib, build and populate a respective tree of items.
     Here also is implemented logic on how to visualize by default the imported items.
@@ -33,23 +33,20 @@ def load_cclib(path: Path, logs: list) -> Molecule:
     logs.append(f"cclib {cclib.__version__}")
 
     kwargs = {"future": True}
-    data = ccread(path, **kwargs)
+    data = ccread(str(path), **kwargs)
     if data is None:
         raise LoadFileError(f"cclib cannot determine the format of file: {path}")
 
     if hasattr(data, "metadata"):
         logs.append(pprint.pformat(data.metadata, compact=True))
 
-    result = Item(
-        name=path.name, 
-        data=Molecule(n_atoms=data.natom, atomic_num=data.atomnos), 
-        metadata={"type": "cclib"},
-    )
+    molecule = Molecule(n_atoms=data.natom, atomic_num=data.atomnos)
+    result = Item(name=path.name, data=molecule, metadata={"type": "cclib"})
 
     if hasattr(data, "charge"):
-        result.data.charge = data.charge
+        molecule.charge = data.charge
     if hasattr(data, "mult"):
-        result.data.multiplicity= data.mult
+        molecule.multiplicity = data.mult
 
     # If we have coordinates of atoms.
     # This is actually expected to be always true
@@ -59,7 +56,7 @@ def load_cclib(path: Path, logs: list) -> Molecule:
         if hasattr(data, "optdone"):
             # optdone is here a list due to the experimental feature in cclib turned on by the future option above
             # Take here the first converged structure
-            if (len(data.optdone) > 0):  
+            if len(data.optdone) > 0:
                 xyz_idx = data.optdone[0]
                 xyz_title = "Optimized XYZ"
             else:
@@ -77,12 +74,12 @@ def load_cclib(path: Path, logs: list) -> Molecule:
         at_coord_item = Item(
             name=xyz_title,
             data=AtomicCoordinates(
-                atomic_num=result.data.atomic_num,
+                atomic_num=molecule.atomic_num,
                 x=data.atomcoords[xyz_idx][:, 0],
                 y=data.atomcoords[xyz_idx][:, 1],
                 z=data.atomcoords[xyz_idx][:, 2],
             ),
-            metadata={babushka_priehala: True}
+            metadata={babushka_priehala: True},
         )
         result.items.append(at_coord_item)
 
@@ -95,9 +92,9 @@ def load_cclib(path: Path, logs: list) -> Molecule:
                 # Adding sets of atomic coordinates to the group
                 for i in range(0, cshape[0]):
                     atcoods_data = AtomicCoordinates(
-                        atomic_num=result.data.atomic_num,
-                        x=data.atomcoords[i][:, 0], 
-                        y=data.atomcoords[i][:, 1], 
+                        atomic_num=molecule.atomic_num,
+                        x=data.atomcoords[i][:, 0],
+                        y=data.atomcoords[i][:, 1],
                         z=data.atomcoords[i][:, 2],
                     )
                     csname = "Step {}".format(i + 1)
@@ -115,9 +112,9 @@ def load_cclib(path: Path, logs: list) -> Molecule:
                 # Adding sets of atomic coordinates to the group
                 for i in range(0, cshape[0]):
                     atcoods_data = AtomicCoordinates(
-                        atomic_num=result.data.atomic_num, 
-                        x=data.atomcoords[i][:, 0], 
-                        y=data.atomcoords[i][:, 1], 
+                        atomic_num=molecule.atomic_num,
+                        x=data.atomcoords[i][:, 0],
+                        y=data.atomcoords[i][:, 1],
                         z=data.atomcoords[i][:, 2],
                     )
                     csname = "Set {}".format(i + 1)
@@ -132,9 +129,9 @@ def load_cclib(path: Path, logs: list) -> Molecule:
             # Adding sets of atomic coordinates to the group
             for i in range(0, cshape[0]):
                 atcoods_data = AtomicCoordinates(
-                    atomic_num=result.data.atomic_num, 
-                    x=data.scancoords[i][:, 0], 
-                    y=data.scancoords[i][:, 1], 
+                    atomic_num=molecule.atomic_num,
+                    x=data.scancoords[i][:, 0],
+                    y=data.scancoords[i][:, 1],
                     z=data.scancoords[i][:, 2],
                 )
                 csname = "Step {}".format(i + 1)
