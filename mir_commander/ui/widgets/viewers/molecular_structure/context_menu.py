@@ -31,16 +31,6 @@ class ContextMenu(Menu):
         self._init_actions()
 
     def _init_actions(self):
-        cloak_toggle_h_atoms_act = Action(Action.tr("Toggle visibility of H atoms"), self.parent())
-        cloak_toggle_h_atoms_act.triggered.connect(self._ac_viewer.cloak_toggle_h_atoms)
-        self.addAction(cloak_toggle_h_atoms_act)
-
-        select_toggle_all_atoms_act = Action(Action.tr("Toggle selection of all atoms"), self.parent())
-        select_toggle_all_atoms_act.triggered.connect(self._ac_viewer.select_toggle_all_atoms)
-        self.addAction(select_toggle_all_atoms_act)
-
-        self.addSeparator()
-
         calc_auto_parameter_act = Action(Action.tr("Auto calculate parameter"), self.parent())
         calc_auto_parameter_act.triggered.connect(self._ac_viewer.calc_auto_lastsel_atoms)
         self.addAction(calc_auto_parameter_act)
