@@ -31,12 +31,6 @@ class ContextMenu(Menu):
         self._init_actions()
 
     def _init_actions(self):
-        calc_auto_parameter_act = Action(Action.tr("Auto calculate parameter"), self.parent())
-        calc_auto_parameter_act.triggered.connect(self._ac_viewer.calc_auto_lastsel_atoms)
-        self.addAction(calc_auto_parameter_act)
-
-        self.addSeparator()
-
         save_img_act = Action(Action.tr("Save image..."), self.parent())
         save_img_act.setShortcut(QKeySequence(self._keymap.save_image))
         save_img_act.triggered.connect(self._ac_viewer.save_img_action_handler)
