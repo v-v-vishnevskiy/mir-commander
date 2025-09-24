@@ -303,7 +303,7 @@ class Style(BaseModel):
     )
 
 
-class MenuKeymap(BaseModel):
+class Keymap(BaseModel):
     save_image: str = "s"
     toggle_projection: str = "ctrl+p"
     toggle_selected: str = "b"
@@ -314,9 +314,6 @@ class MenuKeymap(BaseModel):
     prev_atomic_coordinates: str = "ctrl+left"
     next_style: str = "ctrl+down"
     prev_style: str = "ctrl+up"
-
-
-class ViewerKeymap(BaseModel):
     rotate_down: list[str] = ["down"]
     rotate_left: list[str] = ["left"]
     rotate_right: list[str] = ["right"]
@@ -324,11 +321,6 @@ class ViewerKeymap(BaseModel):
     zoom_in: list[str] = ["wheel_up", "="]
     zoom_out: list[str] = ["wheel_down", "-"]
     toggle_node_selection: list[str] = ["mb_1"]
-
-
-class Keymap(BaseModel):
-    menu: MenuKeymap = MenuKeymap()
-    viewer: ViewerKeymap = ViewerKeymap()
 
 
 class Quality(BaseModel):

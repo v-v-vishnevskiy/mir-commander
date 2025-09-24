@@ -19,7 +19,7 @@ class ContextMenu(Menu):
         self._ac_viewer = parent.ac_viewer
         self._app_config = app_config
         self._config = app_config.project_window.widgets.viewers.molecular_structure
-        self._keymap = self._config.keymap.menu
+        self._keymap = self._config.keymap
 
         self._init_atom_labels_menu()
         self._init_bonds_menu()

@@ -34,7 +34,7 @@ class AtomicCoordinatesViewer(OpenGLWidget):
     def __init__(self, parent: QWidget, atomic_coordinates: AtomicCoordinates, app_config: AppConfig, title: str):
         super().__init__(
             parent=parent,
-            keymap=Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.viewer.model_dump()),
+            keymap=Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.model_dump()),
         )
 
         self.config = app_config.project_window.widgets.viewers.molecular_structure.model_copy(deep=True)
