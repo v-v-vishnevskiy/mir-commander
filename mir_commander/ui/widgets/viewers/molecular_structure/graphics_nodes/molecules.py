@@ -1,0 +1,65 @@
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
+
+from ..config import Style
+from ..errors import CalcError
+from .molecule import Molecule
+
+
+class Molecules(Node):
+    children: list[Molecule]  # type: ignore[assignment]
+
+    def __init__(self, *args, **kwargs):
+        kwargs["node_type"] = NodeType.CONTAINER
+        kwargs["visible"] = True
+        super().__init__(*args, **kwargs)
+
+    def num_molecules(self) -> int:
+        return len(self.children)
+
+    def get_max_molecule_radius(self) -> float:
+        return max(molecule.radius for molecule in self.children)
+
+    def set_style(self, style: Style):
+        for molecule in self.children:
+            molecule.set_style(style)
+
+    def _calc_func(self, calc_func: str) -> str:
+        if len(self.children) == 0:
+            raise CalcError("No molecules found!")
+
+        if len(self.children) == 1:
+            return getattr(self.children[0], calc_func)()
+
+        output = []
+        errors = 0
+        error = None
+        for molecule in self.children:
+            try:
+                fn = getattr(molecule, calc_func)
+                output.append(f"{molecule.name}: {fn()}")
+            except CalcError as e:
+                error = e
+                errors += 1
+
+        if errors == len(self.children) and error is not None:
+            raise error
+
+        return "\n".join(output)
+
+    def calc_auto_lastsel_atoms(self) -> str:
+        return self._calc_func("calc_auto_lastsel_atoms")
+
+    def calc_distance_last2sel_atoms(self) -> str:
+        return self._calc_func("calc_distance_last2sel_atoms")
+
+    def calc_angle_last3sel_atoms(self) -> str:
+        return self._calc_func("calc_angle_last3sel_atoms")
+
+    def calc_torsion_last4sel_atoms(self) -> str:
+        return self._calc_func("calc_torsion_last4sel_atoms")
+
+    def calc_oop_last4sel_atoms(self) -> str:
+        return self._calc_func("calc_oop_last4sel_atoms")
+
+    def calc_all_parameters_selected_atoms(self) -> str:
+        return self._calc_func("calc_all_parameters_selected_atoms")

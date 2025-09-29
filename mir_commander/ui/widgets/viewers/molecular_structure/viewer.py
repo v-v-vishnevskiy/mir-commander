@@ -24,7 +24,7 @@ class MolecularStructureViewer(Viewer):
 
         self.ac_viewer = AtomicCoordinatesViewer(
             parent=self,
-            atomic_coordinates=self._draw_item.data().data,
+            atomic_coordinates=[self._draw_item.data().data],
             app_config=app_config,
             title=self._draw_item.text(),
         )

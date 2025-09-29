@@ -4,8 +4,7 @@ from .config import MolecularStructureViewerConfig
 class Style:
     def __init__(self, config: MolecularStructureViewerConfig):
         self._styles = config.styles
-        self.current = config.styles[0]
-        self.set_style(config.current_style)
+        self.current = config.get_current_style()
 
     def set_style(self, name: str):
         for style in self._styles:

@@ -1,3 +1,4 @@
+from time import monotonic
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QVector3D
@@ -18,7 +19,6 @@ class Atom(Node):
     def __init__(
         self,
         parent: Node,
-        model_name: str,
         index_num: int,
         atomic_num: int,
         element_symbol: str,
@@ -37,12 +37,13 @@ class Atom(Node):
         self._related_bonds: list["Bond"] = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._sphere = Sphere(self, model_name, radius, color)
-        self._bounding_sphere = BoundingSphere(self._sphere, model_name, color, selected_atom_config)
+        self._sphere = Sphere(self, radius, color)
+        self._bounding_sphere = BoundingSphere(self._sphere, color, selected_atom_config)
         self._label_config = label_config
         self._label = Label(self, label_config)
         self._label.set_translation(QVector3D(0.0, 0.0, radius * label_config.offset))
         self.set_label_type(label_config.type)
+        self._selection_update = monotonic()
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.append(bond)
@@ -74,6 +75,10 @@ class Atom(Node):
     def selected(self) -> bool:
         return self._selected
 
+    @property
+    def selection_update(self) -> float:
+        return self._selection_update
+
     def set_color(self, color: Color4f):
         self._sphere.set_color(color)
 
@@ -81,10 +86,12 @@ class Atom(Node):
         self._sphere.set_radius(radius)
 
     def set_selected(self, value: bool):
+        self._selection_update = monotonic()
         self._selected = value
         self._bounding_sphere.set_visible(value)
 
     def toggle_selection(self) -> bool:
+        self._selection_update = monotonic()
         self.set_selected(not self._selected)
         return self._selected
 

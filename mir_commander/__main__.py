@@ -3,8 +3,8 @@ import logging
 import sys
 from pathlib import Path
 
-from .ui.application import Application
-from .utils.logging import init_logging
+from mir_commander.ui.application import Application
+from mir_commander.utils.logging import init_logging
 
 logger = logging.getLogger("main")
 

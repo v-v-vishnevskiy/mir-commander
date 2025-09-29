@@ -5,6 +5,7 @@ from PySide6.QtGui import QVector3D
 from mir_commander.ui.utils.opengl.scene import NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
+from ...consts import VAO_SPHERE_RESOURCE_NAME
 from ..base import BaseGraphicsNode
 
 if TYPE_CHECKING:
@@ -12,11 +13,11 @@ if TYPE_CHECKING:
 
 
 class Sphere(BaseGraphicsNode):
-    def __init__(self, parent: "Atom", model_name: str, radius: float, color: Color4f):
+    def __init__(self, parent: "Atom", radius: float, color: Color4f):
         super().__init__(parent=parent, node_type=NodeType.OPAQUE, visible=True, picking_visible=True)
         self.set_scale(QVector3D(radius, radius, radius))
         self.set_color(color)
-        self.set_model(model_name)
+        self.set_model(VAO_SPHERE_RESOURCE_NAME)
         self.set_shader("default")
 
         self._radius = radius

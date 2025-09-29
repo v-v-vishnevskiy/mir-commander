@@ -1,9 +1,10 @@
+import math
 from typing import Literal
 
 import numpy as np
-import math
 from numpydantic import NDArray, Shape
 from pydantic import BaseModel
+
 from mir_commander.utils import consts
 
 
@@ -54,6 +55,5 @@ class VolCube(BaseModel):
                         X.append(x)
                         Y.append(y)
                         Z.append(z)
-                        # print(i, j, k, self.cube_data[i][j][k])
 
         return X, Y, Z

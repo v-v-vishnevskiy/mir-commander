@@ -67,6 +67,8 @@ class ProjectWindow(QMainWindow):
 
         self._set_mainwindow_title()
 
+        self.mdi_area.tileSubWindows()
+
         # Settings
         self._restore_settings()
 
@@ -105,6 +107,7 @@ class ProjectWindow(QMainWindow):
         self.setTabPosition(Qt.DockWidgetArea.LeftDockWidgetArea, QTabWidget.TabPosition.West)
         self.setTabPosition(Qt.DockWidgetArea.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.Corner.BottomLeftCorner, Qt.DockWidgetArea.LeftDockWidgetArea)
+        self.setCorner(Qt.Corner.BottomRightCorner, Qt.DockWidgetArea.RightDockWidgetArea)
 
         self.docks = Docks(
             ProjectDock(
@@ -120,6 +123,8 @@ class ProjectWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
+
+        self.tabifyDockWidget(self.docks.object, self.docks.viewer_settings)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
