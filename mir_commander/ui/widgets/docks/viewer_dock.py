@@ -3,26 +3,26 @@ from collections import defaultdict
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.ui.utils.viewer.viewer import Viewer
-from mir_commander.ui.utils.viewer.viewer_dock_settings import EmptyViewerDockSettings, ViewerDockSettings
+from mir_commander.ui.utils.viewer.viewer_settings import EmptyViewerSettings, ViewerSettings
 
 from .base import BaseDock
 
 
-class ViewerSettingsDock(BaseDock):
-    """The viewer settings dock widget.
+class ViewerDock(BaseDock):
+    """The viewer's dock widget.
 
     A single instance of this class is used for showing widgets
     with settings for the currently active viewer in the mdi area.
     """
 
     def __init__(self, parent: QWidget):
-        super().__init__(self.tr("Viewer Settings"), parent)
+        super().__init__(self.tr("Viewer"), parent)
         self.setMinimumWidth(200)
 
-        self._empty_viewer_settings = EmptyViewerDockSettings()
+        self._empty_viewer_settings = EmptyViewerSettings()
         self.setWidget(self._empty_viewer_settings)
 
-        self._viewer_settings_widgets: dict[type, ViewerDockSettings] = {}
+        self._viewer_settings_widgets: dict[type, ViewerSettings] = {}
         self._all_viewers: dict[type, list[Viewer]] = defaultdict(list)
 
     def add_viewer_settings_widget(self, viewer: type[Viewer]):

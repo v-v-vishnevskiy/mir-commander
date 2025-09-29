@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QVBoxLayout
 
-from mir_commander.ui.utils.viewer.viewer_dock_settings import ViewerDockSettings
+from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import CheckBox
 
 from .labels import Labels
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from ..viewer import MolecularStructureViewer
 
 
-class Settings(ViewerDockSettings["MolecularStructureViewer"]):
+class Settings(ViewerSettings["MolecularStructureViewer"]):
     def __init__(self):
         super().__init__()
 

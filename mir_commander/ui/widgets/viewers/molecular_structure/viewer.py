@@ -5,9 +5,9 @@ from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
-from .atomic_coordinates_viewer import AtomicCoordinatesViewer
 from .context_menu import ContextMenu
-from .dock_settings.settings import Settings
+from .settings.settings import Settings
+from .visualizer import Visualizer
 
 
 class MolecularStructureViewer(Viewer):
@@ -22,18 +22,18 @@ class MolecularStructureViewer(Viewer):
         self._draw_item = item
         self._set_draw_item()
 
-        self.ac_viewer = AtomicCoordinatesViewer(
+        self.visualizer = Visualizer(
             parent=self,
             atomic_coordinates=[self._draw_item.data().data],
             app_config=app_config,
             title=self._draw_item.text(),
         )
 
-        self.ac_viewer.message_channel.connect(self.long_msg_signal.emit)
+        self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
         self._context_menu = ContextMenu(parent=self, app_config=app_config)
 
-        self.setWidget(self.ac_viewer)
+        self.setWidget(self.visualizer)
 
         self.update_window_title()
 
@@ -50,7 +50,7 @@ class MolecularStructureViewer(Viewer):
         while parent_item:
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
-        self.ac_viewer.set_title(title)
+        self.visualizer.set_title(title)
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
 
@@ -87,7 +87,7 @@ class MolecularStructureViewer(Viewer):
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.ac_viewer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)
 
     def set_next_atomic_coordinates(self):
         self._molecule_index += 1
@@ -95,4 +95,4 @@ class MolecularStructureViewer(Viewer):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self.ac_viewer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)

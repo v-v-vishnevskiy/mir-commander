@@ -20,7 +20,7 @@ from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
 from .widgets.docks.object_dock import ObjectDock
 from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
+from .widgets.docks.viewer_dock import ViewerDock
 from .widgets.settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("ProjectWindow")
@@ -31,7 +31,7 @@ class Docks:
     project: ProjectDock
     object: ObjectDock
     console: ConsoleDock
-    viewer_settings: ViewerSettingsDock
+    viewer_settings: ViewerDock
 
 
 class ProjectWindow(QMainWindow):
@@ -117,7 +117,7 @@ class ProjectWindow(QMainWindow):
             ),
             ObjectDock(parent=self),
             ConsoleDock(parent=self),
-            ViewerSettingsDock(parent=self),
+            ViewerDock(parent=self),
         )
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)

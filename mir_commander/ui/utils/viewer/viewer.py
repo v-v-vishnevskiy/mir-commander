@@ -3,13 +3,13 @@ from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.viewer.viewer_dock_settings import ViewerDockSettings
+from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 
 
 class Viewer(QMdiSubWindow):
     short_msg_signal = Signal(str)
     long_msg_signal = Signal(str)
-    settings: type[ViewerDockSettings] | None = None
+    settings: type[ViewerSettings] | None = None
 
     def __init__(self, parent: QWidget, item: QStandardItem, app_config: AppConfig):
         super().__init__(parent=parent)

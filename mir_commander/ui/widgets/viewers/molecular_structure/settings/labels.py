@@ -90,22 +90,22 @@ class Labels(GroupBox):
         self.setLayout(self.main_layout)
 
     def update_values(self, viewer: "MolecularStructureViewer"):
-        self.size_slider.setValue(viewer.ac_viewer.config.atom_label.size)
-        self.size_double_spinbox.setValue(viewer.ac_viewer.config.atom_label.size)
+        self.size_slider.setValue(viewer.visualizer.config.atom_label.size)
+        self.size_double_spinbox.setValue(viewer.visualizer.config.atom_label.size)
 
-        self.offset_slider.setValue(int(viewer.ac_viewer.config.atom_label.offset * 100))
-        self.offset_double_spinbox.setValue(viewer.ac_viewer.config.atom_label.offset)
+        self.offset_slider.setValue(int(viewer.visualizer.config.atom_label.offset * 100))
+        self.offset_double_spinbox.setValue(viewer.visualizer.config.atom_label.offset)
 
     def apply_settings(self, viewers: list["MolecularStructureViewer"]):
         for viewer in viewers:
-            viewer.ac_viewer.set_label_size_for_all_atoms(size=self.size_slider.value())
-            viewer.ac_viewer.set_label_offset_for_all_atoms(offset=self.offset_slider.value() / 100)
+            viewer.visualizer.set_label_size_for_all_atoms(size=self.size_slider.value())
+            viewer.visualizer.set_label_offset_for_all_atoms(offset=self.offset_slider.value() / 100)
 
     @Slot()
     def size_slider_value_changed_handler(self, i: int):
         self.size_double_spinbox.setValue(i)
         for viewer in self._settings.viewers:
-            viewer.ac_viewer.set_label_size_for_all_atoms(size=i)
+            viewer.visualizer.set_label_size_for_all_atoms(size=i)
 
     @Slot()
     def size_double_spinbox_value_changed_handler(self, value: int):
@@ -115,7 +115,7 @@ class Labels(GroupBox):
     def offset_slider_value_changed_handler(self, i: int):
         self.offset_double_spinbox.setValue(i / 100)
         for viewer in self._settings.viewers:
-            viewer.ac_viewer.set_label_offset_for_all_atoms(offset=i / 100)
+            viewer.visualizer.set_label_offset_for_all_atoms(offset=i / 100)
 
     @Slot()
     def offset_double_spinbox_value_changed_handler(self, value: float):

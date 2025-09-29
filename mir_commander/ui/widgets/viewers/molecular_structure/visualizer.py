@@ -35,11 +35,10 @@ from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
-logger = logging.getLogger("MoleculeStructureViewer.AtomicCoordinatesViewer")
+logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 
 
-# TODO: rename to Visualizer
-class AtomicCoordinatesViewer(OpenGLWidget):
+class Visualizer(OpenGLWidget):
     def __init__(self, parent: QWidget, atomic_coordinates: list[AtomicCoordinates], app_config: AppConfig, title: str):
         super().__init__(
             parent=parent,
