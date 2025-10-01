@@ -4,3 +4,7 @@ class Error(Exception):
 
 class CalcError(Error):
     pass
+
+
+class SurfaceNotFoundError(Error):
+    pass

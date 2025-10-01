@@ -301,6 +301,7 @@ class Style(BaseModel):
         text_alignment=["center"],
         background_color=Color("#44444499"),
     )
+    surface_color: Color = Color("#FFFF0099")
 
 
 class Keymap(BaseModel):

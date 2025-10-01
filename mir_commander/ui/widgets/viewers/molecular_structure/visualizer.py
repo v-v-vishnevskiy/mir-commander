@@ -19,7 +19,7 @@ from mir_commander.ui.utils.opengl.resource_manager import (
     VertexShader,
 )
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
-from mir_commander.ui.utils.opengl.utils import compute_face_normals, compute_vertex_normals, normalize_color
+from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -64,6 +64,10 @@ class Visualizer(OpenGLWidget):
         self._under_cursor_overlay.hide()
 
         self.message_channel = MessageChannel()
+
+    @property
+    def volume_cube_surfaces(self) -> list[tuple[float, Color4f]]:
+        return self._volume_cube.surfaces
 
     def init_actions(self):
         super().init_actions()
@@ -124,8 +128,12 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def build_volume_cube(self, value: float):
-        self._volume_cube.build(value)
+    def add_volume_cube_surface(self, value: float, color: Color4f):
+        self._volume_cube.add_surface(value, color)
+        self.update()
+
+    def remove_volume_cube_surface(self, value: float):
+        self._volume_cube.remove_surface(value)
         self.update()
 
     def set_title(self, title: str):
