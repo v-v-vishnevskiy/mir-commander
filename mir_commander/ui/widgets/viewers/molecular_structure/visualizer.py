@@ -1,5 +1,4 @@
 import logging
-from collections import defaultdict
 from typing import cast
 
 from PySide6.QtCore import QPoint
@@ -7,6 +6,7 @@ from PySide6.QtGui import QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
+from mir_commander.core.models import VolumeCube as CoreVolumeCube
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.utils.opengl.keymap import Keymap
@@ -18,7 +18,6 @@ from mir_commander.ui.utils.opengl.resource_manager import (
     VertexArrayObject,
     VertexShader,
 )
-from mir_commander.ui.utils.opengl.scene import Node
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import compute_face_normals, compute_vertex_normals, normalize_color
 from mir_commander.ui.utils.viewer import Viewer
@@ -31,7 +30,7 @@ from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
 from .consts import VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
 from .errors import CalcError
-from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules
+from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules, RootNode, VolumeCube
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
@@ -39,7 +38,7 @@ logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 
 
 class Visualizer(OpenGLWidget):
-    def __init__(self, parent: QWidget, atomic_coordinates: list[AtomicCoordinates], app_config: AppConfig, title: str):
+    def __init__(self, parent: QWidget, title: str, app_config: AppConfig):
         super().__init__(
             parent=parent,
             keymap=Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.model_dump()),
@@ -53,17 +52,10 @@ class Visualizer(OpenGLWidget):
         self._style = Style(self._config)
 
         self._node_under_cursor: BaseGraphicsNode | None = None
-        self._selected_nodes: dict[type, list[Node]] = defaultdict(list)
 
-        self._molecules = Molecules(root_node=self.resource_manager.current_scene.root_node)
-        for ac in atomic_coordinates:
-            Molecule(
-                parent=self._molecules,
-                atomic_coordinates=ac,
-                geom_bond_tolerance=self._config.geom_bond_tolerance,
-                style=self._style.current,
-                atom_label_config=self._config.atom_label,
-            )
+        self._root_node = RootNode(root_node=self.resource_manager.current_scene.root_node)
+        self._molecules = Molecules(parent=self._root_node)
+        self._volume_cube = VolumeCube(parent=self._root_node)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,
@@ -109,8 +101,17 @@ class Visualizer(OpenGLWidget):
         self.resource_manager.current_camera.reset_to_default()
         self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * max_radius / fov_factor))
 
-    def set_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
+    def set_atomic_coordinates(self, atomic_coordinates: list[AtomicCoordinates]):
         self._molecules.clear()
+        for item in atomic_coordinates:
+            self._add_atomic_coordinates(item)
+        self.update()
+
+    def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
+        self._add_atomic_coordinates(atomic_coordinates)
+        self.update()
+
+    def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         Molecule(
             parent=self._molecules,
             atomic_coordinates=atomic_coordinates,
@@ -118,6 +119,13 @@ class Visualizer(OpenGLWidget):
             style=self._style.current,
             atom_label_config=self._config.atom_label,
         )
+
+    def set_volume_cube(self, volume_cube: CoreVolumeCube):
+        self._volume_cube.set_volume_cube(volume_cube)
+        self.update()
+
+    def build_volume_cube(self, value: float):
+        self._volume_cube.build(value)
         self.update()
 
     def set_title(self, title: str):

@@ -8,12 +8,12 @@ from pydantic import BaseModel
 from mir_commander.utils import consts
 
 
-class VolCube(BaseModel):
+class VolumeCube(BaseModel):
     """
     Class of 3D volume function represented as a cube of voxels.
     """
 
-    data_type: Literal["volcube"] = "volcube"
+    data_type: Literal["volume_cube"] = "volume_cube"
 
     comment1: str = ""
     comment2: str = ""
@@ -27,6 +27,10 @@ class VolCube(BaseModel):
         Find points in XYZ space (in Angstroms) with defined function value
         ToDo: use 3D interpolation of voxels (possibly in multi-threaded mode)
         """
+
+        if self.cube_data is None:
+            return [], [], []
+
         X = []
         Y = []
         Z = []

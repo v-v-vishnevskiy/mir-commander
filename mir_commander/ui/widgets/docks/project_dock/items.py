@@ -40,8 +40,8 @@ class Item(QStandardItem):
                 self.appendRow(Molecule(item))
             elif type(item.data) is models.Unex:
                 self.appendRow(Unex(item))
-            elif type(item.data) is models.VolCube:
-                self.appendRow(VolCube(item))
+            elif type(item.data) is models.VolumeCube:
+                self.appendRow(VolumeCube(item))
             else:
                 self.appendRow(Container(item))
 
@@ -59,8 +59,11 @@ class Unex(Item):
     pass
 
 
-class VolCube(Item):
-    pass
+class VolumeCube(Item):
+    default_viewer = MolecularStructureViewer
+
+    def _set_icon(self):
+        self.setIcon(QIcon(":/icons/items/volume-cube.png"))
 
 
 class AtomicCoordinatesGroup(Item):

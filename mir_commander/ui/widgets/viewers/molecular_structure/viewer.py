@@ -1,7 +1,7 @@
 from PySide6.QtGui import QContextMenuEvent, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.core.models import AtomicCoordinates
+from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
@@ -13,23 +13,28 @@ from .visualizer import Visualizer
 class MolecularStructureViewer(Viewer):
     settings = Settings
 
-    def __init__(self, parent: QWidget, item: QStandardItem, app_config: AppConfig, all: bool = False):
+    def __init__(
+        self,
+        parent: QWidget,
+        item: QStandardItem,
+        app_config: AppConfig,
+        all: bool = False,
+    ):
         super().__init__(parent=parent, item=item, app_config=app_config)
 
         self._all = all
 
+        self.visualizer = Visualizer(parent=self, title=item.text(), app_config=app_config)
+        self.visualizer.message_channel.connect(self.long_msg_signal.emit)
+
+        match item.data().data:
+            case VolumeCube():
+                self.visualizer.set_volume_cube(item.data().data)
+
         self._molecule_index = 0
         self._draw_item = item
         self._set_draw_item()
-
-        self.visualizer = Visualizer(
-            parent=self,
-            atomic_coordinates=[self._draw_item.data().data],
-            app_config=app_config,
-            title=self._draw_item.text(),
-        )
-
-        self.visualizer.message_channel.connect(self.long_msg_signal.emit)
+        self.visualizer.add_atomic_coordinates(self._draw_item.data().data)
 
         self._context_menu = ContextMenu(parent=self, app_config=app_config)
 

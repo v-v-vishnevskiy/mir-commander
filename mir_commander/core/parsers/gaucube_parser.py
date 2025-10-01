@@ -6,7 +6,7 @@ import numpy as np
 from mir_commander.utils import consts
 
 from ..errors import LoadFileError
-from ..models import AtomicCoordinates, Item, VolCube
+from ..models import AtomicCoordinates, Item, VolumeCube
 from .consts import babushka_priehala
 
 logger = logging.getLogger("Parsers.GauCubeParser")
@@ -53,7 +53,7 @@ def load_gaucube(path: Path, logs: list) -> Item:
 
     logs.append("Gaussian cube format.")
 
-    vcub = VolCube()
+    vcub = VolumeCube()
 
     dset_ids = False
 
@@ -107,7 +107,7 @@ def load_gaucube(path: Path, logs: list) -> Item:
         [vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]]
     )
 
-    result = Item(name=path.name, data=vcub, metadata={"type": "volcube", babushka_priehala: 1})
+    result = Item(name=path.name, data=vcub, metadata={"type": "volume_cube", babushka_priehala: True})
 
     # Add the set of Cartesian coordinates directly to the cube
     at_coord_item = Item(
@@ -118,7 +118,7 @@ def load_gaucube(path: Path, logs: list) -> Item:
             y=atom_coord_y,
             z=atom_coord_z,
         ),
-        metadata={babushka_priehala: 1},
+        metadata={babushka_priehala: False},
     )
     result.items.append(at_coord_item)
 

@@ -7,6 +7,7 @@ from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import CheckBox
 
 from .labels import Labels
+from .volume_cube import VolumeCube
 
 if TYPE_CHECKING:
     from ..viewer import MolecularStructureViewer
@@ -24,11 +25,13 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
         self.apply_for_all_checkbox.toggled.connect(self.apply_for_all_checkbox_toggled_handler)
 
         self.labels = Labels(self)
+        self.volume_cube = VolumeCube(self)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addSpacing(10)
         self.main_layout.addWidget(self.labels)
+        self.main_layout.addWidget(self.volume_cube)
         self.main_layout.addStretch()
 
         self.setLayout(self.main_layout)
@@ -36,6 +39,7 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
     def set_active_viewer(self, viewer: "MolecularStructureViewer"):
         super().set_active_viewer(viewer)
         self.labels.update_values(viewer)
+        self.volume_cube.update_values(viewer)
 
     @property
     def viewers(self) -> list["MolecularStructureViewer"]:
@@ -47,3 +51,4 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
 
         if checked:
             self.labels.apply_settings(self.viewers)
+            self.volume_cube.apply_settings(self.viewers)
