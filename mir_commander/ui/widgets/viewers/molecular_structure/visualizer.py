@@ -55,7 +55,7 @@ class Visualizer(OpenGLWidget):
 
         self._root_node = RootNode(root_node=self.resource_manager.current_scene.root_node)
         self._molecules = Molecules(parent=self._root_node)
-        self._volume_cube = VolumeCube(parent=self._root_node)
+        self._volume_cube = VolumeCube(parent=self._root_node, resource_manager=self.resource_manager)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,

@@ -105,6 +105,7 @@ class VolumeCube(GroupBox):
         index = self._surface_combo_box.findText(str(value))
         if index == -1:
             self._surface_combo_box.addItem(pixmap, str(value))
+            self._surface_combo_box.setCurrentText(str(value))
         else:
             self._surface_combo_box.setItemIcon(index, pixmap)
 

@@ -77,16 +77,23 @@ class VertexArrayObject(Resource):
 
         self.unbind()
 
-    def __del__(self):
-        logger.debug("Cleaning up OpenGL resources")
+    def delete(self):
+        logger.debug("Deleting OpenGL resources")
         if self._vao is not None:
             glDeleteVertexArrays(1, [self._vao])
+            self._vao = None
         if self._vbo_vertices is not None:
             glDeleteBuffers(1, [self._vbo_vertices])
+            self._vbo_vertices = None
         if self._vbo_normals is not None:
             glDeleteBuffers(1, [self._vbo_normals])
+            self._vbo_normals = None
         if self._vbo_tex_coords is not None:
             glDeleteBuffers(1, [self._vbo_tex_coords])
+            self._vbo_tex_coords = None
+
+    def __del__(self):
+        self.delete()
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals}, vbo_tex_coords={self._vbo_tex_coords})"

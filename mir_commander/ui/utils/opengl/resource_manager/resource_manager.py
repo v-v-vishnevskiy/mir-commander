@@ -78,6 +78,13 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"VertexArrayObject `{name}` not found")
 
+    def remove_vertex_array_object(self, name: str):
+        try:
+            self._vertex_array_objects[name].delete()
+            del self._vertex_array_objects[name]
+        except KeyError:
+            raise ValueError(f"VertexArrayObject `{name}` not found")
+
     def add_texture(self, texture: Texture2D):
         self._textures[texture.name] = texture
 
