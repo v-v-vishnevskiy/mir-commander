@@ -109,10 +109,12 @@ class Visualizer(OpenGLWidget):
         self._molecules.clear()
         for item in atomic_coordinates:
             self._add_atomic_coordinates(item)
+        self._root_node.set_translation(-self._molecules.center)
         self.update()
 
     def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         self._add_atomic_coordinates(atomic_coordinates)
+        self._root_node.set_translation(-self._molecules.center)
         self.update()
 
     def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
@@ -128,12 +130,12 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def add_volume_cube_surface(self, value: float, color: Color4f):
-        self._volume_cube.add_surface(value, color)
+    def add_volume_cube_isosurface(self, value: float, color: Color4f):
+        self._volume_cube.add_isosurface(value, color)
         self.update()
 
-    def remove_volume_cube_surface(self, value: float):
-        self._volume_cube.remove_surface(value)
+    def remove_volume_cube_isosurface(self, value: float):
+        self._volume_cube.remove_isosurface(value)
         self.update()
 
     def set_title(self, title: str):

@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from mir_commander.utils import consts
@@ -682,11 +684,11 @@ def _interpolate_vertex(
     isovalue: float, p1: tuple[float, float, float], p2: tuple[float, float, float], val1: float, val2: float
 ) -> tuple[float, float, float]:
     """Interpolate vertex position on edge based on isovalue."""
-    if abs(isovalue - val1) < 1e-10:
+    if math.isclose(isovalue, val1, rel_tol=1e-6):
         return p1
-    if abs(isovalue - val2) < 1e-10:
+    if math.isclose(isovalue, val2, rel_tol=1e-6):
         return p2
-    if abs(val1 - val2) < 1e-10:
+    if math.isclose(val1, val2, rel_tol=1e-6):
         return p1
 
     mu = (isovalue - val1) / (val2 - val1)

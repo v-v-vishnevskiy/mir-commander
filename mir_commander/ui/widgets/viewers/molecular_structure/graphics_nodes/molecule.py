@@ -59,7 +59,7 @@ class Molecule(Node):
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
 
-        center = QVector3D(
+        self.center = QVector3D(
             np.sum(self._atomic_coordinates.x) / len(self._atomic_coordinates.x),
             np.sum(self._atomic_coordinates.y) / len(self._atomic_coordinates.y),
             np.sum(self._atomic_coordinates.z) / len(self._atomic_coordinates.z),
@@ -74,14 +74,12 @@ class Molecule(Node):
             )
             atom = self.add_atom(i, atomic_num, position)
 
-            d = position.distanceToPoint(center) + atom.radius
+            d = position.distanceToPoint(self.center) + atom.radius
             if self.radius < d:
                 self.radius = d
 
         # add bonds
         self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
-
-        self.set_translation(-center)
 
     def select_all_atoms(self):
         for atom in self.atom_items:

@@ -1,3 +1,5 @@
+from PySide6.QtGui import QVector3D
+
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
 
 from ..config import Style
@@ -12,6 +14,21 @@ class Molecules(Node):
         kwargs["node_type"] = NodeType.CONTAINER
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
+
+    @property
+    def center(self) -> QVector3D:
+        length = len(self.children)
+        if length == 0:
+            return QVector3D(0, 0, 0)
+
+        x = []
+        y = []
+        z = []
+        for molecule in self.children:
+            x.append(molecule.center.x())
+            y.append(molecule.center.y())
+            z.append(molecule.center.z())
+        return QVector3D(sum(x) / length, sum(y) / length, sum(z) / length)
 
     def num_molecules(self) -> int:
         return len(self.children)

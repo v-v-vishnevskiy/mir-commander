@@ -38,7 +38,7 @@ class ColorButton(QFrame):
 
 class VolumeCube(GroupBox):
     def __init__(self, parent: "Settings"):
-        super().__init__(self.tr("Volume Cube Surfaces"))
+        super().__init__(self.tr("Volume Cube Isosurfaces"))
 
         self._settings = parent
 
@@ -87,7 +87,7 @@ class VolumeCube(GroupBox):
             self._color_button.color.alphaF(),
         )
         for viewer in viewers:
-            viewer.visualizer.add_volume_cube_surface(value=value, color=color)
+            viewer.visualizer.add_volume_cube_isosurface(value=value, color=color)
 
     def add_button_clicked_handler(self):
         value = self._value.value()
@@ -98,7 +98,7 @@ class VolumeCube(GroupBox):
             self._color_button.color.alphaF(),
         )
         for viewer in self._settings.viewers:
-            viewer.visualizer.add_volume_cube_surface(value=value, color=color)
+            viewer.visualizer.add_volume_cube_isosurface(value=value, color=color)
 
         pixmap = QPixmap(20, 20)
         pixmap.fill(self._color_button.color)
@@ -118,7 +118,7 @@ class VolumeCube(GroupBox):
 
         value = self._surface_combo_box.currentText()
         for viewer in self._settings.viewers:
-            viewer.visualizer.remove_volume_cube_surface(value=float(value))
+            viewer.visualizer.remove_volume_cube_isosurface(value=float(value))
         self._surface_combo_box.removeItem(self._surface_combo_box.currentIndex())
 
         if self._surface_combo_box.count() == 0:
