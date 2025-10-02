@@ -5,6 +5,7 @@ from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
+from .config import MolecularStructureViewerConfig
 from .context_menu import ContextMenu
 from .settings.settings import Settings
 from .visualizer import Visualizer
@@ -21,6 +22,8 @@ class MolecularStructureViewer(Viewer):
         all: bool = False,
     ):
         super().__init__(parent=parent, item=item, app_config=app_config)
+
+        self._config = app_config.project_window.widgets.viewers.molecular_structure
 
         self._all = all
 
@@ -42,9 +45,11 @@ class MolecularStructureViewer(Viewer):
 
         self.update_window_title()
 
-        config = app_config.project_window.widgets.viewers.molecular_structure
-        self.setMinimumSize(config.min_size[0], config.min_size[1])
-        self.resize(config.size[0], config.size[1])
+        self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
+        self.resize(self._config.size[0], self._config.size[1])
+
+    def get_config(self) -> MolecularStructureViewerConfig:
+        return self._config
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())
