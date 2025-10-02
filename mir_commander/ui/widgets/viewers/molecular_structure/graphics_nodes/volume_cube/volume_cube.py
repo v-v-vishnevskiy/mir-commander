@@ -23,7 +23,7 @@ class VolumeCube(Node):
         self._volume_cube = volume_cube
 
     @property
-    def surfaces(self) -> list[tuple[float, Color4f]]:
+    def isosurfaces(self) -> list[tuple[float, Color4f]]:
         return [(s.value, s.color) for s in self.children]
 
     def set_volume_cube(self, volume_cube: CoreVolumeCube):

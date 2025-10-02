@@ -66,8 +66,8 @@ class Visualizer(OpenGLWidget):
         self.message_channel = MessageChannel()
 
     @property
-    def volume_cube_surfaces(self) -> list[tuple[float, Color4f]]:
-        return self._volume_cube.surfaces
+    def volume_cube_isosurfaces(self) -> list[tuple[float, Color4f]]:
+        return self._volume_cube.isosurfaces
 
     def init_actions(self):
         super().init_actions()

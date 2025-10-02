@@ -17,23 +17,25 @@ class ColorButton(QFrame):
         self.setMinimumSize(20, 20)
         self.setMaximumSize(20, 20)
         self.setFixedSize(20, 20)
-        self.setStyleSheet(f"QFrame {{ border: 1px solid black; background-color: {color.name()}; }}")
-        self._color = color
+        self._color = color if color.isValid() else QColor("#FFFF00")
+        self.set_color(self._color)
 
     @property
     def color(self) -> QColor:
         return self._color
 
-    def setColor(self, color: QColor):
+    def set_color(self, color: QColor):
         self._color = color
-        self.setStyleSheet(f"QFrame {{ border: 1px solid black; background-color: {color.name()}; }}")
+        self.setStyleSheet(
+            f"QFrame {{ border: 1px solid black; background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
+        )
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         color = QColorDialog.getColor(
             initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
-        self.setStyleSheet(f"QFrame {{ border: 1px solid black; background-color: {color.name()}; }}")
-        self._color = color
+        if color.isValid():
+            self.set_color(color)
 
 
 class VolumeCube(GroupBox):
@@ -76,7 +78,7 @@ class VolumeCube(GroupBox):
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         self._value.setValue(0)
-        self._color_button.setColor(color_to_qcolor(viewer.visualizer._style.current.surface_color))
+        self._color_button.set_color(color_to_qcolor(viewer.visualizer._style.current.surface_color))
 
     def apply_settings(self, viewers: list["MolecularStructureViewer"]):
         value = self._value.value()
