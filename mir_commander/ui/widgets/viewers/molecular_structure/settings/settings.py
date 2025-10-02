@@ -39,7 +39,6 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
     def set_active_viewer(self, viewer: "MolecularStructureViewer"):
         super().set_active_viewer(viewer)
         self.labels.update_values(viewer)
-        self.volume_cube.update_values(viewer)
 
     @property
     def viewers(self) -> list["MolecularStructureViewer"]:
@@ -51,4 +50,3 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
 
         if checked:
             self.labels.apply_settings(self.viewers)
-            self.volume_cube.apply_settings(self.viewers)

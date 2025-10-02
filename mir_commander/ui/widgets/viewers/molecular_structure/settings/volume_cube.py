@@ -3,21 +3,19 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QColor, QMouseEvent, QPixmap
 from PySide6.QtWidgets import QColorDialog, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QVBoxLayout, QWidget
 
-from mir_commander.ui.utils.opengl.utils import color_to_qcolor
 from mir_commander.ui.utils.widget import GroupBox, PushButton
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
     from .settings import Settings
 
 
 class ColorButton(QFrame):
-    def __init__(self, parent: QWidget, color: QColor = QColor("#FFFF00")):
+    def __init__(self, parent: QWidget, color: QColor = QColor(255, 255, 0, a=128)):
         super().__init__(parent)
         self.setMinimumSize(20, 20)
         self.setMaximumSize(20, 20)
         self.setFixedSize(20, 20)
-        self._color = color if color.isValid() else QColor("#FFFF00")
+        self._color = color if color.isValid() else QColor(255, 255, 0, a=127)
         self.set_color(self._color)
 
     @property
@@ -75,21 +73,6 @@ class VolumeCube(GroupBox):
         self.main_layout = QVBoxLayout()
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
-
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        self._value.setValue(0)
-        self._color_button.set_color(color_to_qcolor(viewer.visualizer._style.current.surface_color))
-
-    def apply_settings(self, viewers: list["MolecularStructureViewer"]):
-        value = self._value.value()
-        color = (
-            self._color_button.color.redF(),
-            self._color_button.color.greenF(),
-            self._color_button.color.blueF(),
-            self._color_button.color.alphaF(),
-        )
-        for viewer in viewers:
-            viewer.visualizer.add_volume_cube_isosurface(value=value, color=color)
 
     def add_button_clicked_handler(self):
         value = self._value.value()
