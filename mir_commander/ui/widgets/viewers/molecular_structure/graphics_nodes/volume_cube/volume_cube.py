@@ -24,7 +24,7 @@ class VolumeCube(Node):
         self._volume_cube = volume_cube
         self._scalar_field = self._prepare_scalar_field()
 
-    def _prepare_scalar_field(self):
+    def _prepare_scalar_field(self) -> list[list[list[tuple[float, float, float, float]]]]:
         if len(self._volume_cube.steps_number) == 0:
             return []
 
