@@ -2,8 +2,6 @@ import math
 
 import numpy as np
 
-from mir_commander.utils import consts
-
 EDGE_TABLE = [
     0x000,
     0x109,
@@ -523,9 +521,7 @@ TRIANGLE_TABLE = [
 ]
 
 
-def marching_cubes(
-    steps_size: list[list[float]], box_origin: list[float], scalar_field: np.ndarray, value: float
-) -> np.ndarray:
+def marching_cubes(scalar_field: list[list[list[tuple[float, float, float, float]]]], value: float) -> np.ndarray:
     """
     Generate triangles using Marching Cubes algorithm for isosurface extraction.
 
@@ -536,22 +532,33 @@ def marching_cubes(
         List of vertices, each vertex is a tuple of (x, y, z) coordinates in Angstroms
     """
 
-    triangles = []
+    vertices = []
 
     # Process each cube in the volume
-    for i in range(scalar_field.shape[0] - 1):
-        for j in range(scalar_field.shape[1] - 1):
-            for k in range(scalar_field.shape[2] - 1):
+    for i in range(len(scalar_field) - 1):
+        for j in range(len(scalar_field[i]) - 1):
+            for k in range(len(scalar_field[i][j]) - 1):
                 # Get the 8 corner values of the cube
                 cube_values = [
-                    scalar_field[i][j][k],  # 0
-                    scalar_field[i + 1][j][k],  # 1
-                    scalar_field[i + 1][j + 1][k],  # 2
-                    scalar_field[i][j + 1][k],  # 3
-                    scalar_field[i][j][k + 1],  # 4
-                    scalar_field[i + 1][j][k + 1],  # 5
-                    scalar_field[i + 1][j + 1][k + 1],  # 6
-                    scalar_field[i][j + 1][k + 1],  # 7
+                    scalar_field[i][j][k][3],  # 0
+                    scalar_field[i + 1][j][k][3],  # 1
+                    scalar_field[i + 1][j + 1][k][3],  # 2
+                    scalar_field[i][j + 1][k][3],  # 3
+                    scalar_field[i][j][k + 1][3],  # 4
+                    scalar_field[i + 1][j][k + 1][3],  # 5
+                    scalar_field[i + 1][j + 1][k + 1][3],  # 6
+                    scalar_field[i][j + 1][k + 1][3],  # 7
+                ]
+
+                cube_positions = [
+                    scalar_field[i][j][k][:3],  # 0
+                    scalar_field[i + 1][j][k][:3],  # 1
+                    scalar_field[i + 1][j + 1][k][:3],  # 2
+                    scalar_field[i][j + 1][k][:3],  # 3
+                    scalar_field[i][j][k + 1][:3],  # 4
+                    scalar_field[i + 1][j][k + 1][:3],  # 5
+                    scalar_field[i + 1][j + 1][k + 1][:3],  # 6
+                    scalar_field[i][j + 1][k + 1][:3],  # 7
                 ]
 
                 # Calculate cube index based on which vertices are inside/outside
@@ -561,11 +568,8 @@ def marching_cubes(
                         cube_index |= 1 << vertex_idx
 
                 # Skip if cube is entirely inside or outside
-                if cube_index == 0 or cube_index == 255:
+                if EDGE_TABLE[cube_index] == 0:
                     continue
-
-                # Get cube corner positions in world coordinates
-                cube_positions = _get_cube_positions(steps_size, box_origin, i, j, k)
 
                 # Find intersection points on edges
                 edge_vertices: list[tuple[float, float, float]] = [(0.0, 0.0, 0.0)] * 12
@@ -632,52 +636,10 @@ def marching_cubes(
                         edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
                         edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
                     ]
-                    triangles.extend(triangle)
+                    vertices.extend(triangle)
                     tri_idx += 3
 
-    return np.array(triangles, dtype=np.float32)
-
-
-def _get_cube_positions(
-    steps_size: list[list[float]], box_origin: list[float], i: int, j: int, k: int
-) -> list[tuple[float, float, float]]:
-    """Get the 8 corner positions of a cube in world coordinates (Angstroms)."""
-
-    positions = []
-    for di in [0, 1]:
-        for dj in [0, 1]:
-            for dk in [0, 1]:
-                x = (
-                    steps_size[0][0] * (i + di)
-                    + steps_size[0][1] * (j + dj)
-                    + steps_size[0][2] * (k + dk)
-                    + box_origin[0]
-                ) * consts.BOHR2ANGSTROM
-                y = (
-                    steps_size[1][0] * (i + di)
-                    + steps_size[1][1] * (j + dj)
-                    + steps_size[1][2] * (k + dk)
-                    + box_origin[1]
-                ) * consts.BOHR2ANGSTROM
-                z = (
-                    steps_size[2][0] * (i + di)
-                    + steps_size[2][1] * (j + dj)
-                    + steps_size[2][2] * (k + dk)
-                    + box_origin[2]
-                ) * consts.BOHR2ANGSTROM
-                positions.append((x, y, z))
-
-    # Reorder to match marching cubes convention
-    return [
-        positions[0],  # (0,0,0) -> 0
-        positions[4],  # (1,0,0) -> 1
-        positions[6],  # (1,1,0) -> 2
-        positions[2],  # (0,1,0) -> 3
-        positions[1],  # (0,0,1) -> 4
-        positions[5],  # (1,0,1) -> 5
-        positions[7],  # (1,1,1) -> 6
-        positions[3],  # (0,1,1) -> 7
-    ]
+    return np.array(vertices, dtype=np.float32)
 
 
 def _interpolate_vertex(
@@ -692,4 +654,8 @@ def _interpolate_vertex(
         return p1
 
     mu = (isovalue - val1) / (val2 - val1)
-    return (p1[0] + mu * (p2[0] - p1[0]), p1[1] + mu * (p2[1] - p1[1]), p1[2] + mu * (p2[2] - p1[2]))
+    return (
+        p1[0] + (p2[0] - p1[0]) * mu,
+        p1[1] + (p2[1] - p1[1]) * mu,
+        p1[2] + (p2[2] - p1[2]) * mu,
+    )
