@@ -521,7 +521,7 @@ TRIANGLE_TABLE = [
 ]
 
 
-def marching_cubes(scalar_field: list[list[list[tuple[float, float, float, float]]]], value: float) -> np.ndarray:
+def isosurface(scalar_field: np.ndarray, value: float) -> np.ndarray:
     """
     Generate triangles using Marching Cubes algorithm for isosurface extraction.
 
@@ -535,30 +535,30 @@ def marching_cubes(scalar_field: list[list[list[tuple[float, float, float, float
     vertices = []
 
     # Process each cube in the volume
-    for i in range(len(scalar_field) - 1):
-        for j in range(len(scalar_field[i]) - 1):
-            for k in range(len(scalar_field[i][j]) - 1):
+    for i in range(scalar_field.shape[0] - 1):
+        for j in range(scalar_field.shape[1] - 1):
+            for k in range(scalar_field.shape[2] - 1):
                 # Get the 8 corner values of the cube
                 cube_values = [
-                    scalar_field[i][j][k][3],  # 0
-                    scalar_field[i + 1][j][k][3],  # 1
-                    scalar_field[i + 1][j + 1][k][3],  # 2
-                    scalar_field[i][j + 1][k][3],  # 3
-                    scalar_field[i][j][k + 1][3],  # 4
-                    scalar_field[i + 1][j][k + 1][3],  # 5
-                    scalar_field[i + 1][j + 1][k + 1][3],  # 6
-                    scalar_field[i][j + 1][k + 1][3],  # 7
+                    scalar_field[i][j][k],  # 0
+                    scalar_field[i + 1][j][k],  # 1
+                    scalar_field[i + 1][j + 1][k],  # 2
+                    scalar_field[i][j + 1][k],  # 3
+                    scalar_field[i][j][k + 1],  # 4
+                    scalar_field[i + 1][j][k + 1],  # 5
+                    scalar_field[i + 1][j + 1][k + 1],  # 6
+                    scalar_field[i][j + 1][k + 1],  # 7
                 ]
 
                 cube_positions = [
-                    scalar_field[i][j][k][:3],  # 0
-                    scalar_field[i + 1][j][k][:3],  # 1
-                    scalar_field[i + 1][j + 1][k][:3],  # 2
-                    scalar_field[i][j + 1][k][:3],  # 3
-                    scalar_field[i][j][k + 1][:3],  # 4
-                    scalar_field[i + 1][j][k + 1][:3],  # 5
-                    scalar_field[i + 1][j + 1][k + 1][:3],  # 6
-                    scalar_field[i][j + 1][k + 1][:3],  # 7
+                    (i, j, k),  # 0
+                    (i + 1, j, k),  # 1
+                    (i + 1, j + 1, k),  # 2
+                    (i, j + 1, k),  # 3
+                    (i, j, k + 1),  # 4
+                    (i + 1, j, k + 1),  # 5
+                    (i + 1, j + 1, k + 1),  # 6
+                    (i, j + 1, k + 1),  # 7
                 ]
 
                 # Calculate cube index based on which vertices are inside/outside
