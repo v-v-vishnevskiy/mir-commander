@@ -53,7 +53,13 @@ class VolumeCube(Node):
         vao_name = f"isosurface_{value}"
         vao = VertexArrayObject(vao_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
-        Isosurface(parent=self, value=value, vao_name=vao_name, color=color)
+        Isosurface(
+            parent=self,
+            value=value,
+            vao_name=vao_name,
+            color=color,
+            node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
+        )
 
     def remove_isosurface(self, value: float):
         try:

@@ -526,12 +526,12 @@ def isosurface(scalar_field: np.ndarray, value: float) -> np.ndarray:
     Generate triangles using Marching Cubes algorithm for isosurface extraction.
 
     Args:
+        scalar_field: The 3D scalar field
         value: The isovalue for surface extraction
 
     Returns:
-        List of vertices, each vertex is a tuple of (x, y, z) coordinates in Angstroms
+        Array of vertices, flattened as [x,y,z, x,y,z, ...]
     """
-
     vertices = []
 
     # Process each cube in the volume
@@ -625,17 +625,30 @@ def isosurface(scalar_field: np.ndarray, value: float) -> np.ndarray:
                 # Create triangles
                 tri_idx = 0
                 while TRIANGLE_TABLE[cube_index][tri_idx] != -1:
-                    triangle = [
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][0],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][1],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][2],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
-                        edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
-                    ]
+                    if value >= 0.0:
+                        triangle = [
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][0],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][2],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
+                        ]
+                    else:
+                        triangle = [
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][2],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][0],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
+                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
+                        ]
                     vertices.extend(triangle)
                     tri_idx += 3
 

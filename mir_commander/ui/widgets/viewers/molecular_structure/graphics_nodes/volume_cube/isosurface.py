@@ -1,4 +1,3 @@
-from mir_commander.ui.utils.opengl.scene import NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ..base import BaseGraphicsNode
@@ -6,7 +5,6 @@ from ..base import BaseGraphicsNode
 
 class Isosurface(BaseGraphicsNode):
     def __init__(self, value: float, vao_name: str, color: Color4f, *args, **kwargs):
-        kwargs["node_type"] = NodeType.TRANSPARENT
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
