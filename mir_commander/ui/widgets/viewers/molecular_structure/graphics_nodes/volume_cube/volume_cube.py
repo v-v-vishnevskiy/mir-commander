@@ -4,7 +4,7 @@ from mir_commander.core.models import VolumeCube as CoreVolumeCube
 from mir_commander.ui.utils.opengl.models.marching_cubes import isosurface
 from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_vertex_normals
+from mir_commander.ui.utils.opengl.utils import Color4f, compute_smooth_normals
 from mir_commander.utils import consts
 
 from ...errors import SurfaceNotFoundError
@@ -49,7 +49,7 @@ class VolumeCube(Node):
             pass
 
         vertices = isosurface(self._volume_cube.cube_data, value)
-        normals = compute_vertex_normals(vertices)
+        normals = compute_smooth_normals(vertices)
         vao_name = f"isosurface_{value}"
         vao = VertexArrayObject(vao_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)

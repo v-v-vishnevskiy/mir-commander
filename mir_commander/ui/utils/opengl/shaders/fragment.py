@@ -1,8 +1,8 @@
 FLAT_COLOR = """
 #version 330 core
 
+in vec3 normal;
 in vec4 fragment_color;
-
 out vec4 output_color;
 
 void main() {

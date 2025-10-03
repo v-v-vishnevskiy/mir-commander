@@ -64,6 +64,51 @@ def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
     return np.array(normals, dtype=np.float32)
 
 
+def compute_smooth_normals(vertices: np.ndarray, tolerance: float = 1e-6) -> np.ndarray:
+    """
+    Compute smooth vertex normals by averaging face normals of adjacent triangles.
+    Vertices within tolerance distance are considered the same vertex.
+    """
+    vertex_normals_map: dict[tuple[float, float, float], list[QVector3D]] = {}
+
+    for i in range(0, len(vertices), 9):
+        v1 = QVector3D(*vertices[i : i + 3])
+        v2 = QVector3D(*vertices[i + 3 : i + 6])
+        v3 = QVector3D(*vertices[i + 6 : i + 9])
+
+        face_normal = QVector3D().normal(v1, v2, v3)
+
+        for vertex in [v1, v2, v3]:
+            key = _round_vertex(vertex, tolerance)
+            if key not in vertex_normals_map:
+                vertex_normals_map[key] = []
+            vertex_normals_map[key].append(face_normal)
+
+    normals: list[float] = []
+    for i in range(0, len(vertices), 3):
+        vertex = QVector3D(*vertices[i : i + 3])
+        key = _round_vertex(vertex, tolerance)
+
+        avg_normal = QVector3D(0, 0, 0)
+        for normal in vertex_normals_map[key]:
+            avg_normal += normal
+        avg_normal.normalize()
+
+        normals.extend([avg_normal.x(), avg_normal.y(), avg_normal.z()])
+
+    return np.array(normals, dtype=np.float32)
+
+
+def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, float]:
+    """Round vertex coordinates to merge nearby vertices."""
+    decimals = max(0, -int(np.log10(tolerance)))
+    return (
+        round(vertex.x(), decimals),
+        round(vertex.y(), decimals),
+        round(vertex.z(), decimals),
+    )
+
+
 def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
     xmin = ymin = xmax = ymax = -1
 

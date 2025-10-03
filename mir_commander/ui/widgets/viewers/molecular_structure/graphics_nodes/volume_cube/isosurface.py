@@ -16,7 +16,7 @@ class Isosurface(BaseGraphicsNode):
 
         self.set_color(self._color)
         self.set_model(self._vao_name)
-        self.set_shader("transparent")
+        self.set_shader("default")
 
     @property
     def value(self) -> float:
