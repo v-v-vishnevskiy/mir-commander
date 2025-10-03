@@ -127,14 +127,17 @@ class Visualizer(OpenGLWidget):
         )
 
     def set_volume_cube(self, volume_cube: CoreVolumeCube):
+        self.makeCurrent()
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
     def add_volume_cube_isosurface(self, value: float, color: Color4f):
+        self.makeCurrent()
         self._volume_cube.add_isosurface(value, color)
         self.update()
 
     def remove_volume_cube_isosurface(self, value: float):
+        self.makeCurrent()
         self._volume_cube.remove_isosurface(value)
         self.update()
 

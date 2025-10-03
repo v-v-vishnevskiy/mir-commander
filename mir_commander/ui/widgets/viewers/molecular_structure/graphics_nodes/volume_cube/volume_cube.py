@@ -63,7 +63,9 @@ class VolumeCube(Node):
         return [(s.value, s.color) for s in self.children]
 
     def set_volume_cube(self, volume_cube: CoreVolumeCube):
-        self.clear()
+        for s in self.children:
+            s.remove()
+            self._resource_manager.remove_vertex_array_object(s.vao_name)
         self._volume_cube = volume_cube
         self._scalar_field = self._prepare_scalar_field()
 
