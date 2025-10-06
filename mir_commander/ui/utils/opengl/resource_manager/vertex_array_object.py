@@ -22,7 +22,7 @@ logger = logging.getLogger("ResourceManager.VertexArrayObject")
 
 
 class VertexArrayObject(Resource):
-    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_vbo_tex_coords", "_triangles_count")
+    __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_vbo_tex_coords", "_triangles_count", "_init_fns")
 
     def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray = None):
         super().__init__(name)
@@ -32,14 +32,16 @@ class VertexArrayObject(Resource):
         self._vbo_normals = None
         self._vbo_tex_coords = None
         self._triangles_count = int(len(vertices) / 3)
-
-        self._setup_buffers(vertices, normals, tex_coords)
+        self._init_fns = [(self._setup_buffers, (vertices, normals, tex_coords))]
 
     @property
     def triangles_count(self) -> int:
         return self._triangles_count
 
     def bind(self):
+        while self._init_fns:
+            fn, args = self._init_fns.pop(0)
+            fn(*args)
         glBindVertexArray(self._vao)
 
     def unbind(self):
@@ -48,7 +50,7 @@ class VertexArrayObject(Resource):
     def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray):
         logger.debug("Setting up buffers")
         self._vao = glGenVertexArrays(1)
-        self.bind()
+        glBindVertexArray(self._vao)
 
         # Generate VBOs
         self._vbo_vertices = glGenBuffers(1)
@@ -75,10 +77,10 @@ class VertexArrayObject(Resource):
             glVertexAttribPointer(2, 2, GL_FLOAT, False, 0, None)
             glEnableVertexAttribArray(2)  # tex_coords
 
-        self.unbind()
+        glBindVertexArray(0)
 
     def delete(self):
-        logger.debug("Deleting OpenGL resources")
+        logger.debug("Deleting VAO OpenGL resources")
         if self._vao is not None:
             glDeleteVertexArrays(1, [self._vao])
             self._vao = None

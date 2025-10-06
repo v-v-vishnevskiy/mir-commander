@@ -1,34 +1,19 @@
 import ctypes
-import logging
 from typing import Hashable, cast
 
 import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
-    GL_BLEND,
-    GL_COLOR_BUFFER_BIT,
-    GL_CULL_FACE,
-    GL_DEPTH_BUFFER_BIT,
-    GL_DEPTH_TEST,
-    GL_FALSE,
     GL_FLOAT,
-    GL_ONE_MINUS_SRC_ALPHA,
-    GL_SRC_ALPHA,
     GL_STATIC_DRAW,
     GL_TRIANGLES,
-    GL_TRUE,
     glBindBuffer,
-    glBlendFunc,
     glBufferData,
-    glClear,
     glClearColor,
     glDeleteBuffers,
-    glDepthMask,
-    glDisable,
     glDrawArrays,
     glDrawArraysInstanced,
-    glEnable,
     glEnableVertexAttribArray,
     glGenBuffers,
     glUniform4f,
@@ -47,12 +32,11 @@ from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
 from .scene import Node, NodeType, RenderingContainer, TextNode
 from .utils import Color4f, crop_image_to_content
-
-logger = logging.getLogger("OpenGL.Renderer")
+from .wboit import WBOIT
 
 
 class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager):
+    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager, wboit: WBOIT):
         self._projection_manager = projection_manager
         self._resource_manager = resource_manager
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
@@ -60,6 +44,7 @@ class Renderer:
         self._picking_image.fill(QColor(0, 0, 0, 0))
         self._update_picking_image = True
         self._transformation_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
+        self._wboit = wboit
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
@@ -68,30 +53,25 @@ class Renderer:
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
 
         glClearColor(*self._bg_color)
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_CULL_FACE)
-        glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
         else:
-            self._handle_text(text_rc)
+            # self._handle_text(text_rc)
 
+            self._wboit.prepare_opaque_stage()
             self._paint_normal(normal_containers[NodeType.OPAQUE])
 
+            self._wboit.prepare_transparent_stage()
             if normal_containers[NodeType.TRANSPARENT]:
-                glEnable(GL_BLEND)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                glDepthMask(GL_FALSE)
                 self._paint_normal(normal_containers[NodeType.TRANSPARENT])
-                glDepthMask(GL_TRUE)
 
-            if normal_containers[NodeType.CHAR]:
-                glEnable(GL_BLEND)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                self._paint_normal(normal_containers[NodeType.CHAR])
+            # if normal_containers[NodeType.CHAR]:
+            #     glEnable(GL_BLEND)
+            #     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            #     self._paint_normal(normal_containers[NodeType.CHAR])
+
+            self._wboit.finalize()
 
             self._update_picking_image = True
 

@@ -4,7 +4,7 @@ from ..base import BaseGraphicsNode
 
 
 class Isosurface(BaseGraphicsNode):
-    def __init__(self, value: float, vao_name: str, color: Color4f, *args, **kwargs):
+    def __init__(self, value: float, vao_name: str, color: Color4f, shader_name: str, *args, **kwargs):
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
@@ -14,7 +14,7 @@ class Isosurface(BaseGraphicsNode):
 
         self.set_color(self._color)
         self.set_model(self._vao_name)
-        self.set_shader("default")
+        self.set_shader(shader_name)
 
     @property
     def value(self) -> float:

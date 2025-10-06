@@ -1,3 +1,18 @@
+WBOIT_FINALIZE = """
+#version 330 core
+
+layout (location = 0) in vec3 position;
+layout (location = 2) in vec2 in_texcoord;
+
+out vec2 fragment_texcoord;
+
+void main() {
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+    fragment_texcoord = in_texcoord;
+}
+"""
+
+
 COMPUTE_POSITION = """
 #version 330 core
 

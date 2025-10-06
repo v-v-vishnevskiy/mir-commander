@@ -59,6 +59,7 @@ class VolumeCube(Node):
             vao_name=vao_name,
             color=color,
             node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
+            shader_name="transparent" if color[3] < 1.0 else "default",
         )
 
     def remove_isosurface(self, value: float):

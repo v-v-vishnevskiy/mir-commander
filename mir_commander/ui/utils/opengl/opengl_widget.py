@@ -26,6 +26,7 @@ from .resource_manager import (
 from .resource_manager.font_atlas import create_font_atlas
 from .scene import Node, Scene
 from .utils import Color4f, color_to_id
+from .wboit import WBOIT
 
 
 class OpenGLWidget(QOpenGLWidget):
@@ -42,7 +43,8 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.resource_manager = ResourceManager(Camera("main"), Scene("main"))
-        self.renderer = Renderer(self.projection_manager, self.resource_manager)
+        self._wboit = WBOIT()
+        self.renderer = Renderer(self.projection_manager, self.resource_manager, self._wboit)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
@@ -61,7 +63,7 @@ class OpenGLWidget(QOpenGLWidget):
             ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.FLAT_COLOR),
+                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
             )
         )
         self.resource_manager.add_shader(
@@ -113,13 +115,21 @@ class OpenGLWidget(QOpenGLWidget):
         self._setup_viewport(self.size().width(), self.size().height())
         glEnable(GL_MULTISAMPLE)
 
+        s = self.devicePixelRatio()
+        self._wboit.init(int(self.size().width() * s), int(self.size().height() * s), self.defaultFramebufferObject())
+
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
         self._setup_viewport(w, h)
+
+        s = self.devicePixelRatio()
+        self._wboit.init(int(w * s), int(h * s), self.defaultFramebufferObject())
+
         self.update()
 
     def paintGL(self):
+        self.makeCurrent()
         self.renderer.paint(PaintMode.Normal)
 
     def keyPressEvent(self, event: QKeyEvent):
