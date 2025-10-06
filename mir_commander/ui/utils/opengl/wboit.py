@@ -95,6 +95,16 @@ class WBOIT:
             FragmentShader(shaders.fragment.WBOIT_FINALIZE),
         )
 
+        self._cache = False
+        self._opaque_texture_loc = None
+        self._accum_texture_loc = None
+        self._alpha_texture_loc = None
+
+    def cache_uniform_locations(self):
+        if self._cache:
+            return
+
+        self._cache = True
         self._opaque_texture_loc = glGetUniformLocation(self._finalize_shader.program, "opaque_texture")
         self._accum_texture_loc = glGetUniformLocation(self._finalize_shader.program, "accum_texture")
         self._alpha_texture_loc = glGetUniformLocation(self._finalize_shader.program, "alpha_texture")
@@ -180,6 +190,7 @@ class WBOIT:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         glUseProgram(self._finalize_shader.program)
+        self.cache_uniform_locations()
 
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self._opaque_texture)
