@@ -32,16 +32,17 @@ class VertexArrayObject(Resource):
         self._vbo_normals = None
         self._vbo_tex_coords = None
         self._triangles_count = int(len(vertices) / 3)
-        self._init_fns = [(self._setup_buffers, (vertices, normals, tex_coords))]
+        # self._init_fns = [(self._setup_buffers, (vertices, normals, tex_coords))]
+        self._setup_buffers(vertices, normals, tex_coords)
 
     @property
     def triangles_count(self) -> int:
         return self._triangles_count
 
     def bind(self):
-        while self._init_fns:
-            fn, args = self._init_fns.pop(0)
-            fn(*args)
+        # while self._init_fns:
+        #     fn, args = self._init_fns.pop(0)
+        #     fn(*args)
         glBindVertexArray(self._vao)
 
     def unbind(self):

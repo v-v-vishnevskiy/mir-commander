@@ -86,9 +86,7 @@ class WBOIT:
         self._accum_texture = glGenTextures(1)
         self._alpha_texture = glGenTextures(1)
 
-        self._fullscreen_quad_vao = VertexArrayObject(
-            "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
-        )
+        self._fullscreen_quad_vao = None
         self._finalize_shader = ShaderProgram(
             "wboit_finalize",
             VertexShader(shaders.vertex.WBOIT_FINALIZE),
@@ -111,6 +109,11 @@ class WBOIT:
 
     def init(self, width: int, height: int, default_fbo: int):
         self._default_fbo = default_fbo
+
+        if self._fullscreen_quad_vao is None:
+            self._fullscreen_quad_vao = VertexArrayObject(
+                "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
+            )
 
         glBindTexture(GL_TEXTURE_2D, self._opaque_texture)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, None)
@@ -204,8 +207,8 @@ class WBOIT:
         glBindTexture(GL_TEXTURE_2D, self._alpha_texture)
         glUniform1i(self._alpha_texture_loc, 2)
 
-        self._fullscreen_quad_vao.bind()
-        glDrawArrays(GL_TRIANGLES, 0, self._fullscreen_quad_vao.triangles_count)
+        self._fullscreen_quad_vao.bind()  # type: ignore[union-attr]
+        glDrawArrays(GL_TRIANGLES, 0, self._fullscreen_quad_vao.triangles_count)  # type: ignore[union-attr]
 
     def release(self):
         glDeleteFramebuffers(1, [self._opaque_fbo])
