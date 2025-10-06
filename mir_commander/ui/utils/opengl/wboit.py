@@ -78,13 +78,13 @@ class WBOIT:
     def __init__(self):
         self._default_fbo = 0
 
-        self._opaque_fbo = glGenFramebuffers(1)
-        self._opaque_texture = glGenTextures(1)
-        self._depth_texture = glGenTextures(1)
+        self._opaque_fbo = None
+        self._opaque_texture = None
+        self._depth_texture = None
 
-        self._transparent_fbo = glGenFramebuffers(1)
-        self._accum_texture = glGenTextures(1)
-        self._alpha_texture = glGenTextures(1)
+        self._transparent_fbo = None
+        self._accum_texture = None
+        self._alpha_texture = None
 
         self._fullscreen_quad_vao = None
         self._finalize_shader = ShaderProgram(
@@ -114,6 +114,15 @@ class WBOIT:
             self._fullscreen_quad_vao = VertexArrayObject(
                 "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
             )
+
+        if self._opaque_fbo is None:
+            self._opaque_fbo = glGenFramebuffers(1)
+            self._opaque_texture = glGenTextures(1)
+            self._depth_texture = glGenTextures(1)
+
+            self._transparent_fbo = glGenFramebuffers(1)
+            self._accum_texture = glGenTextures(1)
+            self._alpha_texture = glGenTextures(1)
 
         glBindTexture(GL_TEXTURE_2D, self._opaque_texture)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, None)
