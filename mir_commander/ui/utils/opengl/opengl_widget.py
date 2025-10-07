@@ -1,4 +1,5 @@
-from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
+import logging
+
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -28,6 +29,8 @@ from .scene import Node, Scene
 from .utils import Color4f, color_to_id
 from .wboit import WBOIT
 
+logger = logging.getLogger("OpenGLWidget")
+
 
 class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent: QWidget, keymap: None | Keymap = None):
@@ -43,13 +46,32 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.resource_manager = ResourceManager(Camera("main"), Scene("main"))
-        self._wboit = WBOIT()
-        self.renderer = Renderer(self.projection_manager, self.resource_manager, self._wboit)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.init_actions()
+
+    def initializeGL(self):
+        try:
+            self.init_opengl()
+        except Exception as e:
+            logger.error("Failed to initialize OpenGL: %s", e)
+
+    def init_opengl(self):
+        self._wboit = WBOIT()
+        self.renderer = Renderer(self.projection_manager, self.resource_manager, self._wboit)
+        self.renderer.resize(self.size().width(), self.size().height())
         self.init_shaders()
+        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
+
+        s = self.devicePixelRatio()
+        self._wboit.init(int(self.size().width() * s), int(self.size().height() * s), self.defaultFramebufferObject())
+
+    def release_opengl(self):
+        self.makeCurrent()
+        self._wboit.release()
+        self.renderer.release()
+        self.resource_manager.release()
 
     def init_shaders(self):
         self.resource_manager.add_shader(
@@ -75,7 +97,8 @@ class OpenGLWidget(QOpenGLWidget):
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
         atlas_size = 1024
         data, font_atlas = create_font_atlas(font_atlas_name, font_path, atlas_size=atlas_size)
-        texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
+        texture = Texture2D(name=f"font_atlas_{font_atlas_name}")
+        texture.init(width=atlas_size, height=atlas_size, data=data)
         self.resource_manager.add_font_atlas(font_atlas)
         self.resource_manager.add_texture(texture)
 
@@ -103,25 +126,14 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
-    def _setup_viewport(self, w: int, h: int):
-        glViewport(0, 0, w, h)
-
     @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
 
-    def initializeGL(self):
-        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
-        self._setup_viewport(self.size().width(), self.size().height())
-        glEnable(GL_MULTISAMPLE)
-
-        s = self.devicePixelRatio()
-        self._wboit.init(int(self.size().width() * s), int(self.size().height() * s), self.defaultFramebufferObject())
-
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
-        self._setup_viewport(w, h)
+        self.renderer.resize(w, h)
 
         s = self.devicePixelRatio()
         self._wboit.init(int(w * s), int(h * s), self.defaultFramebufferObject())
@@ -175,20 +187,20 @@ class OpenGLWidget(QOpenGLWidget):
     def set_projection_mode(self, mode: ProjectionMode):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height())
         self.update()
 
     def toggle_projection_mode(self):
         self.makeCurrent()
         self.projection_manager.toggle_projection_mode()
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height())
         self.update()
 
     def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
         self.projection_manager.perspective_projection.set_fov(value)
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height())
         self.update()
 
     def set_scene_position(self, point: QVector3D):

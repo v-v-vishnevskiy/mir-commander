@@ -17,28 +17,34 @@ from OpenGL.GL import (
 
 from .base import Resource
 
-logger = logging.getLogger("ResourceManager.Texture2D")
+logger = logging.getLogger("OpenGL.Texture2D")
 
 
 class Texture2D(Resource):
-    def __init__(self, name: str, width: int, height: int, data: np.ndarray):
+    def __init__(self, name: str):
         super().__init__(name)
-
-        self._texture = None
-
-        self._load(width, height, data)
-
-    def _load(self, width: int, height: int, data: np.ndarray):
-        logger.debug(f"Loading texture {self.name}")
-
-        self.unbind()
-
         self._texture = glGenTextures(1)
-        self.bind()
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    @property
+    def id(self) -> int:
+        return self._texture
+
+    def init(
+        self,
+        width: int,
+        height: int,
+        internal_format: int = GL_RGBA,
+        format: int = GL_RGBA,
+        type: int = GL_UNSIGNED_BYTE,
+        data: np.ndarray | None = None,
+        setup_parameters: bool = True,
+    ):
+        self.bind()
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data)
+        if setup_parameters:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        self.unbind()
 
     def bind(self):
         glBindTexture(GL_TEXTURE_2D, self._texture)
@@ -46,7 +52,9 @@ class Texture2D(Resource):
     def unbind(self):
         glBindTexture(GL_TEXTURE_2D, 0)
 
-    def __del__(self):
+    def release(self):
+        logger.debug("Deleting resources: %s", self.name)
+
         glDeleteTextures(1, [self._texture])
 
     def __repr__(self):

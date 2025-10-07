@@ -6,7 +6,7 @@ from pathlib import Path
 from mir_commander.ui.application import Application
 from mir_commander.utils.logging import init_logging
 
-logger = logging.getLogger("main")
+logger = logging.getLogger("Main")
 
 
 def run():

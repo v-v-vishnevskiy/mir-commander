@@ -18,7 +18,6 @@ from OpenGL.GL import (
     glGenBuffers,
     glUniform4f,
     glUniformMatrix4fv,
-    glUseProgram,
     glVertexAttribDivisor,
     glVertexAttribPointer,
     glViewport,
@@ -48,6 +47,9 @@ class Renderer:
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
+
+    def resize(self, width: int, height: int):
+        glViewport(0, 0, width, height)
 
     def paint(self, paint_mode: PaintMode):
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
@@ -125,7 +127,7 @@ class Renderer:
         # OPTIMIZATION: Switch shader only when needed (expensive operation)
         shader = self._resource_manager.get_shader(shader_name)
         if shader_name != prev_shader_name:
-            glUseProgram(shader.program)
+            shader.use()
             uniform_locations = shader.uniform_locations
             self._setup_uniforms(uniform_locations)
         return shader.uniform_locations
@@ -373,6 +375,6 @@ class Renderer:
 
         return self._picking_image
 
-    def __del__(self):
+    def release(self):
         for buffers in self._transformation_buffers.values():
             glDeleteBuffers(1, list(buffers))

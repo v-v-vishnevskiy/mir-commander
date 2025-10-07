@@ -15,12 +15,10 @@ from OpenGL.GL import (
     GL_FALSE,
     GL_FLOAT,
     GL_FRAMEBUFFER,
-    GL_FRAMEBUFFER_COMPLETE,
     GL_FUNC_ADD,
     GL_HALF_FLOAT,
     GL_LEQUAL,
     GL_LESS,
-    GL_LINEAR,
     GL_ONE,
     GL_R16F,
     GL_RED,
@@ -29,44 +27,31 @@ from OpenGL.GL import (
     GL_TEXTURE0,
     GL_TEXTURE1,
     GL_TEXTURE2,
-    GL_TEXTURE_2D,
-    GL_TEXTURE_MAG_FILTER,
-    GL_TEXTURE_MIN_FILTER,
     GL_TRIANGLES,
     GL_TRUE,
     GL_ZERO,
     glActiveTexture,
     glBindFramebuffer,
-    glBindTexture,
     glBlendEquationi,
     glBlendFunci,
-    glCheckFramebufferStatus,
     glClear,
     glClearBufferfv,
-    glDeleteFramebuffers,
-    glDeleteProgram,
-    glDeleteTextures,
     glDepthFunc,
     glDepthMask,
     glDisable,
     glDrawArrays,
-    glDrawBuffers,
     glEnable,
-    glFramebufferTexture2D,
-    glGenFramebuffers,
-    glGenTextures,
     glGetUniformLocation,
-    glTexImage2D,
-    glTexParameteri,
     glUniform1i,
-    glUseProgram,
 )
 
 from . import shaders
 from .models import rect
 from .resource_manager import (
     FragmentShader,
+    Framebuffer,
     ShaderProgram,
+    Texture2D,
     VertexArrayObject,
     VertexShader,
 )
@@ -78,31 +63,24 @@ class WBOIT:
     def __init__(self):
         self._default_fbo = 0
 
-        self._opaque_fbo = None
-        self._opaque_texture = None
-        self._depth_texture = None
+        self._opaque_fbo = Framebuffer("wboit_opaque_fbo")
+        self._transparent_fbo = Framebuffer("wboit_transparent_fbo")
 
-        self._transparent_fbo = None
-        self._accum_texture = None
-        self._alpha_texture = None
+        self._opaque_texture = Texture2D("wboit_opaque_texture")
+        self._depth_texture = Texture2D("wboit_depth_texture")
+        self._accum_texture = Texture2D("wboit_accum_texture")
+        self._alpha_texture = Texture2D("wboit_alpha_texture")
 
-        self._fullscreen_quad_vao = None
+        self._fullscreen_quad_vao = VertexArrayObject(
+            "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
+        )
+
         self._finalize_shader = ShaderProgram(
             "wboit_finalize",
             VertexShader(shaders.vertex.WBOIT_FINALIZE),
             FragmentShader(shaders.fragment.WBOIT_FINALIZE),
         )
 
-        self._cache = False
-        self._opaque_texture_loc = None
-        self._accum_texture_loc = None
-        self._alpha_texture_loc = None
-
-    def cache_uniform_locations(self):
-        if self._cache:
-            return
-
-        self._cache = True
         self._opaque_texture_loc = glGetUniformLocation(self._finalize_shader.program, "opaque_texture")
         self._accum_texture_loc = glGetUniformLocation(self._finalize_shader.program, "accum_texture")
         self._alpha_texture_loc = glGetUniformLocation(self._finalize_shader.program, "alpha_texture")
@@ -110,63 +88,23 @@ class WBOIT:
     def init(self, width: int, height: int, default_fbo: int):
         self._default_fbo = default_fbo
 
-        if self._fullscreen_quad_vao is None:
-            self._fullscreen_quad_vao = VertexArrayObject(
-                "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
-            )
+        self._opaque_texture.init(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT)
+        self._depth_texture.init(width, height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, None, False)
+        self._accum_texture.init(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT)
+        self._alpha_texture.init(width, height, GL_R16F, GL_RED, GL_HALF_FLOAT)
 
-        if self._opaque_fbo is None:
-            self._opaque_fbo = glGenFramebuffers(1)
-            self._opaque_texture = glGenTextures(1)
-            self._depth_texture = glGenTextures(1)
+        self._opaque_fbo.bind()
+        self._opaque_fbo.attach_texture(self._opaque_texture, GL_COLOR_ATTACHMENT0)
+        self._opaque_fbo.attach_texture(self._depth_texture, GL_DEPTH_ATTACHMENT)
+        self._opaque_fbo.check_status()
+        self._opaque_fbo.unbind()
 
-            self._transparent_fbo = glGenFramebuffers(1)
-            self._accum_texture = glGenTextures(1)
-            self._alpha_texture = glGenTextures(1)
-
-        glBindTexture(GL_TEXTURE_2D, self._opaque_texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, None)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        glBindTexture(GL_TEXTURE_2D, self._depth_texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, None)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        glBindFramebuffer(GL_FRAMEBUFFER, self._opaque_fbo)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self._opaque_texture, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self._depth_texture, 0)
-
-        status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-        if status != GL_FRAMEBUFFER_COMPLETE:
-            logger.error(f"Opaque framebuffer incomplete: {hex(status)}")
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
-
-        glBindTexture(GL_TEXTURE_2D, self._accum_texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, None)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        glBindTexture(GL_TEXTURE_2D, self._alpha_texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_HALF_FLOAT, None)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-        glBindFramebuffer(GL_FRAMEBUFFER, self._transparent_fbo)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self._accum_texture, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, self._alpha_texture, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self._depth_texture, 0)
-        glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
-
-        status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-        if status != GL_FRAMEBUFFER_COMPLETE:
-            logger.error(f"Transparent framebuffer incomplete: {hex(status)}")
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        self._transparent_fbo.bind()
+        self._transparent_fbo.attach_texture(self._accum_texture, GL_COLOR_ATTACHMENT0)
+        self._transparent_fbo.attach_texture(self._alpha_texture, GL_COLOR_ATTACHMENT1)
+        self._transparent_fbo.attach_texture(self._depth_texture, GL_DEPTH_ATTACHMENT)
+        self._transparent_fbo.check_status()
+        self._transparent_fbo.unbind()
 
     def prepare_opaque_stage(self):
         glEnable(GL_DEPTH_TEST)
@@ -174,7 +112,7 @@ class WBOIT:
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
 
-        glBindFramebuffer(GL_FRAMEBUFFER, self._opaque_fbo)
+        self._opaque_fbo.bind()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     def prepare_transparent_stage(self):
@@ -185,46 +123,47 @@ class WBOIT:
         glEnable(GL_BLEND)
         glBlendFunci(0, GL_ONE, GL_ONE)
         glBlendEquationi(0, GL_FUNC_ADD)
-        # glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR)
         glBlendFunci(1, GL_DST_COLOR, GL_ZERO)
         glBlendEquationi(1, GL_FUNC_ADD)
 
-        glBindFramebuffer(GL_FRAMEBUFFER, self._transparent_fbo)
+        self._transparent_fbo.bind()
         glClearBufferfv(GL_COLOR, 0, [0.0, 0.0, 0.0, 0.0])
         glClearBufferfv(GL_COLOR, 1, [1.0])
 
     def finalize(self):
-        # glDisable(GL_DEPTH_TEST)
+        glDisable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
 
         glBindFramebuffer(GL_FRAMEBUFFER, self._default_fbo)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        glUseProgram(self._finalize_shader.program)
-        self.cache_uniform_locations()
+        self._finalize_shader.use()
 
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self._opaque_texture)
+        self._opaque_texture.bind()
         glUniform1i(self._opaque_texture_loc, 0)
 
         glActiveTexture(GL_TEXTURE1)
-        glBindTexture(GL_TEXTURE_2D, self._accum_texture)
+        self._accum_texture.bind()
         glUniform1i(self._accum_texture_loc, 1)
 
         glActiveTexture(GL_TEXTURE2)
-        glBindTexture(GL_TEXTURE_2D, self._alpha_texture)
+        self._alpha_texture.bind()
         glUniform1i(self._alpha_texture_loc, 2)
 
-        self._fullscreen_quad_vao.bind()  # type: ignore[union-attr]
-        glDrawArrays(GL_TRIANGLES, 0, self._fullscreen_quad_vao.triangles_count)  # type: ignore[union-attr]
+        self._fullscreen_quad_vao.bind()
+        glDrawArrays(GL_TRIANGLES, 0, self._fullscreen_quad_vao.triangles_count)
 
     def release(self):
-        glDeleteFramebuffers(1, [self._opaque_fbo])
-        glDeleteTextures(1, [self._opaque_texture, self._depth_texture])
-        glDeleteFramebuffers(1, [self._transparent_fbo])
-        glDeleteTextures(1, [self._accum_texture, self._alpha_texture])
-        glDeleteProgram(self._finalize_shader.program)
+        self._opaque_fbo.release()
+        self._transparent_fbo.release()
 
-    def __del__(self):
-        self.release()
+        self._opaque_texture.release()
+        self._depth_texture.release()
+        self._accum_texture.release()
+        self._alpha_texture.release()
+
+        self._fullscreen_quad_vao.release()
+
+        self._finalize_shader.release()

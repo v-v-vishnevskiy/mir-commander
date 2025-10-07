@@ -80,7 +80,7 @@ class ResourceManager:
 
     def remove_vertex_array_object(self, name: str):
         try:
-            self._vertex_array_objects[name].delete()
+            self._vertex_array_objects[name].release()
             del self._vertex_array_objects[name]
         except KeyError:
             raise ValueError(f"VertexArrayObject `{name}` not found")
@@ -102,6 +102,14 @@ class ResourceManager:
             return self._font_atlases[name]
         except KeyError:
             raise ValueError(f"FontAtlas `{name}` not found")
+
+    def release(self):
+        for vertex_array_object in self._vertex_array_objects.values():
+            vertex_array_object.release()
+        for shader in self._shaders.values():
+            shader.release()
+        for texture in self._textures.values():
+            texture.release()
 
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))

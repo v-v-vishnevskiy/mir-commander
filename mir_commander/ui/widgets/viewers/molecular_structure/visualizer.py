@@ -81,8 +81,8 @@ class Visualizer(OpenGLWidget):
             )
         )
 
-    def initializeGL(self):
-        super().initializeGL()
+    def init_opengl(self):
+        super().init_opengl()
 
         self.set_background_color(normalize_color(self._style.current.background.color))
 

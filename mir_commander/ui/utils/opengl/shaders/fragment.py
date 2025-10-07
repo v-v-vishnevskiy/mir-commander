@@ -32,7 +32,7 @@ void main() {
 
     vec3 specular = specular_strength * spec * light_color;
 
-    vec3 p = ((ambient + diffuse) * fragment_color.xyz) + specular;
+    vec3 p = ((ambient + diffuse) * fragment_color.rgb) + specular;
 
 	accum = vec4(p.rgb * fragment_color.a, fragment_color.a);
 	alpha = 1.0 - fragment_color.a;
@@ -60,9 +60,6 @@ void main() {
         output_color = vec4(opaque_color, 1.0);
         return;
     }
-
-    // Compute weighted average color
-    vec3 average_color = accum.rgb / max(accum.a, 0.00001);
 
     // Blend transparent with opaque background
     vec3 color = accum.rgb / accum.a * alpha + opaque_color * (1.0 - alpha);
