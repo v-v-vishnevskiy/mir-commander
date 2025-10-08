@@ -12,7 +12,6 @@ from OpenGL.GL import (
 )
 
 from .base import Resource
-from .texture2d import Texture2D
 
 logger = logging.getLogger("OpenGL.Framebuffer")
 
@@ -26,8 +25,8 @@ class Framebuffer(Resource):
     def bind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, self._framebuffer)
 
-    def attach_texture(self, texture: Texture2D, attachment: int):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture.id, 0)
+    def attach_texture(self, texture: int, attachment: int):
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, 0)
 
     def unbind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, 0)

@@ -40,6 +40,7 @@ from OpenGL.GL import (
     glDepthMask,
     glDisable,
     glDrawArrays,
+    glDrawBuffers,
     glEnable,
     glGetUniformLocation,
     glUniform1i,
@@ -94,16 +95,17 @@ class WBOIT:
         self._alpha_texture.init(width, height, GL_R16F, GL_RED, GL_HALF_FLOAT)
 
         self._opaque_fbo.bind()
-        self._opaque_fbo.attach_texture(self._opaque_texture, GL_COLOR_ATTACHMENT0)
-        self._opaque_fbo.attach_texture(self._depth_texture, GL_DEPTH_ATTACHMENT)
+        self._opaque_fbo.attach_texture(self._opaque_texture.id, GL_COLOR_ATTACHMENT0)
+        self._opaque_fbo.attach_texture(self._depth_texture.id, GL_DEPTH_ATTACHMENT)
         self._opaque_fbo.check_status()
         self._opaque_fbo.unbind()
 
         self._transparent_fbo.bind()
-        self._transparent_fbo.attach_texture(self._accum_texture, GL_COLOR_ATTACHMENT0)
-        self._transparent_fbo.attach_texture(self._alpha_texture, GL_COLOR_ATTACHMENT1)
-        self._transparent_fbo.attach_texture(self._depth_texture, GL_DEPTH_ATTACHMENT)
+        self._transparent_fbo.attach_texture(self._accum_texture.id, GL_COLOR_ATTACHMENT0)
+        self._transparent_fbo.attach_texture(self._alpha_texture.id, GL_COLOR_ATTACHMENT1)
+        self._transparent_fbo.attach_texture(self._depth_texture.id, GL_DEPTH_ATTACHMENT)
         self._transparent_fbo.check_status()
+        glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
         self._transparent_fbo.unbind()
 
     def prepare_opaque_stage(self):

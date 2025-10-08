@@ -1,3 +1,19 @@
+WBOIT_TRANSPARENT_FLAT = """
+#version 330 core
+
+in vec3 normal;
+in vec4 fragment_color;
+
+layout (location = 0) out vec4 accum;
+layout (location = 1) out float alpha;
+
+void main() {
+    accum = vec4(fragment_color.rgb * fragment_color.a, fragment_color.a);
+    alpha = 1.0 - fragment_color.a;
+}
+"""
+
+
 WBOIT_TRANSPARENT = """
 #version 330 core
 

@@ -8,7 +8,13 @@ from OpenGL.GL import (
     glGetUniformLocation,
     glUseProgram,
 )
-from OpenGL.GL.shaders import compileProgram, compileShader
+from OpenGL.GL.shaders import (
+    ShaderCompilationError,
+    ShaderLinkError,
+    ShaderValidationError,
+    compileProgram,
+    compileShader,
+)
 
 from .base import Resource
 
@@ -60,7 +66,18 @@ class ShaderProgram(Resource):
     def __init__(self, name: str, *shaders: VertexShader | FragmentShader):
         super().__init__(name)
 
-        self._program = compileProgram(*[s.shader for s in shaders], validate=False)
+        try:
+            self._program = compileProgram(*[s.shader for s in shaders], validate=False)
+        except ShaderCompilationError as e:
+            logger.error("Failed to compile shader program `%s`: %s", name, e)
+            raise e
+        except ShaderValidationError as e:
+            logger.error("Failed to validate shader program `%s`: %s", name, e)
+            raise e
+        except ShaderLinkError as e:
+            logger.error("Failed to link shader program `%s`: %s", name, e)
+            raise e
+
         self.uniform_locations = UniformLocations()
         self._cache_uniform_locations()
 

@@ -20,7 +20,7 @@ class BoundingSphere(Node):
         self._config = config
 
         self.set_scale(QVector3D(config.scale_factor, config.scale_factor, config.scale_factor))
-        self.set_shader("transparent")
+        self.set_shader("transparent_flat")
         self.set_model(VAO_SPHERE_RESOURCE_NAME)
         self.set_color(self._compute_color(config))
 

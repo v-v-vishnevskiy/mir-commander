@@ -83,6 +83,13 @@ class OpenGLWidget(QOpenGLWidget):
         )
         self.resource_manager.add_shader(
             ShaderProgram(
+                "transparent_flat",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
