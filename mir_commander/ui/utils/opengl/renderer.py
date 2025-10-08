@@ -335,55 +335,8 @@ class Renderer:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def _render_to_image(
-        self,
-        width: int,
-        height: int,
-        transparent_bg: bool = False,
-        crop_to_content: bool = False,
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
     ) -> QImage:
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setSamples(16)
-        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
-        fbo.bind()
-
-        glViewport(0, 0, width, height)
-
-        self._wboit.init(width, height)
-
-        bg_color_bak = self._bg_color
-
-        if transparent_bg:
-            self._bg_color = 0.0, 0.0, 0.0, 0.0
-
-        bg_color = QColor.fromRgbF(*self._bg_color)
-
-        self.paint(PaintMode.Normal, fbo.handle())
-
-        self._bg_color = bg_color_bak
-
-        fbo.release()
-
-        self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
-
-        image = fbo.toImage()
-
-        if crop_to_content:
-            image = crop_image_to_content(image, bg_color)
-
-        return image
-
-    def _render_to_image_opengl(
-        self,
-        width: int,
-        height: int,
-        transparent_bg: bool = False,
-        crop_to_content: bool = False,
-    ) -> np.ndarray:
-        """Render to image using pure OpenGL without Qt.
-
-        Returns numpy array with shape (height, width, channels) where channels is 4 (RGBA).
-        """
         # Create framebuffer
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
@@ -413,6 +366,8 @@ class Renderer:
         if transparent_bg:
             self._bg_color = 0.0, 0.0, 0.0, 0.0
 
+        bg_color = QColor.fromRgbF(*self._bg_color)
+
         # Render scene
         self.paint(PaintMode.Normal, fbo)
 
@@ -423,10 +378,10 @@ class Renderer:
         pixels = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 
         # Convert to numpy array
-        image = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
+        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
 
         # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
-        image = np.flipud(image)  # type: ignore
+        image_data = np.flipud(opengl_image_data)
 
         # Cleanup
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -437,13 +392,18 @@ class Renderer:
         # Restore WBOIT to original size
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
-        return QImage(image.tobytes(), width, height, QImage.Format.Format_RGBA8888)  # type: ignore
+        # Create QImage with premultiplied format - matches WBOIT output
+        image = QImage(image_data.tobytes(), width, height, QImage.Format.Format_RGBA8888)
+
+        if crop_to_content:
+            return crop_image_to_content(image, bg_color)
+        return image
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
     ) -> QImage:
         try:
-            return self._render_to_image_opengl(width, height, transparent_bg, crop_to_content)  # type: ignore
+            return self._render_to_image(width, height, transparent_bg, crop_to_content)
         except OpenGL.error.GLError as e:
             raise Error(f"Error rendering to image: {e}")
 
