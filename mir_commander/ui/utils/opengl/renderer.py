@@ -66,12 +66,12 @@ class Renderer:
             self._wboit.prepare_opaque_stage()
             self._paint_normal(normal_containers[NodeType.OPAQUE])
 
-            if normal_containers[NodeType.CHAR]:
-                self._paint_normal(normal_containers[NodeType.CHAR])
-
             self._wboit.prepare_transparent_stage()
             if normal_containers[NodeType.TRANSPARENT]:
                 self._paint_normal(normal_containers[NodeType.TRANSPARENT])
+
+            if normal_containers[NodeType.CHAR]:
+                self._paint_normal(normal_containers[NodeType.CHAR])
 
             self._wboit.finalize()
 
