@@ -5,19 +5,45 @@ import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
+    GL_COLOR_ATTACHMENT0,
+    GL_DEPTH24_STENCIL8,
+    GL_DEPTH_STENCIL_ATTACHMENT,
     GL_FLOAT,
+    GL_FRAMEBUFFER,
+    GL_LINEAR,
+    GL_RENDERBUFFER,
+    GL_RGBA,
     GL_STATIC_DRAW,
     GL_TEXTURE0,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_MIN_FILTER,
     GL_TRIANGLES,
+    GL_UNSIGNED_BYTE,
     glActiveTexture,
     glBindBuffer,
+    glBindFramebuffer,
+    glBindRenderbuffer,
+    glBindTexture,
     glBufferData,
     glClearColor,
     glDeleteBuffers,
+    glDeleteFramebuffers,
+    glDeleteRenderbuffers,
+    glDeleteTextures,
     glDrawArrays,
     glDrawArraysInstanced,
     glEnableVertexAttribArray,
+    glFramebufferRenderbuffer,
+    glFramebufferTexture2D,
     glGenBuffers,
+    glGenFramebuffers,
+    glGenRenderbuffers,
+    glGenTextures,
+    glReadPixels,
+    glRenderbufferStorage,
+    glTexImage2D,
+    glTexParameteri,
     glUniform4f,
     glUniformMatrix4fv,
     glVertexAttribDivisor,
@@ -314,11 +340,7 @@ class Renderer:
         height: int,
         transparent_bg: bool = False,
         crop_to_content: bool = False,
-        make_current_callback=None,
     ) -> QImage:
-        if make_current_callback:
-            make_current_callback()
-
         fbo_format = QOpenGLFramebufferObjectFormat()
         fbo_format.setSamples(16)
         fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
@@ -351,16 +373,77 @@ class Renderer:
 
         return image
 
-    def render_to_image(
+    def _render_to_image_opengl(
         self,
         width: int,
         height: int,
         transparent_bg: bool = False,
         crop_to_content: bool = False,
-        make_current_callback=None,
+    ) -> np.ndarray:
+        """Render to image using pure OpenGL without Qt.
+
+        Returns numpy array with shape (height, width, channels) where channels is 4 (RGBA).
+        """
+        # Create framebuffer
+        fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+
+        # Create texture for color attachment
+        texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, texture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0)
+
+        # Create renderbuffer for depth/stencil
+        rbo = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo)
+
+        # Set viewport
+        glViewport(0, 0, width, height)
+
+        # Reinitialize WBOIT for new size
+        self._wboit.init(width, height)
+
+        # Backup and set background color
+        bg_color_bak = self._bg_color
+        if transparent_bg:
+            self._bg_color = 0.0, 0.0, 0.0, 0.0
+
+        # Render scene
+        self.paint(PaintMode.Normal, fbo)
+
+        # Restore background color
+        self._bg_color = bg_color_bak
+
+        # Read pixels from framebuffer
+        pixels = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+
+        # Convert to numpy array
+        image = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
+
+        # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
+        image = np.flipud(image)  # type: ignore
+
+        # Cleanup
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        glDeleteTextures([texture])
+        glDeleteRenderbuffers(1, [rbo])
+        glDeleteFramebuffers(1, [fbo])
+
+        # Restore WBOIT to original size
+        self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
+
+        return QImage(image.tobytes(), width, height, QImage.Format.Format_RGBA8888)  # type: ignore
+
+    def render_to_image(
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
     ) -> QImage:
         try:
-            return self._render_to_image(width, height, transparent_bg, crop_to_content, make_current_callback)
+            return self._render_to_image_opengl(width, height, transparent_bg, crop_to_content)  # type: ignore
         except OpenGL.error.GLError as e:
             raise Error(f"Error rendering to image: {e}")
 
