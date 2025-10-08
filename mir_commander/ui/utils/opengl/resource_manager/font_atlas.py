@@ -45,18 +45,19 @@ def create_font_atlas(
         if max_height < bbox[3] - bbox[1]:
             max_height = bbox[3] - bbox[1]
 
-    x, y = 0.0, -min_top_padding
-    row = 1
+    width_padding = 1.0
+    height_padding = min_top_padding + 1.0
+
+    x, y = width_padding, -min_top_padding + height_padding
     for char in chars:
         # Get the size of the character
         bbox = draw.textbbox((0, 0), char, font=font)
         char_width = bbox[2] - bbox[0]
 
         # Check if the character fits in the current row
-        if x + char_width > atlas_size:
-            x = 0
-            y += max_height
-            row += 1
+        if x + char_width + width_padding > atlas_size:
+            x = width_padding
+            y += max_height + height_padding
 
         # Draw the character
         draw.text((x - bbox[0], y), char, font=font, fill=(255, 255, 255, 255))
@@ -64,13 +65,13 @@ def create_font_atlas(
         # Save the character information
         atlas_info.chars[char] = CharInfo(
             width=char_width,
-            height=max_height,
+            height=max_height + height_padding,
             u_min=x / atlas_size,
             u_max=(x + char_width) / atlas_size,
-            v_min=(atlas_size - (row * max_height)) / atlas_size,
-            v_max=(atlas_size - ((row - 1) * max_height)) / atlas_size,
+            v_min=(atlas_size - (y + max_height + height_padding)) / atlas_size,
+            v_max=(atlas_size - y) / atlas_size,
         )
 
-        x += char_width + 1
+        x += char_width + width_padding
 
     return np.array(atlas), atlas_info
