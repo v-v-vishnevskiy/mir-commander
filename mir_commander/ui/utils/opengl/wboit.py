@@ -62,8 +62,6 @@ logger = logging.getLogger("OpenGL.WBOIT")
 
 class WBOIT:
     def __init__(self):
-        self._default_fbo = 0
-
         self._opaque_fbo = Framebuffer("wboit_opaque_fbo")
         self._transparent_fbo = Framebuffer("wboit_transparent_fbo")
 
@@ -86,9 +84,7 @@ class WBOIT:
         self._accum_texture_loc = glGetUniformLocation(self._finalize_shader.program, "accum_texture")
         self._alpha_texture_loc = glGetUniformLocation(self._finalize_shader.program, "alpha_texture")
 
-    def init(self, width: int, height: int, default_fbo: int):
-        self._default_fbo = default_fbo
-
+    def init(self, width: int, height: int):
         self._opaque_texture.init(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT)
         self._depth_texture.init(width, height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, None, False)
         self._accum_texture.init(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT)
@@ -132,12 +128,12 @@ class WBOIT:
         glClearBufferfv(GL_COLOR, 0, [0.0, 0.0, 0.0, 0.0])
         glClearBufferfv(GL_COLOR, 1, [1.0])
 
-    def finalize(self):
+    def finalize(self, framebuffer: int):
         glDisable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
 
-        glBindFramebuffer(GL_FRAMEBUFFER, self._default_fbo)
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         self._finalize_shader.use()

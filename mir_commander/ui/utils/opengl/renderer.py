@@ -37,7 +37,7 @@ from .wboit import WBOIT
 
 
 class Renderer:
-    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager, wboit: WBOIT):
+    def __init__(self, projection_manager: ProjectionManager, resource_manager: ResourceManager):
         self._projection_manager = projection_manager
         self._resource_manager = resource_manager
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
@@ -45,15 +45,24 @@ class Renderer:
         self._picking_image.fill(QColor(0, 0, 0, 0))
         self._update_picking_image = True
         self._transformation_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
-        self._wboit = wboit
+        self._wboit = WBOIT()
+
+        self._device_pixel_ratio = 1.0
+        self._width = 1
+        self._height = 1
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
 
-    def resize(self, width: int, height: int):
-        glViewport(0, 0, width, height)
+    def resize(self, width: int, height: int, device_pixel_ratio: float):
+        self._device_pixel_ratio = device_pixel_ratio
+        self._width = width
+        self._height = height
 
-    def paint(self, paint_mode: PaintMode):
+        glViewport(0, 0, width, height)
+        self._wboit.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio))
+
+    def paint(self, paint_mode: PaintMode, framebuffer: int):
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
 
         glClearColor(*self._bg_color)
@@ -73,7 +82,7 @@ class Renderer:
             if normal_containers[NodeType.CHAR]:
                 self._paint_normal(normal_containers[NodeType.CHAR])
 
-            self._wboit.finalize()
+            self._wboit.finalize(framebuffer)
 
             self._update_picking_image = True
 
@@ -316,20 +325,24 @@ class Renderer:
         fbo = QOpenGLFramebufferObject(width, height, fbo_format)
         fbo.bind()
 
+        glViewport(0, 0, width, height)
+
+        self._wboit.init(width, height)
+
         bg_color_bak = self._bg_color
 
         if transparent_bg:
-            self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
+            self._bg_color = 0.0, 0.0, 0.0, 0.0
 
         bg_color = QColor.fromRgbF(*self._bg_color)
 
-        glViewport(0, 0, width, height)
-
-        self.paint(PaintMode.Normal)
+        self.paint(PaintMode.Normal, fbo.handle())
 
         self._bg_color = bg_color_bak
 
         fbo.release()
+
+        self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
         image = fbo.toImage()
 
@@ -351,21 +364,19 @@ class Renderer:
         except OpenGL.error.GLError as e:
             raise Error(f"Error rendering to image: {e}")
 
-    def picking_image(self, width: int, height: int) -> QImage:
+    def picking_image(self) -> QImage:
         if not self._update_picking_image:
             return self._picking_image
 
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+        fbo = QOpenGLFramebufferObject(self._width, self._height, QOpenGLFramebufferObjectFormat())
         fbo.bind()
 
-        glViewport(0, 0, width, height)
+        glViewport(0, 0, self._width, self._height)
 
         bg_color_bak = self._bg_color
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
 
-        self.paint(PaintMode.Picking)
+        self.paint(PaintMode.Picking, fbo.handle())
 
         self._bg_color = bg_color_bak
 
@@ -377,5 +388,6 @@ class Renderer:
         return self._picking_image
 
     def release(self):
+        self._wboit.release()
         for buffers in self._transformation_buffers.values():
             glDeleteBuffers(1, list(buffers))

@@ -67,19 +67,19 @@ uniform sampler2D alpha_texture;
 out vec4 output_color;
 
 void main() {
-    vec3 opaque_color = texture(opaque_texture, fragment_texcoord).rgb;
+    vec4 opaque_color = texture(opaque_texture, fragment_texcoord);
     vec4 accum = texture(accum_texture, fragment_texcoord);
     float alpha = 1.0 - texture(alpha_texture, fragment_texcoord).r;
 
     // If no transparent geometry, show opaque only
     if (accum.a <= 0.0001) {
-        output_color = vec4(opaque_color, 1.0);
+        output_color = opaque_color;
         return;
     }
 
     // Blend transparent with opaque background
-    vec3 color = accum.rgb / accum.a * alpha + opaque_color * (1.0 - alpha);
-    output_color = vec4(color, 1.0);
+    vec3 color = accum.rgb / accum.a * alpha + opaque_color.rgb * (1.0 - alpha);
+    output_color = vec4(color, max((1.0 - alpha), opaque_color.a));
 }
 """
 
