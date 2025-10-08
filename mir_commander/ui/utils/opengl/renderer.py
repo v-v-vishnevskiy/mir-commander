@@ -7,7 +7,9 @@ from OpenGL.GL import (
     GL_ARRAY_BUFFER,
     GL_FLOAT,
     GL_STATIC_DRAW,
+    GL_TEXTURE0,
     GL_TRIANGLES,
+    glActiveTexture,
     glBindBuffer,
     glBufferData,
     glClearColor,
@@ -59,19 +61,17 @@ class Renderer:
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
         else:
-            # self._handle_text(text_rc)
+            self._handle_text(text_rc)
 
             self._wboit.prepare_opaque_stage()
             self._paint_normal(normal_containers[NodeType.OPAQUE])
 
+            if normal_containers[NodeType.CHAR]:
+                self._paint_normal(normal_containers[NodeType.CHAR])
+
             self._wboit.prepare_transparent_stage()
             if normal_containers[NodeType.TRANSPARENT]:
                 self._paint_normal(normal_containers[NodeType.TRANSPARENT])
-
-            # if normal_containers[NodeType.CHAR]:
-            #     glEnable(GL_BLEND)
-            #     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            #     self._paint_normal(normal_containers[NodeType.CHAR])
 
             self._wboit.finalize()
 
@@ -136,6 +136,7 @@ class Renderer:
         # OPTIMIZATION: Switch texture only when needed (expensive operation)
         if texture_name != "" and texture_name != prev_texture_name:
             texture = self._resource_manager.get_texture(texture_name)
+            glActiveTexture(GL_TEXTURE0)
             texture.bind()
             return texture_name
         # Unbind texture if needed
