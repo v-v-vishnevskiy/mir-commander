@@ -80,11 +80,19 @@ void main() {
     // Compute average transparent color
     vec3 transparent_color = accum.rgb / accum.a;
 
-    // Blend transparent with opaque background using coverage (alpha)
-    vec3 color = transparent_color * alpha + opaque_color.rgb * (1.0 - alpha);
-
     // Output alpha depends on background type
     float output_alpha = opaque_color.a > 0.0 ? max(alpha, opaque_color.a) : alpha;
+
+    // Blend with opaque background if present, otherwise output straight alpha
+    vec3 color;
+    if (opaque_color.a > 0.0) {
+        // Blend transparent over opaque background
+        color = transparent_color * alpha + opaque_color.rgb * (1.0 - alpha);
+    } else {
+        // No opaque background - output straight alpha (not premultiplied)
+        color = transparent_color;
+    }
+
     output_color = vec4(color, output_alpha);
 }
 """
