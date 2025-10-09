@@ -248,13 +248,13 @@ class Visualizer(OpenGLWidget):
                         parent = cast(Viewer, self.parent())
                         parent.short_msg_signal.emit(TR.tr("Image saved"))
                     except Exception as e:
+                        logger.error("Could not save image: %s", e)
                         if isinstance(e, OSError):
                             message = self.tr("The path does not exist or is write-protected.")
                         elif isinstance(e, ValueError):
                             message = self.tr("The output format could not be determined.")
                         else:
                             message = self.tr("Error saving image")
-                            logger.error("Could not save image: %s", e)
 
                         QMessageBox.critical(
                             self,

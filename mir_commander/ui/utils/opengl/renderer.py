@@ -12,6 +12,7 @@ from OpenGL.GL import (
     GL_FRAMEBUFFER,
     GL_LINEAR,
     GL_RENDERBUFFER,
+    GL_RGB,
     GL_RGBA,
     GL_STATIC_DRAW,
     GL_TEXTURE0,
@@ -341,10 +342,12 @@ class Renderer:
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
+        format = GL_RGBA if transparent_bg else GL_RGB
+
         # Create texture for color attachment
         texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, texture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, None)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0)
@@ -375,7 +378,7 @@ class Renderer:
         self._bg_color = bg_color_bak
 
         # Read pixels from framebuffer
-        pixels = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+        pixels = glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE)
 
         # Cleanup
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -387,13 +390,13 @@ class Renderer:
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
         # Convert to numpy array
-        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
+        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4 if transparent_bg else 3)
 
         # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
         image_data = np.flipud(opengl_image_data)
 
         if crop_to_content:
-            return crop_image_to_content(image_data, bg_color)
+            return crop_image_to_content(image_data, bg_color if transparent_bg else bg_color[0:3])
         return image_data
 
     def render_to_image(

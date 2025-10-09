@@ -108,7 +108,7 @@ def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, fl
     )
 
 
-def crop_image_to_content(image: np.ndarray, bg_color: Color4f) -> np.ndarray:
+def crop_image_to_content(image: np.ndarray, bg_color: tuple[float, ...]) -> np.ndarray:
     xmin = ymin = xmax = ymax = -1
     color = [int(c * 255) for c in bg_color]
 
