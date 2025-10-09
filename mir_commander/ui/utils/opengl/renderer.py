@@ -343,6 +343,7 @@ class Renderer:
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
         format = GL_RGBA if transparent_bg else GL_RGB
+        channels = 4 if transparent_bg else 3
 
         # Create texture for color attachment
         texture = glGenTextures(1)
@@ -390,13 +391,13 @@ class Renderer:
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
         # Convert to numpy array
-        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4 if transparent_bg else 3)
+        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, channels)
 
         # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
         image_data = np.flipud(opengl_image_data)
 
         if crop_to_content:
-            return crop_image_to_content(image_data, bg_color if transparent_bg else bg_color[0:3])
+            return crop_image_to_content(image_data, bg_color[0:channels])
         return image_data
 
     def render_to_image(
