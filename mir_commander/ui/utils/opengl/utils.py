@@ -2,8 +2,7 @@ from ctypes import c_void_p
 
 import numpy as np
 from pydantic_extra_types.color import Color
-from PySide6.QtCore import QRect
-from PySide6.QtGui import QColor, QImage, QVector3D
+from PySide6.QtGui import QColor, QVector3D
 
 Color4f = tuple[float, float, float, float]
 null = c_void_p(0)
@@ -109,43 +108,44 @@ def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, fl
     )
 
 
-def crop_image_to_content(image: QImage, bg_color: QColor) -> QImage:
+def crop_image_to_content(image: np.ndarray, bg_color: Color4f) -> np.ndarray:
     xmin = ymin = xmax = ymax = -1
+    color = [int(c * 255) for c in bg_color]
 
-    for y in range(image.height()):
-        for x in range(image.width()):
-            if image.pixelColor(x, y) != bg_color:
+    for y in range(image.shape[0]):
+        for x in range(image.shape[1]):
+            if image[y, x].tolist() != color:
                 ymin = y
                 break
         if ymin >= 0:
             break
 
-    for y in reversed(range(image.height())):
-        for x in range(image.width()):
-            if image.pixelColor(x, y) != bg_color:
+    for y in reversed(range(image.shape[0])):
+        for x in range(image.shape[1]):
+            if image[y, x].tolist() != color:
                 ymax = y
                 break
         if ymax >= 0:
             break
 
-    for x in range(image.width()):
-        for y in range(image.height()):
-            if image.pixelColor(x, y) != bg_color:
+    for x in range(image.shape[1]):
+        for y in range(image.shape[0]):
+            if image[y, x].tolist() != color:
                 xmin = x
                 break
         if xmin >= 0:
             break
 
-    for x in reversed(range(image.width())):
-        for y in range(image.height()):
-            if image.pixelColor(x, y) != bg_color:
+    for x in reversed(range(image.shape[1])):
+        for y in range(image.shape[0]):
+            if image[y, x].tolist() != color:
                 xmax = x
                 break
         if xmax >= 0:
             break
 
     if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
-        crop_area = QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
-        image = image.copy(crop_area)
+        left, top, width, height = xmin, ymin, xmax - xmin + 1, ymax - ymin + 1
+        image = image[top : top + height, left : left + width]
 
     return image

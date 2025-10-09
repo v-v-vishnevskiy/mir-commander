@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -223,7 +224,9 @@ class OpenGLWidget(QOpenGLWidget):
     def new_cursor_position(self, x: int, y: int):
         pass
 
-    def render_to_image(self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False):
+    def render_to_image(
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+    ) -> np.ndarray:
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 

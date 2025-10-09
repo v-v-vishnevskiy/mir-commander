@@ -1,6 +1,7 @@
 import logging
 from typing import cast
 
+from PIL import Image
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
@@ -242,16 +243,23 @@ class Visualizer(OpenGLWidget):
                     message_box.exec()
 
                 if image is not None:
-                    if image.save(str(dlg.img_file_path)):
+                    try:
+                        Image.fromarray(image).save(str(dlg.img_file_path))
                         parent = cast(Viewer, self.parent())
                         parent.short_msg_signal.emit(TR.tr("Image saved"))
-                    else:
+                    except Exception as e:
+                        if isinstance(e, OSError):
+                            message = self.tr("The path does not exist or is write-protected.")
+                        elif isinstance(e, ValueError):
+                            message = self.tr("The output format could not be determined.")
+                        else:
+                            message = self.tr("Error saving image")
+                            logger.error("Could not save image: %s", e)
+
                         QMessageBox.critical(
                             self,
                             self.tr("Save image"),
-                            self.tr("Could not save image:")
-                            + f"\n{dlg.img_file_path}\n"
-                            + self.tr("The path does not exist or is write-protected."),
+                            self.tr("Could not save image:") + f"\n{dlg.img_file_path}\n" + message,
                         )
 
     def set_next_style(self):

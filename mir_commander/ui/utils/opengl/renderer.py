@@ -336,7 +336,7 @@ class Renderer:
 
     def _render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
-    ) -> QImage:
+    ) -> np.ndarray:
         # Create framebuffer
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
@@ -366,7 +366,7 @@ class Renderer:
         if transparent_bg:
             self._bg_color = 0.0, 0.0, 0.0, 0.0
 
-        bg_color = QColor.fromRgbF(*self._bg_color)
+        bg_color = self._bg_color
 
         # Render scene
         self.paint(PaintMode.Normal, fbo)
@@ -377,12 +377,6 @@ class Renderer:
         # Read pixels from framebuffer
         pixels = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 
-        # Convert to numpy array
-        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
-
-        # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
-        image_data = np.flipud(opengl_image_data)
-
         # Cleanup
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         glDeleteTextures([texture])
@@ -392,16 +386,19 @@ class Renderer:
         # Restore WBOIT to original size
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
-        # Create QImage with premultiplied format - matches WBOIT output
-        image = QImage(image_data.tobytes(), width, height, QImage.Format.Format_RGBA8888)
+        # Convert to numpy array
+        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
+
+        # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
+        image_data = np.flipud(opengl_image_data)
 
         if crop_to_content:
-            return crop_image_to_content(image, bg_color)
-        return image
+            return crop_image_to_content(image_data, bg_color)
+        return image_data
 
     def render_to_image(
         self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
-    ) -> QImage:
+    ) -> np.ndarray:
         try:
             return self._render_to_image(width, height, transparent_bg, crop_to_content)
         except OpenGL.error.GLError as e:
