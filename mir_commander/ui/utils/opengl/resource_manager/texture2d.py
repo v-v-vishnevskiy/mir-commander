@@ -2,14 +2,19 @@ import logging
 
 import numpy as np
 from OpenGL.GL import (
+    GL_CLAMP_TO_EDGE,
     GL_LINEAR,
+    GL_LINEAR_MIPMAP_LINEAR,
     GL_RGBA,
     GL_TEXTURE_2D,
     GL_TEXTURE_MAG_FILTER,
     GL_TEXTURE_MIN_FILTER,
+    GL_TEXTURE_WRAP_S,
+    GL_TEXTURE_WRAP_T,
     GL_UNSIGNED_BYTE,
     glBindTexture,
     glDeleteTextures,
+    glGenerateMipmap,
     glGenTextures,
     glTexImage2D,
     glTexParameteri,
@@ -38,12 +43,20 @@ class Texture2D(Resource):
         type: int = GL_UNSIGNED_BYTE,
         data: np.ndarray | None = None,
         setup_parameters: bool = True,
+        use_mipmaps: bool = False,
     ):
         self.bind()
         glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data)
+        if use_mipmaps:
+            glGenerateMipmap(GL_TEXTURE_2D)
         if setup_parameters:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            if use_mipmaps:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+            else:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         self.unbind()
 
     def bind(self):
