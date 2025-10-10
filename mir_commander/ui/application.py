@@ -62,6 +62,7 @@ class Application(QApplication):
 
         sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         sf.setVersion(*version)
+        sf.setColorSpace(QSurfaceFormat.ColorSpace.sRGBColorSpace)
         QSurfaceFormat.setDefaultFormat(sf)
 
     def fix_palette(self):

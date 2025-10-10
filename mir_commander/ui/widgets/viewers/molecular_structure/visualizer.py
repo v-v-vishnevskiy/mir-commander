@@ -1,7 +1,7 @@
 import logging
 from typing import cast
 
-from PIL import Image
+from PIL import Image, ImageCms
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
@@ -244,7 +244,10 @@ class Visualizer(OpenGLWidget):
 
                 if image is not None:
                     try:
-                        Image.fromarray(image).save(str(dlg.img_file_path))
+                        profile = ImageCms.createProfile("sRGB")
+                        Image.fromarray(image).save(
+                            str(dlg.img_file_path), icc_profile=ImageCms.ImageCmsProfile(profile).tobytes()
+                        )
                         parent = cast(Viewer, self.parent())
                         parent.short_msg_signal.emit(TR.tr("Image saved"))
                     except Exception as e:
