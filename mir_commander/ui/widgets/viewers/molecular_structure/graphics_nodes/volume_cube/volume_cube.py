@@ -25,10 +25,6 @@ class VolumeCube(Node):
 
         self._volume_cube = volume_cube
 
-    @property
-    def isosurfaces(self) -> list[tuple[float, Color4f]]:
-        return [(s.value, s.color) for s in self.children]
-
     def set_volume_cube(self, volume_cube: CoreVolumeCube):
         position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
         self.set_translation(position * consts.BOHR2ANGSTROM)
@@ -38,40 +34,34 @@ class VolumeCube(Node):
 
         for s in self.children:
             s.remove()
-            self._resource_manager.remove_vertex_array_object(s.vao_name)
+            self._resource_manager.remove_vertex_array_object(s.model_name)
         self._volume_cube = volume_cube
 
-    def add_isosurface(self, value: float, color: Color4f):
-        try:
-            s = self.find_isosurface(value)
-            s.remove()
-        except SurfaceNotFoundError:
-            pass
-
-        vertices = isosurface(self._volume_cube.cube_data, value)
-        normals = compute_smooth_normals(vertices)
-        vao_name = f"isosurface_{value}"
-        vao = VertexArrayObject(vao_name, vertices, normals)
-        self._resource_manager.add_vertex_array_object(vao)
-        Isosurface(
+    def add_isosurface(self, value: float, color: Color4f) -> int:
+        s = Isosurface(
             parent=self,
-            value=value,
-            vao_name=vao_name,
             color=color,
             node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
             shader_name="transparent" if color[3] < 1.0 else "default",
         )
+        vertices = isosurface(self._volume_cube.cube_data, value)
+        normals = compute_smooth_normals(vertices)
+        model_name = f"isosurface_{s.id_surface}"
+        vao = VertexArrayObject(model_name, vertices, normals)
+        self._resource_manager.add_vertex_array_object(vao)
+        s.set_model(model_name)
+        return s.id_surface
 
-    def remove_isosurface(self, value: float):
+    def remove_isosurface(self, id: int):
         try:
-            s = self.find_isosurface(value)
+            s = self.find_isosurface(id)
             s.remove()
-            self._resource_manager.remove_vertex_array_object(s.vao_name)
+            self._resource_manager.remove_vertex_array_object(s.model_name)
         except SurfaceNotFoundError:
             pass
 
-    def find_isosurface(self, value: float) -> Isosurface:
+    def find_isosurface(self, id: int) -> Isosurface:
         for surface in self.children:
-            if surface.value == value:
+            if surface.id_surface == id:
                 return surface
         raise SurfaceNotFoundError()

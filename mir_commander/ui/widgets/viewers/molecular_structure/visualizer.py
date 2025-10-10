@@ -66,10 +66,6 @@ class Visualizer(OpenGLWidget):
 
         self.message_channel = MessageChannel()
 
-    @property
-    def volume_cube_isosurfaces(self) -> list[tuple[float, Color4f]]:
-        return self._volume_cube.isosurfaces
-
     def init_actions(self):
         super().init_actions()
         self.action_handler.add_action("toggle_node_selection", False, self.toggle_node_selection_under_cursor)
@@ -132,14 +128,15 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def add_volume_cube_isosurface(self, value: float, color: Color4f):
+    def add_volume_cube_isosurface(self, value: float, color: Color4f) -> int:
         self.makeCurrent()
-        self._volume_cube.add_isosurface(value, color)
+        id = self._volume_cube.add_isosurface(value, color)
         self.update()
+        return id
 
-    def remove_volume_cube_isosurface(self, value: float):
+    def remove_volume_cube_isosurface(self, id: int):
         self.makeCurrent()
-        self._volume_cube.remove_isosurface(value)
+        self._volume_cube.remove_isosurface(id)
         self.update()
 
     def set_title(self, title: str):

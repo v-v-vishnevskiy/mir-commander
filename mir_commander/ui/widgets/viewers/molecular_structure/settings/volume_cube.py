@@ -111,20 +111,16 @@ class VolumeCube(GroupBox):
             self._color_button_2.color.blueF(),
             self._color_button_2.color.alphaF(),
         )
+        ids = []
         for viewer in self._settings.viewers:
-            viewer.visualizer.add_volume_cube_isosurface(value=value, color=color_1)
+            ids.append(viewer.visualizer.add_volume_cube_isosurface(value=value, color=color_1))
             if self._both_sides_checkbox.isChecked():
-                viewer.visualizer.add_volume_cube_isosurface(value=value * -1, color=color_2)
+                ids.append(viewer.visualizer.add_volume_cube_isosurface(value=value * -1, color=color_2))
 
         pixmap = QPixmap(20, 20)
         pixmap.fill(self._color_button_1.color)
-        index = self._surface_combo_box.findText(str_value)
-        if index == -1:
-            data = [value, value * -1] if self._both_sides_checkbox.isChecked() else [value]
-            self._surface_combo_box.addItem(pixmap, str_value, userData=data)
-            self._surface_combo_box.setCurrentText(str_value)
-        else:
-            self._surface_combo_box.setItemIcon(index, pixmap)
+        self._surface_combo_box.addItem(pixmap, str_value, userData=ids)
+        self._surface_combo_box.setCurrentText(str_value)
 
         self._surface_combo_box.setDisabled(False)
         self._remove_button.setDisabled(False)
@@ -137,10 +133,10 @@ class VolumeCube(GroupBox):
             return
 
         index = self._surface_combo_box.currentIndex()
-        data = self._surface_combo_box.itemData(index)
+        ids = self._surface_combo_box.itemData(index)
         for viewer in self._settings.viewers:
-            for value in data:
-                viewer.visualizer.remove_volume_cube_isosurface(value=value)
+            for id in ids:
+                viewer.visualizer.remove_volume_cube_isosurface(id=id)
         self._surface_combo_box.removeItem(self._surface_combo_box.currentIndex())
 
         if self._surface_combo_box.count() == 0:

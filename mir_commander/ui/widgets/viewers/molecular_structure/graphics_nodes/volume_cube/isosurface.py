@@ -4,22 +4,18 @@ from ..base import BaseGraphicsNode
 
 
 class Isosurface(BaseGraphicsNode):
-    def __init__(self, value: float, vao_name: str, color: Color4f, shader_name: str, *args, **kwargs):
+    _id_surfacecounter = 0
+
+    def __init__(self, color: Color4f, shader_name: str, *args, **kwargs):
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
-        self._value = value
-        self._vao_name = vao_name
-        self._color = color
-
-        self.set_color(self._color)
-        self.set_model(self._vao_name)
+        self.set_color(color)
         self.set_shader(shader_name)
 
-    @property
-    def value(self) -> float:
-        return self._value
+        Isosurface._id_surfacecounter += 1
+        self._id_surface = Isosurface._id_surfacecounter
 
     @property
-    def vao_name(self) -> str:
-        return self._vao_name
+    def id_surface(self) -> int:
+        return self._id_surface
