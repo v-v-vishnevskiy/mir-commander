@@ -213,7 +213,12 @@ class Visualizer(OpenGLWidget):
         self.update()
 
     def save_img_action_handler(self):
-        dlg = SaveImageDialog(self, self.size().width(), self.size().height(), self._title)
+        dlg = SaveImageDialog(
+            self,
+            int(self.size().width() * self.devicePixelRatio()),
+            int(self.size().height() * self.devicePixelRatio()),
+            self._title,
+        )
         if dlg.exec():
             save_flag = True
             if dlg.img_file_path.exists():
