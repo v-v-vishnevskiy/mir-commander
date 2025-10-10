@@ -24,9 +24,11 @@ class NodeType(Enum):
 
 class Node:
     _id_counter = 0
+    _picking_id_counter = 0
 
     __slots__ = (
         "_id",
+        "_picking_id",
         "_root_node",
         "_parent",
         "_node_type",
@@ -53,6 +55,9 @@ class Node:
         visible: bool = True,
         picking_visible: bool = False,
     ):
+        Node._id_counter += 1
+        self._id = Node._id_counter
+
         self._node_type = node_type
 
         if root_node is None and parent is None:
@@ -74,12 +79,12 @@ class Node:
 
         self._modify_children: bool = False
 
-        Node._id_counter += 1
-        if Node._id_counter > _ID_COUNTER_LIMIT:
-            Node._id_counter = 1
-        self._id = Node._id_counter
+        Node._picking_id_counter += 1
+        if Node._picking_id_counter > _ID_COUNTER_LIMIT:
+            Node._picking_id_counter = 1
+        self._picking_id = Node._picking_id_counter
 
-        self._picking_color = id_to_color(self._id)
+        self._picking_color = id_to_color(self._picking_id)
 
         self._shader_name: str = ""
         self._texture_name: str = ""
@@ -92,6 +97,10 @@ class Node:
     @property
     def id(self) -> int:
         return self._id
+
+    @property
+    def picking_id(self) -> int:
+        return self._picking_id
 
     @property
     def parent(self) -> "Node":
@@ -261,4 +270,4 @@ class Node:
         self._root_node.notify_set_dirty(self)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self.id}, visible={self.visible})"
+        return f"{self.__class__.__name__}(id={self.picking_id}, visible={self.visible})"

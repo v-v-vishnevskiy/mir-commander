@@ -10,7 +10,6 @@ from .isosurface import Isosurface
 
 
 class IsosurfaceGroup(Node):
-    _counter = 0
     children: list[Isosurface]  # type: ignore[assignment]
 
     def __init__(self, resource_manager: ResourceManager, *args, **kwargs):
@@ -18,14 +17,7 @@ class IsosurfaceGroup(Node):
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
-        IsosurfaceGroup._counter += 1
-        self._surface_group_id = IsosurfaceGroup._counter
-
         self._resource_manager = resource_manager
-
-    @property
-    def surface_group_id(self) -> int:
-        return self._surface_group_id
 
     def add_isosurfaces(self, cube_data: np.ndarray, items: list[tuple[float, Color4f]]) -> list[int]:
         ids = []
@@ -42,11 +34,11 @@ class IsosurfaceGroup(Node):
         )
         vertices = isosurface(cube_data, value)
         normals = compute_smooth_normals(vertices)
-        model_name = f"isosurface_{s.surface_id}"
+        model_name = f"isosurface_{s.id}"
         vao = VertexArrayObject(model_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
         s.set_model(model_name)
-        return s.surface_id
+        return s.id
 
     def remove(self):
         for s in self.children:
@@ -67,6 +59,6 @@ class IsosurfaceGroup(Node):
 
     def _get_isosurface(self, id: int) -> Isosurface:
         for surface in self.children:
-            if surface.surface_id == id:
+            if surface.id == id:
                 return surface
         raise SurfaceNotFoundError()

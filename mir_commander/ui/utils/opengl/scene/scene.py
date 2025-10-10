@@ -24,8 +24,8 @@ class Scene(Resource):
     def containers(self) -> tuple[dict[NodeType, RenderingContainer], RenderingContainer, RenderingContainer]:
         return self._root_node.containers
 
-    def find_node_by_id(self, node_id: int) -> Node:
-        return self._root_node.find_node_by_id(node_id)
+    def find_node_by_picking_id(self, picking_id: int) -> Node:
+        return self._root_node.find_node_by_picking_id(picking_id)
 
     def clear(self):
         self._root_node.clear()

@@ -38,7 +38,7 @@ class VolumeCube(Node):
     def add_isosurface_group(self, items: list[tuple[float, Color4f]]) -> int:
         group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
         group.add_isosurfaces(self._volume_cube.cube_data, items)
-        return group.surface_group_id
+        return group.id
 
     def remove_isosurface_group(self, id: int):
         try:
@@ -48,6 +48,6 @@ class VolumeCube(Node):
 
     def get_isosurface_group(self, id: int) -> IsosurfaceGroup:
         for group in self.children:
-            if group.surface_group_id == id:
+            if group.id == id:
                 return group
         raise SurfaceNotFoundError()

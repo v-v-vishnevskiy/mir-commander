@@ -239,6 +239,6 @@ class OpenGLWidget(QOpenGLWidget):
         y = self._cursor_pos.y()
 
         color = image.pixelColor(x, y)
-        obj_id = color_to_id(color)
+        picking_id = color_to_id(color)
 
-        return self.resource_manager.current_scene.find_node_by_id(obj_id)
+        return self.resource_manager.current_scene.find_node_by_picking_id(picking_id)
