@@ -1,18 +1,17 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import VolumeCube as CoreVolumeCube
-from mir_commander.ui.utils.opengl.models.marching_cubes import isosurface
-from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
+from mir_commander.ui.utils.opengl.resource_manager import ResourceManager
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_smooth_normals
+from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils import consts
 
 from ...errors import SurfaceNotFoundError
-from .isosurface import Isosurface
+from .isosurface_group import IsosurfaceGroup
 
 
 class VolumeCube(Node):
-    children: list[Isosurface]  # type: ignore[assignment]
+    children: list[IsosurfaceGroup]  # type: ignore[assignment]
 
     def __init__(
         self, resource_manager: ResourceManager, volume_cube: CoreVolumeCube = CoreVolumeCube(), *args, **kwargs
@@ -34,34 +33,21 @@ class VolumeCube(Node):
 
         for s in self.children:
             s.remove()
-            self._resource_manager.remove_vertex_array_object(s.model_name)
         self._volume_cube = volume_cube
 
-    def add_isosurface(self, value: float, color: Color4f) -> int:
-        s = Isosurface(
-            parent=self,
-            color=color,
-            node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
-            shader_name="transparent" if color[3] < 1.0 else "default",
-        )
-        vertices = isosurface(self._volume_cube.cube_data, value)
-        normals = compute_smooth_normals(vertices)
-        model_name = f"isosurface_{s.id_surface}"
-        vao = VertexArrayObject(model_name, vertices, normals)
-        self._resource_manager.add_vertex_array_object(vao)
-        s.set_model(model_name)
-        return s.id_surface
+    def add_isosurface_group(self, items: list[tuple[float, Color4f]]) -> int:
+        group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
+        group.add_isosurfaces(self._volume_cube.cube_data, items)
+        return group.surface_group_id
 
-    def remove_isosurface(self, id: int):
+    def remove_isosurface_group(self, id: int):
         try:
-            s = self.find_isosurface(id)
-            s.remove()
-            self._resource_manager.remove_vertex_array_object(s.model_name)
+            self.get_isosurface_group(id).remove()
         except SurfaceNotFoundError:
             pass
 
-    def find_isosurface(self, id: int) -> Isosurface:
-        for surface in self.children:
-            if surface.id_surface == id:
-                return surface
+    def get_isosurface_group(self, id: int) -> IsosurfaceGroup:
+        for group in self.children:
+            if group.surface_group_id == id:
+                return group
         raise SurfaceNotFoundError()

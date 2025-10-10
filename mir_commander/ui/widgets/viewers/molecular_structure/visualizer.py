@@ -128,15 +128,15 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def add_volume_cube_isosurface(self, value: float, color: Color4f) -> int:
+    def add_volume_cube_isosurface_group(self, items: list[tuple[float, Color4f]]) -> int:
         self.makeCurrent()
-        id = self._volume_cube.add_isosurface(value, color)
+        id = self._volume_cube.add_isosurface_group(items)
         self.update()
         return id
 
-    def remove_volume_cube_isosurface(self, id: int):
+    def remove_volume_cube_isosurface_group(self, id: int):
         self.makeCurrent()
-        self._volume_cube.remove_isosurface(id)
+        self._volume_cube.remove_isosurface_group(id)
         self.update()
 
     def set_title(self, title: str):

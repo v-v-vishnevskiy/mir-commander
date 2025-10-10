@@ -4,7 +4,7 @@ from ..base import BaseGraphicsNode
 
 
 class Isosurface(BaseGraphicsNode):
-    _id_surfacecounter = 0
+    _counter = 0
 
     def __init__(self, color: Color4f, shader_name: str, *args, **kwargs):
         kwargs["visible"] = True
@@ -13,9 +13,9 @@ class Isosurface(BaseGraphicsNode):
         self.set_color(color)
         self.set_shader(shader_name)
 
-        Isosurface._id_surfacecounter += 1
-        self._id_surface = Isosurface._id_surfacecounter
+        Isosurface._counter += 1
+        self._surface_id = Isosurface._counter
 
     @property
-    def id_surface(self) -> int:
-        return self._id_surface
+    def surface_id(self) -> int:
+        return self._surface_id

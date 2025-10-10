@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QColor, QMouseEvent, QPixmap
 from PySide6.QtWidgets import QColorDialog, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QVBoxLayout, QWidget
 
+from mir_commander.ui.utils.opengl.utils import qcolor_to_color4f
 from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton
 
 if TYPE_CHECKING:
@@ -99,23 +100,16 @@ class VolumeCube(GroupBox):
         else:
             str_value = str(value)
 
-        color_1 = (
-            self._color_button_1.color.redF(),
-            self._color_button_1.color.greenF(),
-            self._color_button_1.color.blueF(),
-            self._color_button_1.color.alphaF(),
-        )
-        color_2 = (
-            self._color_button_2.color.redF(),
-            self._color_button_2.color.greenF(),
-            self._color_button_2.color.blueF(),
-            self._color_button_2.color.alphaF(),
-        )
+        color_1 = qcolor_to_color4f(self._color_button_1.color)
+        color_2 = qcolor_to_color4f(self._color_button_2.color)
+
+        items = [(value, color_1)]
+        if self._both_sides_checkbox.isChecked():
+            items.append((value * -1, color_2))
+
         ids = []
         for viewer in self._settings.viewers:
-            ids.append(viewer.visualizer.add_volume_cube_isosurface(value=value, color=color_1))
-            if self._both_sides_checkbox.isChecked():
-                ids.append(viewer.visualizer.add_volume_cube_isosurface(value=value * -1, color=color_2))
+            ids.append(viewer.visualizer.add_volume_cube_isosurface_group(items=items))
 
         pixmap = QPixmap(20, 20)
         pixmap.fill(self._color_button_1.color)
@@ -136,7 +130,7 @@ class VolumeCube(GroupBox):
         ids = self._surface_combo_box.itemData(index)
         for viewer in self._settings.viewers:
             for id in ids:
-                viewer.visualizer.remove_volume_cube_isosurface(id=id)
+                viewer.visualizer.remove_volume_cube_isosurface_group(id=id)
         self._surface_combo_box.removeItem(self._surface_combo_box.currentIndex())
 
         if self._surface_combo_box.count() == 0:
