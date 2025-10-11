@@ -50,15 +50,6 @@ def color_to_id(color: QColor) -> int:
     return b | (g << 8) | (r << 16)
 
 
-def compute_vertex_normals(vertices: np.ndarray) -> np.ndarray:
-    normals = []
-    for i in range(0, len(vertices), 3):
-        norm = QVector3D(*vertices[i : i + 3])
-        norm.normalize()
-        normals.extend([norm.x(), norm.y(), norm.z()])
-    return np.array(normals, dtype=np.float32)
-
-
 def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
     normals: list[float] = []
     for i in range(0, len(vertices), 9):

@@ -20,7 +20,7 @@ from mir_commander.ui.utils.opengl.resource_manager import (
     VertexShader,
 )
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
+from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_smooth_normals, normalize_color
 from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -162,7 +162,7 @@ class Visualizer(OpenGLWidget):
         faces = sphere.get_faces(stacks=stacks, slices=slices)
         vertices = sphere.unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
-            normals = compute_vertex_normals(vertices)
+            normals = compute_smooth_normals(vertices)
         else:
             normals = compute_face_normals(vertices)
 
@@ -177,7 +177,7 @@ class Visualizer(OpenGLWidget):
         faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
         vertices = cylinder.unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
-            normals = compute_vertex_normals(vertices)
+            normals = compute_smooth_normals(vertices)
         else:
             normals = compute_face_normals(vertices)
 
