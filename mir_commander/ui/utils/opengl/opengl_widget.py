@@ -244,6 +244,14 @@ class OpenGLWidget(QOpenGLWidget):
 
         return self.resource_manager.current_scene.find_node_by_picking_id(picking_id)
 
+    def set_node_color_by_id(self, node_id: int, color: Color4f):
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.set_color(color)
+            self.update()
+        except NodeNotFoundError:
+            pass
+
     def set_node_visible(
         self, node_id: int, visible: bool, apply_to_parents: bool = False, apply_to_children: bool = False
     ):

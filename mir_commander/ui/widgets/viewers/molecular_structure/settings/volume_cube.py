@@ -1,9 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QColor, QIcon, QMouseEvent, QPixmap, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QColor, QIcon, QMouseEvent, QResizeEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
-    QCheckBox,
+    QAbstractItemView,
     QColorDialog,
     QDoubleSpinBox,
     QFrame,
@@ -14,7 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mir_commander.ui.utils.opengl.utils import Color4f, color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton
 
 from ..entities import VolumeCubeIsosurfaceGroup
@@ -23,26 +22,51 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class VisibilityButton(QCheckBox):
-    def __init__(self, parent: QWidget, settings: "Settings", id: int, checked: bool):
+class ColorButton(QPushButton):
+    def __init__(self, parent: QWidget, color: QColor, settings: "Settings", id: int):
         super().__init__(parent)
+        self._color = color
         self._id = id
         self._settings = settings
-        self.setStyleSheet(
-            "QCheckBox::indicator { width: 20px; height: 20px; }"
-            "QCheckBox::indicator:unchecked { image: url(:/icons/general/square.png); }"
-            "QCheckBox::indicator:checked { image: url(:/icons/general/visibility.png); }"
-        )
-        self.setChecked(checked)
-        self.toggled.connect(self.toggled_handler)
+        self._set_style_sheet(color)
+        self.setFixedSize(19, 19)
+        self.clicked.connect(self.clicked_handler)
 
-    def toggled_handler(self, checked: bool):
+    def _set_style_sheet(self, color: QColor):
+        self.setStyleSheet(
+            f"QPushButton {{ border: 1px solid black; margin: 1px; background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
+        )
+
+    def clicked_handler(self):
+        color = QColorDialog.getColor(
+            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+        )
+        if color.isValid():
+            self._set_style_sheet(color)
+            for viewer in self._settings.viewers:
+                viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
+            self._settings.volume_cube.update_values()
+
+
+class VisibilityButton(QPushButton):
+    def __init__(self, parent: QWidget, settings: "Settings", id: int, visible: bool):
+        super().__init__(parent)
+        self._id = id
+        self._visible = visible
+        self._settings = settings
+        self.setFixedSize(16, 16)
+        self.setStyleSheet("QPushButton { border: none; }")
+        self.setIcon(QIcon(":/icons/general/visibility.png" if visible else ":/icons/general/square.png"))
+        self.clicked.connect(self.clicked_handler)
+
+    def clicked_handler(self):
+        self._visible = not self._visible
         kwargs = {"apply_to_children": True}
-        if checked:
+        if self._visible:
             kwargs["apply_to_parents"] = True
 
         for viewer in self._settings.viewers:
-            viewer.visualizer.set_node_visible(self._id, checked, **kwargs)
+            viewer.visualizer.set_node_visible(self._id, self._visible, **kwargs)
         self._settings.volume_cube.update_values()
 
 
@@ -51,7 +75,8 @@ class DeleteButton(QPushButton):
         super().__init__(parent)
         self._id = id
         self._settings = settings
-        self.setStyleSheet("QPushButton { border: none;}")
+        self.setFixedSize(16, 16)
+        self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/delete.png"))
         self.clicked.connect(self.clicked_handler)
 
@@ -61,11 +86,80 @@ class DeleteButton(QPushButton):
         self._settings.volume_cube.update_values()
 
 
-class ColorButton(QFrame):
+class IsosurfacesTreeView(QTreeView):
+    def __init__(self, parent: "Settings"):
+        super().__init__(parent)
+        self._settings = parent
+
+        self.setHeaderHidden(True)
+        self.setExpandsOnDoubleClick(False)
+        self._model = QStandardItemModel(parent=self)
+        self.setModel(self._model)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.setIndentation(20)
+        self.setRootIsDecorated(False)
+        self.setUniformRowHeights(True)
+        self.setStyleSheet("QTreeView::item:hover { background: #DDDDDD; }")
+
+    def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
+        root_item = self._model.invisibleRootItem()
+
+        text = "/".join((str(s.value) for s in group.isosurfaces))
+        group_text_item = QStandardItem(text)
+        group_text_item.setEditable(False)
+        group_color_item = QStandardItem()
+        group_visibility_item = QStandardItem()
+        group_delete_item = QStandardItem()
+        root_item.appendRow([group_text_item, group_color_item, group_visibility_item, group_delete_item])
+
+        if len(group.isosurfaces) > 1:
+            for isosurface in group.isosurfaces:
+                isosurface_text_item = QStandardItem(str(isosurface.value))
+                isosurface_text_item.setEditable(False)
+                isosurface_color_item = QStandardItem()
+                isosurface_visibility_item = QStandardItem()
+                isosurface_delete_item = QStandardItem()
+                group_text_item.appendRow(
+                    [
+                        isosurface_text_item,
+                        isosurface_color_item,
+                        isosurface_visibility_item,
+                        isosurface_delete_item,
+                    ]
+                )
+                c = ColorButton(self, color4f_to_qcolor(isosurface.color), self._settings, isosurface.id)
+                self.setIndexWidget(self._model.indexFromItem(isosurface_color_item), c)
+                v = VisibilityButton(self, self._settings, isosurface.id, isosurface.visible)
+                self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
+                d = DeleteButton(self, self._settings, isosurface.id)
+                self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
+        else:
+            c = ColorButton(
+                self, color4f_to_qcolor(group.isosurfaces[0].color), self._settings, group.isosurfaces[0].id
+            )
+            self.setIndexWidget(self._model.indexFromItem(group_color_item), c)
+        v = VisibilityButton(self, self._settings, group.id, group.visible)
+        self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
+        d = DeleteButton(self, self._settings, group.id)
+        self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
+
+    def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
+        self._model.clear()
+        for group in groups:
+            self.add_isosurface_group(group)
+        self.expandAll()
+
+    def resizeEvent(self, event: QResizeEvent):
+        self.setColumnWidth(0, event.size().width() - 24 - 32 - 24)
+        self.setColumnWidth(1, 24)
+        self.setColumnWidth(2, 32)
+        self.setColumnWidth(3, 24)
+        super().resizeEvent(event)
+
+
+class ColorButtonNewIsosurface(QFrame):
     def __init__(self, parent: QWidget, color: QColor):
         super().__init__(parent)
-        self.setMinimumSize(20, 20)
-        self.setMaximumSize(20, 20)
         self.setFixedSize(20, 20)
         self._color = color
         self.set_color(self._color)
@@ -76,8 +170,7 @@ class ColorButton(QFrame):
 
     def set_color(self, color: QColor):
         self._color = color
-        enabled = self.isEnabled()
-        self.set_style_sheet(self._color, enabled)
+        self.set_style_sheet(color, self.isEnabled())
 
     def set_style_sheet(self, color: QColor, enabled: bool):
         color = color if enabled else QColor(128, 128, 128, a=128)
@@ -98,76 +191,6 @@ class ColorButton(QFrame):
             self.set_color(color)
 
 
-class IsosurfacesTreeView(QTreeView):
-    def __init__(self, parent: "Settings"):
-        super().__init__(parent)
-        self._settings = parent
-
-        self.setHeaderHidden(True)
-        self.setExpandsOnDoubleClick(False)
-        self.setIconSize(QSize(20, 20))
-        self._model = QStandardItemModel(parent=self)
-        self.setModel(self._model)
-        self.setDisabled(True)
-        self.setIndentation(20)
-
-    def _get_icon(self, color: Color4f) -> QPixmap:
-        pixmap = QPixmap(20, 20)
-        pixmap.fill(color4f_to_qcolor(color))
-        return pixmap
-
-    def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
-        root_item = self._model.invisibleRootItem()
-
-        text = "/".join((str(s.value) for s in group.isosurfaces))
-        group_text_item = QStandardItem(text)
-        group_text_item.setEditable(False)
-        group_color_item = QStandardItem()
-        group_visibility_item = QStandardItem()
-        group_delete_item = QStandardItem()
-        if len(group.isosurfaces) > 1:
-            for isosurface in group.isosurfaces:
-                isosurface_text_item = QStandardItem(str(isosurface.value))
-                isosurface_text_item.setEditable(False)
-                isosurface_color_item = QStandardItem()
-                isosurface_color_item.setIcon(self._get_icon(isosurface.color))
-                isosurface_visibility_item = QStandardItem()
-                isosurface_delete_item = QStandardItem()
-                group_text_item.appendRow(
-                    [
-                        isosurface_text_item,
-                        isosurface_color_item,
-                        isosurface_visibility_item,
-                        isosurface_delete_item,
-                    ]
-                )
-                v = VisibilityButton(self, self._settings, isosurface.id, isosurface.visible)
-                self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
-                d = DeleteButton(self, self._settings, isosurface.id)
-                self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
-        else:
-            group_color_item.setIcon(self._get_icon(group.isosurfaces[0].color))
-
-        root_item.appendRow([group_text_item, group_color_item, group_visibility_item, group_delete_item])
-        v = VisibilityButton(self, self._settings, group.id, group.visible)
-        self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
-        d = DeleteButton(self, self._settings, group.id)
-        self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
-
-        self.setDisabled(False)
-        self.resizeColumnToContents(0)
-        self.resizeColumnToContents(1)
-        self.resizeColumnToContents(2)
-        self.resizeColumnToContents(3)
-
-    def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
-        self._model.clear()
-        self.setDisabled(True)
-        for group in groups:
-            self.add_isosurface_group(group)
-        self.expandAll()
-
-
 class VolumeCube(GroupBox):
     def __init__(self, parent: "Settings"):
         super().__init__(self.tr("Volume Cube Isosurfaces"))
@@ -183,8 +206,8 @@ class VolumeCube(GroupBox):
         # Value layout
         value_layout = QGridLayout()
 
-        self._color_button_1 = ColorButton(parent=parent, color=QColor(255, 255, 0, a=128))
-        self._color_button_2 = ColorButton(parent=parent, color=QColor(0, 70, 255, a=128))
+        self._color_button_1 = ColorButtonNewIsosurface(parent=parent, color=QColor(255, 255, 0, a=128))
+        self._color_button_2 = ColorButtonNewIsosurface(parent=parent, color=QColor(0, 70, 255, a=128))
         self._color_button_2.setEnabled(False)
 
         add_button = PushButton(PushButton.tr("Add"), parent)

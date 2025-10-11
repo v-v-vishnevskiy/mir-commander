@@ -256,6 +256,14 @@ class Node:
         self._transform.set_translation(translation)
         self.invalidate_transform()
 
+    def set_node_type(self, node_type: NodeType):
+        if self._node_type == node_type:
+            return
+
+        self._root_node.notify_remove_node(self)
+        self._node_type = node_type
+        self._root_node.notify_add_node(self)
+
     def set_shader(self, shader_name: str):
         if self._shader_name == shader_name:
             return

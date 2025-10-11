@@ -33,6 +33,10 @@ class MolecularStructureViewer(Viewer):
         match item.data().data:
             case VolumeCube():
                 self.visualizer.set_volume_cube(item.data().data)
+                self.visualizer.add_volume_cube_isosurface_group(
+                    [(0.05, (1.0, 1.0, 0.0, 0.5)), (-0.05, (1.0, 0.0, 1.0, 0.5))]
+                )
+                self.visualizer.add_volume_cube_isosurface_group([(0.01, (0.0, 1.0, 1.0, 0.5))])
 
         self._molecule_index = 0
         self._draw_item = item

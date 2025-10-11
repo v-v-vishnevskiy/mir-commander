@@ -27,14 +27,7 @@ class IsosurfaceGroup(Node):
         return isosurfaces
 
     def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f) -> VolumeCubeIsosurface:
-        s = Isosurface(
-            parent=self,
-            value=value,
-            color=color,
-            node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
-            shader_name="transparent" if color[3] < 1.0 else "default",
-            resource_manager=self._resource_manager,
-        )
+        s = Isosurface(parent=self, value=value, color=color, resource_manager=self._resource_manager)
         vertices = isosurface(cube_data, value)
         normals = compute_smooth_normals(vertices)
         model_name = f"isosurface_{s.id}"
