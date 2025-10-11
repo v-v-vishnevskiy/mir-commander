@@ -11,6 +11,7 @@ from mir_commander.utils.consts import DIR
 from . import shaders
 from .action_handler import ActionHandler
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
+from .errors import NodeNotFoundError
 from .keymap import Keymap
 from .models import rect
 from .projection import ProjectionManager
@@ -242,3 +243,22 @@ class OpenGLWidget(QOpenGLWidget):
         picking_id = color_to_id(color)
 
         return self.resource_manager.current_scene.find_node_by_picking_id(picking_id)
+
+    def set_node_visible(
+        self, node_id: int, visible: bool, apply_to_parents: bool = False, apply_to_children: bool = False
+    ):
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.set_visible(visible, apply_to_parents=apply_to_parents, apply_to_children=apply_to_children)
+            self.update()
+        except NodeNotFoundError:
+            pass
+
+    def remove_node(self, node_id: int):
+        self.makeCurrent()
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.remove()
+            self.update()
+        except NodeNotFoundError:
+            pass

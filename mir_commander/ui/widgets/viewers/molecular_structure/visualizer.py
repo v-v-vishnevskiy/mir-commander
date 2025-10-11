@@ -30,8 +30,9 @@ from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
 from .consts import VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
+from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError
-from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules, RootNode, VolumeCube
+from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
@@ -54,9 +55,9 @@ class Visualizer(OpenGLWidget):
 
         self._node_under_cursor: BaseGraphicsNode | None = None
 
-        self._root_node = RootNode(root_node=self.resource_manager.current_scene.root_node)
-        self._molecules = Molecules(parent=self._root_node)
-        self._volume_cube = VolumeCube(parent=self._root_node, resource_manager=self.resource_manager)
+        self._main_node = self.resource_manager.current_scene.main_node
+        self._molecules = Molecules(parent=self._main_node)
+        self._volume_cube = VolumeCube(parent=self._main_node, resource_manager=self.resource_manager)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,
@@ -106,12 +107,12 @@ class Visualizer(OpenGLWidget):
         self._molecules.clear()
         for item in atomic_coordinates:
             self._add_atomic_coordinates(item)
-        self._root_node.set_translation(-self._molecules.center)
+        self._main_node.set_translation(-self._molecules.center)
         self.update()
 
     def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         self._add_atomic_coordinates(atomic_coordinates)
-        self._root_node.set_translation(-self._molecules.center)
+        self._main_node.set_translation(-self._molecules.center)
         self.update()
 
     def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
@@ -128,16 +129,14 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def add_volume_cube_isosurface_group(self, items: list[tuple[float, Color4f]]) -> int:
+    def add_volume_cube_isosurface_group(self, items: list[tuple[float, Color4f]]) -> VolumeCubeIsosurfaceGroup:
         self.makeCurrent()
-        id = self._volume_cube.add_isosurface_group(items)
+        group = self._volume_cube.add_isosurface_group(items)
         self.update()
-        return id
+        return group
 
-    def remove_volume_cube_isosurface_group(self, id: int):
-        self.makeCurrent()
-        self._volume_cube.remove_isosurface_group(id)
-        self.update()
+    def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
+        return self._volume_cube.isosurface_groups
 
     def set_title(self, title: str):
         self._title = title

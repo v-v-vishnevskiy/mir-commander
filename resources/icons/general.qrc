@@ -1,6 +1,9 @@
 <RCC>
   <qresource prefix="icons">
     <file>general/app.svg</file>
+    <file>general/delete.png</file>
     <file>general/settings.png</file>
+    <file>general/square.png</file>
+    <file>general/visibility.png</file>
   </qresource>
 </RCC>

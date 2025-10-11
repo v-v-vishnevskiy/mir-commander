@@ -6,6 +6,7 @@ from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils import consts
 
+from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup
 from ...errors import SurfaceNotFoundError
 from .isosurface_group import IsosurfaceGroup
 
@@ -35,10 +36,10 @@ class VolumeCube(Node):
             s.remove()
         self._volume_cube = volume_cube
 
-    def add_isosurface_group(self, items: list[tuple[float, Color4f]]) -> int:
+    def add_isosurface_group(self, items: list[tuple[float, Color4f]]) -> VolumeCubeIsosurfaceGroup:
         group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
-        group.add_isosurfaces(self._volume_cube.cube_data, items)
-        return group.id
+        isosurfaces = group.add_isosurfaces(self._volume_cube.cube_data, items)
+        return VolumeCubeIsosurfaceGroup(id=group.id, isosurfaces=isosurfaces, visible=group.visible)
 
     def remove_isosurface_group(self, id: int):
         try:
@@ -51,3 +52,17 @@ class VolumeCube(Node):
             if group.id == id:
                 return group
         raise SurfaceNotFoundError()
+
+    @property
+    def isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
+        result = []
+        for group in self.children:
+            isosurfaces = []
+            for s in group.children:
+                isosurfaces.append(VolumeCubeIsosurface(id=s.id, value=s.value, color=s.color, visible=s.visible))
+            result.append(
+                VolumeCubeIsosurfaceGroup(
+                    id=group.id, isosurfaces=isosurfaces, visible=any(s.visible for s in isosurfaces)
+                )
+            )
+        return result

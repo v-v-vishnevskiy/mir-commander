@@ -22,6 +22,10 @@ def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
     return QColor(r, g, b, int(a * 255) if alpha else 255)
 
 
+def color4f_to_qcolor(value: Color4f) -> QColor:
+    return QColor(int(value[0] * 255), int(value[1] * 255), int(value[2] * 255), int(value[3] * 255))
+
+
 def qcolor_to_color4f(value: QColor) -> Color4f:
     return value.redF(), value.greenF(), value.blueF(), value.alphaF()
 

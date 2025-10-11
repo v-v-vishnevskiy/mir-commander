@@ -5,6 +5,7 @@ from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, Vert
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f, compute_smooth_normals
 
+from ...entities import VolumeCubeIsosurface
 from ...errors import SurfaceNotFoundError
 from .isosurface import Isosurface
 
@@ -19,18 +20,20 @@ class IsosurfaceGroup(Node):
 
         self._resource_manager = resource_manager
 
-    def add_isosurfaces(self, cube_data: np.ndarray, items: list[tuple[float, Color4f]]) -> list[int]:
-        ids = []
+    def add_isosurfaces(self, cube_data: np.ndarray, items: list[tuple[float, Color4f]]) -> list[VolumeCubeIsosurface]:
+        isosurfaces = []
         for value, color in items:
-            ids.append(self._add_isosurfaces(cube_data, value, color))
-        return ids
+            isosurfaces.append(self._add_isosurfaces(cube_data, value, color))
+        return isosurfaces
 
-    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f) -> int:
+    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f) -> VolumeCubeIsosurface:
         s = Isosurface(
             parent=self,
+            value=value,
             color=color,
             node_type=NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE,
             shader_name="transparent" if color[3] < 1.0 else "default",
+            resource_manager=self._resource_manager,
         )
         vertices = isosurface(cube_data, value)
         normals = compute_smooth_normals(vertices)
@@ -38,24 +41,12 @@ class IsosurfaceGroup(Node):
         vao = VertexArrayObject(model_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
         s.set_model(model_name)
-        return s.id
+        return VolumeCubeIsosurface(id=s.id, value=value, color=color, visible=s.visible)
 
     def remove(self):
         for s in self.children:
             s.remove()
-            self._resource_manager.remove_vertex_array_object(s.model_name)
         super().remove()
-
-    def remove_isosurface(self, id: int):
-        try:
-            s = self._get_isosurface(id)
-            s.remove()
-            self._resource_manager.remove_vertex_array_object(s.model_name)
-        except SurfaceNotFoundError:
-            pass
-
-        if len(self.children) == 0:
-            self.remove()
 
     def _get_isosurface(self, id: int) -> Isosurface:
         for surface in self.children:

@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING, Any, Hashable, Optional, Self
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.errors import NodeError, NodeParentError
-from mir_commander.ui.utils.opengl.utils import Color4f, id_to_color
-
+from ..errors import NodeError, NodeNotFoundError, NodeParentError
+from ..utils import Color4f, id_to_color
 from .transform import Transform
 
 if TYPE_CHECKING:
@@ -172,6 +171,16 @@ class Node:
 
         return result
 
+    def get_node_by_id(self, node_id: int) -> Self:
+        if self._id == node_id:
+            return self
+        for child in self._children:
+            try:
+                return child.get_node_by_id(node_id)
+            except NodeNotFoundError:
+                pass
+        raise NodeNotFoundError()
+
     def _update_transform(self):
         if self._parent:
             self._transform_matrix = self._parent.transform * self._transform.matrix
@@ -193,19 +202,28 @@ class Node:
                 root_node.notify_remove_node(node)
         self._children.clear()
 
-    def set_visible(self, value: bool):
-        if self._visible == value:
-            return
-
+    def set_visible(self, value: bool, apply_to_parents: bool = False, apply_to_children: bool = False):
         fn = self._root_node.notify_add_node if value else self._root_node.notify_remove_node
 
-        self._visible = value
-        fn(self)
+        if self._visible != value:
+            self._visible = value
+            fn(self)
+
+        if apply_to_parents:
+            parent = self._parent
+            while parent is not None:
+                if parent._visible != value:
+                    parent._visible = value
+                    fn(parent)
+                parent = parent._parent
 
         for node in self._get_all_children(include_self=False):
-            if self._modify_children:
-                node._visible = value
-            fn(node)
+            if apply_to_children:
+                node.set_visible(value, False, True)
+            else:
+                if self._modify_children:
+                    node._visible = value
+                fn(node)
 
     def invalidate_transform(self):
         root_node = self._root_node
@@ -270,4 +288,4 @@ class Node:
         self._root_node.notify_set_dirty(self)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self.picking_id}, visible={self.visible})"
+        return f"{self.__class__.__name__}(id={self._id}, visible={self.visible})"

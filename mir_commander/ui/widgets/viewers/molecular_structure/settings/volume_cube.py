@@ -1,13 +1,64 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtGui import QColor, QMouseEvent, QPixmap
-from PySide6.QtWidgets import QColorDialog, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QVBoxLayout, QWidget
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QColor, QIcon, QMouseEvent, QPixmap, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QColorDialog,
+    QDoubleSpinBox,
+    QFrame,
+    QGridLayout,
+    QPushButton,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+)
 
-from mir_commander.ui.utils.opengl.utils import qcolor_to_color4f
+from mir_commander.ui.utils.opengl.utils import Color4f, color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton
+
+from ..entities import VolumeCubeIsosurfaceGroup
 
 if TYPE_CHECKING:
     from .settings import Settings
+
+
+class VisibilityButton(QCheckBox):
+    def __init__(self, parent: QWidget, settings: "Settings", id: int, checked: bool):
+        super().__init__(parent)
+        self._id = id
+        self._settings = settings
+        self.setStyleSheet(
+            "QCheckBox::indicator { width: 20px; height: 20px; }"
+            "QCheckBox::indicator:unchecked { image: url(:/icons/general/square.png); }"
+            "QCheckBox::indicator:checked { image: url(:/icons/general/visibility.png); }"
+        )
+        self.setChecked(checked)
+        self.toggled.connect(self.toggled_handler)
+
+    def toggled_handler(self, checked: bool):
+        kwargs = {"apply_to_children": True}
+        if checked:
+            kwargs["apply_to_parents"] = True
+
+        for viewer in self._settings.viewers:
+            viewer.visualizer.set_node_visible(self._id, checked, **kwargs)
+        self._settings.volume_cube.update_values()
+
+
+class DeleteButton(QPushButton):
+    def __init__(self, parent: QWidget, settings: "Settings", id: int):
+        super().__init__(parent)
+        self._id = id
+        self._settings = settings
+        self.setStyleSheet("QPushButton { border: none;}")
+        self.setIcon(QIcon(":/icons/general/delete.png"))
+        self.clicked.connect(self.clicked_handler)
+
+    def clicked_handler(self):
+        for viewer in self._settings.viewers:
+            viewer.visualizer.remove_node(self._id)
+        self._settings.volume_cube.update_values()
 
 
 class ColorButton(QFrame):
@@ -47,6 +98,76 @@ class ColorButton(QFrame):
             self.set_color(color)
 
 
+class IsosurfacesTreeView(QTreeView):
+    def __init__(self, parent: "Settings"):
+        super().__init__(parent)
+        self._settings = parent
+
+        self.setHeaderHidden(True)
+        self.setExpandsOnDoubleClick(False)
+        self.setIconSize(QSize(20, 20))
+        self._model = QStandardItemModel(parent=self)
+        self.setModel(self._model)
+        self.setDisabled(True)
+        self.setIndentation(20)
+
+    def _get_icon(self, color: Color4f) -> QPixmap:
+        pixmap = QPixmap(20, 20)
+        pixmap.fill(color4f_to_qcolor(color))
+        return pixmap
+
+    def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
+        root_item = self._model.invisibleRootItem()
+
+        text = "/".join((str(s.value) for s in group.isosurfaces))
+        group_text_item = QStandardItem(text)
+        group_text_item.setEditable(False)
+        group_color_item = QStandardItem()
+        group_visibility_item = QStandardItem()
+        group_delete_item = QStandardItem()
+        if len(group.isosurfaces) > 1:
+            for isosurface in group.isosurfaces:
+                isosurface_text_item = QStandardItem(str(isosurface.value))
+                isosurface_text_item.setEditable(False)
+                isosurface_color_item = QStandardItem()
+                isosurface_color_item.setIcon(self._get_icon(isosurface.color))
+                isosurface_visibility_item = QStandardItem()
+                isosurface_delete_item = QStandardItem()
+                group_text_item.appendRow(
+                    [
+                        isosurface_text_item,
+                        isosurface_color_item,
+                        isosurface_visibility_item,
+                        isosurface_delete_item,
+                    ]
+                )
+                v = VisibilityButton(self, self._settings, isosurface.id, isosurface.visible)
+                self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
+                d = DeleteButton(self, self._settings, isosurface.id)
+                self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
+        else:
+            group_color_item.setIcon(self._get_icon(group.isosurfaces[0].color))
+
+        root_item.appendRow([group_text_item, group_color_item, group_visibility_item, group_delete_item])
+        v = VisibilityButton(self, self._settings, group.id, group.visible)
+        self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
+        d = DeleteButton(self, self._settings, group.id)
+        self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
+
+        self.setDisabled(False)
+        self.resizeColumnToContents(0)
+        self.resizeColumnToContents(1)
+        self.resizeColumnToContents(2)
+        self.resizeColumnToContents(3)
+
+    def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
+        self._model.clear()
+        self.setDisabled(True)
+        for group in groups:
+            self.add_isosurface_group(group)
+        self.expandAll()
+
+
 class VolumeCube(GroupBox):
     def __init__(self, parent: "Settings"):
         super().__init__(self.tr("Volume Cube Isosurfaces"))
@@ -73,66 +194,37 @@ class VolumeCube(GroupBox):
         self._both_sides_checkbox.setChecked(False)
         self._both_sides_checkbox.toggled.connect(self._both_sides_checkbox_toggled_handler)
 
-        self._surface_combo_box = QComboBox()
-        self._surface_combo_box.setInsertPolicy(QComboBox.InsertPolicy.InsertAlphabetically)
-        self._surface_combo_box.setDisabled(True)
-
-        self._remove_button = PushButton(PushButton.tr("Remove"), parent)
-        self._remove_button.setDisabled(True)
-        self._remove_button.clicked.connect(self.remove_button_clicked_handler)
+        self._isosurfaces_tree_view = IsosurfacesTreeView(parent)
 
         value_layout.addWidget(self._value, 0, 0)
         value_layout.addWidget(self._color_button_1, 0, 1)
         value_layout.addWidget(add_button, 0, 2)
         value_layout.addWidget(self._both_sides_checkbox, 1, 0)
         value_layout.addWidget(self._color_button_2, 1, 1)
-        value_layout.addWidget(self._surface_combo_box, 2, 0, 1, 2)
-        value_layout.addWidget(self._remove_button, 2, 2)
+        value_layout.addWidget(self._isosurfaces_tree_view, 2, 0, 1, 3)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
 
+    def update_values(self):
+        groups = []
+        for viewer in self._settings.viewers:
+            groups.extend(viewer.visualizer.get_volume_cube_isosurface_groups())
+        self._isosurfaces_tree_view.load(groups)
+
     def add_button_clicked_handler(self):
         value = self._value.value()
-        if self._both_sides_checkbox.isChecked():
-            str_value = f"{value} / {value * -1}"
-        else:
-            str_value = str(value)
 
-        color_1 = qcolor_to_color4f(self._color_button_1.color)
-        color_2 = qcolor_to_color4f(self._color_button_2.color)
-
-        items = [(value, color_1)]
-        if self._both_sides_checkbox.isChecked():
-            items.append((value * -1, color_2))
+        items = [(value, qcolor_to_color4f(self._color_button_1.color))]
+        if self._both_sides_checkbox.isChecked() and value != 0.0:
+            items.append((value * -1, qcolor_to_color4f(self._color_button_2.color)))
 
         ids = []
         for viewer in self._settings.viewers:
             ids.append(viewer.visualizer.add_volume_cube_isosurface_group(items=items))
 
-        pixmap = QPixmap(20, 20)
-        pixmap.fill(self._color_button_1.color)
-        self._surface_combo_box.addItem(pixmap, str_value, userData=ids)
-        self._surface_combo_box.setCurrentText(str_value)
-
-        self._surface_combo_box.setDisabled(False)
-        self._remove_button.setDisabled(False)
+        self.update_values()
 
     def _both_sides_checkbox_toggled_handler(self, checked: bool):
         self._color_button_2.setEnabled(checked)
-
-    def remove_button_clicked_handler(self):
-        if self._surface_combo_box.count() == 0:
-            return
-
-        index = self._surface_combo_box.currentIndex()
-        ids = self._surface_combo_box.itemData(index)
-        for viewer in self._settings.viewers:
-            for id in ids:
-                viewer.visualizer.remove_volume_cube_isosurface_group(id=id)
-        self._surface_combo_box.removeItem(self._surface_combo_box.currentIndex())
-
-        if self._surface_combo_box.count() == 0:
-            self._surface_combo_box.setDisabled(True)
-            self._remove_button.setDisabled(True)
