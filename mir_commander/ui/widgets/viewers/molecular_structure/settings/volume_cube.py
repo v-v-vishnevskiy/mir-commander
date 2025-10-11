@@ -114,7 +114,7 @@ class IsosurfacesTreeView(QTreeView):
 
         if len(group.isosurfaces) > 1:
             for isosurface in group.isosurfaces:
-                isosurface_text_item = QStandardItem(str(isosurface.value))
+                isosurface_text_item = QStandardItem(f"{isosurface.value} ({isosurface.factor})")
                 isosurface_text_item.setEditable(False)
                 isosurface_color_item = QStandardItem()
                 isosurface_visibility_item = QStandardItem()
@@ -239,9 +239,9 @@ class VolumeCube(GroupBox):
     def add_button_clicked_handler(self):
         value = self._value.value()
 
-        items = [(value, qcolor_to_color4f(self._color_button_1.color))]
+        items = [(value, qcolor_to_color4f(self._color_button_1.color), 1.0)]
         if self._both_sides_checkbox.isChecked() and value != 0.0:
-            items.append((value * -1, qcolor_to_color4f(self._color_button_2.color)))
+            items.append((value, qcolor_to_color4f(self._color_button_2.color), -1.0))
 
         ids = []
         for viewer in self._settings.viewers:

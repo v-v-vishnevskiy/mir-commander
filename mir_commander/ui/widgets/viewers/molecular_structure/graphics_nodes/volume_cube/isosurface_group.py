@@ -20,21 +20,25 @@ class IsosurfaceGroup(Node):
 
         self._resource_manager = resource_manager
 
-    def add_isosurfaces(self, cube_data: np.ndarray, items: list[tuple[float, Color4f]]) -> list[VolumeCubeIsosurface]:
+    def add_isosurfaces(
+        self, cube_data: np.ndarray, items: list[tuple[float, Color4f, float]]
+    ) -> list[VolumeCubeIsosurface]:
         isosurfaces = []
-        for value, color in items:
-            isosurfaces.append(self._add_isosurfaces(cube_data, value, color))
+        for value, color, factor in items:
+            isosurfaces.append(self._add_isosurfaces(cube_data, value, color, factor))
         return isosurfaces
 
-    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f) -> VolumeCubeIsosurface:
-        s = Isosurface(parent=self, value=value, color=color, resource_manager=self._resource_manager)
-        vertices = isosurface(cube_data, value)
+    def _add_isosurfaces(
+        self, cube_data: np.ndarray, value: float, color: Color4f, factor: float
+    ) -> VolumeCubeIsosurface:
+        s = Isosurface(parent=self, value=value, factor=factor, color=color, resource_manager=self._resource_manager)
+        vertices = isosurface(cube_data, value, factor)
         normals = compute_smooth_normals(vertices)
         model_name = f"isosurface_{s.id}"
         vao = VertexArrayObject(model_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
         s.set_model(model_name)
-        return VolumeCubeIsosurface(id=s.id, value=value, color=color, visible=s.visible)
+        return VolumeCubeIsosurface(id=s.id, value=value, factor=s.factor, color=color, visible=s.visible)
 
     def remove(self):
         for s in self.children:

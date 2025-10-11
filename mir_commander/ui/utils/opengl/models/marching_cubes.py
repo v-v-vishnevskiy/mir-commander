@@ -521,7 +521,7 @@ TRIANGLE_TABLE = [
 ]
 
 
-def isosurface(scalar_field: np.ndarray, value: float) -> np.ndarray:
+def isosurface(scalar_field: np.ndarray, value: float, factor: float = 1.0) -> np.ndarray:
     """
     Generate triangles using Marching Cubes algorithm for isosurface extraction.
 
@@ -540,14 +540,14 @@ def isosurface(scalar_field: np.ndarray, value: float) -> np.ndarray:
             for k in range(scalar_field.shape[2] - 1):
                 # Get the 8 corner values of the cube
                 cube_values = [
-                    scalar_field[i][j][k],  # 0
-                    scalar_field[i + 1][j][k],  # 1
-                    scalar_field[i + 1][j + 1][k],  # 2
-                    scalar_field[i][j + 1][k],  # 3
-                    scalar_field[i][j][k + 1],  # 4
-                    scalar_field[i + 1][j][k + 1],  # 5
-                    scalar_field[i + 1][j + 1][k + 1],  # 6
-                    scalar_field[i][j + 1][k + 1],  # 7
+                    factor * scalar_field[i][j][k],  # 0
+                    factor * scalar_field[i + 1][j][k],  # 1
+                    factor * scalar_field[i + 1][j + 1][k],  # 2
+                    factor * scalar_field[i][j + 1][k],  # 3
+                    factor * scalar_field[i][j][k + 1],  # 4
+                    factor * scalar_field[i + 1][j][k + 1],  # 5
+                    factor * scalar_field[i + 1][j + 1][k + 1],  # 6
+                    factor * scalar_field[i][j + 1][k + 1],  # 7
                 ]
 
                 cube_positions = [

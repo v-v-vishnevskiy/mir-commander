@@ -129,7 +129,7 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()
 
-    def add_volume_cube_isosurface_group(self, items: list[tuple[float, Color4f]]) -> VolumeCubeIsosurfaceGroup:
+    def add_volume_cube_isosurface_group(self, items: list[tuple[float, Color4f, float]]) -> VolumeCubeIsosurfaceGroup:
         self.makeCurrent()
         group = self._volume_cube.add_isosurface_group(items)
         self.update()
