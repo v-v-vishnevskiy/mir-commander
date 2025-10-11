@@ -3,7 +3,7 @@ import numpy as np
 from mir_commander.ui.utils.opengl.models.marching_cubes import isosurface
 from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_smooth_normals
+from mir_commander.ui.utils.opengl.utils import Color4f
 
 from ...entities import VolumeCubeIsosurface
 from ...errors import SurfaceNotFoundError
@@ -32,8 +32,7 @@ class IsosurfaceGroup(Node):
         self, cube_data: np.ndarray, value: float, color: Color4f, factor: float
     ) -> VolumeCubeIsosurface:
         s = Isosurface(parent=self, value=value, factor=factor, color=color, resource_manager=self._resource_manager)
-        vertices = isosurface(cube_data, value, factor)
-        normals = compute_smooth_normals(vertices)
+        vertices, normals = isosurface(cube_data, value, factor)
         model_name = f"isosurface_{s.id}"
         vao = VertexArrayObject(model_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
