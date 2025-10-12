@@ -219,8 +219,8 @@ class VolumeCube(GroupBox):
         # Value layout
         value_layout = QGridLayout()
 
-        self._color_button_1 = ColorButtonNewIsosurface(color=QColor(255, 0, 0, a=50))
-        self._color_button_2 = ColorButtonNewIsosurface(color=QColor(0, 0, 255, a=50))
+        self._color_button_1 = ColorButtonNewIsosurface(color=QColor(255, 0, 0, a=200))
+        self._color_button_2 = ColorButtonNewIsosurface(color=QColor(0, 0, 255, a=200))
         self._color_button_2.setEnabled(False)
 
         add_button = PushButton(PushButton.tr("Add"))
