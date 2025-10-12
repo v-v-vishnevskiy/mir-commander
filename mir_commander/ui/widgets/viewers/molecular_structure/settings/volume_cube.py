@@ -232,9 +232,12 @@ class VolumeCube(GroupBox):
 
     def update_values(self):
         groups = []
+        is_empty_scalar_field = True
         for viewer in self._settings.viewers:
             groups.extend(viewer.visualizer.get_volume_cube_isosurface_groups())
+            is_empty_scalar_field = is_empty_scalar_field and viewer.visualizer.is_empty_volume_cube_scalar_field()
         self._isosurfaces_tree_view.load(groups)
+        self.setDisabled(is_empty_scalar_field)
 
     def add_button_clicked_handler(self):
         value = self._value.value()

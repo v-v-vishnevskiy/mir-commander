@@ -137,6 +137,9 @@ class Visualizer(OpenGLWidget):
     def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
         return self._volume_cube.isosurface_groups
 
+    def is_empty_volume_cube_scalar_field(self) -> bool:
+        return self._volume_cube.is_empty_scalar_field
+
     def set_title(self, title: str):
         self._title = title
 
