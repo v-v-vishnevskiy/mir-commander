@@ -149,6 +149,7 @@ class ProjectWindow(QMainWindow):
         menu = Menu(Menu.tr("View"), self)
         menu.addAction(self.docks.project.toggleViewAction())
         menu.addAction(self.docks.object.toggleViewAction())
+        menu.addAction(self.docks.viewer_settings.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
         return menu
 
