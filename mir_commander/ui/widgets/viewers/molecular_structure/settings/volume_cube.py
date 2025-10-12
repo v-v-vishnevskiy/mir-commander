@@ -201,13 +201,13 @@ class VolumeCube(GroupBox):
         self._value.setRange(-1000.0, 1000.0)
         self._value.setSingleStep(0.01)
         self._value.setDecimals(5)
-        self._value.setValue(0.0)
+        self._value.setValue(0.05)
 
         # Value layout
         value_layout = QGridLayout()
 
-        self._color_button_1 = ColorButtonNewIsosurface(parent=parent, color=QColor(255, 255, 0, a=128))
-        self._color_button_2 = ColorButtonNewIsosurface(parent=parent, color=QColor(0, 70, 255, a=128))
+        self._color_button_1 = ColorButtonNewIsosurface(parent=parent, color=QColor(255, 0, 0, a=50))
+        self._color_button_2 = ColorButtonNewIsosurface(parent=parent, color=QColor(0, 0, 255, a=50))
         self._color_button_2.setEnabled(False)
 
         add_button = PushButton(PushButton.tr("Add"), parent)
