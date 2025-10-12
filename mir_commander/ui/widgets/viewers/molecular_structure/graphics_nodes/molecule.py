@@ -17,7 +17,7 @@ from ..config import AtomLabelConfig, AtomLabelType, Style
 from ..errors import CalcError
 from ..utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane, InteratomicTorsion
 from .atom.atom import Atom
-from .bond.bond import Bond
+from .bond import Bond
 
 logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 

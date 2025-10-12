@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QVBoxLayout
 from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import CheckBox
 
+from .coordinate_axes import CoordinateAxes
 from .labels import Labels
 from .volume_cube import VolumeCube
 
@@ -24,12 +25,14 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
         self.apply_for_all_checkbox.setChecked(self._apply_for_all)
         self.apply_for_all_checkbox.toggled.connect(self.apply_for_all_checkbox_toggled_handler)
 
+        self.coordinate_axes = CoordinateAxes(self)
         self.labels = Labels(self)
         self.volume_cube = VolumeCube(self)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addSpacing(10)
+        self.main_layout.addWidget(self.coordinate_axes)
         self.main_layout.addWidget(self.labels)
         self.main_layout.addWidget(self.volume_cube)
         self.main_layout.addStretch()
