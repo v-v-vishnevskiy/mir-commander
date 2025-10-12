@@ -27,12 +27,11 @@ class ColorButton(QPushButton):
         self._id = id
         self._settings = settings
         self._set_style_sheet(color)
-        self.setFixedSize(19, 19)
         self.clicked.connect(self.clicked_handler)
 
     def _set_style_sheet(self, color: QColor):
         self.setStyleSheet(
-            f"QPushButton {{ border: 1px solid black; margin: 1px; background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
+            f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
         )
 
     def clicked_handler(self):
@@ -55,7 +54,6 @@ class VisibilityButton(QPushButton):
         self._id = id
         self._visible = visible
         self._settings = settings
-        self.setFixedSize(19, 19)
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/eye.png" if visible else ":/icons/general/square.png"))
         self.clicked.connect(self.clicked_handler)
@@ -76,7 +74,6 @@ class DeleteButton(QPushButton):
         super().__init__()
         self._id = id
         self._settings = settings
-        self.setFixedSize(19, 19)
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/delete.png"))
         self.clicked.connect(self.clicked_handler)
@@ -100,7 +97,9 @@ class IsosurfacesTreeView(TreeView):
         self.setIndentation(20)
         self.setRootIsDecorated(False)
         self.setUniformRowHeights(True)
-        self.setStyleSheet("QTreeView::item:hover { background: #DDDDDD; }")
+        self.setStyleSheet(
+            "QTreeView::item:hover { background: #DDDDDD; } QTreeView::item { height: 20px; padding: 0px; margin: 0px; }"
+        )
 
     def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
         root_item = self._model.invisibleRootItem()
@@ -160,8 +159,8 @@ class IsosurfacesTreeView(TreeView):
         self.expandAll()
 
     def resizeEvent(self, event: QResizeEvent):
-        self.setColumnWidth(0, event.size().width() - 24 - 32 - 24)
-        self.setColumnWidth(1, 24)
+        self.setColumnWidth(0, event.size().width() - 20 - 32 - 24)
+        self.setColumnWidth(1, 20)
         self.setColumnWidth(2, 32)
         self.setColumnWidth(3, 24)
         super().resizeEvent(event)
