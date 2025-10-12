@@ -56,7 +56,7 @@ class VisibilityButton(QPushButton):
         self._settings = settings
         self.setFixedSize(16, 16)
         self.setStyleSheet("QPushButton { border: none; }")
-        self.setIcon(QIcon(":/icons/general/visibility.png" if visible else ":/icons/general/square.png"))
+        self.setIcon(QIcon(":/icons/general/eye.png" if visible else ":/icons/general/square.png"))
         self.clicked.connect(self.clicked_handler)
 
     def clicked_handler(self):

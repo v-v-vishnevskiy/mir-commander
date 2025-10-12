@@ -4,6 +4,6 @@
     <file>general/delete.png</file>
     <file>general/settings.png</file>
     <file>general/square.png</file>
-    <file>general/visibility.png</file>
+    <file>general/eye.png</file>
   </qresource>
 </RCC>
