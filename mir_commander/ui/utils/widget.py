@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QTabWidget,
     QToolBar,
+    QTreeView,
     QWidget,
 )
 
@@ -183,6 +184,23 @@ class ListView(Widget, QListView):
         root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
         for i in range(root.rowCount()):
             root.child(i).retranslate()
+
+
+class TreeView(Widget, QTreeView):
+    def retranslate_ui(self):
+        root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
+        self._retranslate(root)
+
+    def _retranslate(self, root_item: QStandardItem):
+        for i in range(root_item.rowCount()):
+            for j in range(root_item.columnCount()):
+                item = root_item.child(i, j)
+                try:
+                    item.retranslate()  # type: ignore[attr-defined]
+                except AttributeError:
+                    pass  # it can be a QStandardItem, which doesn't have a retranslate method
+                if item.hasChildren():
+                    self._retranslate(item)
 
 
 class StandardItem(Translator, QStandardItem):

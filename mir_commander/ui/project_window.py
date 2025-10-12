@@ -20,7 +20,7 @@ from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
 from .widgets.docks.object_dock import ObjectDock
 from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
+from .widgets.docks.viewer_dock import ViewerDock
 from .widgets.settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("ProjectWindow")
@@ -31,7 +31,7 @@ class Docks:
     project: ProjectDock
     object: ObjectDock
     console: ConsoleDock
-    viewer_settings: ViewerSettingsDock
+    viewer_settings: ViewerDock
 
 
 class ProjectWindow(QMainWindow):
@@ -66,6 +66,8 @@ class ProjectWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         self._set_mainwindow_title()
+
+        self.mdi_area.tileSubWindows()
 
         # Settings
         self._restore_settings()
@@ -105,6 +107,7 @@ class ProjectWindow(QMainWindow):
         self.setTabPosition(Qt.DockWidgetArea.LeftDockWidgetArea, QTabWidget.TabPosition.West)
         self.setTabPosition(Qt.DockWidgetArea.RightDockWidgetArea, QTabWidget.TabPosition.East)
         self.setCorner(Qt.Corner.BottomLeftCorner, Qt.DockWidgetArea.LeftDockWidgetArea)
+        self.setCorner(Qt.Corner.BottomRightCorner, Qt.DockWidgetArea.RightDockWidgetArea)
 
         self.docks = Docks(
             ProjectDock(
@@ -114,12 +117,14 @@ class ProjectWindow(QMainWindow):
             ),
             ObjectDock(parent=self),
             ConsoleDock(parent=self),
-            ViewerSettingsDock(parent=self),
+            ViewerDock(parent=self),
         )
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
+
+        self.tabifyDockWidget(self.docks.object, self.docks.viewer_settings)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
@@ -144,6 +149,7 @@ class ProjectWindow(QMainWindow):
         menu = Menu(Menu.tr("View"), self)
         menu.addAction(self.docks.project.toggleViewAction())
         menu.addAction(self.docks.object.toggleViewAction())
+        menu.addAction(self.docks.viewer_settings.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
         return menu
 

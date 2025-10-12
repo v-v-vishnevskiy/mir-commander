@@ -1,45 +1,55 @@
 from PySide6.QtGui import QContextMenuEvent, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.core.models import AtomicCoordinates
+from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
-from .atomic_coordinates_viewer import AtomicCoordinatesViewer
+from .config import MolecularStructureViewerConfig
 from .context_menu import ContextMenu
-from .dock_settings.settings import Settings
+from .settings.settings import Settings
+from .visualizer import Visualizer
 
 
 class MolecularStructureViewer(Viewer):
     settings = Settings
 
-    def __init__(self, parent: QWidget, item: QStandardItem, app_config: AppConfig, all: bool = False):
+    def __init__(
+        self,
+        parent: QWidget,
+        item: QStandardItem,
+        app_config: AppConfig,
+        all: bool = False,
+    ):
         super().__init__(parent=parent, item=item, app_config=app_config)
 
+        self._config = app_config.project_window.widgets.viewers.molecular_structure
+
         self._all = all
+
+        self.visualizer = Visualizer(parent=self, title=item.text(), app_config=app_config)
+        self.visualizer.message_channel.connect(self.long_msg_signal.emit)
+
+        match item.data().data:
+            case VolumeCube():
+                self.visualizer.set_volume_cube(item.data().data)
 
         self._molecule_index = 0
         self._draw_item = item
         self._set_draw_item()
-
-        self.ac_viewer = AtomicCoordinatesViewer(
-            parent=self,
-            atomic_coordinates=self._draw_item.data().data,
-            app_config=app_config,
-            title=self._draw_item.text(),
-        )
-
-        self.ac_viewer.message_channel.connect(self.long_msg_signal.emit)
+        self.visualizer.add_atomic_coordinates(self._draw_item.data().data)
 
         self._context_menu = ContextMenu(parent=self, app_config=app_config)
 
-        self.setWidget(self.ac_viewer)
+        self.setWidget(self.visualizer)
 
         self.update_window_title()
 
-        config = app_config.project_window.widgets.viewers.molecular_structure
-        self.setMinimumSize(config.min_size[0], config.min_size[1])
-        self.resize(config.size[0], config.size[1])
+        self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
+        self.resize(self._config.size[0], self._config.size[1])
+
+    def get_config(self) -> MolecularStructureViewerConfig:
+        return self._config
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())
@@ -50,7 +60,7 @@ class MolecularStructureViewer(Viewer):
         while parent_item:
             title = parent_item.text() + "/" + title
             parent_item = parent_item.parent()
-        self.ac_viewer.set_title(title)
+        self.visualizer.set_title(title)
         self.setWindowTitle(title)
         self.setWindowIcon(self._draw_item.icon())
 
@@ -87,7 +97,7 @@ class MolecularStructureViewer(Viewer):
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.ac_viewer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)
 
     def set_next_atomic_coordinates(self):
         self._molecule_index += 1
@@ -95,4 +105,4 @@ class MolecularStructureViewer(Viewer):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self.ac_viewer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)

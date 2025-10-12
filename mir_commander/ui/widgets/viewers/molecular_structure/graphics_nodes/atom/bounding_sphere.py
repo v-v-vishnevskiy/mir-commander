@@ -5,13 +5,13 @@ from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f, color_to_color4f
 
 from ...config import SelectedAtom
+from ...consts import VAO_SPHERE_RESOURCE_NAME
 
 
 class BoundingSphere(Node):
     def __init__(
         self,
         parent: Node,
-        model_name: str,
         atom_color: Color4f,
         config: SelectedAtom,
     ):
@@ -20,8 +20,8 @@ class BoundingSphere(Node):
         self._config = config
 
         self.set_scale(QVector3D(config.scale_factor, config.scale_factor, config.scale_factor))
-        self.set_shader("transparent")
-        self.set_model(model_name)
+        self.set_shader("transparent_flat")
+        self.set_model(VAO_SPHERE_RESOURCE_NAME)
         self.set_color(self._compute_color(config))
 
     def set_config(self, config: SelectedAtom):

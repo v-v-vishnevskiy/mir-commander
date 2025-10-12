@@ -5,12 +5,20 @@ in vec2 fragment_texcoord;
 in vec4 fragment_color;
 in float fragment_depth;
 
-out vec4 output_color;
+layout (location = 0) out vec4 accum;
+layout (location = 1) out float alpha;
 
 uniform sampler2D tex_1;
 
 void main() {
-    output_color = texture(tex_1, fragment_texcoord) * fragment_color;
+    vec4 color = texture(tex_1, fragment_texcoord);
+    if (color.a < 0.01) {
+        discard;
+    }
+
+    accum = vec4(fragment_color.rgb, color.a);
+    alpha = 1.0 - color.a;
+
     gl_FragDepth = fragment_depth;
 }
 """

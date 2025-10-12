@@ -57,15 +57,15 @@ class RenderingContainer(Generic[T]):
     def clear_dirty(self):
         self._dirty.clear()
 
-    def find_node_by_id(self, node_id: int) -> T:
-        if node_id == 0:
-            raise NodeNotFoundError(str(node_id))
+    def find_node_by_picking_id(self, picking_id: int) -> T:
+        if picking_id == 0:
+            raise NodeNotFoundError(str(picking_id))
 
         for nodes in self._batches.values():
             for node in nodes:
-                if node.id == node_id:
+                if node.picking_id == picking_id:
                     return node
-        raise NodeNotFoundError(str(node_id))
+        raise NodeNotFoundError(str(picking_id))
 
     def __repr__(self) -> str:
         _batches = []

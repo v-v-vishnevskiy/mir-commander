@@ -11,7 +11,6 @@ class Bond(Node):
     def __init__(
         self,
         parent: Node,
-        model_name: str,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
@@ -20,7 +19,6 @@ class Bond(Node):
     ):
         super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
 
-        self._model_name = model_name
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
@@ -62,7 +60,7 @@ class Bond(Node):
         bonds = self._build_bonds()
         direction = self._atom_1.position - self._atom_2.position
         for position, length, color in bonds:
-            Cylinder(self, self._model_name, position, direction, self._radius, length, color)
+            Cylinder(self, position, direction, self._radius, length, color)
 
     def set_radius(self, radius: float):
         self._radius = radius

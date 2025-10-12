@@ -1,4 +1,6 @@
-from OpenGL.GL import GL_MULTISAMPLE, glEnable, glViewport
+import logging
+
+import numpy as np
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
@@ -9,6 +11,7 @@ from mir_commander.utils.consts import DIR
 from . import shaders
 from .action_handler import ActionHandler
 from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
+from .errors import NodeNotFoundError
 from .keymap import Keymap
 from .models import rect
 from .projection import ProjectionManager
@@ -27,6 +30,8 @@ from .resource_manager.font_atlas import create_font_atlas
 from .scene import Node, Scene
 from .utils import Color4f, color_to_id
 
+logger = logging.getLogger("OpenGLWidget")
+
 
 class OpenGLWidget(QOpenGLWidget):
     def __init__(self, parent: QWidget, keymap: None | Keymap = None):
@@ -42,12 +47,27 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
         self.resource_manager = ResourceManager(Camera("main"), Scene("main"))
-        self.renderer = Renderer(self.projection_manager, self.resource_manager)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.init_actions()
+
+    def initializeGL(self):
+        try:
+            self.init_opengl()
+        except Exception as e:
+            logger.error("Failed to initialize OpenGL: %s", e)
+
+    def init_opengl(self):
+        self.renderer = Renderer(self.projection_manager, self.resource_manager)
+        self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.init_shaders()
+        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
+
+    def release_opengl(self):
+        self.makeCurrent()
+        self.renderer.release()
+        self.resource_manager.release()
 
     def init_shaders(self):
         self.resource_manager.add_shader(
@@ -59,9 +79,16 @@ class OpenGLWidget(QOpenGLWidget):
         )
         self.resource_manager.add_shader(
             ShaderProgram(
+                "transparent_flat",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
+                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
                 "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.FLAT_COLOR),
+                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
             )
         )
         self.resource_manager.add_shader(
@@ -71,9 +98,11 @@ class OpenGLWidget(QOpenGLWidget):
         )
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
-        atlas_size = 1024
-        data, font_atlas = create_font_atlas(font_atlas_name, font_path, atlas_size=atlas_size)
-        texture = Texture2D(name=f"font_atlas_{font_atlas_name}", width=atlas_size, height=atlas_size, data=data)
+        atlas_size = 2048
+        font_size = 240
+        data, font_atlas = create_font_atlas(font_atlas_name, font_path, font_size=font_size, atlas_size=atlas_size)
+        texture = Texture2D(name=f"font_atlas_{font_atlas_name}")
+        texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)
         self.resource_manager.add_font_atlas(font_atlas)
         self.resource_manager.add_texture(texture)
 
@@ -101,26 +130,19 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
 
-    def _setup_viewport(self, w: int, h: int):
-        glViewport(0, 0, w, h)
-
     @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
 
-    def initializeGL(self):
-        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
-        self._setup_viewport(self.size().width(), self.size().height())
-        glEnable(GL_MULTISAMPLE)
-
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
         self.projection_manager.build_projections(w, h)
-        self._setup_viewport(w, h)
+        self.renderer.resize(w, h, self.devicePixelRatio())
         self.update()
 
     def paintGL(self):
-        self.renderer.paint(PaintMode.Normal)
+        self.makeCurrent()
+        self.renderer.paint(PaintMode.Normal, self.defaultFramebufferObject())
 
     def keyPressEvent(self, event: QKeyEvent):
         self.action_handler.call_action(event, self.action_handler.keymap.match_key_event)
@@ -165,20 +187,20 @@ class OpenGLWidget(QOpenGLWidget):
     def set_projection_mode(self, mode: ProjectionMode):
         self.makeCurrent()
         self.projection_manager.set_projection_mode(mode)
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.update()
 
     def toggle_projection_mode(self):
         self.makeCurrent()
         self.projection_manager.toggle_projection_mode()
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.update()
 
     def set_perspective_projection_fov(self, value: float):
         self.makeCurrent()
         self.projection_manager.perspective_projection.set_fov(value)
         self.projection_manager.build_projections(self.size().width(), self.size().height())
-        self._setup_viewport(self.size().width(), self.size().height())
+        self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.update()
 
     def set_scene_position(self, point: QVector3D):
@@ -204,18 +226,47 @@ class OpenGLWidget(QOpenGLWidget):
     def new_cursor_position(self, x: int, y: int):
         pass
 
-    def render_to_image(self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False):
+    def render_to_image(
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+    ) -> np.ndarray:
         self.makeCurrent()
         return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
 
     def node_under_cursor(self) -> Node:
         self.makeCurrent()
-        image = self.renderer.picking_image(self.size().width(), self.size().height())
+        image = self.renderer.picking_image()
 
         x = self._cursor_pos.x()
         y = self._cursor_pos.y()
 
         color = image.pixelColor(x, y)
-        obj_id = color_to_id(color)
+        picking_id = color_to_id(color)
 
-        return self.resource_manager.current_scene.find_node_by_id(obj_id)
+        return self.resource_manager.current_scene.find_node_by_picking_id(picking_id)
+
+    def set_node_color_by_id(self, node_id: int, color: Color4f):
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.set_color(color)
+            self.update()
+        except NodeNotFoundError:
+            logger.debug("Can't set node color: node `%d` not found", node_id)
+
+    def set_node_visible(
+        self, node_id: int, visible: bool, apply_to_parents: bool = False, apply_to_children: bool = False
+    ):
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.set_visible(visible, apply_to_parents=apply_to_parents, apply_to_children=apply_to_children)
+            self.update()
+        except NodeNotFoundError:
+            logger.debug("Can't set node visible: node `%d` not found", node_id)
+
+    def remove_node(self, node_id: int):
+        self.makeCurrent()
+        try:
+            node = self.resource_manager.current_scene.main_node.get_node_by_id(node_id)
+            node.remove()
+            self.update()
+        except NodeNotFoundError:
+            logger.debug("Can't remove node: node `%d` not found", node_id)

@@ -1,18 +1,19 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QVBoxLayout
 
-from mir_commander.ui.utils.viewer.viewer_dock_settings import ViewerDockSettings
+from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import CheckBox
 
 from .labels import Labels
+from .volume_cube import VolumeCube
 
 if TYPE_CHECKING:
     from ..viewer import MolecularStructureViewer
 
 
-class Settings(ViewerDockSettings["MolecularStructureViewer"]):
+class Settings(ViewerSettings["MolecularStructureViewer"]):
     def __init__(self):
         super().__init__()
 
@@ -24,11 +25,13 @@ class Settings(ViewerDockSettings["MolecularStructureViewer"]):
         self.apply_for_all_checkbox.toggled.connect(self.apply_for_all_checkbox_toggled_handler)
 
         self.labels = Labels(self)
+        self.volume_cube = VolumeCube(self)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addSpacing(10)
         self.main_layout.addWidget(self.labels)
+        self.main_layout.addWidget(self.volume_cube)
         self.main_layout.addStretch()
 
         self.setLayout(self.main_layout)
@@ -36,14 +39,15 @@ class Settings(ViewerDockSettings["MolecularStructureViewer"]):
     def set_active_viewer(self, viewer: "MolecularStructureViewer"):
         super().set_active_viewer(viewer)
         self.labels.update_values(viewer)
+        self.volume_cube.update_values()
 
     @property
     def viewers(self) -> list["MolecularStructureViewer"]:
         return super().get_viewers(only_active=False if self._apply_for_all else True)
 
-    @Slot(bool)
     def apply_for_all_checkbox_toggled_handler(self, checked: bool):
         self._apply_for_all = checked
+        self.volume_cube.update_values()
 
         if checked:
             self.labels.apply_settings(self.viewers)

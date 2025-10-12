@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING, Any, Hashable, Optional, Self
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
-from mir_commander.ui.utils.opengl.errors import NodeError, NodeParentError
-from mir_commander.ui.utils.opengl.utils import Color4f, id_to_color
-
+from ..errors import NodeError, NodeNotFoundError, NodeParentError
+from ..utils import Color4f, id_to_color
 from .transform import Transform
 
 if TYPE_CHECKING:
@@ -24,9 +23,11 @@ class NodeType(Enum):
 
 class Node:
     _id_counter = 0
+    _picking_id_counter = 0
 
     __slots__ = (
         "_id",
+        "_picking_id",
         "_root_node",
         "_parent",
         "_node_type",
@@ -53,6 +54,9 @@ class Node:
         visible: bool = True,
         picking_visible: bool = False,
     ):
+        Node._id_counter += 1
+        self._id = Node._id_counter
+
         self._node_type = node_type
 
         if root_node is None and parent is None:
@@ -74,12 +78,12 @@ class Node:
 
         self._modify_children: bool = False
 
-        Node._id_counter += 1
-        if Node._id_counter > _ID_COUNTER_LIMIT:
-            Node._id_counter = 1
-        self._id = Node._id_counter
+        Node._picking_id_counter += 1
+        if Node._picking_id_counter > _ID_COUNTER_LIMIT:
+            Node._picking_id_counter = 1
+        self._picking_id = Node._picking_id_counter
 
-        self._picking_color = id_to_color(self._id)
+        self._picking_color = id_to_color(self._picking_id)
 
         self._shader_name: str = ""
         self._texture_name: str = ""
@@ -92,6 +96,10 @@ class Node:
     @property
     def id(self) -> int:
         return self._id
+
+    @property
+    def picking_id(self) -> int:
+        return self._picking_id
 
     @property
     def parent(self) -> "Node":
@@ -163,6 +171,16 @@ class Node:
 
         return result
 
+    def get_node_by_id(self, node_id: int) -> Self:
+        if self._id == node_id:
+            return self
+        for child in self._children:
+            try:
+                return child.get_node_by_id(node_id)
+            except NodeNotFoundError:
+                pass
+        raise NodeNotFoundError()
+
     def _update_transform(self):
         if self._parent:
             self._transform_matrix = self._parent.transform * self._transform.matrix
@@ -184,19 +202,28 @@ class Node:
                 root_node.notify_remove_node(node)
         self._children.clear()
 
-    def set_visible(self, value: bool):
-        if self._visible == value:
-            return
-
+    def set_visible(self, value: bool, apply_to_parents: bool = False, apply_to_children: bool = False):
         fn = self._root_node.notify_add_node if value else self._root_node.notify_remove_node
 
-        self._visible = value
-        fn(self)
+        if self._visible != value:
+            self._visible = value
+            fn(self)
+
+        if apply_to_parents:
+            parent = self._parent
+            while parent is not None:
+                if parent._visible != value:
+                    parent._visible = value
+                    fn(parent)
+                parent = parent._parent
 
         for node in self._get_all_children(include_self=False):
-            if self._modify_children:
-                node._visible = value
-            fn(node)
+            if apply_to_children:
+                node.set_visible(value, False, True)
+            else:
+                if self._modify_children:
+                    node._visible = value
+                fn(node)
 
     def invalidate_transform(self):
         root_node = self._root_node
@@ -228,6 +255,14 @@ class Node:
     def set_translation(self, translation: QVector3D):
         self._transform.set_translation(translation)
         self.invalidate_transform()
+
+    def set_node_type(self, node_type: NodeType):
+        if self._node_type == node_type:
+            return
+
+        self._root_node.notify_remove_node(self)
+        self._node_type = node_type
+        self._root_node.notify_add_node(self)
 
     def set_shader(self, shader_name: str):
         if self._shader_name == shader_name:
@@ -261,4 +296,4 @@ class Node:
         self._root_node.notify_set_dirty(self)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self.id}, visible={self.visible})"
+        return f"{self.__class__.__name__}(id={self._id}, visible={self.visible})"

@@ -5,12 +5,12 @@ from numpydantic import NDArray, Shape
 from pydantic import BaseModel
 
 
-class VolCube(BaseModel):
+class VolumeCube(BaseModel):
     """
     Class of 3D volume function represented as a cube of voxels.
     """
 
-    data_type: Literal["volcube"] = "volcube"
+    data_type: Literal["volume_cube"] = "volume_cube"
 
     comment1: str = ""
     comment2: str = ""

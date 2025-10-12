@@ -1,20 +1,21 @@
 import logging
 import math
+from itertools import combinations
 
 import numpy as np
 from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.models import AtomicCoordinates
-from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.opengl.models import cylinder, sphere
-from mir_commander.ui.utils.opengl.resource_manager import VertexArrayObject
-from mir_commander.ui.utils.opengl.scene import Node, NodeType, RootNode
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_vertex_normals, normalize_color
+from mir_commander.ui.utils.opengl.scene import Node, NodeType
+from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
 from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
+from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
-from ..style import Style
+from ..config import AtomLabelConfig, AtomLabelType, Style
+from ..errors import CalcError
+from ..utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane, InteratomicTorsion
 from .atom.atom import Atom
 from .bond.bond import Bond
 
@@ -22,124 +23,186 @@ logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 
 
 class Molecule(Node):
-    def __init__(self, root_node: RootNode, app_config: AppConfig):
-        super().__init__(root_node=root_node, node_type=NodeType.OPAQUE, visible=True)
+    def __init__(
+        self,
+        parent: Node,
+        atomic_coordinates: AtomicCoordinates,
+        geom_bond_tolerance: float,
+        style: Style,
+        atom_label_config: AtomLabelConfig,
+    ):
+        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
 
-        self._config = app_config.project_window.widgets.viewers.molecular_structure
+        self._atomic_coordinates = atomic_coordinates
+        self._geom_bond_tolerance = geom_bond_tolerance
+        self._style = style
+        self._atom_label_config = atom_label_config
 
-        self.style = Style(self._config)
         self.center = QVector3D(0, 0, 0)
         self.radius: float = 0
 
-        self.current_geom_bond_tolerance = self._config.geom_bond_tolerance
         self.atom_items: list[Atom] = []
         self.bond_items: list[Bond] = []
 
-        self.apply_style()
+        self._build()
 
-        self._sphere_resource_name = "sphere"
-        self._cylinder_resource_name = "cylinder"
+    @property
+    def name(self) -> str:
+        return "Molecule"
 
-    def get_atom_vao(self) -> VertexArrayObject:
-        logger.debug("Initializing atom mesh data")
+    @property
+    def _selected_atoms(self) -> list[Atom]:
+        return sorted((atom for atom in self.atom_items if atom.selected), key=lambda x: x.selection_update)
 
-        mesh_quality = self._config.quality.mesh
-        stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
-        tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices)
-        faces = sphere.get_faces(stacks=stacks, slices=slices)
-        vertices = sphere.unwind_vertices(tmp_vertices, faces)
-        if self._config.quality.smooth:
-            normals = compute_vertex_normals(vertices)
-        else:
-            normals = compute_face_normals(vertices)
-
-        return VertexArrayObject(self._sphere_resource_name, vertices, normals)
-
-    def get_bond_vao(self) -> VertexArrayObject:
-        logger.debug("Initializing bond mesh data")
-
-        mesh_quality = self._config.quality.mesh
-        slices = int(cylinder.min_slices * (mesh_quality * 2))
-        tmp_vertices = cylinder.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, caps=False)
-        faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
-        vertices = cylinder.unwind_vertices(tmp_vertices, faces)
-        if self._config.quality.smooth:
-            normals = compute_vertex_normals(vertices)
-        else:
-            normals = compute_face_normals(vertices)
-
-        return VertexArrayObject(self._cylinder_resource_name, vertices, normals)
-
-    def build(self, atomic_coordinates: AtomicCoordinates):
+    def _build(self):
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
 
-        self.clear()
-
-        center = QVector3D(
-            np.sum(atomic_coordinates.x) / len(atomic_coordinates.x),
-            np.sum(atomic_coordinates.y) / len(atomic_coordinates.y),
-            np.sum(atomic_coordinates.z) / len(atomic_coordinates.z),
+        self.center = QVector3D(
+            np.sum(self._atomic_coordinates.x) / len(self._atomic_coordinates.x),
+            np.sum(self._atomic_coordinates.y) / len(self._atomic_coordinates.y),
+            np.sum(self._atomic_coordinates.z) / len(self._atomic_coordinates.z),
         )
 
         self.radius = 0
 
         # add atoms
-        for i, atomic_num in enumerate(atomic_coordinates.atomic_num):
-            position = QVector3D(atomic_coordinates.x[i], atomic_coordinates.y[i], atomic_coordinates.z[i])
+        for i, atomic_num in enumerate(self._atomic_coordinates.atomic_num):
+            position = QVector3D(
+                self._atomic_coordinates.x[i], self._atomic_coordinates.y[i], self._atomic_coordinates.z[i]
+            )
             atom = self.add_atom(i, atomic_num, position)
 
-            d = position.distanceToPoint(center) + atom.radius
+            d = position.distanceToPoint(self.center) + atom.radius
             if self.radius < d:
                 self.radius = d
 
         # add bonds
-        self.build_bonds(atomic_coordinates, self.current_geom_bond_tolerance)
+        self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
 
-        self.set_translation(-center)
+    def select_all_atoms(self):
+        for atom in self.atom_items:
+            atom.set_selected(True)
 
-    def apply_style(self):
+    def unselect_all_atoms(self):
+        for atom in self.atom_items:
+            atom.set_selected(False)
+
+    def select_toggle_all_atoms(self):
+        for atom in self.atom_items:
+            if atom.selected:
+                self.unselect_all_atoms()
+                break
+        else:
+            self.select_all_atoms()
+
+    def cloak_selected_atoms(self):
+        for atom in self.atom_items:
+            if atom.selected:
+                atom.set_cloaked(True)
+
+    def cloak_not_selected_atoms(self):
+        for atom in self.atom_items:
+            if not atom.selected:
+                atom.set_cloaked(True)
+
+    def cloak_h_atoms(self):
+        for atom in self.atom_items:
+            if atom.atomic_num == 1:
+                atom.set_cloaked(True)
+
+    def cloak_not_selected_h_atoms(self):
+        for atom in self.atom_items:
+            if atom.atomic_num == 1 and not atom.selected:
+                atom.set_cloaked(True)
+
+    def cloak_toggle_h_atoms(self):
+        for atom in self.atom_items:
+            if atom.atomic_num == 1:
+                atom.set_cloaked(not atom.cloaked)
+
+    def uncloak_all_atoms(self):
+        for atom in self.atom_items:
+            atom.set_cloaked(False)
+
+    def cloak_atoms_by_atnum(self, atomic_num: int):
+        for atom in self.atom_items:
+            if atom.atomic_num == atomic_num:
+                atom.set_cloaked(True)
+
+    def show_labels_for_all_atoms(self):
+        for atom in self.atom_items:
+            atom.set_label_visible(True)
+
+    def hide_labels_for_all_atoms(self):
+        for atom in self.atom_items:
+            atom.set_label_visible(False)
+
+    def show_labels_for_selected_atoms(self):
+        for atom in self.atom_items:
+            if atom.selected:
+                atom.set_label_visible(True)
+
+    def hide_labels_for_selected_atoms(self):
+        for atom in self.atom_items:
+            if atom.selected:
+                atom.set_label_visible(False)
+
+    def set_style(self, style: Style):
+        self._style = style
         self._apply_atoms_style()
         self._apply_bonds_style()
+
+    def set_label_type_for_all_atoms(self, value: AtomLabelType):
+        for atom in self.atom_items:
+            atom.set_label_type(value)
+
+    def set_label_size_for_all_atoms(self, size: int):
+        for atom in self.atom_items:
+            atom.set_label_size(size)
+
+    def set_label_offset_for_all_atoms(self, offset: float):
+        for atom in self.atom_items:
+            atom.set_label_offset(offset)
 
     def _apply_atoms_style(self):
         # update items
         for atom in self.atom_items:
             radius, color = self._get_atom_radius_and_color(atom.atomic_num)
-            atom.set_selected_atom_config(self.style.current.selected_atom)
+            atom.set_selected_atom_config(self._style.selected_atom)
             atom.set_radius(radius)
             atom.set_color(color)
 
     def _get_atom_radius_and_color(self, atomic_num: int) -> tuple[float, Color4f]:
-        atoms_radius = self.style.current.atoms.radius
+        atoms_radius = self._style.atoms.radius
         if atoms_radius == "atomic":
             if atomic_num >= 0:
-                radius = self.style.current.atoms.atomic_radius[atomic_num]
+                radius = self._style.atoms.atomic_radius[atomic_num]
             else:
-                radius = self.style.current.atoms.special_atoms.atomic_radius[atomic_num]
-            radius *= self.style.current.atoms.scale_factor
+                radius = self._style.atoms.special_atoms.atomic_radius[atomic_num]
+            radius *= self._style.atoms.scale_factor
         elif atoms_radius == "bond":
-            radius = self.style.current.bond.radius
+            radius = self._style.bond.radius
         else:
-            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self.style.current.name}'")
+            raise ValueError(f"Invalid atoms.radius '{atoms_radius}' in style '{self._style.name}'")
 
         if atomic_num >= 0:
-            color = self.style.current.atoms.atomic_color[atomic_num]
+            color = self._style.atoms.atomic_color[atomic_num]
         else:
-            color = self.style.current.atoms.special_atoms.atomic_color[atomic_num]
+            color = self._style.atoms.special_atoms.atomic_color[atomic_num]
 
         return radius, normalize_color(color)
 
     def _apply_bonds_style(self):
         # update items
         for bond in self.bond_items:
-            bond.set_radius(self.style.current.bond.radius)
+            bond.set_radius(self._style.bond.radius)
 
-            if self.style.current.bond.color == "atoms":
+            if self._style.bond.color == "atoms":
                 bond.set_atoms_color(True)
             else:
-                bond.set_color(normalize_color(self.style.current.bond.color))  # type: ignore[arg-type]
+                bond.set_color(normalize_color(self._style.bond.color))  # type: ignore[arg-type]
 
     def clear(self):
         self.atom_items.clear()
@@ -169,23 +232,22 @@ class Molecule(Node):
 
         item = Atom(
             self,
-            self._sphere_resource_name,
             index_num,
             atomic_num,
             atomic_number_to_symbol(atomic_num),
             position,
             radius,
             color,
-            selected_atom_config=self.style.current.selected_atom,
-            label_config=self._config.atom_label,
+            selected_atom_config=self._style.selected_atom,
+            label_config=self._atom_label_config,
         )
         self.atom_items.append(item)
 
         return item
 
     def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
-        if type(self.style.current.bond.color) is Color:
-            color = normalize_color(self.style.current.bond.color)
+        if type(self._style.bond.color) is Color:
+            color = normalize_color(self._style.bond.color)
             atoms_color = False
         else:
             color = (0.5, 0.5, 0.5, 1.0)
@@ -193,10 +255,9 @@ class Molecule(Node):
 
         item = Bond(
             self,
-            self._cylinder_resource_name,
             atom_1,
             atom_2,
-            self.style.current.bond.radius,
+            self._style.bond.radius,
             atoms_color,
             color,
         )
@@ -225,3 +286,389 @@ class Molecule(Node):
             if (bond._atom_1 == atom1 and bond._atom_2 == atom2) or (bond._atom_1 == atom2 and bond._atom_2 == atom1):
                 return idx
         return -1
+
+    def calc_auto_lastsel_atoms(self) -> str:
+        """
+        Calculate and print internal geometrical parameter,
+        distance, angle or torsion angle, depending on the number of selected atoms.
+        """
+
+        match len(self._selected_atoms):
+            case 2:
+                return self.calc_distance_last2sel_atoms()
+            case 3:
+                return self.calc_angle_last3sel_atoms()
+            case 4:
+                return self.calc_torsion_last4sel_atoms()
+            case _:
+                raise CalcError("Two, three or four atoms must be selected!")
+
+    def calc_distance_last2sel_atoms(self) -> str:
+        """
+        Calculate and print distance (in internal units) between last two selected atoms.
+        """
+
+        atoms = self._selected_atoms
+        if len(atoms) >= 2:
+            atom1 = atoms[-2]
+            atom2 = atoms[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
+            return f"r({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1})={distance:.3f}"
+        else:
+            raise CalcError("At least two atoms must be selected!")
+
+    def calc_angle_last3sel_atoms(self) -> str:
+        """
+        Calculate and print angle (in degrees) formed by last three selected atoms: a1-a2-a3
+        """
+
+        atoms = self._selected_atoms
+        if len(atoms) >= 3:
+            atom1 = atoms[-3]
+            atom2 = atoms[-2]
+            atom3 = atoms[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            angle = geom_angle_xyz(
+                pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
+            ) * (180.0 / math.pi)
+            return (
+                f"a({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
+                f"{atom3.element_symbol}{atom3.index_num + 1})={angle:.1f}"
+            )
+        else:
+            raise CalcError("At least three atoms must be selected!")
+
+    def calc_torsion_last4sel_atoms(self) -> str:
+        """
+        Calculate and print torsion angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
+        """
+
+        atoms = self._selected_atoms
+        if len(atoms) >= 4:
+            atom1 = atoms[-4]
+            atom2 = atoms[-3]
+            atom3 = atoms[-2]
+            atom4 = atoms[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            pos4 = atom4.position
+            angle = geom_torsion_angle_xyz(
+                pos1.x(),
+                pos1.y(),
+                pos1.z(),
+                pos2.x(),
+                pos2.y(),
+                pos2.z(),
+                pos3.x(),
+                pos3.y(),
+                pos3.z(),
+                pos4.x(),
+                pos4.y(),
+                pos4.z(),
+            ) * (180.0 / math.pi)
+            return (
+                f"t({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
+                f"{atom3.element_symbol}{atom3.index_num + 1}-{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
+            )
+        else:
+            raise CalcError("At least four atoms must be selected!")
+
+    def calc_oop_last4sel_atoms(self) -> str:
+        """
+        Calculate and print out-of-plane angle (in degrees) formed by last four selected atoms: a1-a2-a3-a4
+        """
+
+        atoms = self._selected_atoms
+        if len(atoms) >= 4:
+            atom1 = atoms[-4]
+            atom2 = atoms[-3]
+            atom3 = atoms[-2]
+            atom4 = atoms[-1]
+            pos1 = atom1.position
+            pos2 = atom2.position
+            pos3 = atom3.position
+            pos4 = atom4.position
+            angle = geom_oop_angle_xyz(
+                pos1.x(),
+                pos1.y(),
+                pos1.z(),
+                pos2.x(),
+                pos2.y(),
+                pos2.z(),
+                pos3.x(),
+                pos3.y(),
+                pos3.z(),
+                pos4.x(),
+                pos4.y(),
+                pos4.z(),
+            ) * (180.0 / math.pi)
+            return (
+                f"o({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}<"
+                f"{atom3.element_symbol}{atom3.index_num + 1}/{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
+            )
+        else:
+            raise CalcError("At least four atoms must be selected!")
+
+    def calc_all_parameters_selected_atoms(self) -> str:
+        """
+        Calculate and print all parameters formed by all selected atoms
+        """
+
+        distances: list[InteratomicDistance] = []
+        angles: list[InteratomicAngle] = []
+        torsions: list[InteratomicTorsion] = []
+        outofplanes: list[InteratomicOutOfPlane] = []
+
+        # Generate list of distances, which are bonds formed by selected atoms
+        for bond in self.bond_items:
+            if bond._atom_1.selected and bond._atom_2.selected:
+                distances.append(InteratomicDistance(bond._atom_1, bond._atom_2))
+
+        # Calculate distances
+        for dist in distances:
+            dist.value = geom_distance_xyz(
+                dist.atom1.position.x(),
+                dist.atom1.position.y(),
+                dist.atom1.position.z(),
+                dist.atom2.position.x(),
+                dist.atom2.position.y(),
+                dist.atom2.position.z(),
+            )
+
+        # Generate list of angles
+        n = len(distances)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if distances[i].atom1 == distances[j].atom1:
+                    angles.append(InteratomicAngle(distances[i].atom2, distances[i].atom1, distances[j].atom2))
+                elif distances[i].atom2 == distances[j].atom1:
+                    angles.append(InteratomicAngle(distances[i].atom1, distances[i].atom2, distances[j].atom2))
+                elif distances[i].atom1 == distances[j].atom2:
+                    angles.append(InteratomicAngle(distances[i].atom2, distances[i].atom1, distances[j].atom1))
+                elif distances[i].atom2 == distances[j].atom2:
+                    angles.append(InteratomicAngle(distances[i].atom1, distances[i].atom2, distances[j].atom1))
+
+        # Calculate angles
+        for angle in angles:
+            angle.value = geom_angle_xyz(
+                angle.atom1.position.x(),
+                angle.atom1.position.y(),
+                angle.atom1.position.z(),
+                angle.atom2.position.x(),
+                angle.atom2.position.y(),
+                angle.atom2.position.z(),
+                angle.atom3.position.x(),
+                angle.atom3.position.y(),
+                angle.atom3.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Generate list of torsions
+        ndist = len(distances)
+        nang = len(angles)
+        for i in range(nang):
+            if angles[i].value >= 175.0:
+                continue
+            for j in range(ndist):
+                # If the bond is already a part of the angle
+                if (
+                    distances[j].atom1 == angles[i].atom1
+                    or distances[j].atom1 == angles[i].atom2
+                    or distances[j].atom1 == angles[i].atom3
+                ) and (
+                    distances[j].atom2 == angles[i].atom1
+                    or distances[j].atom2 == angles[i].atom2
+                    or distances[j].atom2 == angles[i].atom3
+                ):
+                    continue
+
+                torsion = None
+                if angles[i].atom1 == distances[j].atom1:
+                    torsion = InteratomicTorsion(distances[j].atom2, angles[i].atom1, angles[i].atom2, angles[i].atom3)
+                elif angles[i].atom1 == distances[j].atom2:
+                    torsion = InteratomicTorsion(distances[j].atom1, angles[i].atom1, angles[i].atom2, angles[i].atom3)
+                elif angles[i].atom3 == distances[j].atom1:
+                    torsion = InteratomicTorsion(angles[i].atom1, angles[i].atom2, angles[i].atom3, distances[j].atom2)
+                elif angles[i].atom3 == distances[j].atom2:
+                    torsion = InteratomicTorsion(angles[i].atom1, angles[i].atom2, angles[i].atom3, distances[j].atom1)
+
+                if torsion:
+                    # Check if this (or equivalent) torsion is already in the list
+                    exists = False
+                    for etors in torsions:
+                        if (
+                            etors.atom1 == torsion.atom1
+                            and etors.atom2 == torsion.atom2
+                            and etors.atom3 == torsion.atom3
+                            and etors.atom4 == torsion.atom4
+                        ) or (
+                            etors.atom1 == torsion.atom4
+                            and etors.atom2 == torsion.atom3
+                            and etors.atom3 == torsion.atom2
+                            and etors.atom4 == torsion.atom1
+                        ):
+                            exists = True
+                            break
+
+                    if not exists:
+                        torsions.append(torsion)
+
+        # Calculate torsions
+        for torsion in torsions:
+            torsion.value = geom_torsion_angle_xyz(
+                torsion.atom1.position.x(),
+                torsion.atom1.position.y(),
+                torsion.atom1.position.z(),
+                torsion.atom2.position.x(),
+                torsion.atom2.position.y(),
+                torsion.atom2.position.z(),
+                torsion.atom3.position.x(),
+                torsion.atom3.position.y(),
+                torsion.atom3.position.z(),
+                torsion.atom4.position.x(),
+                torsion.atom4.position.y(),
+                torsion.atom4.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Generate list of out-of-plane angles
+        for i in range(nang):
+            if angles[i].value >= 175.0:
+                continue
+            for j in range(ndist):
+                # If the bond is already a part of the angle
+                if (
+                    distances[j].atom1 == angles[i].atom1
+                    or distances[j].atom1 == angles[i].atom2
+                    or distances[j].atom1 == angles[i].atom3
+                ) and (
+                    distances[j].atom2 == angles[i].atom1
+                    or distances[j].atom2 == angles[i].atom2
+                    or distances[j].atom2 == angles[i].atom3
+                ):
+                    continue
+
+                outofplane = None
+                # If the bond is connected to the central (2nd) atom of the angle
+                if angles[i].atom2 == distances[j].atom1:
+                    outofplane = InteratomicOutOfPlane(
+                        distances[j].atom2, angles[i].atom2, angles[i].atom1, angles[i].atom3
+                    )
+                elif angles[i].atom2 == distances[j].atom2:
+                    outofplane = InteratomicOutOfPlane(
+                        distances[j].atom1, angles[i].atom2, angles[i].atom1, angles[i].atom3
+                    )
+
+                if outofplane:
+                    # Check if the first atom is terminal
+                    terminal = False
+                    # Iterate by bonds
+                    for k in range(ndist):
+                        if k != j and (
+                            distances[k].atom1 == outofplane.atom1 or distances[k].atom2 == outofplane.atom1
+                        ):
+                            terminal = True
+                            break
+
+                    if not terminal:
+                        outofplanes.append(outofplane)
+
+        # Calculate out-of-planes
+        for outofplane in outofplanes:
+            outofplane.value = geom_oop_angle_xyz(
+                outofplane.atom1.position.x(),
+                outofplane.atom1.position.y(),
+                outofplane.atom1.position.z(),
+                outofplane.atom2.position.x(),
+                outofplane.atom2.position.y(),
+                outofplane.atom2.position.z(),
+                outofplane.atom3.position.x(),
+                outofplane.atom3.position.y(),
+                outofplane.atom3.position.z(),
+                outofplane.atom4.position.x(),
+                outofplane.atom4.position.y(),
+                outofplane.atom4.position.z(),
+            ) * (180.0 / math.pi)
+
+        # Print parameters
+        out_str = ""
+        for dist in distances:
+            out_str += (
+                f"r({dist.atom1.element_symbol}{dist.atom1.index_num + 1}-"
+                f"{dist.atom2.element_symbol}{dist.atom2.index_num + 1})={dist.value:.3f}, "
+            )
+
+        for angle in angles:
+            out_str += (
+                f"a({angle.atom1.element_symbol}{angle.atom1.index_num + 1}-"
+                f"{angle.atom2.element_symbol}{angle.atom2.index_num + 1}-"
+                f"{angle.atom3.element_symbol}{angle.atom3.index_num + 1})={angle.value:.1f}, "
+            )
+
+        for torsion in torsions:
+            out_str += (
+                f"t({torsion.atom1.element_symbol}{torsion.atom1.index_num + 1}-"
+                f"{torsion.atom2.element_symbol}{torsion.atom2.index_num + 1}-"
+                f"{torsion.atom3.element_symbol}{torsion.atom3.index_num + 1}-"
+                f"{torsion.atom4.element_symbol}{torsion.atom4.index_num + 1})={torsion.value:.1f}, "
+            )
+
+        for outofplane in outofplanes:
+            if abs(outofplane.value) <= 10.0:
+                out_str += (
+                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index_num + 1}-"
+                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index_num + 1}<"
+                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index_num + 1}/"
+                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num + 1})={outofplane.value:.1f}, "
+                )
+
+        return out_str.rstrip(", ")
+
+    def toggle_bonds_for_selected_atoms(self):
+        """
+        Create and add or remove bonds between selected atoms.
+        """
+
+        selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.bond_index(atom1, atom2)
+            if idx < 0:
+                self.add_bond(atom1, atom2)
+            else:
+                self.remove_bond(idx)
+
+    def add_bonds_for_selected_atoms(self):
+        """
+        Create and add bonds between selected atoms.
+        """
+
+        selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.bond_index(atom1, atom2)
+            if idx < 0:
+                self.add_bond(atom1, atom2)
+
+    def remove_bonds_for_selected_atoms(self):
+        """
+        Remove bonds between selected atoms.
+        """
+
+        selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
+        for atom1, atom2 in combinations(selected_atoms, 2):
+            idx = self.bond_index(atom1, atom2)
+            if idx >= 0:
+                self.remove_bond(idx)
+
+    def set_geom_bond_tolerance(self, geom_bond_tolerance: float = -2.0):
+        """
+        Delete all old bonds and generate new a set of bonds
+        """
+
+        if geom_bond_tolerance < -1.0:
+            geom_bond_tolerance = self._geom_bond_tolerance
+        self._geom_bond_tolerance = geom_bond_tolerance
+        self.remove_bond_all()
+        self.build_bonds(self._atomic_coordinates, geom_bond_tolerance)

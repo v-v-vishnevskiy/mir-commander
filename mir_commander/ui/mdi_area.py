@@ -7,13 +7,13 @@ from PySide6.QtWidgets import QMdiArea, QWidget
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
-from .widgets.docks.viewer_settings_dock import ViewerSettingsDock
+from .widgets.docks.viewer_dock import ViewerDock
 
 
 class MdiArea(QMdiArea):
     opened_viewer_signal = Signal(Viewer)
 
-    def __init__(self, parent: QWidget, viewer_settings_dock: ViewerSettingsDock, app_config: AppConfig):
+    def __init__(self, parent: QWidget, viewer_settings_dock: ViewerDock, app_config: AppConfig):
         super().__init__(parent)
         self._viewer_settings_dock = viewer_settings_dock
         self._app_config = app_config

@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field, field_validator
 
 from .molecule import AtomicCoordinates, AtomicCoordinatesGroup, Molecule
 from .unex import Unex
-from .volcube import VolCube
+from .volume_cube import VolumeCube
 
 ItemData = Annotated[
-    VolCube | AtomicCoordinates | AtomicCoordinatesGroup | Molecule | Unex, Field(discriminator="data_type")
+    VolumeCube | AtomicCoordinates | AtomicCoordinatesGroup | Molecule | Unex, Field(discriminator="data_type")
 ]
 
 

@@ -7,12 +7,13 @@ from .transform import Transform
 
 
 class Scene(Resource):
-    __slots__ = ("_root_node", "transform")
+    __slots__ = ("_root_node", "_main_node", "transform")
 
     def __init__(self, name: str):
         super().__init__(name)
 
         self._root_node = RootNode()
+        self._main_node = Node(node_type=NodeType.CONTAINER, root_node=self._root_node)
 
         self.transform = Transform()
 
@@ -21,11 +22,15 @@ class Scene(Resource):
         return self._root_node
 
     @property
+    def main_node(self) -> Node:
+        return self._main_node
+
+    @property
     def containers(self) -> tuple[dict[NodeType, RenderingContainer], RenderingContainer, RenderingContainer]:
         return self._root_node.containers
 
-    def find_node_by_id(self, node_id: int) -> Node:
-        return self._root_node.find_node_by_id(node_id)
+    def find_node_by_picking_id(self, picking_id: int) -> Node:
+        return self._root_node.find_node_by_picking_id(picking_id)
 
     def clear(self):
         self._root_node.clear()

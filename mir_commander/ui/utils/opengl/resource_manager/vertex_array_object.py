@@ -18,7 +18,7 @@ from OpenGL.GL import (
 
 from .base import Resource
 
-logger = logging.getLogger("ResourceManager.VertexArrayObject")
+logger = logging.getLogger("OpenGL.VertexArrayObject")
 
 
 class VertexArrayObject(Resource):
@@ -27,12 +27,11 @@ class VertexArrayObject(Resource):
     def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray = None):
         super().__init__(name)
 
-        self._vao = None
-        self._vbo_vertices = None
-        self._vbo_normals = None
+        self._vao = glGenVertexArrays(1)
+        self._vbo_vertices = glGenBuffers(1)
+        self._vbo_normals = glGenBuffers(1)
         self._vbo_tex_coords = None
         self._triangles_count = int(len(vertices) / 3)
-
         self._setup_buffers(vertices, normals, tex_coords)
 
     @property
@@ -46,15 +45,9 @@ class VertexArrayObject(Resource):
         glBindVertexArray(0)
 
     def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray):
-        logger.debug("Setting up buffers")
-        self._vao = glGenVertexArrays(1)
-        self.bind()
+        logger.debug("Setup buffers: %s", self.name)
 
-        # Generate VBOs
-        self._vbo_vertices = glGenBuffers(1)
-        self._vbo_normals = glGenBuffers(1)
-        if tex_coords is not None:
-            self._vbo_tex_coords = glGenBuffers(1)
+        self.bind()
 
         # Setup position data
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo_vertices)
@@ -70,21 +63,20 @@ class VertexArrayObject(Resource):
 
         # Setup tex_coords data
         if tex_coords is not None:
+            self._vbo_tex_coords = glGenBuffers(1)
             glBindBuffer(GL_ARRAY_BUFFER, self._vbo_tex_coords)
             glBufferData(GL_ARRAY_BUFFER, tex_coords.nbytes, tex_coords, GL_STATIC_DRAW)
             glVertexAttribPointer(2, 2, GL_FLOAT, False, 0, None)
             glEnableVertexAttribArray(2)  # tex_coords
 
-        self.unbind()
+        glBindVertexArray(0)
 
-    def __del__(self):
-        logger.debug("Cleaning up OpenGL resources")
-        if self._vao is not None:
-            glDeleteVertexArrays(1, [self._vao])
-        if self._vbo_vertices is not None:
-            glDeleteBuffers(1, [self._vbo_vertices])
-        if self._vbo_normals is not None:
-            glDeleteBuffers(1, [self._vbo_normals])
+    def release(self):
+        logger.debug("Deleting resources: %s", self.name)
+
+        glDeleteVertexArrays(1, [self._vao])
+        glDeleteBuffers(1, [self._vbo_vertices])
+        glDeleteBuffers(1, [self._vbo_normals])
         if self._vbo_tex_coords is not None:
             glDeleteBuffers(1, [self._vbo_tex_coords])
 

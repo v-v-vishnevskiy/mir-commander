@@ -1,5 +1,6 @@
 from .camera import Camera
 from .font_atlas import FontAtlas
+from .framebuffer import Framebuffer
 from .mesh import Mesh
 from .resource_manager import ResourceManager
 from .shader import FragmentShader, ShaderProgram, UniformLocations, VertexShader
@@ -9,6 +10,7 @@ from .vertex_array_object import VertexArrayObject
 __all__ = [
     "Camera",
     "FontAtlas",
+    "Framebuffer",
     "Mesh",
     "ResourceManager",
     "FragmentShader",

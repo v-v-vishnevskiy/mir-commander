@@ -1,6 +1,5 @@
 from typing import cast
 
-
 from .node import Node, NodeType
 from .rendering_container import RenderingContainer
 from .text_node import TextNode
@@ -69,8 +68,8 @@ class RootNode:
             if node.picking_visible:
                 self._picking_container.set_dirty(node)
 
-    def find_node_by_id(self, node_id: int) -> Node:
-        return self._picking_container.find_node_by_id(node_id)
+    def find_node_by_picking_id(self, picking_id: int) -> Node:
+        return self._picking_container.find_node_by_picking_id(picking_id)
 
     def __repr__(self):
         return "RootNode()"

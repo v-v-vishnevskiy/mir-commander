@@ -1,39 +1,52 @@
 import ctypes
-import logging
 from typing import Hashable, cast
 
 import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
-    GL_BLEND,
-    GL_COLOR_BUFFER_BIT,
-    GL_CULL_FACE,
-    GL_DEPTH_BUFFER_BIT,
-    GL_DEPTH_TEST,
-    GL_FALSE,
+    GL_COLOR_ATTACHMENT0,
+    GL_DEPTH24_STENCIL8,
+    GL_DEPTH_STENCIL_ATTACHMENT,
     GL_FLOAT,
-    GL_ONE_MINUS_SRC_ALPHA,
-    GL_SRC_ALPHA,
+    GL_FRAMEBUFFER,
+    GL_LINEAR,
+    GL_RENDERBUFFER,
+    GL_RGB,
+    GL_RGBA,
     GL_STATIC_DRAW,
+    GL_TEXTURE0,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_MIN_FILTER,
     GL_TRIANGLES,
-    GL_TRUE,
+    GL_UNSIGNED_BYTE,
+    glActiveTexture,
     glBindBuffer,
-    glBlendFunc,
+    glBindFramebuffer,
+    glBindRenderbuffer,
+    glBindTexture,
     glBufferData,
-    glClear,
     glClearColor,
     glDeleteBuffers,
-    glDepthMask,
-    glDisable,
+    glDeleteFramebuffers,
+    glDeleteRenderbuffers,
+    glDeleteTextures,
     glDrawArrays,
     glDrawArraysInstanced,
-    glEnable,
     glEnableVertexAttribArray,
+    glFramebufferRenderbuffer,
+    glFramebufferTexture2D,
     glGenBuffers,
+    glGenFramebuffers,
+    glGenRenderbuffers,
+    glGenTextures,
+    glReadPixels,
+    glRenderbufferStorage,
+    glTexImage2D,
+    glTexParameteri,
     glUniform4f,
     glUniformMatrix4fv,
-    glUseProgram,
     glVertexAttribDivisor,
     glVertexAttribPointer,
     glViewport,
@@ -47,8 +60,7 @@ from .projection import ProjectionManager
 from .resource_manager import ResourceManager, UniformLocations
 from .scene import Node, NodeType, RenderingContainer, TextNode
 from .utils import Color4f, crop_image_to_content
-
-logger = logging.getLogger("OpenGL.Renderer")
+from .wboit import WBOIT
 
 
 class Renderer:
@@ -60,38 +72,44 @@ class Renderer:
         self._picking_image.fill(QColor(0, 0, 0, 0))
         self._update_picking_image = True
         self._transformation_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
+        self._wboit = WBOIT()
+
+        self._device_pixel_ratio = 1.0
+        self._width = 1
+        self._height = 1
 
     def set_background_color(self, color: Color4f):
         self._bg_color = color
 
-    def paint(self, paint_mode: PaintMode):
+    def resize(self, width: int, height: int, device_pixel_ratio: float):
+        self._device_pixel_ratio = device_pixel_ratio
+        self._width = width
+        self._height = height
+
+        glViewport(0, 0, width, height)
+        self._wboit.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio))
+
+    def paint(self, paint_mode: PaintMode, framebuffer: int):
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
 
         glClearColor(*self._bg_color)
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_CULL_FACE)
-        glDisable(GL_BLEND)
 
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
         else:
             self._handle_text(text_rc)
 
+            self._wboit.prepare_opaque_stage()
             self._paint_normal(normal_containers[NodeType.OPAQUE])
 
+            self._wboit.prepare_transparent_stage()
             if normal_containers[NodeType.TRANSPARENT]:
-                glEnable(GL_BLEND)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                glDepthMask(GL_FALSE)
                 self._paint_normal(normal_containers[NodeType.TRANSPARENT])
-                glDepthMask(GL_TRUE)
 
             if normal_containers[NodeType.CHAR]:
-                glEnable(GL_BLEND)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 self._paint_normal(normal_containers[NodeType.CHAR])
+
+            self._wboit.finalize(framebuffer)
 
             self._update_picking_image = True
 
@@ -145,7 +163,7 @@ class Renderer:
         # OPTIMIZATION: Switch shader only when needed (expensive operation)
         shader = self._resource_manager.get_shader(shader_name)
         if shader_name != prev_shader_name:
-            glUseProgram(shader.program)
+            shader.use()
             uniform_locations = shader.uniform_locations
             self._setup_uniforms(uniform_locations)
         return shader.uniform_locations
@@ -154,6 +172,7 @@ class Renderer:
         # OPTIMIZATION: Switch texture only when needed (expensive operation)
         if texture_name != "" and texture_name != prev_texture_name:
             texture = self._resource_manager.get_texture(texture_name)
+            glActiveTexture(GL_TEXTURE0)
             texture.bind()
             return texture_name
         # Unbind texture if needed
@@ -317,72 +336,91 @@ class Renderer:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def _render_to_image(
-        self,
-        width: int,
-        height: int,
-        transparent_bg: bool = False,
-        crop_to_content: bool = False,
-        make_current_callback=None,
-    ) -> QImage:
-        if make_current_callback:
-            make_current_callback()
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+    ) -> np.ndarray:
+        # Create framebuffer
+        fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setSamples(16)
-        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
-        fbo.bind()
+        format = GL_RGBA if transparent_bg else GL_RGB
+        channels = 4 if transparent_bg else 3
 
-        bg_color_bak = self._bg_color
+        # Create texture for color attachment
+        texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, texture)
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, None)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0)
 
-        if transparent_bg:
-            self._bg_color = bg_color_bak[0], bg_color_bak[1], bg_color_bak[2], 0.0
+        # Create renderbuffer for depth/stencil
+        rbo = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo)
 
-        bg_color = QColor.fromRgbF(*self._bg_color)
-
+        # Set viewport
         glViewport(0, 0, width, height)
 
-        self.paint(PaintMode.Normal)
+        # Reinitialize WBOIT for new size
+        self._wboit.init(width, height)
 
+        # Backup and set background color
+        bg_color_bak = self._bg_color
+        if transparent_bg:
+            self._bg_color = 0.0, 0.0, 0.0, 0.0
+
+        bg_color = self._bg_color
+
+        # Render scene
+        self.paint(PaintMode.Normal, fbo)
+
+        # Restore background color
         self._bg_color = bg_color_bak
 
-        fbo.release()
+        # Read pixels from framebuffer
+        pixels = glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE)
 
-        image = fbo.toImage()
+        # Cleanup
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        glDeleteTextures([texture])
+        glDeleteRenderbuffers(1, [rbo])
+        glDeleteFramebuffers(1, [fbo])
+
+        # Restore WBOIT to original size
+        self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
+
+        # Convert to numpy array
+        opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, channels)
+
+        # Flip vertically (OpenGL's origin is bottom-left, image origin is top-left)
+        image_data = np.flipud(opengl_image_data)
 
         if crop_to_content:
-            image = crop_image_to_content(image, bg_color)
-
-        return image
+            return crop_image_to_content(image_data, bg_color[0:channels])
+        return image_data
 
     def render_to_image(
-        self,
-        width: int,
-        height: int,
-        transparent_bg: bool = False,
-        crop_to_content: bool = False,
-        make_current_callback=None,
-    ) -> QImage:
+        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+    ) -> np.ndarray:
         try:
-            return self._render_to_image(width, height, transparent_bg, crop_to_content, make_current_callback)
+            return self._render_to_image(width, height, transparent_bg, crop_to_content)
         except OpenGL.error.GLError as e:
             raise Error(f"Error rendering to image: {e}")
 
-    def picking_image(self, width: int, height: int) -> QImage:
+    def picking_image(self) -> QImage:
         if not self._update_picking_image:
             return self._picking_image
 
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(width, height, fbo_format)
+        fbo = QOpenGLFramebufferObject(self._width, self._height, QOpenGLFramebufferObjectFormat())
         fbo.bind()
 
-        glViewport(0, 0, width, height)
+        glViewport(0, 0, self._width, self._height)
 
         bg_color_bak = self._bg_color
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
 
-        self.paint(PaintMode.Picking)
+        self.paint(PaintMode.Picking, fbo.handle())
 
         self._bg_color = bg_color_bak
 
@@ -393,6 +431,7 @@ class Renderer:
 
         return self._picking_image
 
-    def __del__(self):
+    def release(self):
+        self._wboit.release()
         for buffers in self._transformation_buffers.values():
             glDeleteBuffers(1, list(buffers))
