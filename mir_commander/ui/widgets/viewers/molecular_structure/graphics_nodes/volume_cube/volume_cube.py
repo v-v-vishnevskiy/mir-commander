@@ -25,6 +25,10 @@ class VolumeCube(Node):
 
         self._volume_cube = volume_cube
 
+    @property
+    def is_empty_scalar_field(self) -> bool:
+        return self._volume_cube.cube_data is None or self._volume_cube.cube_data.size == 0
+
     def set_volume_cube(self, volume_cube: CoreVolumeCube):
         position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
         self.set_translation(position * consts.BOHR2ANGSTROM)
@@ -36,10 +40,13 @@ class VolumeCube(Node):
             s.remove()
         self._volume_cube = volume_cube
 
-    def add_isosurface_group(self, items: list[tuple[float, Color4f, float]]) -> VolumeCubeIsosurfaceGroup:
+    def add_isosurface_group(self, items: list[tuple[float, Color4f, float]]) -> bool:
+        if self.is_empty_scalar_field:
+            return False
+
         group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
-        isosurfaces = group.add_isosurfaces(self._volume_cube.cube_data, items)
-        return VolumeCubeIsosurfaceGroup(id=group.id, isosurfaces=isosurfaces, visible=group.visible)
+        group.add_isosurfaces(self._volume_cube.cube_data, items)
+        return True
 
     def remove_isosurface_group(self, id: int):
         try:

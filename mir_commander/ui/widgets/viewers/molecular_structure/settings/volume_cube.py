@@ -243,9 +243,8 @@ class VolumeCube(GroupBox):
         if self._both_sides_checkbox.isChecked() and value != 0.0:
             items.append((value, qcolor_to_color4f(self._color_button_2.color), -1.0))
 
-        ids = []
         for viewer in self._settings.viewers:
-            ids.append(viewer.visualizer.add_volume_cube_isosurface_group(items=items))
+            viewer.visualizer.add_volume_cube_isosurface_group(items=items)
 
         self.update_values()
 
