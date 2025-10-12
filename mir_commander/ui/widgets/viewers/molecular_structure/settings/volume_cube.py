@@ -100,6 +100,7 @@ class IsosurfacesTreeView(TreeView):
         self.setStyleSheet(
             "QTreeView::item:hover { background: #DDDDDD; } QTreeView::item { height: 20px; padding: 0px; margin: 0px; }"
         )
+        self.header().setMinimumSectionSize(20)
 
     def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
         root_item = self._model.invisibleRootItem()
