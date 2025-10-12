@@ -55,7 +55,7 @@ class VisibilityButton(QPushButton):
         self._id = id
         self._visible = visible
         self._settings = settings
-        self.setFixedSize(16, 16)
+        self.setFixedSize(19, 19)
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/eye.png" if visible else ":/icons/general/square.png"))
         self.clicked.connect(self.clicked_handler)
@@ -76,7 +76,7 @@ class DeleteButton(QPushButton):
         super().__init__()
         self._id = id
         self._settings = settings
-        self.setFixedSize(16, 16)
+        self.setFixedSize(19, 19)
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/delete.png"))
         self.clicked.connect(self.clicked_handler)
