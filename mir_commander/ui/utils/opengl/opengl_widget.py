@@ -250,7 +250,7 @@ class OpenGLWidget(QOpenGLWidget):
             node.set_color(color)
             self.update()
         except NodeNotFoundError:
-            pass
+            logger.debug("Can't set node color: node `%d` not found", node_id)
 
     def set_node_visible(
         self, node_id: int, visible: bool, apply_to_parents: bool = False, apply_to_children: bool = False
@@ -260,7 +260,7 @@ class OpenGLWidget(QOpenGLWidget):
             node.set_visible(visible, apply_to_parents=apply_to_parents, apply_to_children=apply_to_children)
             self.update()
         except NodeNotFoundError:
-            pass
+            logger.debug("Can't set node visible: node `%d` not found", node_id)
 
     def remove_node(self, node_id: int):
         self.makeCurrent()
@@ -269,4 +269,4 @@ class OpenGLWidget(QOpenGLWidget):
             node.remove()
             self.update()
         except NodeNotFoundError:
-            pass
+            logger.debug("Can't remove node: node `%d` not found", node_id)
