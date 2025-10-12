@@ -7,7 +7,7 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 class VolumeCubeIsosurface:
     id: int
     value: float
-    factor: float
+    inverted: bool
     color: Color4f
     visible: bool
 
@@ -15,5 +15,6 @@ class VolumeCubeIsosurface:
 @dataclass
 class VolumeCubeIsosurfaceGroup:
     id: int
+    value: float
     isosurfaces: list[VolumeCubeIsosurface]
     visible: bool

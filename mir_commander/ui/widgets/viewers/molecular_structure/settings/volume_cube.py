@@ -8,13 +8,11 @@ from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QPushButton,
-    QTreeView,
     QVBoxLayout,
-    QWidget,
 )
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton
+from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton, StandardItem, TreeView
 
 from ..entities import VolumeCubeIsosurfaceGroup
 
@@ -23,8 +21,8 @@ if TYPE_CHECKING:
 
 
 class ColorButton(QPushButton):
-    def __init__(self, parent: QWidget, color: QColor, settings: "Settings", id: int):
-        super().__init__(parent)
+    def __init__(self, color: QColor, settings: "Settings", id: int):
+        super().__init__()
         self._color = color
         self._id = id
         self._settings = settings
@@ -39,7 +37,10 @@ class ColorButton(QPushButton):
 
     def clicked_handler(self):
         color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+            initial=self._color,
+            parent=self,
+            options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+            | QColorDialog.ColorDialogOption.DontUseNativeDialog,
         )
         if color.isValid():
             self._set_style_sheet(color)
@@ -49,8 +50,8 @@ class ColorButton(QPushButton):
 
 
 class VisibilityButton(QPushButton):
-    def __init__(self, parent: QWidget, settings: "Settings", id: int, visible: bool):
-        super().__init__(parent)
+    def __init__(self, settings: "Settings", id: int, visible: bool):
+        super().__init__()
         self._id = id
         self._visible = visible
         self._settings = settings
@@ -71,8 +72,8 @@ class VisibilityButton(QPushButton):
 
 
 class DeleteButton(QPushButton):
-    def __init__(self, parent: QWidget, settings: "Settings", id: int):
-        super().__init__(parent)
+    def __init__(self, settings: "Settings", id: int):
+        super().__init__()
         self._id = id
         self._settings = settings
         self.setFixedSize(16, 16)
@@ -86,10 +87,10 @@ class DeleteButton(QPushButton):
         self._settings.volume_cube.update_values()
 
 
-class IsosurfacesTreeView(QTreeView):
-    def __init__(self, parent: "Settings"):
-        super().__init__(parent)
-        self._settings = parent
+class IsosurfacesTreeView(TreeView):
+    def __init__(self, settings: "Settings"):
+        super().__init__()
+        self._settings = settings
 
         self.setHeaderHidden(True)
         self.setExpandsOnDoubleClick(False)
@@ -104,8 +105,15 @@ class IsosurfacesTreeView(QTreeView):
     def add_isosurface_group(self, group: VolumeCubeIsosurfaceGroup):
         root_item = self._model.invisibleRootItem()
 
-        text = "/".join((str(s.value) for s in group.isosurfaces))
-        group_text_item = QStandardItem(text)
+        if len(group.isosurfaces) < 2:
+            if group.isosurfaces[0].inverted:
+                text = StandardItem.tr("{} (inverted)").format(group.value)
+            else:
+                text = StandardItem.tr("{} (original)").format(group.value)
+        else:
+            text = str(group.value)  # type: ignore[assignment]
+
+        group_text_item = StandardItem(text)
         group_text_item.setEditable(False)
         group_color_item = QStandardItem()
         group_visibility_item = QStandardItem()
@@ -114,7 +122,11 @@ class IsosurfacesTreeView(QTreeView):
 
         if len(group.isosurfaces) > 1:
             for isosurface in group.isosurfaces:
-                isosurface_text_item = QStandardItem(f"{isosurface.value} ({isosurface.factor})")
+                isosurface_text_item = (
+                    StandardItem(StandardItem.tr("inverted"))
+                    if isosurface.inverted
+                    else StandardItem(StandardItem.tr("original"))
+                )
                 isosurface_text_item.setEditable(False)
                 isosurface_color_item = QStandardItem()
                 isosurface_visibility_item = QStandardItem()
@@ -127,20 +139,18 @@ class IsosurfacesTreeView(QTreeView):
                         isosurface_delete_item,
                     ]
                 )
-                c = ColorButton(self, color4f_to_qcolor(isosurface.color), self._settings, isosurface.id)
+                c = ColorButton(color4f_to_qcolor(isosurface.color), self._settings, isosurface.id)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_color_item), c)
-                v = VisibilityButton(self, self._settings, isosurface.id, isosurface.visible)
+                v = VisibilityButton(self._settings, isosurface.id, isosurface.visible)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
-                d = DeleteButton(self, self._settings, isosurface.id)
+                d = DeleteButton(self._settings, isosurface.id)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
         else:
-            c = ColorButton(
-                self, color4f_to_qcolor(group.isosurfaces[0].color), self._settings, group.isosurfaces[0].id
-            )
+            c = ColorButton(color4f_to_qcolor(group.isosurfaces[0].color), self._settings, group.isosurfaces[0].id)
             self.setIndexWidget(self._model.indexFromItem(group_color_item), c)
-        v = VisibilityButton(self, self._settings, group.id, group.visible)
+        v = VisibilityButton(self._settings, group.id, group.visible)
         self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
-        d = DeleteButton(self, self._settings, group.id)
+        d = DeleteButton(self._settings, group.id)
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
 
     def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
@@ -158,8 +168,8 @@ class IsosurfacesTreeView(QTreeView):
 
 
 class ColorButtonNewIsosurface(QFrame):
-    def __init__(self, parent: QWidget, color: QColor):
-        super().__init__(parent)
+    def __init__(self, color: QColor):
+        super().__init__()
         self.setFixedSize(20, 20)
         self._color = color
         self.set_color(self._color)
@@ -185,7 +195,10 @@ class ColorButtonNewIsosurface(QFrame):
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+            initial=self._color,
+            parent=self,
+            options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+            | QColorDialog.ColorDialogOption.DontUseNativeDialog,
         )
         if color.isValid():
             self.set_color(color)
@@ -193,7 +206,7 @@ class ColorButtonNewIsosurface(QFrame):
 
 class VolumeCube(GroupBox):
     def __init__(self, parent: "Settings"):
-        super().__init__(self.tr("Volume Cube Isosurfaces"))
+        super().__init__(text=self.tr("Volume Cube Isosurfaces"), parent=parent)
 
         self._settings = parent
 
@@ -206,18 +219,18 @@ class VolumeCube(GroupBox):
         # Value layout
         value_layout = QGridLayout()
 
-        self._color_button_1 = ColorButtonNewIsosurface(parent=parent, color=QColor(255, 0, 0, a=50))
-        self._color_button_2 = ColorButtonNewIsosurface(parent=parent, color=QColor(0, 0, 255, a=50))
+        self._color_button_1 = ColorButtonNewIsosurface(color=QColor(255, 0, 0, a=50))
+        self._color_button_2 = ColorButtonNewIsosurface(color=QColor(0, 0, 255, a=50))
         self._color_button_2.setEnabled(False)
 
-        add_button = PushButton(PushButton.tr("Add"), parent)
+        add_button = PushButton(PushButton.tr("Add"))
         add_button.clicked.connect(self.add_button_clicked_handler)
 
-        self._both_sides_checkbox = CheckBox(CheckBox.tr("Both-signed"), parent)
+        self._both_sides_checkbox = CheckBox(CheckBox.tr("Inverse"))
         self._both_sides_checkbox.setChecked(False)
         self._both_sides_checkbox.toggled.connect(self._both_sides_checkbox_toggled_handler)
 
-        self._isosurfaces_tree_view = IsosurfacesTreeView(parent)
+        self._isosurfaces_tree_view = IsosurfacesTreeView(self._settings)
 
         value_layout.addWidget(self._value, 0, 0)
         value_layout.addWidget(self._color_button_1, 0, 1)
@@ -242,12 +255,13 @@ class VolumeCube(GroupBox):
     def add_button_clicked_handler(self):
         value = self._value.value()
 
-        items = [(value, qcolor_to_color4f(self._color_button_1.color), 1.0)]
-        if self._both_sides_checkbox.isChecked() and value != 0.0:
-            items.append((value, qcolor_to_color4f(self._color_button_2.color), -1.0))
-
         for viewer in self._settings.viewers:
-            viewer.visualizer.add_volume_cube_isosurface_group(items=items)
+            viewer.visualizer.add_volume_cube_isosurface(
+                value,
+                qcolor_to_color4f(self._color_button_1.color),
+                qcolor_to_color4f(self._color_button_2.color),
+                self._both_sides_checkbox.isChecked(),
+            )
 
         self.update_values()
 

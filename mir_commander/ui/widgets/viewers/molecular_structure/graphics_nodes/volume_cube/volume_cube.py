@@ -40,12 +40,12 @@ class VolumeCube(Node):
             s.remove()
         self._volume_cube = volume_cube
 
-    def add_isosurface_group(self, items: list[tuple[float, Color4f, float]]) -> bool:
+    def add_isosurface(self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool) -> bool:
         if self.is_empty_scalar_field:
             return False
 
         group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
-        group.add_isosurfaces(self._volume_cube.cube_data, items)
+        group.add_isosurface(self._volume_cube.cube_data, value, color_1, color_2, inverse)
         return True
 
     def remove_isosurface_group(self, id: int):
@@ -67,11 +67,11 @@ class VolumeCube(Node):
             isosurfaces = []
             for s in group.children:
                 isosurfaces.append(
-                    VolumeCubeIsosurface(id=s.id, value=s.value, factor=s.factor, color=s.color, visible=s.visible)
+                    VolumeCubeIsosurface(id=s.id, value=s.value, inverted=s.inverted, color=s.color, visible=s.visible)
                 )
             result.append(
                 VolumeCubeIsosurfaceGroup(
-                    id=group.id, isosurfaces=isosurfaces, visible=any(s.visible for s in isosurfaces)
+                    id=group.id, value=group.value, isosurfaces=isosurfaces, visible=any(s.visible for s in isosurfaces)
                 )
             )
         return result

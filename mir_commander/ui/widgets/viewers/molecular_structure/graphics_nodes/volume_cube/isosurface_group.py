@@ -5,7 +5,6 @@ from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, Vert
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ...entities import VolumeCubeIsosurface
 from ...errors import SurfaceNotFoundError
 from .isosurface import Isosurface
 
@@ -18,26 +17,30 @@ class IsosurfaceGroup(Node):
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
+        self._value = 0.0
+
         self._resource_manager = resource_manager
 
-    def add_isosurfaces(
-        self, cube_data: np.ndarray, items: list[tuple[float, Color4f, float]]
-    ) -> list[VolumeCubeIsosurface]:
-        isosurfaces = []
-        for value, color, factor in items:
-            isosurfaces.append(self._add_isosurfaces(cube_data, value, color, factor))
-        return isosurfaces
+    @property
+    def value(self) -> float:
+        return self._value
 
-    def _add_isosurfaces(
-        self, cube_data: np.ndarray, value: float, color: Color4f, factor: float
-    ) -> VolumeCubeIsosurface:
-        s = Isosurface(parent=self, value=value, factor=factor, color=color, resource_manager=self._resource_manager)
-        vertices, normals = isosurface(cube_data, value, factor)
+    def add_isosurface(self, cube_data: np.ndarray, value: float, color_1: Color4f, color_2: Color4f, inverse: bool):
+        self._value = value
+
+        self._add_isosurfaces(cube_data, value, color_1, False)
+        if inverse:
+            self._add_isosurfaces(cube_data, value, color_2, True)
+
+    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f, inverted: bool):
+        s = Isosurface(
+            parent=self, value=value, inverted=inverted, color=color, resource_manager=self._resource_manager
+        )
+        vertices, normals = isosurface(cube_data, value, -1.0 if inverted else 1.0)
         model_name = f"isosurface_{s.id}"
         vao = VertexArrayObject(model_name, vertices, normals)
         self._resource_manager.add_vertex_array_object(vao)
         s.set_model(model_name)
-        return VolumeCubeIsosurface(id=s.id, value=value, factor=s.factor, color=color, visible=s.visible)
 
     def remove(self):
         for s in self.children:

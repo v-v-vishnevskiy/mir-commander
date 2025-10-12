@@ -477,9 +477,13 @@
         <translation>Применить для всех</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="216"/>
         <source>Both-signed</source>
-        <translation>Оба знака</translation>
+        <translation type="vanished">Оба знака</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="233"/>
+        <source>Inverse</source>
+        <translation>Инвертировать</translation>
     </message>
 </context>
 <context>
@@ -825,7 +829,7 @@
         <translation>Выбрать...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="213"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="230"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
@@ -885,6 +889,34 @@
         <source>General</source>
         <translation>Основные</translation>
     </message>
+    <message>
+        <source> (inverted)</source>
+        <translation type="vanished"> (инвертированный)</translation>
+    </message>
+    <message>
+        <source> (original)</source>
+        <translation type="vanished"> (оригинальный)</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="112"/>
+        <source>{} (inverted)</source>
+        <translation>{} (инвертированный)</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="114"/>
+        <source>{} (original)</source>
+        <translation>{} (оригинальный)</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="128"/>
+        <source>inverted</source>
+        <translation>инвертированный</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="130"/>
+        <source>original</source>
+        <translation>оригинальный</translation>
+    </message>
 </context>
 <context>
     <name>StatusBar</name>
@@ -897,7 +929,7 @@
 <context>
     <name>TR</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="253"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="257"/>
         <source>Image saved</source>
         <translation>Изображение сохранено</translation>
     </message>
@@ -913,94 +945,94 @@
 <context>
     <name>Visualizer</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="223"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="265"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="227"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="269"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="225"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="229"/>
         <source>The file already exists:</source>
         <translation>Файл уже существует:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="226"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="230"/>
         <source>Do you want to overwrite it?</source>
         <translation>Вы хотите его перезаписать?</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="239"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="243"/>
         <source>Error image rendering</source>
         <translation>Ошибка создания изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="240"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="244"/>
         <source>Cannot create image.</source>
         <translation>Невозможно создать изображение.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="266"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="270"/>
         <source>Could not save image:</source>
         <translation>Изображение не было сохранено:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="258"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="262"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>Путь к файлу не существует или защищен от записи.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="260"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="264"/>
         <source>The output format could not be determined.</source>
         <translation>Не удалось определить выходной формат.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="263"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="267"/>
         <source>Error saving image</source>
         <translation>Ошибка сохранения изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="333"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="341"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="337"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="345"/>
         <source>Cloak atoms by type</source>
         <translation>Скрыть атомы по типу</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="333"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="337"/>
         <source>Enter element symbol:</source>
         <translation>Введите символ элемента:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="342"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="346"/>
         <source>Invalid element symbol!</source>
         <translation>Некорректный символ элемента!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="351"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="355"/>
         <source>Auto geometrical parameter</source>
         <translation>Автоматический геометрический параметр</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="358"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="362"/>
         <source>Interatomic distance</source>
         <translation>Межатомное расстояние</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="364"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="368"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="370"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="374"/>
         <source>Torsion angle</source>
         <translation>Торсионный угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="376"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="380"/>
         <source>Out-of-plane angle</source>
         <translation>Угол выхода из плоскости</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="382"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="386"/>
         <source>All parameters</source>
         <translation>Все параметры</translation>
     </message>
@@ -1008,7 +1040,7 @@
 <context>
     <name>VolumeCube</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="196"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="213"/>
         <source>Volume Cube Isosurfaces</source>
         <translation>Изоповерхности объемного куба</translation>
     </message>
