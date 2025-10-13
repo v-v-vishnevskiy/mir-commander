@@ -79,6 +79,13 @@ class OpenGLWidget(QOpenGLWidget):
         )
         self.resource_manager.add_shader(
             ShaderProgram(
+                "text",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD),
+                FragmentShader(shaders.fragment.TEXTURE),
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
                 "transparent_flat",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
@@ -92,9 +99,7 @@ class OpenGLWidget(QOpenGLWidget):
             )
         )
         self.resource_manager.add_shader(
-            ShaderProgram(
-                "picking", VertexShader(shaders.vertex.COMPUTE_POSITION), FragmentShader(shaders.fragment.FLAT_COLOR)
-            )
+            ShaderProgram("picking", VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
         )
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):

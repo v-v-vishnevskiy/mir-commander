@@ -12,20 +12,18 @@ class TextNode(Node):
     __slots__ = ("_text", "_font_atlas_name", "_align")
 
     def __init__(
-        self,
-        parent: Node,
-        visible: bool = True,
-        picking_visible: bool = False,
-        font_atlas_name: str = "default",
-        align: Literal["left", "center", "right"] = "center",
+        self, font_atlas_name: str = "default", align: Literal["left", "center", "right"] = "center", *args, **kwargs
     ):
-        super().__init__(parent=parent, node_type=NodeType.TEXT, visible=visible, picking_visible=picking_visible)
+        kwargs["node_type"] = NodeType.TEXT
+        super().__init__(*args, **kwargs)
+
         self.set_color((0.0, 0.0, 0.0, 1.0))
         self._modify_children = True
 
         self._text = ""
         self._font_atlas_name = font_atlas_name
         self._align = align
+        self.set_shader("text")
 
     @property
     def text(self) -> str:
@@ -44,7 +42,7 @@ class TextNode(Node):
             char_node = Node(
                 parent=self,
                 node_type=NodeType.CHAR,
-                visible=self.visible,
+                visible=True,
                 picking_visible=self.picking_visible,
             )
             char_node.set_shader(self.shader_name)
@@ -101,4 +99,7 @@ class TextNode(Node):
             n.translate(vector)
 
     def __repr__(self):
-        return f"TextNode(text={self._text}, font_atlas_name={self._font_atlas_name}, align={self._align})"
+        return (
+            f"TextNode(text={self._text}, font_atlas_name={self._font_atlas_name}, align={self._align}, "
+            f"visible={self.visible})"
+        )

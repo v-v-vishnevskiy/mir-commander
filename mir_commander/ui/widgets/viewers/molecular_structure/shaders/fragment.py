@@ -16,7 +16,7 @@ void main() {
         discard;
     }
 
-    accum = vec4(fragment_color.rgb, color.a);
+    accum = vec4(color.rgb * fragment_color.rgb, color.a);
     alpha = 1.0 - color.a;
 
     gl_FragDepth = fragment_depth;

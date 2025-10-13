@@ -56,10 +56,7 @@ class Visualizer(OpenGLWidget):
         self._node_under_cursor: BaseGraphicsNode | None = None
 
         self._main_node = self.resource_manager.current_scene.main_node
-        self._coordinate_axes = CoordinateAxes(
-            color=(0.5, 0.8, 0.8, 1.0), radius=0.03, length=2.0, parent=self._main_node
-        )
-        self._coordinate_axes.set_visible(False)
+        self._coordinate_axes = CoordinateAxes(parent=self._main_node)
         self._molecules = Molecules(parent=self._main_node)
         self._volume_cube = VolumeCube(parent=self._main_node, resource_manager=self.resource_manager)
 
@@ -109,15 +106,38 @@ class Visualizer(OpenGLWidget):
         self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * max_radius / fov_factor))
 
     @property
-    def is_visible_coordinate_axes(self) -> bool:
-        return self._coordinate_axes.visible
-
-    @property
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
-    def set_visible_coordinate_axes(self, visible: bool):
-        self._coordinate_axes.set_visible(visible)
+    def set_coordinate_axes_radius(self, value: float):
+        self._coordinate_axes.set_radius(value)
+        self.update()
+
+    def set_coordinate_axes_length(self, value: float):
+        self._coordinate_axes.set_length(value)
+        self.update()
+
+    def set_coordinate_axes_labels_size(self, value: int):
+        self._coordinate_axes.set_labels_size(value)
+        self.update()
+
+    def set_coordinate_axes_visible(self, value: bool):
+        self._coordinate_axes.set_visible(value)
+        self.update()
+
+    def set_coordinate_axes_labels_visible(self, value: bool):
+        self._coordinate_axes.set_labels_visible(value)
+        self.update()
+
+    def set_coordinate_axes_full_length(self, value: bool):
+        self._coordinate_axes.set_full_length(value)
+        self.update()
+
+    def set_coordinate_axes_center(self, value: bool):
+        if value:
+            self._coordinate_axes.set_translation(self._molecules.center)
+        else:
+            self._coordinate_axes.set_translation(QVector3D(0.0, 0.0, 0.0))
         self.update()
 
     def set_atomic_coordinates(self, atomic_coordinates: list[AtomicCoordinates]):

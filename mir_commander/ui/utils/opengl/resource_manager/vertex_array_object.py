@@ -30,9 +30,11 @@ class VertexArrayObject(Resource):
         self._vao = glGenVertexArrays(1)
         self._vbo_vertices = glGenBuffers(1)
         self._vbo_normals = glGenBuffers(1)
-        self._vbo_tex_coords = None
+        self._vbo_tex_coords = glGenBuffers(1)
         self._triangles_count = int(len(vertices) / 3)
-        self._setup_buffers(vertices, normals, tex_coords)
+        self._setup_buffers(
+            vertices, normals, tex_coords if tex_coords is not None else np.array([0] * len(vertices), dtype=np.float32)
+        )
 
     @property
     def triangles_count(self) -> int:
@@ -44,7 +46,7 @@ class VertexArrayObject(Resource):
     def unbind(self):
         glBindVertexArray(0)
 
-    def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray):
+    def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: np.ndarray):
         logger.debug("Setup buffers: %s", self.name)
 
         self.bind()
@@ -62,12 +64,10 @@ class VertexArrayObject(Resource):
         glEnableVertexAttribArray(1)  # normal
 
         # Setup tex_coords data
-        if tex_coords is not None:
-            self._vbo_tex_coords = glGenBuffers(1)
-            glBindBuffer(GL_ARRAY_BUFFER, self._vbo_tex_coords)
-            glBufferData(GL_ARRAY_BUFFER, tex_coords.nbytes, tex_coords, GL_STATIC_DRAW)
-            glVertexAttribPointer(2, 2, GL_FLOAT, False, 0, None)
-            glEnableVertexAttribArray(2)  # tex_coords
+        glBindBuffer(GL_ARRAY_BUFFER, self._vbo_tex_coords)
+        glBufferData(GL_ARRAY_BUFFER, tex_coords.nbytes, tex_coords, GL_STATIC_DRAW)
+        glVertexAttribPointer(2, 2, GL_FLOAT, False, 0, None)
+        glEnableVertexAttribArray(2)  # tex_coords
 
         glBindVertexArray(0)
 
@@ -77,8 +77,7 @@ class VertexArrayObject(Resource):
         glDeleteVertexArrays(1, [self._vao])
         glDeleteBuffers(1, [self._vbo_vertices])
         glDeleteBuffers(1, [self._vbo_normals])
-        if self._vbo_tex_coords is not None:
-            glDeleteBuffers(1, [self._vbo_tex_coords])
+        glDeleteBuffers(1, [self._vbo_tex_coords])
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals}, vbo_tex_coords={self._vbo_tex_coords})"
