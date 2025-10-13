@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
+from PySide6.QtWidgets import QGridLayout, QVBoxLayout
 
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, TrString
+from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label
+
+from .utils import add_slider
 
 if TYPE_CHECKING:
     from .settings import Settings
@@ -15,7 +16,6 @@ class CoordinateAxes(GroupBox):
 
         self._settings = parent
 
-        # Value layout
         checkboxes_layout = QGridLayout()
 
         self._visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
@@ -34,9 +34,14 @@ class CoordinateAxes(GroupBox):
         self._center_checkbox.setChecked(False)
         self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
+        checkboxes_layout.addWidget(self._visibility_checkbox, 0, 0)
+        checkboxes_layout.addWidget(self._labels_visibility_checkbox, 0, 1)
+        checkboxes_layout.addWidget(self._full_length_checkbox, 1, 0)
+        checkboxes_layout.addWidget(self._center_checkbox, 1, 1)
+
         sliders_layout = QGridLayout()
 
-        self.length_slider, self.length_double_spinbox = self._add_slider(
+        self.length_slider, self.length_double_spinbox = add_slider(
             layout=sliders_layout,
             row=0,
             text=Label.tr("Length:"),
@@ -50,9 +55,9 @@ class CoordinateAxes(GroupBox):
         self.length_slider.valueChanged.connect(self.length_slider_value_changed_handler)
         self.length_double_spinbox.valueChanged.connect(self.length_double_spinbox_value_changed_handler)
 
-        self.thickness_slider, self.thickness_double_spinbox = self._add_slider(
+        self.thickness_slider, self.thickness_double_spinbox = add_slider(
             layout=sliders_layout,
-            row=2,
+            row=1,
             text=Label.tr("Thickness:"),
             min_value=0.01,
             max_value=1.0,
@@ -64,71 +69,22 @@ class CoordinateAxes(GroupBox):
         self.thickness_slider.valueChanged.connect(self.thickness_slider_value_changed_handler)
         self.thickness_double_spinbox.valueChanged.connect(self.thickness_double_spinbox_value_changed_handler)
 
-        self.label_size_slider, self.label_size_double_spinbox = self._add_slider(
+        self.label_size_slider, self.label_size_double_spinbox = add_slider(
             layout=sliders_layout,
-            row=4,
+            row=2,
             text=Label.tr("Label Size:"),
             min_value=1,
             max_value=500,
             single_step=1,
             default_value=8,
-            factor=1,
-            decimals=0,
         )
         self.label_size_slider.valueChanged.connect(self.label_size_slider_value_changed_handler)
         self.label_size_double_spinbox.valueChanged.connect(self.label_size_double_spinbox_value_changed_handler)
 
-        checkboxes_layout.addWidget(self._visibility_checkbox, 0, 0)
-        checkboxes_layout.addWidget(self._labels_visibility_checkbox, 0, 1)
-        checkboxes_layout.addWidget(self._full_length_checkbox, 1, 0)
-        checkboxes_layout.addWidget(self._center_checkbox, 1, 1)
-
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout(self)
         self.main_layout.addLayout(checkboxes_layout)
         self.main_layout.addLayout(sliders_layout)
         self.setLayout(self.main_layout)
-
-    def _add_slider(
-        self,
-        layout: QGridLayout,
-        row: int,
-        text: TrString,
-        min_value: float,
-        max_value: float,
-        single_step: float,
-        default_value: float,
-        factor: int,
-        decimals: int = 0,
-    ) -> tuple[QSlider, QDoubleSpinBox]:
-        length_slider = QSlider(Qt.Orientation.Horizontal)
-        length_slider.setRange(int(min_value * factor), int(max_value * factor))
-        length_slider.setSingleStep(1)
-        length_slider.setSliderPosition(int(default_value * factor))
-        length_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        length_slider.setTickInterval(int(max_value * factor / 10))
-
-        length_double_spinbox = QDoubleSpinBox()
-        length_double_spinbox.setRange(min_value, max_value)
-        length_double_spinbox.setSingleStep(single_step)
-        length_double_spinbox.setDecimals(decimals)
-        length_double_spinbox.setValue(default_value)
-
-        label = Label(text, self)
-        label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        layout.addWidget(label, row, 0)
-        layout.addWidget(length_slider, row, 1, 1, 3)
-        layout.addWidget(length_double_spinbox, row, 4)
-        label = Label(str(min_value), self)
-        label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(label, row + 1, 1)
-        label = Label(str(max_value / 2), self)
-        label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(label, row + 1, 2)
-        label = Label(str(max_value), self)
-        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(label, row + 1, 3)
-
-        return length_slider, length_double_spinbox
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:

@@ -46,7 +46,7 @@ class Axis(Node):
         self._cone.set_shader("default")
         self._cone.set_color(color)
 
-        self._axis_label = AxisLabel(color, text, 8, parent=self)
+        self._axis_label = AxisLabel(color, text, 16, parent=self)
 
         self._sphere = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
         self._sphere.set_shader("default")
