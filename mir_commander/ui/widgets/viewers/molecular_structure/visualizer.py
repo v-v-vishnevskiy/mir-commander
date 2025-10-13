@@ -32,7 +32,7 @@ from .config import AtomLabelType
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError
-from .graphics_nodes import BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
+from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
@@ -140,6 +140,18 @@ class Visualizer(OpenGLWidget):
             self._coordinate_axes.set_translation(QVector3D(0.0, 0.0, 0.0))
         self.update()
 
+    def set_coordinate_axis_label_color(self, axis: str, color: Color4f):
+        self._get_axis_by_name(axis).set_label_color(color)
+        self.update()
+
+    def set_coordinate_axis_color(self, axis: str, color: Color4f):
+        self._get_axis_by_name(axis).set_color(color)
+        self.update()
+
+    def set_coordinate_axis_text(self, axis: str, text: str):
+        self._get_axis_by_name(axis).set_text(text)
+        self.update()
+
     def set_atomic_coordinates(self, atomic_coordinates: list[AtomicCoordinates]):
         self._molecules.clear()
         for item in atomic_coordinates:
@@ -151,6 +163,15 @@ class Visualizer(OpenGLWidget):
         self._add_atomic_coordinates(atomic_coordinates)
         self._main_node.set_translation(-self._molecules.center)
         self.update()
+
+    def _get_axis_by_name(self, name: str) -> Axis:
+        if name == "x":
+            return self._coordinate_axes.x
+        elif name == "y":
+            return self._coordinate_axes.y
+        elif name == "z":
+            return self._coordinate_axes.z
+        raise ValueError(f"Invalid axis name: {name}")
 
     def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         Molecule(

@@ -1,10 +1,13 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QGridLayout, QVBoxLayout
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout
 
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label
+from mir_commander.ui.utils.opengl.utils import qcolor_to_color4f
+from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, PushButton, TrString
 
-from .utils import add_slider
+from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
     from .settings import Settings
@@ -19,6 +22,8 @@ class CoordinateAxes(GroupBox):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.addLayout(self._add_checkboxes())
         self.main_layout.addLayout(self._add_sliders())
+        self.main_layout.addLayout(self._add_axes())
+        self.main_layout.addWidget(PushButton(PushButton.tr("Reset")))
         self.setLayout(self.main_layout)
 
     def _add_checkboxes(self) -> QGridLayout:
@@ -92,6 +97,33 @@ class CoordinateAxes(GroupBox):
 
         return layout
 
+    def _add_axes(self) -> QGridLayout:
+        layout = QGridLayout()
+
+        self._add_axis(layout, 0, Label.tr("Axis X:"), "x", "x", QColor(255, 0, 0))
+        self._add_axis(layout, 1, Label.tr("Axis Y:"), "y", "y", QColor(0, 255, 0))
+        self._add_axis(layout, 2, Label.tr("Axis Z:"), "z", "z", QColor(0, 0, 255))
+
+        return layout
+
+    def _add_axis(self, layout: QGridLayout, row: int, label_text: TrString, axis: str, text: str, color: QColor):
+        label = Label(label_text)
+        label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        axis_color_button = ColorButton(color)
+        axis_color_button.color_changed.connect(lambda color: self._axis_color_changed_handler(axis, color))
+
+        label_color_button = ColorButton(color)
+        label_color_button.color_changed.connect(lambda color: self._axis_label_color_changed_handler(axis, color))
+
+        line_edit = QLineEdit(text=text)
+        line_edit.textChanged.connect(lambda text: self._axis_text_changed_handler(axis, text))
+
+        layout.addWidget(label, row, 0)
+        layout.addWidget(axis_color_button, row, 1)
+        layout.addWidget(label_color_button, row, 2)
+        layout.addWidget(line_edit, row, 3)
+
     def _visibility_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axes_visible(value)
@@ -131,3 +163,15 @@ class CoordinateAxes(GroupBox):
 
     def label_size_double_spinbox_value_changed_handler(self, value: int):
         self.label_size_slider.setValue(value)
+
+    def _axis_label_color_changed_handler(self, axis: str, color: QColor):
+        for viewer in self._settings.viewers:
+            viewer.visualizer.set_coordinate_axis_label_color(axis, qcolor_to_color4f(color))
+
+    def _axis_color_changed_handler(self, axis: str, color: QColor):
+        for viewer in self._settings.viewers:
+            viewer.visualizer.set_coordinate_axis_color(axis, qcolor_to_color4f(color))
+
+    def _axis_text_changed_handler(self, axis: str, text: str):
+        for viewer in self._settings.viewers:
+            viewer.visualizer.set_coordinate_axis_text(axis, text)
