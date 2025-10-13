@@ -12,7 +12,7 @@ from .label import Label
 from .sphere import Sphere
 
 if TYPE_CHECKING:
-    from ..bond.bond import Bond
+    from ..bond import Bond
 
 
 class Atom(Node):

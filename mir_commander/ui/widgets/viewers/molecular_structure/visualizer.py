@@ -109,8 +109,8 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
-    def set_coordinate_axes_radius(self, value: float):
-        self._coordinate_axes.set_radius(value)
+    def set_coordinate_axes_thickness(self, value: float):
+        self._coordinate_axes.set_thickness(value)
         self.update()
 
     def set_coordinate_axes_length(self, value: float):

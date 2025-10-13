@@ -34,7 +34,11 @@ class CoordinateAxes(GroupBox):
         self._center_checkbox.setChecked(False)
         self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
-        length_layout, self.length_slider, self.length_double_spinbox = self._add_slider(
+        sliders_layout = QGridLayout()
+
+        self.length_slider, self.length_double_spinbox = self._add_slider(
+            layout=sliders_layout,
+            row=0,
             text=Label.tr("Length:"),
             min_value=0.5,
             max_value=100.0,
@@ -46,8 +50,10 @@ class CoordinateAxes(GroupBox):
         self.length_slider.valueChanged.connect(self.length_slider_value_changed_handler)
         self.length_double_spinbox.valueChanged.connect(self.length_double_spinbox_value_changed_handler)
 
-        radius_layout, self.radius_slider, self.radius_double_spinbox = self._add_slider(
-            text=Label.tr("Radius:"),
+        self.thickness_slider, self.thickness_double_spinbox = self._add_slider(
+            layout=sliders_layout,
+            row=2,
+            text=Label.tr("Thickness:"),
             min_value=0.01,
             max_value=1.0,
             single_step=0.01,
@@ -55,10 +61,12 @@ class CoordinateAxes(GroupBox):
             factor=100,
             decimals=2,
         )
-        self.radius_slider.valueChanged.connect(self.radius_slider_value_changed_handler)
-        self.radius_double_spinbox.valueChanged.connect(self.radius_double_spinbox_value_changed_handler)
+        self.thickness_slider.valueChanged.connect(self.thickness_slider_value_changed_handler)
+        self.thickness_double_spinbox.valueChanged.connect(self.thickness_double_spinbox_value_changed_handler)
 
-        label_size_layout, self.label_size_slider, self.label_size_double_spinbox = self._add_slider(
+        self.label_size_slider, self.label_size_double_spinbox = self._add_slider(
+            layout=sliders_layout,
+            row=4,
             text=Label.tr("Label Size:"),
             min_value=1,
             max_value=500,
@@ -77,13 +85,13 @@ class CoordinateAxes(GroupBox):
 
         self.main_layout = QVBoxLayout()
         self.main_layout.addLayout(checkboxes_layout)
-        self.main_layout.addLayout(length_layout)
-        self.main_layout.addLayout(radius_layout)
-        self.main_layout.addLayout(label_size_layout)
+        self.main_layout.addLayout(sliders_layout)
         self.setLayout(self.main_layout)
 
     def _add_slider(
         self,
+        layout: QGridLayout,
+        row: int,
         text: TrString,
         min_value: float,
         max_value: float,
@@ -91,7 +99,7 @@ class CoordinateAxes(GroupBox):
         default_value: float,
         factor: int,
         decimals: int = 0,
-    ) -> tuple[QGridLayout, QSlider, QDoubleSpinBox]:
+    ) -> tuple[QSlider, QDoubleSpinBox]:
         length_slider = QSlider(Qt.Orientation.Horizontal)
         length_slider.setRange(int(min_value * factor), int(max_value * factor))
         length_slider.setSingleStep(1)
@@ -105,23 +113,22 @@ class CoordinateAxes(GroupBox):
         length_double_spinbox.setDecimals(decimals)
         length_double_spinbox.setValue(default_value)
 
-        length_layout = QGridLayout()
         label = Label(text, self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        length_layout.addWidget(label, 0, 0, 1, 3)
-        length_layout.addWidget(length_slider, 1, 0, 1, 3)
-        length_layout.addWidget(length_double_spinbox, 1, 4)
+        label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(label, row, 0)
+        layout.addWidget(length_slider, row, 1, 1, 3)
+        layout.addWidget(length_double_spinbox, row, 4)
         label = Label(str(min_value), self)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        length_layout.addWidget(label, 2, 0)
+        layout.addWidget(label, row + 1, 1)
         label = Label(str(max_value / 2), self)
         label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        length_layout.addWidget(label, 2, 1)
+        layout.addWidget(label, row + 1, 2)
         label = Label(str(max_value), self)
         label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
-        length_layout.addWidget(label, 2, 2)
+        layout.addWidget(label, row + 1, 3)
 
-        return length_layout, length_slider, length_double_spinbox
+        return length_slider, length_double_spinbox
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
@@ -147,13 +154,13 @@ class CoordinateAxes(GroupBox):
     def length_double_spinbox_value_changed_handler(self, value: float):
         self.length_slider.setValue(int(value * 100))
 
-    def radius_slider_value_changed_handler(self, i: int):
-        self.radius_double_spinbox.setValue(i / 100)
+    def thickness_slider_value_changed_handler(self, i: int):
+        self.thickness_double_spinbox.setValue(i / 100)
         for viewer in self._settings.viewers:
-            viewer.visualizer.set_coordinate_axes_radius(i / 100)
+            viewer.visualizer.set_coordinate_axes_thickness(i / 100)
 
-    def radius_double_spinbox_value_changed_handler(self, value: float):
-        self.radius_slider.setValue(int(value * 100))
+    def thickness_double_spinbox_value_changed_handler(self, value: float):
+        self.thickness_slider.setValue(int(value * 100))
 
     def label_size_slider_value_changed_handler(self, i: int):
         self.label_size_double_spinbox.setValue(i)

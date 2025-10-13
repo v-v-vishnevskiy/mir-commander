@@ -33,7 +33,7 @@ class Axis(Node):
 
         self._direction = direction
         self._length = 0.5
-        self._radius = 0.03
+        self._thickness = 0.03
         self._cone_radius_factor = 2.0
         self._cone_length_factor = 6.0
         self._full_length = False
@@ -48,15 +48,15 @@ class Axis(Node):
 
         self._axis_label = AxisLabel(color, text, 8, parent=self)
 
-        self._sphere = Sphere(self._radius, parent=self, node_type=NodeType.OPAQUE, visible=False)
+        self._sphere = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
         self._sphere.set_shader("default")
         self._sphere.set_color(color)
 
         self._update()
 
     @property
-    def radius(self) -> float:
-        return self._radius
+    def thickness(self) -> float:
+        return self._thickness
 
     @property
     def length(self) -> float:
@@ -67,8 +67,8 @@ class Axis(Node):
         self._cone.set_color(color)
         self._sphere.set_color(color)
 
-    def set_radius(self, radius: float):
-        self._radius = radius
+    def set_thickness(self, value: float):
+        self._thickness = value
         self._update()
 
     def set_length(self, length: float):
@@ -76,7 +76,7 @@ class Axis(Node):
         self._update()
 
     def _update(self):
-        self._cylinder.set_radius(self._radius)
+        self._cylinder.set_radius(self._thickness)
         if self._full_length:
             self._cylinder.set_length(self._length * 2)
             self._cylinder.set_translation(-self._direction * self._length)
@@ -86,14 +86,13 @@ class Axis(Node):
             self._cylinder.set_translation(QVector3D(0.0, 0.0, 0.0))
             self._sphere.set_visible(False)
 
-        self._cone.set_size(self._radius * self._cone_radius_factor, self._radius * self._cone_length_factor)
+        self._cone.set_size(self._thickness * self._cone_radius_factor, self._thickness * self._cone_length_factor)
         self._cone.set_translation(self._direction * self._length)
 
-        self._sphere.set_radius(self._radius)
+        self._sphere.set_radius(self._thickness)
         self._sphere.set_translation(-self._direction * self._length)
         self._axis_label.set_translation(
-            self._direction * self._length + self._direction * (self._radius * self._cone_length_factor * 2)
-            # + self._direction * self._label_offset
+            self._direction * self._length + self._direction * (self._thickness * self._cone_length_factor * 2)
         )
 
     def set_text(self, text: str):
@@ -119,10 +118,10 @@ class CoordinateAxes(Node):
         kwargs["visible"] = False
         super().__init__(*args, **kwargs)
 
-        self._x = Axis(QVector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "X", parent=self)
-        self._y = Axis(QVector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "Y", parent=self)
-        self._z = Axis(QVector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "Z", parent=self)
-        self._sphere = Sphere(self._x.radius, parent=self, node_type=NodeType.OPAQUE)
+        self._x = Axis(QVector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
+        self._y = Axis(QVector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
+        self._z = Axis(QVector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
+        self._sphere = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
         self._sphere.set_shader("default")
         self._sphere.set_color((0.0, 0.0, 0.0, 1.0))
 
@@ -138,16 +137,16 @@ class CoordinateAxes(Node):
     def z(self) -> Axis:
         return self._z
 
-    def set_radius(self, radius: float):
-        self._x.set_radius(radius)
-        self._y.set_radius(radius)
-        self._z.set_radius(radius)
-        self._sphere.set_radius(radius)
+    def set_thickness(self, value: float):
+        self._x.set_thickness(value)
+        self._y.set_thickness(value)
+        self._z.set_thickness(value)
+        self._sphere.set_radius(value)
 
-    def set_length(self, length: float):
-        self._x.set_length(length)
-        self._y.set_length(length)
-        self._z.set_length(length)
+    def set_length(self, value: float):
+        self._x.set_length(value)
+        self._y.set_length(value)
+        self._z.set_length(value)
 
     def set_labels_visible(self, value: bool):
         self._x.set_label_visible(value)
