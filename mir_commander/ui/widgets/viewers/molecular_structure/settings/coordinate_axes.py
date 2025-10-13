@@ -16,33 +16,42 @@ class CoordinateAxes(GroupBox):
 
         self._settings = parent
 
-        checkboxes_layout = QGridLayout()
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addLayout(self._add_checkboxes())
+        self.main_layout.addLayout(self._add_sliders())
+        self.setLayout(self.main_layout)
 
-        self._visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
-        self._visibility_checkbox.setChecked(False)
-        self._visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
+    def _add_checkboxes(self) -> QGridLayout:
+        layout = QGridLayout()
 
-        self._labels_visibility_checkbox = CheckBox(CheckBox.tr("Labels"))
-        self._labels_visibility_checkbox.setChecked(True)
-        self._labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
+        visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
+        visibility_checkbox.setChecked(False)
+        visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
 
-        self._full_length_checkbox = CheckBox(CheckBox.tr("Full Length"))
-        self._full_length_checkbox.setChecked(False)
-        self._full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
+        labels_visibility_checkbox = CheckBox(CheckBox.tr("Labels"))
+        labels_visibility_checkbox.setChecked(True)
+        labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
 
-        self._center_checkbox = CheckBox(CheckBox.tr("Center"))
-        self._center_checkbox.setChecked(False)
-        self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
+        full_length_checkbox = CheckBox(CheckBox.tr("Full Length"))
+        full_length_checkbox.setChecked(False)
+        full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
 
-        checkboxes_layout.addWidget(self._visibility_checkbox, 0, 0)
-        checkboxes_layout.addWidget(self._labels_visibility_checkbox, 0, 1)
-        checkboxes_layout.addWidget(self._full_length_checkbox, 1, 0)
-        checkboxes_layout.addWidget(self._center_checkbox, 1, 1)
+        center_checkbox = CheckBox(CheckBox.tr("Center"))
+        center_checkbox.setChecked(False)
+        center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
-        sliders_layout = QGridLayout()
+        layout.addWidget(visibility_checkbox, 0, 0)
+        layout.addWidget(labels_visibility_checkbox, 0, 1)
+        layout.addWidget(full_length_checkbox, 1, 0)
+        layout.addWidget(center_checkbox, 1, 1)
+
+        return layout
+
+    def _add_sliders(self) -> QGridLayout:
+        layout = QGridLayout()
 
         self.length_slider, self.length_double_spinbox = add_slider(
-            layout=sliders_layout,
+            layout=layout,
             row=0,
             text=Label.tr("Length:"),
             min_value=0.5,
@@ -56,7 +65,7 @@ class CoordinateAxes(GroupBox):
         self.length_double_spinbox.valueChanged.connect(self.length_double_spinbox_value_changed_handler)
 
         self.thickness_slider, self.thickness_double_spinbox = add_slider(
-            layout=sliders_layout,
+            layout=layout,
             row=1,
             text=Label.tr("Thickness:"),
             min_value=0.01,
@@ -70,7 +79,7 @@ class CoordinateAxes(GroupBox):
         self.thickness_double_spinbox.valueChanged.connect(self.thickness_double_spinbox_value_changed_handler)
 
         self.label_size_slider, self.label_size_double_spinbox = add_slider(
-            layout=sliders_layout,
+            layout=layout,
             row=2,
             text=Label.tr("Label Size:"),
             min_value=1,
@@ -81,10 +90,7 @@ class CoordinateAxes(GroupBox):
         self.label_size_slider.valueChanged.connect(self.label_size_slider_value_changed_handler)
         self.label_size_double_spinbox.valueChanged.connect(self.label_size_double_spinbox_value_changed_handler)
 
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.addLayout(checkboxes_layout)
-        self.main_layout.addLayout(sliders_layout)
-        self.setLayout(self.main_layout)
+        return layout
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
