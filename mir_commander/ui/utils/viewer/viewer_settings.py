@@ -12,7 +12,7 @@ T = TypeVar("T", bound="Viewer")
 
 
 class ViewerSettings(Generic[T], QWidget):
-    def __init__(self, apply_for_all_checkbox: bool = True, *args, **kwargs):
+    def __init__(self, apply_for_all_checkbox: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._active_viewer: None | T = None
