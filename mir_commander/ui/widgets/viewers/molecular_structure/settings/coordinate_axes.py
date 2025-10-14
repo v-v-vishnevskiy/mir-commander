@@ -5,7 +5,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, TrString
+from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, PushButton, TrString
 
 from .utils import ColorButton, add_slider
 
@@ -41,7 +41,7 @@ class CoordinateAxes(GroupBox):
         self._full_length_checkbox.setChecked(False)
         self._full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
 
-        self._center_checkbox = CheckBox(CheckBox.tr("Center"))
+        self._center_checkbox = CheckBox(CheckBox.tr("In Molecule Center"))
         self._center_checkbox.setChecked(False)
         self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
@@ -62,7 +62,6 @@ class CoordinateAxes(GroupBox):
             min_value=0.5,
             max_value=100.0,
             single_step=0.1,
-            default_value=0.5,
             factor=100,
             decimals=1,
         )
@@ -73,10 +72,9 @@ class CoordinateAxes(GroupBox):
             layout=layout,
             row=1,
             text=Label.tr("Thickness:"),
-            min_value=0.01,
+            min_value=0.03,
             max_value=1.0,
             single_step=0.01,
-            default_value=0.03,
             factor=100,
             decimals=2,
         )
@@ -86,14 +84,18 @@ class CoordinateAxes(GroupBox):
         self.label_size_slider, self.label_size_double_spinbox = add_slider(
             layout=layout,
             row=2,
-            text=Label.tr("Label Size:"),
-            min_value=1,
+            text=Label.tr("Labels Size:"),
+            min_value=16,
             max_value=500,
             single_step=1,
-            default_value=8,
         )
         self.label_size_slider.valueChanged.connect(self.label_size_slider_value_changed_handler)
         self.label_size_double_spinbox.valueChanged.connect(self.label_size_double_spinbox_value_changed_handler)
+
+        adjust_size_button = PushButton(PushButton.tr("Adjust Size"))
+        adjust_size_button.clicked.connect(self._adjust_size_button_clicked_handler)
+
+        layout.addWidget(adjust_size_button, 3, 0, 1, 3)
 
         return layout
 
@@ -185,6 +187,10 @@ class CoordinateAxes(GroupBox):
     def _axis_text_changed_handler(self, axis: str, text: str):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axis_text(axis, text)
+
+    def _adjust_size_button_clicked_handler(self):
+        for viewer in self._settings.viewers:
+            viewer.visualizer.adjust_coordinate_axes()
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         coordinate_axes = viewer.visualizer.coordinate_axes

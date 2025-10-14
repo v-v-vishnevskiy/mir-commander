@@ -98,11 +98,11 @@ class Axis(Node):
         self._sphere.set_color(color)
 
     def set_thickness(self, value: float):
-        self._thickness = value
+        self._thickness = max(value, 0.03)
         self._update()
 
     def set_length(self, length: float):
-        self._length = length
+        self._length = max(length, 0.5)
         self._update()
 
     def _update(self):
@@ -135,7 +135,7 @@ class Axis(Node):
         self._axis_label.set_visible(value)
 
     def set_label_size(self, value: int):
-        self._axis_label.set_size(value)
+        self._axis_label.set_size(max(value, 16))
 
     def set_full_length(self, value: bool):
         self._full_length = value
@@ -191,28 +191,28 @@ class CoordinateAxes(Node):
     def at_000(self) -> bool:
         return self.position == QVector3D(0.0, 0.0, 0.0)
 
-    def set_thickness(self, value: float):
-        self._x.set_thickness(value)
-        self._y.set_thickness(value)
-        self._z.set_thickness(value)
-        self._sphere.set_radius(value)
+    def set_labels_visible(self, value: bool):
+        self._x.set_label_visible(value)
+        self._y.set_label_visible(value)
+        self._z.set_label_visible(value)
+
+    def set_full_length(self, value: bool):
+        self._x.set_full_length(value)
+        self._y.set_full_length(value)
+        self._z.set_full_length(value)
 
     def set_length(self, value: float):
         self._x.set_length(value)
         self._y.set_length(value)
         self._z.set_length(value)
 
-    def set_labels_visible(self, value: bool):
-        self._x.set_label_visible(value)
-        self._y.set_label_visible(value)
-        self._z.set_label_visible(value)
+    def set_thickness(self, value: float):
+        self._x.set_thickness(value)
+        self._y.set_thickness(value)
+        self._z.set_thickness(value)
+        self._sphere.set_radius(value)
 
     def set_labels_size(self, value: int):
         self._x.set_label_size(value)
         self._y.set_label_size(value)
         self._z.set_label_size(value)
-
-    def set_full_length(self, value: bool):
-        self._x.set_full_length(value)
-        self._y.set_full_length(value)
-        self._z.set_full_length(value)

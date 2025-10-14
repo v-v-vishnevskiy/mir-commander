@@ -26,7 +26,6 @@ class Labels(GroupBox):
             min_value=1,
             max_value=100,
             single_step=1,
-            default_value=1,
             factor=1,
             decimals=0,
         )
@@ -40,7 +39,6 @@ class Labels(GroupBox):
             min_value=1.01,
             max_value=5.0,
             single_step=0.1,
-            default_value=1.01,
             factor=100,
             decimals=2,
         )

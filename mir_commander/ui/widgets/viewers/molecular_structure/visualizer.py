@@ -109,6 +109,10 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
+    def adjust_coordinate_axes(self):
+        self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
+        self.update()
+
     def set_coordinate_axes_thickness(self, value: float):
         self._coordinate_axes.set_thickness(value)
         self.update()
