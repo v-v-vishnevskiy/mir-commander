@@ -51,17 +51,21 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                 try:
                     num_atoms = int(line_items[0])
                 except ValueError:
+                    logger.error("Invalid control line %s, expected number of atoms.", line_number + 1)
                     raise LoadFileError(f"Invalid control line {line_number + 1}, expected number of atoms.")
 
                 try:
                     num_bonds = int(line_items[1])
                 except ValueError:
+                    logger.error("Invalid control line %s, expected number of bonds.", line_number + 1)
                     raise LoadFileError(f"Invalid control line {line_number + 1}, expected number of bonds.")
 
                 if num_atoms <= 0:
+                    logger.error("Invalid number of atoms %s defined in line %s.", num_atoms, line_number + 1)
                     raise LoadFileError(f"Invalid number of atoms {num_atoms} defined in line {line_number + 1}.")
 
                 if num_bonds < 0:
+                    logger.error("Invalid number of bonds %s defined in line %s.", num_bonds, line_number + 1)
                     raise LoadFileError(f"Invalid number of bonds {num_atoms} defined in line {line_number + 1}.")
 
                 num_read_at_cards = 0
@@ -79,6 +83,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                     coord_z = float(line_items[2])
                 except ValueError:
                     # Something is wrong with format
+                    logger.error("Invalid atom coordinate value(s) at line %s.", line_number + 1)
                     raise LoadFileError(f"Invalid atom coordinate value(s) at line {line_number + 1}.")
 
                 try:
@@ -90,6 +95,7 @@ def load_mdlmol2000(path: Path, logs: list) -> Item:
                     else:
                         atomic_num = elements.symbol(line_items[3]).number
                 except ValueError:
+                    logger.error("Invalid atom symbol at line %s.", line_number + 1)
                     raise LoadFileError(f"Invalid atom symbol at line {line_number + 1}.")
 
                 num_read_at_cards += 1

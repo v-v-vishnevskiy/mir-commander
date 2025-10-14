@@ -59,8 +59,10 @@ def load_xyz(path: Path, logs: list) -> Item:
                 try:
                     num_atoms = int(line.strip())
                 except ValueError:
+                    logger.error("Invalid line %s, expected number of atoms.", line_number + 1)
                     raise LoadFileError(f"Invalid line {line_number + 1}, expected number of atoms.")
                 if num_atoms <= 0:
+                    logger.error("Invalid number of atoms %s at line %s.", num_atoms, line_number + 1)
                     raise LoadFileError(f"Invalid number of atoms {num_atoms} at line {line_number + 1}.")
                 state = ParserState.COMMENT
             elif state == ParserState.COMMENT:
@@ -87,6 +89,7 @@ def load_xyz(path: Path, logs: list) -> Item:
                         else:
                             atomic_num = elements.symbol(line_items[0]).number
                     except ValueError:
+                        logger.error("Invalid atom at line %s.", line_number + 1)
                         raise LoadFileError(f"Invalid atom at line {line_number + 1}.")
                 try:
                     coord_x = float(line_items[1])
@@ -94,6 +97,7 @@ def load_xyz(path: Path, logs: list) -> Item:
                     coord_z = float(line_items[3])
                 except ValueError:
                     # Something is wrong with format
+                    logger.error("Invalid coordinate value(s) at line %s.", line_number + 1)
                     raise LoadFileError(f"Invalid coordinate value(s) at line {line_number + 1}.")
 
                 num_read_cards += 1

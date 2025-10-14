@@ -5,8 +5,8 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.core import load_project
-from mir_commander.core.errors import LoadFileError, LoadProjectError
+from mir_commander.core import create_temporary_project, load_project
+from mir_commander.core.errors import LoadProjectError
 from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
 from mir_commander.utils.consts import DIR
 
@@ -125,36 +125,55 @@ class Application(QApplication):
             self.installTranslator(translator)
             self._translator_qt = translator
 
-    def open_project(self, path: Path) -> bool:
-        t = "file" if path.is_file() else "project"
-        logger.info("Loading %s: %s", t, path)
+    def _setup_project_window(self, project_window: ProjectWindow):
+        project_window.close_project_signal.connect(self.close_project)
+        project_window.quit_application_signal.connect(self.close_app)
+        self._open_projects[id(project_window)] = project_window
+        if not project_window.project.is_temporary:
+            self._recent_projects_dialog.add_opened(project_window.project)
+            self._recent_projects_dialog.add_recent(project_window.project)
+
+    def open_project(self, path: Path) -> int:
+        logger.info("Loading project: %s", path)
         try:
-            project, messages = load_project(path)
-        except (LoadFileError, LoadProjectError) as e:
+            project = load_project(path)
+        except LoadProjectError as e:
             logger.error(str(e))
             self._error.setText(e.__class__.__name__)
             self._error.setInformativeText(str(e))
             self._error.show()
-            return False
+            return self.exec()
 
-        logger.info("Loading %s completed", t)
+        logger.info("Loading project completed")
 
-        messages.insert(0, f"{path}")
+        project_window = ProjectWindow(
+            app_config=self.config,
+            app_apply_callbacks=self.apply_callbacks,
+            project=project,
+        )
+        self._setup_project_window(project_window)
+        project_window.show()
+        return self.exec()
+
+    def open_temporary_project(self, files: list[Path]) -> int:
+        logger.info("Creating temporary project from files ...")
+        project, messages = create_temporary_project(files)
+
         project_window = ProjectWindow(
             app_config=self.config,
             app_apply_callbacks=self.apply_callbacks,
             project=project,
             init_msg=messages,
         )
-        project_window.close_project_signal.connect(self.close_project)
-        project_window.quit_application_signal.connect(self.close_app)
-        self._open_projects[id(project_window)] = project_window
-        if not project_window.project.is_temporary:
-            self._recent_projects_dialog.add_opened(project)
-            self._recent_projects_dialog.add_recent(project)
-        self._recent_projects_dialog.hide()
+        self._setup_project_window(project_window)
+
         project_window.show()
-        return True
+
+        return self.exec()
+
+    def open_recent_projects_dialog(self) -> int:
+        self._recent_projects_dialog.show()
+        return self.exec()
 
     def close_project(self, project_window: ProjectWindow):
         del self._open_projects[id(project_window)]
@@ -168,17 +187,6 @@ class Application(QApplication):
 
         if not self._open_projects:
             self._recent_projects_dialog.show()
-
-    def run(self, project_path: Path) -> int:
-        if project_path != Path(""):
-            self.open_project(project_path)
-        else:
-            if self._recent_projects_dialog.opened:
-                for item in self._recent_projects_dialog.opened:
-                    self.open_project(item.path)
-            if not self._open_projects:
-                self._recent_projects_dialog.show()
-        return self.exec()
 
     def close_app(self):
         self._quitting = True
