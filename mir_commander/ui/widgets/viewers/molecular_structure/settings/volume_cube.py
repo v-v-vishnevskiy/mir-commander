@@ -15,8 +15,10 @@ from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_col
 from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton, StandardItem, TreeView
 
 from ..entities import VolumeCubeIsosurfaceGroup
+from ..errors import EmptyScalarFieldError
 
 if TYPE_CHECKING:
+    from ..viewer import MolecularStructureViewer
     from .settings import Settings
 
 
@@ -36,16 +38,13 @@ class ColorButton(QPushButton):
 
     def clicked_handler(self):
         color = QColorDialog.getColor(
-            initial=self._color,
-            parent=self,
-            options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-            | QColorDialog.ColorDialogOption.DontUseNativeDialog,
+            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
         if color.isValid():
             self._set_style_sheet(color)
             for viewer in self._settings.viewers:
                 viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
-            self._settings.volume_cube.update_values()
+            self._settings._volume_cube.refresh_values()
 
 
 class VisibilityButton(QPushButton):
@@ -66,7 +65,7 @@ class VisibilityButton(QPushButton):
 
         for viewer in self._settings.viewers:
             viewer.visualizer.set_node_visible(self._id, self._visible, **kwargs)
-        self._settings.volume_cube.update_values()
+        self._settings._volume_cube.refresh_values()
 
 
 class DeleteButton(QPushButton):
@@ -81,7 +80,7 @@ class DeleteButton(QPushButton):
     def clicked_handler(self):
         for viewer in self._settings.viewers:
             viewer.visualizer.remove_node(self._id)
-        self._settings.volume_cube.update_values()
+        self._settings._volume_cube.refresh_values()
 
 
 class IsosurfacesTreeView(TreeView):
@@ -195,10 +194,7 @@ class ColorButtonNewIsosurface(QFrame):
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         color = QColorDialog.getColor(
-            initial=self._color,
-            parent=self,
-            options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-            | QColorDialog.ColorDialogOption.DontUseNativeDialog,
+            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
         if color.isValid():
             self.set_color(color)
@@ -226,16 +222,16 @@ class VolumeCube(GroupBox):
         add_button = PushButton(PushButton.tr("Add"))
         add_button.clicked.connect(self.add_button_clicked_handler)
 
-        self._both_sides_checkbox = CheckBox(CheckBox.tr("Inverse"))
-        self._both_sides_checkbox.setChecked(False)
-        self._both_sides_checkbox.toggled.connect(self._both_sides_checkbox_toggled_handler)
+        self._inverse_checkbox = CheckBox(CheckBox.tr("Inverse"))
+        self._inverse_checkbox.setChecked(False)
+        self._inverse_checkbox.toggled.connect(self._inverse_checkbox_toggled_handler)
 
         self._isosurfaces_tree_view = IsosurfacesTreeView(self._settings)
 
         value_layout.addWidget(self._value, 0, 0)
         value_layout.addWidget(self._color_button_1, 0, 1)
         value_layout.addWidget(add_button, 0, 2)
-        value_layout.addWidget(self._both_sides_checkbox, 1, 0)
+        value_layout.addWidget(self._inverse_checkbox, 1, 0)
         value_layout.addWidget(self._color_button_2, 1, 1)
         value_layout.addWidget(self._isosurfaces_tree_view, 2, 0, 1, 3)
 
@@ -243,27 +239,29 @@ class VolumeCube(GroupBox):
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
 
-    def update_values(self):
-        groups = []
-        is_empty_scalar_field = True
-        for viewer in self._settings.viewers:
-            groups.extend(viewer.visualizer.get_volume_cube_isosurface_groups())
-            is_empty_scalar_field = is_empty_scalar_field and viewer.visualizer.is_empty_volume_cube_scalar_field()
-        self._isosurfaces_tree_view.load(groups)
-        self.setDisabled(is_empty_scalar_field)
+    def refresh_values(self):
+        if self._settings.active_viewer is not None:
+            self.update_values(self._settings.active_viewer)
+
+    def update_values(self, viewer: "MolecularStructureViewer"):
+        self._isosurfaces_tree_view.load(viewer.visualizer.get_volume_cube_isosurface_groups())
+        self.setDisabled(viewer.visualizer.is_empty_volume_cube_scalar_field())
 
     def add_button_clicked_handler(self):
         value = self._value.value()
 
         for viewer in self._settings.viewers:
-            viewer.visualizer.add_volume_cube_isosurface(
-                value,
-                qcolor_to_color4f(self._color_button_1.color),
-                qcolor_to_color4f(self._color_button_2.color),
-                self._both_sides_checkbox.isChecked(),
-            )
+            try:
+                viewer.visualizer.add_volume_cube_isosurface(
+                    value,
+                    qcolor_to_color4f(self._color_button_1.color),
+                    qcolor_to_color4f(self._color_button_2.color),
+                    self._inverse_checkbox.isChecked(),
+                )
+            except EmptyScalarFieldError:
+                pass
 
-        self.update_values()
+        self.refresh_values()
 
-    def _both_sides_checkbox_toggled_handler(self, checked: bool):
+    def _inverse_checkbox_toggled_handler(self, checked: bool):
         self._color_button_2.setEnabled(checked)

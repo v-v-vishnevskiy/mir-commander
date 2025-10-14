@@ -135,9 +135,9 @@ class Visualizer(OpenGLWidget):
 
     def set_coordinate_axes_center(self, value: bool):
         if value:
-            self._coordinate_axes.set_translation(self._molecules.center)
+            self._coordinate_axes.set_position(self._molecules.center)
         else:
-            self._coordinate_axes.set_translation(QVector3D(0.0, 0.0, 0.0))
+            self._coordinate_axes.set_position(QVector3D(0.0, 0.0, 0.0))
         self.update()
 
     def set_coordinate_axis_label_color(self, axis: str, color: Color4f):
@@ -156,12 +156,12 @@ class Visualizer(OpenGLWidget):
         self._molecules.clear()
         for item in atomic_coordinates:
             self._add_atomic_coordinates(item)
-        self._main_node.set_translation(-self._molecules.center)
+        self._main_node.set_position(-self._molecules.center)
         self.update()
 
     def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         self._add_atomic_coordinates(atomic_coordinates)
-        self._main_node.set_translation(-self._molecules.center)
+        self._main_node.set_position(-self._molecules.center)
         self.update()
 
     def _get_axis_by_name(self, name: str) -> Axis:
@@ -191,8 +191,9 @@ class Visualizer(OpenGLWidget):
         self, value: float, color_1: Color4f, color_2: Color4f = (1.0, 1.0, 1.0, 0.2), inverse: bool = False
     ):
         self.makeCurrent()
-        if self._volume_cube.add_isosurface(value, color_1, color_2, inverse):
-            self.update()
+        result = self._volume_cube.add_isosurface(value, color_1, color_2, inverse)
+        self.update()
+        return result
 
     def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
         return self._volume_cube.isosurface_groups

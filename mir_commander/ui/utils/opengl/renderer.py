@@ -241,7 +241,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            data.extend(list(node._transform._translation.toTuple()))  # type: ignore[call-overload]
+            data.extend(list(node._transform._position.toTuple()))  # type: ignore[call-overload]
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
@@ -258,7 +258,7 @@ class Renderer:
         data = []
         for node in nodes:
             if node._parent is not None:
-                data.extend(list(node._parent._transform._translation.toTuple()))  # type: ignore[call-overload]
+                data.extend(list(node._parent._transform._position.toTuple()))  # type: ignore[call-overload]
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)

@@ -209,7 +209,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.resource_manager.current_scene.transform.set_translation(point)
+        self.resource_manager.current_scene.transform.set_position(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):

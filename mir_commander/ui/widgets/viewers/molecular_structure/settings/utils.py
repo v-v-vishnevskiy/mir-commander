@@ -39,7 +39,7 @@ def add_slider(
 class ColorButton(QPushButton):
     color_changed = Signal(QColor)
 
-    def __init__(self, color: QColor):
+    def __init__(self, color: QColor = QColor(255, 255, 255, a=255)):
         super().__init__()
         self._color = color
         self._set_style_sheet(color)
@@ -50,12 +50,13 @@ class ColorButton(QPushButton):
             f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
         )
 
+    def set_color(self, color: QColor):
+        self._color = color
+        self._set_style_sheet(color)
+
     def clicked_handler(self):
         color = QColorDialog.getColor(
-            initial=self._color,
-            parent=self,
-            options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-            | QColorDialog.ColorDialogOption.DontUseNativeDialog,
+            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
         if color.isValid():
             self._set_style_sheet(color)

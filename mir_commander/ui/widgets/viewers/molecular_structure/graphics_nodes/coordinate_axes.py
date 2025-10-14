@@ -14,13 +14,19 @@ class AxisLabel(TextNode):
         kwargs["align"] = "center"
         super().__init__(*args, **kwargs)
 
-        s = size / 100.0
+        self._size = size
 
+        s = size / 100.0
         self.set_scale(QVector3D(s, s, s))
         self.set_color(color)
         self.set_text(text)
 
+    @property
+    def size(self) -> int:
+        return self._size
+
     def set_size(self, value: int):
+        self._size = value
         s = value / 100.0
         self.set_scale(QVector3D(s, s, s))
 
@@ -55,12 +61,36 @@ class Axis(Node):
         self._update()
 
     @property
+    def length(self) -> float:
+        return self._length
+
+    @property
     def thickness(self) -> float:
         return self._thickness
 
     @property
-    def length(self) -> float:
-        return self._length
+    def label_size(self) -> int:
+        return self._axis_label.size
+
+    @property
+    def label_visible(self) -> bool:
+        return self._axis_label.self_visible
+
+    @property
+    def label_color(self) -> Color4f:
+        return self._axis_label.color
+
+    @property
+    def label_text(self) -> str:
+        return self._axis_label.text
+
+    @property
+    def axis_color(self) -> Color4f:
+        return self._cylinder.color
+
+    @property
+    def full_length(self) -> bool:
+        return self._full_length
 
     def set_color(self, color: Color4f):
         self._cylinder.set_color(color)
@@ -79,19 +109,19 @@ class Axis(Node):
         self._cylinder.set_radius(self._thickness)
         if self._full_length:
             self._cylinder.set_length(self._length * 2)
-            self._cylinder.set_translation(-self._direction * self._length)
+            self._cylinder.set_position(-self._direction * self._length)
             self._sphere.set_visible(True)
         else:
             self._cylinder.set_length(self._length)
-            self._cylinder.set_translation(QVector3D(0.0, 0.0, 0.0))
+            self._cylinder.set_position(QVector3D(0.0, 0.0, 0.0))
             self._sphere.set_visible(False)
 
         self._cone.set_size(self._thickness * self._cone_radius_factor, self._thickness * self._cone_length_factor)
-        self._cone.set_translation(self._direction * self._length)
+        self._cone.set_position(self._direction * self._length)
 
         self._sphere.set_radius(self._thickness)
-        self._sphere.set_translation(-self._direction * self._length)
-        self._axis_label.set_translation(
+        self._sphere.set_position(-self._direction * self._length)
+        self._axis_label.set_position(
             self._direction * self._length + self._direction * (self._thickness * self._cone_length_factor * 2)
         )
 
@@ -136,6 +166,30 @@ class CoordinateAxes(Node):
     @property
     def z(self) -> Axis:
         return self._z
+
+    @property
+    def length(self) -> float:
+        return self._x.length
+
+    @property
+    def thickness(self) -> float:
+        return self._x.thickness
+
+    @property
+    def labels_size(self) -> int:
+        return self._x.label_size
+
+    @property
+    def labels_visible(self) -> bool:
+        return self._x.label_visible
+
+    @property
+    def full_length(self) -> bool:
+        return self._x.full_length
+
+    @property
+    def at_000(self) -> bool:
+        return self.position == QVector3D(0.0, 0.0, 0.0)
 
     def set_thickness(self, value: float):
         self._x.set_thickness(value)

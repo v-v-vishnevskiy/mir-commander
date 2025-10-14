@@ -1,10 +1,6 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QVBoxLayout
-
 from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
-from mir_commander.ui.utils.widget import CheckBox
 
 from .coordinate_axes import CoordinateAxes
 from .labels import Labels
@@ -16,41 +12,18 @@ if TYPE_CHECKING:
 
 class Settings(ViewerSettings["MolecularStructureViewer"]):
     def __init__(self):
-        super().__init__()
+        super().__init__(apply_for_all_checkbox=True)
 
-        self._apply_for_all = False
+        self._coordinate_axes = CoordinateAxes(self)
+        self._labels = Labels(self)
+        self._volume_cube = VolumeCube(self)
 
-        # "Apply for all" checkbox
-        self.apply_for_all_checkbox = CheckBox(CheckBox.tr("Apply for all"), self)
-        self.apply_for_all_checkbox.setChecked(self._apply_for_all)
-        self.apply_for_all_checkbox.toggled.connect(self.apply_for_all_checkbox_toggled_handler)
+        self.layout.addWidget(self._coordinate_axes)
+        self.layout.addWidget(self._labels)
+        self.layout.addWidget(self._volume_cube)
+        self.layout.addStretch()
 
-        self.coordinate_axes = CoordinateAxes(self)
-        self.labels = Labels(self)
-        self.volume_cube = VolumeCube(self)
-
-        self.main_layout = QVBoxLayout()
-        self.main_layout.addWidget(self.apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.main_layout.addSpacing(10)
-        self.main_layout.addWidget(self.coordinate_axes)
-        self.main_layout.addWidget(self.labels)
-        self.main_layout.addWidget(self.volume_cube)
-        self.main_layout.addStretch()
-
-        self.setLayout(self.main_layout)
-
-    def set_active_viewer(self, viewer: "MolecularStructureViewer"):
-        super().set_active_viewer(viewer)
-        self.labels.update_values(viewer)
-        self.volume_cube.update_values()
-
-    @property
-    def viewers(self) -> list["MolecularStructureViewer"]:
-        return super().get_viewers(only_active=False if self._apply_for_all else True)
-
-    def apply_for_all_checkbox_toggled_handler(self, checked: bool):
-        self._apply_for_all = checked
-        self.volume_cube.update_values()
-
-        if checked:
-            self.labels.apply_settings(self.viewers)
+    def update_values(self, viewer: "MolecularStructureViewer"):
+        self._coordinate_axes.update_values(viewer)
+        self._labels.update_values(viewer)
+        self._volume_cube.update_values(viewer)

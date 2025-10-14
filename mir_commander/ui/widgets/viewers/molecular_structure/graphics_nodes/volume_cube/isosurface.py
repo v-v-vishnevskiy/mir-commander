@@ -13,23 +13,16 @@ if TYPE_CHECKING:
 class Isosurface(BaseGraphicsNode):
     parent: "IsosurfaceGroup"  # type: ignore[assignment]
 
-    def __init__(
-        self, value: float, inverted: bool, color: Color4f, resource_manager: ResourceManager, *args, **kwargs
-    ):
+    def __init__(self, inverted: bool, color: Color4f, resource_manager: ResourceManager, *args, **kwargs):
         kwargs["visible"] = True
         kwargs["node_type"] = NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE
         super().__init__(*args, **kwargs)
 
-        self._value = value
         self._inverted = inverted
         self._resource_manager = resource_manager
 
         self.set_color(color)
         self.set_shader("transparent" if color[3] < 1.0 else "default")
-
-    @property
-    def value(self) -> float:
-        return self._value
 
     @property
     def inverted(self) -> bool:

@@ -19,7 +19,7 @@ class Labels(GroupBox):
 
         sliders_layout = QGridLayout()
 
-        self.size_slider, self.size_double_spinbox = add_slider(
+        self._size_slider, self._size_double_spinbox = add_slider(
             layout=sliders_layout,
             row=0,
             text=Label.tr("Size:"),
@@ -30,10 +30,10 @@ class Labels(GroupBox):
             factor=1,
             decimals=0,
         )
-        self.size_slider.valueChanged.connect(self.size_slider_value_changed_handler)
-        self.size_double_spinbox.valueChanged.connect(self.size_double_spinbox_value_changed_handler)
+        self._size_slider.valueChanged.connect(self._size_slider_value_changed_handler)
+        self._size_double_spinbox.valueChanged.connect(self._size_double_spinbox_value_changed_handler)
 
-        self.offset_slider, self.offset_double_spinbox = add_slider(
+        self._offset_slider, self._offset_double_spinbox = add_slider(
             layout=sliders_layout,
             row=1,
             text=Label.tr("Offset:"),
@@ -44,37 +44,33 @@ class Labels(GroupBox):
             factor=100,
             decimals=2,
         )
-        self.offset_slider.valueChanged.connect(self.offset_slider_value_changed_handler)
-        self.offset_double_spinbox.valueChanged.connect(self.offset_double_spinbox_value_changed_handler)
+        self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
+        self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        self.main_layout = QVBoxLayout()
-        self.main_layout.addLayout(sliders_layout)
-        self.setLayout(self.main_layout)
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(sliders_layout)
+        self.setLayout(main_layout)
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        self.size_slider.setValue(viewer.visualizer.config.atom_label.size)
-        self.size_double_spinbox.setValue(viewer.visualizer.config.atom_label.size)
-
-        self.offset_slider.setValue(int(viewer.visualizer.config.atom_label.offset * 100))
-        self.offset_double_spinbox.setValue(viewer.visualizer.config.atom_label.offset)
-
-    def apply_settings(self, viewers: list["MolecularStructureViewer"]):
-        for viewer in viewers:
-            viewer.visualizer.set_label_size_for_all_atoms(size=self.size_slider.value())
-            viewer.visualizer.set_label_offset_for_all_atoms(offset=self.offset_slider.value() / 100)
-
-    def size_slider_value_changed_handler(self, i: int):
-        self.size_double_spinbox.setValue(i)
+    def _size_slider_value_changed_handler(self, i: int):
+        self._size_double_spinbox.setValue(i)
         for viewer in self._settings.viewers:
             viewer.visualizer.set_label_size_for_all_atoms(size=i)
 
-    def size_double_spinbox_value_changed_handler(self, value: int):
-        self.size_slider.setValue(value)
+    def _size_double_spinbox_value_changed_handler(self, value: int):
+        self._size_slider.setValue(value)
 
-    def offset_slider_value_changed_handler(self, i: int):
-        self.offset_double_spinbox.setValue(i / 100)
+    def _offset_slider_value_changed_handler(self, i: int):
+        self._offset_double_spinbox.setValue(i / 100)
         for viewer in self._settings.viewers:
             viewer.visualizer.set_label_offset_for_all_atoms(offset=i / 100)
 
-    def offset_double_spinbox_value_changed_handler(self, value: float):
-        self.offset_slider.setValue(int(value * 100))
+    def _offset_double_spinbox_value_changed_handler(self, value: float):
+        self._offset_slider.setValue(int(value * 100))
+
+    def update_values(self, viewer: "MolecularStructureViewer"):
+        visualizer = viewer.visualizer
+        self._size_slider.setValue(visualizer.config.atom_label.size)
+        self._size_double_spinbox.setValue(visualizer.config.atom_label.size)
+
+        self._offset_slider.setValue(int(visualizer.config.atom_label.offset * 100))
+        self._offset_double_spinbox.setValue(visualizer.config.atom_label.offset)

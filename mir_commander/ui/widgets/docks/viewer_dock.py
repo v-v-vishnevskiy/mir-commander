@@ -33,8 +33,8 @@ class ViewerDock(BaseDock):
         viewer_cls = viewer.__class__
         if viewer_cls in self._viewer_settings_widgets:
             settings = self._viewer_settings_widgets[viewer_cls]
-            settings.set_active_viewer(viewer)
             settings.set_all_viewers(self._all_viewers[viewer_cls])
+            settings.set_active_viewer(viewer)
             self.setWidget(settings)
         else:
             self.setWidget(self._empty_viewer_settings)

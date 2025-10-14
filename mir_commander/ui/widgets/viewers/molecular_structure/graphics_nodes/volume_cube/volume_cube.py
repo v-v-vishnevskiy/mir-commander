@@ -7,7 +7,7 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils import consts
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup
-from ...errors import SurfaceNotFoundError
+from ...errors import EmptyScalarFieldError, SurfaceNotFoundError
 from .isosurface_group import IsosurfaceGroup
 
 
@@ -31,7 +31,7 @@ class VolumeCube(Node):
 
     def set_volume_cube(self, volume_cube: CoreVolumeCube):
         position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
-        self.set_translation(position * consts.BOHR2ANGSTROM)
+        self.set_position(position * consts.BOHR2ANGSTROM)
 
         scale = QVector3D(volume_cube.steps_size[0][0], volume_cube.steps_size[1][1], volume_cube.steps_size[2][2])
         self.set_scale(scale * consts.BOHR2ANGSTROM)
@@ -40,13 +40,22 @@ class VolumeCube(Node):
             s.remove()
         self._volume_cube = volume_cube
 
-    def add_isosurface(self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool) -> bool:
+    def add_isosurface(
+        self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool
+    ) -> VolumeCubeIsosurfaceGroup:
         if self.is_empty_scalar_field:
-            return False
+            raise EmptyScalarFieldError()
 
-        group = IsosurfaceGroup(parent=self, resource_manager=self._resource_manager)
-        group.add_isosurface(self._volume_cube.cube_data, value, color_1, color_2, inverse)
-        return True
+        group = IsosurfaceGroup(
+            parent=self,
+            resource_manager=self._resource_manager,
+            value=value,
+            cube_data=self._volume_cube.cube_data,
+            color_1=color_1,
+            color_2=color_2,
+            inverse=inverse,
+        )
+        return self._group_node_to_entity(group)
 
     def remove_isosurface_group(self, id: int):
         try:
@@ -62,16 +71,17 @@ class VolumeCube(Node):
 
     @property
     def isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
-        result = []
-        for group in self.children:
-            isosurfaces = []
-            for s in group.children:
-                isosurfaces.append(
-                    VolumeCubeIsosurface(id=s.id, value=s.value, inverted=s.inverted, color=s.color, visible=s.visible)
+        return [self._group_node_to_entity(group) for group in self.children]
+
+    def _group_node_to_entity(self, group: IsosurfaceGroup) -> VolumeCubeIsosurfaceGroup:
+        return VolumeCubeIsosurfaceGroup(
+            id=group.id,
+            value=group.value,
+            isosurfaces=[
+                VolumeCubeIsosurface(
+                    id=isosurface.id, inverted=isosurface.inverted, color=isosurface.color, visible=isosurface.visible
                 )
-            result.append(
-                VolumeCubeIsosurfaceGroup(
-                    id=group.id, value=group.value, isosurfaces=isosurfaces, visible=any(s.visible for s in isosurfaces)
-                )
-            )
-        return result
+                for isosurface in group.children
+            ],
+            visible=any(isosurface.visible for isosurface in group.children),
+        )

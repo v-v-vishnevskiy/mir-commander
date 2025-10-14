@@ -4,12 +4,13 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout
 
-from mir_commander.ui.utils.opengl.utils import qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, PushButton, TrString
+from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, TrString
 
 from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
+    from ..viewer import MolecularStructureViewer
     from .settings import Settings
 
 
@@ -23,32 +24,31 @@ class CoordinateAxes(GroupBox):
         self.main_layout.addLayout(self._add_checkboxes())
         self.main_layout.addLayout(self._add_sliders())
         self.main_layout.addLayout(self._add_axes())
-        self.main_layout.addWidget(PushButton(PushButton.tr("Reset")))
         self.setLayout(self.main_layout)
 
     def _add_checkboxes(self) -> QGridLayout:
         layout = QGridLayout()
 
-        visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
-        visibility_checkbox.setChecked(False)
-        visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
+        self._visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
+        self._visibility_checkbox.setChecked(False)
+        self._visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
 
-        labels_visibility_checkbox = CheckBox(CheckBox.tr("Labels"))
-        labels_visibility_checkbox.setChecked(True)
-        labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
+        self._labels_visibility_checkbox = CheckBox(CheckBox.tr("Labels"))
+        self._labels_visibility_checkbox.setChecked(True)
+        self._labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
 
-        full_length_checkbox = CheckBox(CheckBox.tr("Full Length"))
-        full_length_checkbox.setChecked(False)
-        full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
+        self._full_length_checkbox = CheckBox(CheckBox.tr("Full Length"))
+        self._full_length_checkbox.setChecked(False)
+        self._full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
 
-        center_checkbox = CheckBox(CheckBox.tr("Center"))
-        center_checkbox.setChecked(False)
-        center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
+        self._center_checkbox = CheckBox(CheckBox.tr("Center"))
+        self._center_checkbox.setChecked(False)
+        self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
-        layout.addWidget(visibility_checkbox, 0, 0)
-        layout.addWidget(labels_visibility_checkbox, 0, 1)
-        layout.addWidget(full_length_checkbox, 1, 0)
-        layout.addWidget(center_checkbox, 1, 1)
+        layout.addWidget(self._visibility_checkbox, 0, 0)
+        layout.addWidget(self._labels_visibility_checkbox, 0, 1)
+        layout.addWidget(self._full_length_checkbox, 1, 0)
+        layout.addWidget(self._center_checkbox, 1, 1)
 
         return layout
 
@@ -100,29 +100,39 @@ class CoordinateAxes(GroupBox):
     def _add_axes(self) -> QGridLayout:
         layout = QGridLayout()
 
-        self._add_axis(layout, 0, Label.tr("Axis X:"), "x", "x", QColor(255, 0, 0))
-        self._add_axis(layout, 1, Label.tr("Axis Y:"), "y", "y", QColor(0, 255, 0))
-        self._add_axis(layout, 2, Label.tr("Axis Z:"), "z", "z", QColor(0, 0, 255))
+        self._x_axis_color_button, self._x_label_color_button, self._x_line_edit = self._add_axis(
+            layout, 0, Label.tr("Axis X:"), "x"
+        )
+        self._y_axis_color_button, self._y_label_color_button, self._y_line_edit = self._add_axis(
+            layout, 1, Label.tr("Axis Y:"), "y"
+        )
+        self._z_axis_color_button, self._z_label_color_button, self._z_line_edit = self._add_axis(
+            layout, 2, Label.tr("Axis Z:"), "z"
+        )
 
         return layout
 
-    def _add_axis(self, layout: QGridLayout, row: int, label_text: TrString, axis: str, text: str, color: QColor):
+    def _add_axis(
+        self, layout: QGridLayout, row: int, label_text: TrString, axis: str
+    ) -> tuple[ColorButton, ColorButton, QLineEdit]:
         label = Label(label_text)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-        axis_color_button = ColorButton(color)
+        axis_color_button = ColorButton()
         axis_color_button.color_changed.connect(lambda color: self._axis_color_changed_handler(axis, color))
 
-        label_color_button = ColorButton(color)
+        label_color_button = ColorButton()
         label_color_button.color_changed.connect(lambda color: self._axis_label_color_changed_handler(axis, color))
 
-        line_edit = QLineEdit(text=text)
+        line_edit = QLineEdit()
         line_edit.textChanged.connect(lambda text: self._axis_text_changed_handler(axis, text))
 
         layout.addWidget(label, row, 0)
         layout.addWidget(axis_color_button, row, 1)
         layout.addWidget(label_color_button, row, 2)
         layout.addWidget(line_edit, row, 3)
+
+        return axis_color_button, label_color_button, line_edit
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
@@ -175,3 +185,32 @@ class CoordinateAxes(GroupBox):
     def _axis_text_changed_handler(self, axis: str, text: str):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axis_text(axis, text)
+
+    def update_values(self, viewer: "MolecularStructureViewer"):
+        coordinate_axes = viewer.visualizer.coordinate_axes
+
+        self._visibility_checkbox.setChecked(coordinate_axes.visible)
+        self._labels_visibility_checkbox.setChecked(coordinate_axes.labels_visible)
+        self._full_length_checkbox.setChecked(coordinate_axes.full_length)
+        self._center_checkbox.setChecked(not coordinate_axes.at_000)
+
+        self.length_slider.setValue(int(coordinate_axes.length * 100))
+        self.length_double_spinbox.setValue(coordinate_axes.length)
+
+        self.thickness_slider.setValue(int(coordinate_axes.thickness * 100))
+        self.thickness_double_spinbox.setValue(coordinate_axes.thickness)
+
+        self.label_size_slider.setValue(coordinate_axes.labels_size)
+        self.label_size_double_spinbox.setValue(coordinate_axes.labels_size)
+
+        self._x_axis_color_button.set_color(color4f_to_qcolor(coordinate_axes.x.axis_color))
+        self._y_axis_color_button.set_color(color4f_to_qcolor(coordinate_axes.y.axis_color))
+        self._z_axis_color_button.set_color(color4f_to_qcolor(coordinate_axes.z.axis_color))
+
+        self._x_label_color_button.set_color(color4f_to_qcolor(coordinate_axes.x.label_color))
+        self._y_label_color_button.set_color(color4f_to_qcolor(coordinate_axes.y.label_color))
+        self._z_label_color_button.set_color(color4f_to_qcolor(coordinate_axes.z.label_color))
+
+        self._x_line_edit.setText(coordinate_axes.x.label_text)
+        self._y_line_edit.setText(coordinate_axes.y.label_text)
+        self._z_line_edit.setText(coordinate_axes.z.label_text)

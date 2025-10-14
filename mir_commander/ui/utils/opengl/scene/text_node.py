@@ -85,7 +85,7 @@ class TextNode(Node):
             char_info = font_atlas.chars[char]
             half_width = char_info.width / char_info.height
             x = half_width + x_offset
-            children[i].set_translation(QVector3D(x, 0.0, 0.0))
+            children[i].set_position(QVector3D(x, 0.0, 0.0))
             x_offset += half_width * 2
 
         if self._align == "center":

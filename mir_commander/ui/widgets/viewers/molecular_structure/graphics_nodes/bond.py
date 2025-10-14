@@ -62,7 +62,7 @@ class Bond(Node):
         for position, length, color in bonds:
             c = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
             c.set_color(color)
-            c.set_translation(position)
+            c.set_position(position)
             c.set_size(self._radius, length)
             c.set_shader("default")
 
