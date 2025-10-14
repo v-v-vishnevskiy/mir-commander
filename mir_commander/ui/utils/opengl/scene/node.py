@@ -102,6 +102,14 @@ class Node:
         return self._picking_id
 
     @property
+    def picking_visible(self) -> bool:
+        return self._picking_visible
+
+    @property
+    def picking_color(self) -> Color4f:
+        return self._picking_color
+
+    @property
     def parent(self) -> "Node":
         if self._parent is None:
             raise NodeParentError("Parent is not set")
@@ -112,18 +120,18 @@ class Node:
         return self._node_type
 
     @property
+    def self_visible(self) -> bool:
+        return self._visible
+
+    @property
     def visible(self) -> bool:
         if self._parent is not None:
             return self._visible and self._parent.visible
         return self._visible
 
     @property
-    def picking_visible(self) -> bool:
-        return self._picking_visible
-
-    @property
-    def picking_color(self) -> Color4f:
-        return self._picking_color
+    def position(self) -> QVector3D:
+        return self._transform.position
 
     @property
     def transform(self) -> QMatrix4x4:
@@ -248,12 +256,12 @@ class Node:
         self._transform.set_rotation(value)
         self.invalidate_transform()
 
-    def translate(self, translation: QVector3D):
-        self._transform.translate(translation)
+    def translate(self, value: QVector3D):
+        self._transform.translate(value)
         self.invalidate_transform()
 
-    def set_translation(self, translation: QVector3D):
-        self._transform.set_translation(translation)
+    def set_position(self, value: QVector3D):
+        self._transform.set_position(value)
         self.invalidate_transform()
 
     def set_node_type(self, node_type: NodeType):

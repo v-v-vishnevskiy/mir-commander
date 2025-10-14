@@ -79,6 +79,13 @@ class OpenGLWidget(QOpenGLWidget):
         )
         self.resource_manager.add_shader(
             ShaderProgram(
+                "text",
+                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD),
+                FragmentShader(shaders.fragment.TEXTURE),
+            )
+        )
+        self.resource_manager.add_shader(
+            ShaderProgram(
                 "transparent_flat",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
@@ -92,14 +99,12 @@ class OpenGLWidget(QOpenGLWidget):
             )
         )
         self.resource_manager.add_shader(
-            ShaderProgram(
-                "picking", VertexShader(shaders.vertex.COMPUTE_POSITION), FragmentShader(shaders.fragment.FLAT_COLOR)
-            )
+            ShaderProgram("picking", VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
         )
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
-        atlas_size = 2048
-        font_size = 240
+        atlas_size = 4096
+        font_size = 480
         data, font_atlas = create_font_atlas(font_atlas_name, font_path, font_size=font_size, atlas_size=atlas_size)
         texture = Texture2D(name=f"font_atlas_{font_atlas_name}")
         texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)
@@ -204,7 +209,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.update()
 
     def set_scene_position(self, point: QVector3D):
-        self.resource_manager.current_scene.transform.set_translation(point)
+        self.resource_manager.current_scene.transform.set_position(point)
         self.update()
 
     def set_scene_translate(self, vector: QVector3D):

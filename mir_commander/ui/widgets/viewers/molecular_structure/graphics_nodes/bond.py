@@ -3,7 +3,7 @@ from PySide6.QtGui import QVector3D
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 
-from ..atom.atom import Atom
+from .atom.atom import Atom
 from .cylinder import Cylinder
 
 
@@ -58,9 +58,13 @@ class Bond(Node):
     def _add_bonds(self):
         self.clear()
         bonds = self._build_bonds()
-        direction = self._atom_1.position - self._atom_2.position
+        direction = self._atom_2.position - self._atom_1.position
         for position, length, color in bonds:
-            Cylinder(self, position, direction, self._radius, length, color)
+            c = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
+            c.set_color(color)
+            c.set_position(position)
+            c.set_size(self._radius, length)
+            c.set_shader("default")
 
     def set_radius(self, radius: float):
         self._radius = radius

@@ -98,10 +98,9 @@ void main() {
 """
 
 
-FLAT_COLOR = """
+PICKING = """
 #version 330 core
 
-in vec3 normal;
 in vec4 fragment_color;
 out vec4 output_color;
 
@@ -109,6 +108,7 @@ void main() {
     output_color = fragment_color;
 }
 """
+
 
 BLINN_PHONG = """
 #version 330 core
@@ -144,5 +144,29 @@ void main() {
 
     vec3 p = ((ambient + diffuse) * fragment_color.xyz) + specular;
     output_color = vec4(p, fragment_color.w);
+}
+"""
+
+
+TEXTURE = """
+#version 330 core
+
+in vec2 fragment_texcoord;
+in vec4 fragment_color;
+in vec3 normal;
+
+layout (location = 0) out vec4 accum;
+layout (location = 1) out float alpha;
+
+uniform sampler2D tex_1;
+
+void main() {
+    vec4 color = texture(tex_1, fragment_texcoord);
+    if (color.a < 0.01) {
+        discard;
+    }
+
+    accum = vec4(color.rgb * fragment_color.rgb, color.a);
+    alpha = 1.0 - color.a;
 }
 """

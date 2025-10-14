@@ -11,7 +11,7 @@ from mir_commander.core.models import VolumeCube as CoreVolumeCube
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.utils.opengl.keymap import Keymap
-from mir_commander.ui.utils.opengl.models import cylinder, sphere
+from mir_commander.ui.utils.opengl.models import cone, cylinder, sphere
 from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
 from mir_commander.ui.utils.opengl.resource_manager import (
     FragmentShader,
@@ -29,10 +29,10 @@ from mir_commander.utils.message_channel import MessageChannel
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
-from .consts import VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
+from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError
-from .graphics_nodes import BaseGraphicsNode, Molecule, Molecules, VolumeCube
+from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
@@ -56,6 +56,7 @@ class Visualizer(OpenGLWidget):
         self._node_under_cursor: BaseGraphicsNode | None = None
 
         self._main_node = self.resource_manager.current_scene.main_node
+        self._coordinate_axes = CoordinateAxes(parent=self._main_node)
         self._molecules = Molecules(parent=self._main_node)
         self._volume_cube = VolumeCube(parent=self._main_node, resource_manager=self.resource_manager)
 
@@ -86,6 +87,7 @@ class Visualizer(OpenGLWidget):
 
         # Add VAOs to resource manager
         self.resource_manager.add_vertex_array_object(self._get_sphere_vao())
+        self.resource_manager.add_vertex_array_object(self._get_cone_vao())
         self.resource_manager.add_vertex_array_object(self._get_cylinder_vao())
 
         max_radius = self._molecules.get_max_molecule_radius()
@@ -103,17 +105,77 @@ class Visualizer(OpenGLWidget):
         self.resource_manager.current_camera.reset_to_default()
         self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * max_radius / fov_factor))
 
+    @property
+    def coordinate_axes(self) -> CoordinateAxes:
+        return self._coordinate_axes
+
+    def coordinate_axes_adjust_length(self):
+        self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
+        self.update()
+
+    def set_coordinate_axes_thickness(self, value: float):
+        self._coordinate_axes.set_thickness(value)
+        self.update()
+
+    def set_coordinate_axes_length(self, value: float):
+        self._coordinate_axes.set_length(value)
+        self.update()
+
+    def set_coordinate_axes_font_size(self, value: int):
+        self._coordinate_axes.set_font_size(value)
+        self.update()
+
+    def set_coordinate_axes_visible(self, value: bool):
+        self._coordinate_axes.set_visible(value)
+        self.update()
+
+    def set_coordinate_axes_labels_visible(self, value: bool):
+        self._coordinate_axes.set_labels_visible(value)
+        self.update()
+
+    def set_coordinate_axes_both_directions(self, value: bool):
+        self._coordinate_axes.set_both_directions(value)
+        self.update()
+
+    def set_coordinate_axes_center(self, value: bool):
+        if value:
+            self._coordinate_axes.set_position(self._molecules.center)
+        else:
+            self._coordinate_axes.set_position(QVector3D(0.0, 0.0, 0.0))
+        self.update()
+
+    def set_coordinate_axis_label_color(self, axis: str, color: Color4f):
+        self._get_axis_by_name(axis).set_label_color(color)
+        self.update()
+
+    def set_coordinate_axis_color(self, axis: str, color: Color4f):
+        self._get_axis_by_name(axis).set_color(color)
+        self.update()
+
+    def set_coordinate_axis_text(self, axis: str, text: str):
+        self._get_axis_by_name(axis).set_text(text)
+        self.update()
+
     def set_atomic_coordinates(self, atomic_coordinates: list[AtomicCoordinates]):
         self._molecules.clear()
         for item in atomic_coordinates:
             self._add_atomic_coordinates(item)
-        self._main_node.set_translation(-self._molecules.center)
+        self._main_node.set_position(-self._molecules.center)
         self.update()
 
     def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         self._add_atomic_coordinates(atomic_coordinates)
-        self._main_node.set_translation(-self._molecules.center)
+        self._main_node.set_position(-self._molecules.center)
         self.update()
+
+    def _get_axis_by_name(self, name: str) -> Axis:
+        if name == "x":
+            return self._coordinate_axes.x
+        elif name == "y":
+            return self._coordinate_axes.y
+        elif name == "z":
+            return self._coordinate_axes.z
+        raise ValueError(f"Invalid axis name: {name}")
 
     def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
         Molecule(
@@ -133,8 +195,9 @@ class Visualizer(OpenGLWidget):
         self, value: float, color_1: Color4f, color_2: Color4f = (1.0, 1.0, 1.0, 0.2), inverse: bool = False
     ):
         self.makeCurrent()
-        if self._volume_cube.add_isosurface(value, color_1, color_2, inverse):
-            self.update()
+        result = self._volume_cube.add_isosurface(value, color_1, color_2, inverse)
+        self.update()
+        return result
 
     def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
         return self._volume_cube.isosurface_groups
@@ -171,6 +234,21 @@ class Visualizer(OpenGLWidget):
             normals = compute_face_normals(vertices)
 
         return VertexArrayObject(VAO_SPHERE_RESOURCE_NAME, vertices, normals)
+
+    def _get_cone_vao(self) -> VertexArrayObject:
+        logger.debug("Initializing cone mesh data")
+
+        mesh_quality = self._config.quality.mesh
+        slices = int(cone.min_slices * (mesh_quality * 2))
+        tmp_vertices = cone.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, cap=True)
+        faces = cone.get_faces(stacks=1, slices=slices, cap=True)
+        vertices = cone.unwind_vertices(tmp_vertices, faces)
+        if self._config.quality.smooth:
+            normals = compute_smooth_normals(vertices)
+        else:
+            normals = compute_face_normals(vertices)
+
+        return VertexArrayObject(VAO_CONE_RESOURCE_NAME, vertices, normals)
 
     def _get_cylinder_vao(self) -> VertexArrayObject:
         logger.debug("Initializing cylinder mesh data")

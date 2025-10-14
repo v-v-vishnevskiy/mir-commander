@@ -12,7 +12,7 @@ from .label import Label
 from .sphere import Sphere
 
 if TYPE_CHECKING:
-    from ..bond.bond import Bond
+    from ..bond import Bond
 
 
 class Atom(Node):
@@ -41,7 +41,7 @@ class Atom(Node):
         self._bounding_sphere = BoundingSphere(self._sphere, color, selected_atom_config)
         self._label_config = label_config
         self._label = Label(self, label_config)
-        self._label.set_translation(QVector3D(0.0, 0.0, radius * label_config.offset))
+        self._label.set_position(QVector3D(0.0, 0.0, radius * label_config.offset))
         self.set_label_type(label_config.type)
         self._selection_update = monotonic()
 
@@ -57,7 +57,7 @@ class Atom(Node):
 
     @property
     def position(self) -> QVector3D:
-        return self._transform._translation
+        return self._transform._position
 
     @property
     def color(self) -> Color4f:
@@ -117,7 +117,7 @@ class Atom(Node):
 
     def set_label_offset(self, offset: float):
         self._label_config.offset = offset
-        self._label.set_translation(QVector3D(0.0, 0.0, self.radius * offset))
+        self._label.set_position(QVector3D(0.0, 0.0, self.radius * offset))
 
     def __repr__(self) -> str:
         return (

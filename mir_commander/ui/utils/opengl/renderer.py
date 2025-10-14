@@ -154,7 +154,7 @@ class Renderer:
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
 
-            self._setup_instanced_rendering(rc, group_id, nodes, texture_name != "")
+            self._setup_instanced_rendering(rc, group_id, nodes)
 
             # OPTIMIZATION: Single draw call for all instances
             glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
@@ -189,9 +189,7 @@ class Renderer:
             vao.bind()
         return vao.triangles_count
 
-    def _setup_instanced_rendering(
-        self, rc: RenderingContainer[Node], group_id: Hashable, nodes: list[Node], has_texture: bool
-    ):
+    def _setup_instanced_rendering(self, rc: RenderingContainer[Node], group_id: Hashable, nodes: list[Node]):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
             color_buffer_id,
@@ -212,12 +210,12 @@ class Renderer:
             self._update_parent_parent_world_position_buffer(parent_parent_world_position_buffer_id, nodes)
 
         # Setup instanced attributes
-        self._setup_color_attributes(color_buffer_id, 3 if has_texture else 2)
-        self._setup_model_matrix_attributes(model_matrix_buffer_id, 4 if has_texture else 3)
-        self._setup_position_attributes(local_position_buffer_id, 8 if has_texture else 7)
-        self._setup_position_attributes(parent_local_position_buffer_id, 9 if has_texture else 8)
-        self._setup_position_attributes(parent_world_position_buffer_id, 10 if has_texture else 9)
-        self._setup_position_attributes(parent_parent_world_position_buffer_id, 11 if has_texture else 10)
+        self._setup_color_attributes(color_buffer_id, 3)
+        self._setup_model_matrix_attributes(model_matrix_buffer_id, 4)
+        self._setup_position_attributes(local_position_buffer_id, 8)
+        self._setup_position_attributes(parent_local_position_buffer_id, 9)
+        self._setup_position_attributes(parent_world_position_buffer_id, 10)
+        self._setup_position_attributes(parent_parent_world_position_buffer_id, 11)
 
     def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int, int, int, int, int]:
         if key not in self._transformation_buffers:
@@ -243,7 +241,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
-            data.extend(list(node._transform._translation.toTuple()))  # type: ignore[call-overload]
+            data.extend(list(node._transform._position.toTuple()))  # type: ignore[call-overload]
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
@@ -260,7 +258,7 @@ class Renderer:
         data = []
         for node in nodes:
             if node._parent is not None:
-                data.extend(list(node._parent._transform._translation.toTuple()))  # type: ignore[call-overload]
+                data.extend(list(node._parent._transform._position.toTuple()))  # type: ignore[call-overload]
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
