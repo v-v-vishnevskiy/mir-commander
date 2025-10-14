@@ -156,7 +156,7 @@ class Application(QApplication):
         return self.exec()
 
     def open_temporary_project(self, files: list[Path]) -> int:
-        logger.info("Creating temporary project from files...")
+        logger.info("Creating temporary project from files ...")
         project, messages = create_temporary_project(files)
 
         project_window = ProjectWindow(
