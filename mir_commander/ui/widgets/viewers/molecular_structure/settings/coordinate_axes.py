@@ -29,7 +29,7 @@ class CoordinateAxes(GroupBox):
     def _add_checkboxes(self) -> QGridLayout:
         layout = QGridLayout()
 
-        self._visibility_checkbox = CheckBox(CheckBox.tr("Visible"))
+        self._visibility_checkbox = CheckBox(CheckBox.tr("Show"))
         self._visibility_checkbox.setChecked(False)
         self._visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
 
@@ -37,11 +37,11 @@ class CoordinateAxes(GroupBox):
         self._labels_visibility_checkbox.setChecked(True)
         self._labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
 
-        self._full_length_checkbox = CheckBox(CheckBox.tr("Full Length"))
+        self._full_length_checkbox = CheckBox(CheckBox.tr("Both directions"))
         self._full_length_checkbox.setChecked(False)
         self._full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
 
-        self._center_checkbox = CheckBox(CheckBox.tr("In Molecule Center"))
+        self._center_checkbox = CheckBox(CheckBox.tr("Center"))
         self._center_checkbox.setChecked(False)
         self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
@@ -84,7 +84,7 @@ class CoordinateAxes(GroupBox):
         self.label_size_slider, self.label_size_double_spinbox = add_slider(
             layout=layout,
             row=2,
-            text=Label.tr("Labels Size:"),
+            text=Label.tr("Font size:"),
             min_value=16,
             max_value=500,
             single_step=1,
@@ -92,10 +92,10 @@ class CoordinateAxes(GroupBox):
         self.label_size_slider.valueChanged.connect(self.label_size_slider_value_changed_handler)
         self.label_size_double_spinbox.valueChanged.connect(self.label_size_double_spinbox_value_changed_handler)
 
-        adjust_size_button = PushButton(PushButton.tr("Adjust Size"))
-        adjust_size_button.clicked.connect(self._adjust_size_button_clicked_handler)
+        adjust_length_button = PushButton(PushButton.tr("Adjust length"))
+        adjust_length_button.clicked.connect(self._adjust_labels_length_button_clicked_handler)
 
-        layout.addWidget(adjust_size_button, 3, 0, 1, 3)
+        layout.addWidget(adjust_length_button, 3, 0, 1, 3)
 
         return layout
 
@@ -188,9 +188,9 @@ class CoordinateAxes(GroupBox):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axis_text(axis, text)
 
-    def _adjust_size_button_clicked_handler(self):
+    def _adjust_labels_length_button_clicked_handler(self):
         for viewer in self._settings.viewers:
-            viewer.visualizer.adjust_coordinate_axes()
+            viewer.visualizer.adjust_coordinate_axes_length()
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         coordinate_axes = viewer.visualizer.coordinate_axes

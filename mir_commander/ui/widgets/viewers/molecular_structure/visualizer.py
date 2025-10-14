@@ -109,7 +109,7 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
-    def adjust_coordinate_axes(self):
+    def adjust_coordinate_axes_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
         self.update()
 

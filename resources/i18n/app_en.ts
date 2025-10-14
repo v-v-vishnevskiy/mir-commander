@@ -72,26 +72,6 @@
         <translation>Child</translation>
     </message>
     <message>
-        <source>Toggle visibility of H atoms</source>
-        <translation type="vanished">Toggle visibility of H atoms</translation>
-    </message>
-    <message>
-        <source>Toggle selection of all atoms</source>
-        <translation type="vanished">Toggle selection of all atoms</translation>
-    </message>
-    <message>
-        <source>Auto calculate parameter</source>
-        <translation type="vanished">Auto calculate parameter</translation>
-    </message>
-    <message>
-        <source>Next coordinates set</source>
-        <translation type="vanished">Next coordinates set</translation>
-    </message>
-    <message>
-        <source>Previous coordinates set</source>
-        <translation type="vanished">Previous coordinates set</translation>
-    </message>
-    <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/context_menu.py" line="56"/>
         <source>Toggle projection</source>
         <translation>Toggle projection</translation>
@@ -368,85 +348,6 @@
     </message>
 </context>
 <context>
-    <name>AtomicCoordinatesViewer</name>
-    <message>
-        <source>Save image</source>
-        <translation type="vanished">Save image</translation>
-    </message>
-    <message>
-        <source>The file already exists:</source>
-        <translation type="vanished">The file already exists:</translation>
-    </message>
-    <message>
-        <source>Do you want to overwrite it?</source>
-        <translation type="vanished">Do you want to overwrite it?</translation>
-    </message>
-    <message>
-        <source>Error image rendering</source>
-        <translation type="vanished">Error image rendering</translation>
-    </message>
-    <message>
-        <source>Cannot create image.</source>
-        <translation type="vanished">Cannot create image.</translation>
-    </message>
-    <message>
-        <source>Could not save image:</source>
-        <translation type="vanished">Could not save image:</translation>
-    </message>
-    <message>
-        <source>The path does not exist or is write-protected.</source>
-        <translation type="vanished">The path does not exist or is write-protected.</translation>
-    </message>
-    <message>
-        <source>Cloak atoms by type</source>
-        <translation type="vanished">Cloak atoms by type</translation>
-    </message>
-    <message>
-        <source>Enter element symbol:</source>
-        <translation type="vanished">Enter element symbol:</translation>
-    </message>
-    <message>
-        <source>Invalid element symbol!</source>
-        <translation type="vanished">Invalid element symbol!</translation>
-    </message>
-    <message>
-        <source>Interatomic distance</source>
-        <translation type="vanished">Interatomic distance</translation>
-    </message>
-    <message>
-        <source>At least two atoms must be selected!</source>
-        <translation type="vanished">At least two atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Angle</source>
-        <translation type="vanished">Angle</translation>
-    </message>
-    <message>
-        <source>At least three atoms must be selected!</source>
-        <translation type="vanished">At least three atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Torsion angle</source>
-        <translation type="vanished">Torsion angle</translation>
-    </message>
-    <message>
-        <source>At least four atoms must be selected!</source>
-        <translation type="vanished">At least four atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Out-of-plane angle</source>
-        <translation type="vanished">Out-of-plane angle</translation>
-    </message>
-    <message>
-        <source>Auto geometrical parameter</source>
-        <translation type="vanished">Auto geometrical parameter</translation>
-    </message>
-    <message>
-        <source>Two, three or four atoms must be selected!</source>
-        <translation type="vanished">Two, three or four atoms must be selected!</translation>
-    </message>
-</context>
-<context>
     <name>BuildBondsDialog</name>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/build_bonds_dialog.py" line="19"/>
@@ -477,18 +378,14 @@
         <translation>Apply for all</translation>
     </message>
     <message>
-        <source>Both-signed</source>
-        <translation type="vanished">Both-signed</translation>
-    </message>
-    <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="225"/>
         <source>Inverse</source>
         <translation>Inverse</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="32"/>
-        <source>Visible</source>
-        <translation>Visible</translation>
+        <source>Show</source>
+        <translation>Show</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="36"/>
@@ -497,17 +394,13 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="40"/>
-        <source>Full Length</source>
-        <translation>Full Length</translation>
+        <source>Both directions</source>
+        <translation>Both directions</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="44"/>
-        <source>In Molecule Center</source>
-        <translation>In Molecule Center</translation>
-    </message>
-    <message>
         <source>Center</source>
-        <translation type="vanished">Center</translation>
+        <translation>Center</translation>
     </message>
 </context>
 <context>
@@ -590,7 +483,7 @@
         <translation>Size:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/labels.py" line="39"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/labels.py" line="38"/>
         <source>Offset:</source>
         <translation>Offset:</translation>
     </message>
@@ -600,27 +493,27 @@
         <translation>Length:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="75"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="74"/>
         <source>Thickness:</source>
         <translation>Thickness:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="89"/>
-        <source>Labels Size:</source>
-        <translation>Labels Size:</translation>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="87"/>
+        <source>Font size:</source>
+        <translation>Font size:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="109"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="106"/>
         <source>Axis X:</source>
         <translation>Axis X:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="112"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="109"/>
         <source>Axis Y:</source>
         <translation>Axis Y:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="115"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="112"/>
         <source>Axis Z:</source>
         <translation>Axis Z:</translation>
     </message>
@@ -661,10 +554,6 @@
         <translation>View Structures</translation>
     </message>
     <message>
-        <source>&amp;Molecule</source>
-        <translation type="vanished">&amp;Molecule</translation>
-    </message>
-    <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/context_menu.py" line="63"/>
         <source>Atom labels</source>
         <translation>Atom labels</translation>
@@ -693,89 +582,6 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/context_menu.py" line="266"/>
         <source>Coordinates set</source>
         <translation>Coordinates set</translation>
-    </message>
-    <message>
-        <source>Style</source>
-        <translation type="vanished">Style</translation>
-    </message>
-</context>
-<context>
-    <name>MolecularStructureViewer</name>
-    <message>
-        <source>Save image</source>
-        <translation type="vanished">Save image</translation>
-    </message>
-    <message>
-        <source>The file already exists:</source>
-        <translation type="vanished">The file already exists:</translation>
-    </message>
-    <message>
-        <source>Do you want to overwrite it?</source>
-        <translation type="vanished">Do you want to overwrite it?</translation>
-    </message>
-    <message>
-        <source>Error image rendering</source>
-        <translation type="vanished">Error image rendering</translation>
-    </message>
-    <message>
-        <source>OpenGL cannot create image.</source>
-        <translation type="vanished">OpenGL cannot create image.</translation>
-    </message>
-    <message>
-        <source>Could not save image:</source>
-        <translation type="vanished">Could not save image:</translation>
-    </message>
-    <message>
-        <source>The path does not exist or is write-protected.</source>
-        <translation type="vanished">The path does not exist or is write-protected.</translation>
-    </message>
-    <message>
-        <source>Cloak atoms by type</source>
-        <translation type="vanished">Cloak atoms by type</translation>
-    </message>
-    <message>
-        <source>Enter element symbol:</source>
-        <translation type="vanished">Enter element symbol:</translation>
-    </message>
-    <message>
-        <source>Invalid element symbol!</source>
-        <translation type="vanished">Invalid element symbol!</translation>
-    </message>
-    <message>
-        <source>Interatomic distance</source>
-        <translation type="vanished">Interatomic distance</translation>
-    </message>
-    <message>
-        <source>At least two atoms must be selected!</source>
-        <translation type="vanished">At least two atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Angle</source>
-        <translation type="vanished">Angle</translation>
-    </message>
-    <message>
-        <source>At least three atoms must be selected!</source>
-        <translation type="vanished">At least three atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Torsion angle</source>
-        <translation type="vanished">Torsion angle</translation>
-    </message>
-    <message>
-        <source>At least four atoms must be selected!</source>
-        <translation type="vanished">At least four atoms must be selected!</translation>
-    </message>
-    <message>
-        <source>Out-of-plane angle</source>
-        <translation type="vanished">Out-of-plane angle</translation>
-    </message>
-    <message>
-        <source>Auto geometrical parameter</source>
-        <translation type="vanished">Auto geometrical parameter</translation>
-    </message>
-    <message>
-        <source>Two, three or four atoms must be selected!</source>
-        <translation type="vanished">Two, three or four atoms must be selected!</translation>
     </message>
 </context>
 <context>
@@ -896,9 +702,9 @@
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="98"/>
-        <source>Adjust Size</source>
-        <translation>Adjust Size</translation>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="95"/>
+        <source>Adjust length</source>
+        <translation>Adjust length</translation>
     </message>
 </context>
 <context>
@@ -955,14 +761,6 @@
         <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="100"/>
         <source>General</source>
         <translation>General</translation>
-    </message>
-    <message>
-        <source> (inverted)</source>
-        <translation type="vanished"> (inverted)</translation>
-    </message>
-    <message>
-        <source> (original)</source>
-        <translation type="vanished"> (original)</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="109"/>
