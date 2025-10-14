@@ -70,6 +70,7 @@ def load_gaucube(path: Path, logs: list) -> Item:
         if int(data[0]) > 0:
             if len(data) > 4:
                 if int(data[4]) > 1:
+                    logger.error("Unsupported number of data values per voxel %s in cube file.", int(data[4]))
                     raise LoadFileError(f"Unsupported number of data values per voxel {int(data[4])} in cube file.")
         elif int(data[0]) < 0:
             dset_ids = True
@@ -99,6 +100,7 @@ def load_gaucube(path: Path, logs: list) -> Item:
         if dset_ids:
             d = f.readline().split()
             if int(d[0]) != 1:
+                logger.error("Unsupported number of identifiers per voxel %s in cube file.", int(data[4]))
                 raise LoadFileError(f"Unsupported number of identifiers per voxel {int(data[4])} in cube file.")
 
         rest_data = f.read()

@@ -7,7 +7,7 @@ from .models import Data, Item
 
 
 class Project:
-    def __init__(self, path: Path = Path(), temporary: bool = False):
+    def __init__(self, path: Path, temporary: bool = False):
         self.path = path
         self._is_temporary = temporary
         self.data = Data.load(path / "data.yaml")

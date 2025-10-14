@@ -150,6 +150,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
                         elif format_str == "MOL":
                             xyz_format = Unex2XyzFormat.MOL
                         else:
+                            logger.error("Invalid or unknown XYZ format: %s", format_str)
                             raise LoadFileError(f"Invalid or unknown XYZ format {format_str}")
                     elif "--" in block_line:
                         if xyz_format == Unex2XyzFormat.UNEX:
@@ -190,6 +191,7 @@ def load_unex2x(path: Path, logs: list) -> Item:
                             else:
                                 at_num = elements.symbol(line_items[0]).number
                         except ValueError:
+                            logger.error("Invalid atom symbol: %s", line_items[0])
                             raise LoadFileError(f"Invalid atom symbol {line_items[0]}")
 
                         atomic_num.append(at_num)

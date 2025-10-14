@@ -35,6 +35,7 @@ def load_cclib(path: Path, logs: list) -> Item:
     kwargs = {"future": True}
     data = ccread(str(path), **kwargs)
     if data is None:
+        logger.error("cclib cannot determine the format of file: %s", path)
         raise LoadFileError(f"cclib cannot determine the format of file: {path}")
 
     if hasattr(data, "metadata"):
