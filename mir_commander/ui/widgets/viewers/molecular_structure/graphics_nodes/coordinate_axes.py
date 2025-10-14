@@ -42,7 +42,7 @@ class Axis(Node):
         self._thickness = 0.03
         self._cone_radius_factor = 2.0
         self._cone_length_factor = 6.0
-        self._full_length = False
+        self._both_directions = False
 
         self._cylinder = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
         self._cylinder.set_shader("default")
@@ -69,7 +69,7 @@ class Axis(Node):
         return self._thickness
 
     @property
-    def label_size(self) -> int:
+    def font_size(self) -> int:
         return self._axis_label.size
 
     @property
@@ -89,8 +89,8 @@ class Axis(Node):
         return self._cylinder.color
 
     @property
-    def full_length(self) -> bool:
-        return self._full_length
+    def both_directions(self) -> bool:
+        return self._both_directions
 
     def set_color(self, color: Color4f):
         self._cylinder.set_color(color)
@@ -107,7 +107,7 @@ class Axis(Node):
 
     def _update(self):
         self._cylinder.set_radius(self._thickness)
-        if self._full_length:
+        if self._both_directions:
             self._cylinder.set_length(self._length * 2)
             self._cylinder.set_position(-self._direction * self._length)
             self._sphere.set_visible(True)
@@ -134,11 +134,11 @@ class Axis(Node):
     def set_label_visible(self, value: bool):
         self._axis_label.set_visible(value)
 
-    def set_label_size(self, value: int):
+    def set_font_size(self, value: int):
         self._axis_label.set_size(max(value, 16))
 
-    def set_full_length(self, value: bool):
-        self._full_length = value
+    def set_both_directions(self, value: bool):
+        self._both_directions = value
         self._update()
 
 
@@ -177,15 +177,15 @@ class CoordinateAxes(Node):
 
     @property
     def labels_size(self) -> int:
-        return self._x.label_size
+        return self._x.font_size
 
     @property
     def labels_visible(self) -> bool:
         return self._x.label_visible
 
     @property
-    def full_length(self) -> bool:
-        return self._x.full_length
+    def both_directions(self) -> bool:
+        return self._x.both_directions
 
     @property
     def at_000(self) -> bool:
@@ -196,10 +196,10 @@ class CoordinateAxes(Node):
         self._y.set_label_visible(value)
         self._z.set_label_visible(value)
 
-    def set_full_length(self, value: bool):
-        self._x.set_full_length(value)
-        self._y.set_full_length(value)
-        self._z.set_full_length(value)
+    def set_both_directions(self, value: bool):
+        self._x.set_both_directions(value)
+        self._y.set_both_directions(value)
+        self._z.set_both_directions(value)
 
     def set_length(self, value: float):
         self._x.set_length(value)
@@ -212,7 +212,7 @@ class CoordinateAxes(Node):
         self._z.set_thickness(value)
         self._sphere.set_radius(value)
 
-    def set_labels_size(self, value: int):
-        self._x.set_label_size(value)
-        self._y.set_label_size(value)
-        self._z.set_label_size(value)
+    def set_font_size(self, value: int):
+        self._x.set_font_size(value)
+        self._y.set_font_size(value)
+        self._z.set_font_size(value)

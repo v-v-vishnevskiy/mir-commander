@@ -37,9 +37,9 @@ class CoordinateAxes(GroupBox):
         self._labels_visibility_checkbox.setChecked(True)
         self._labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
 
-        self._full_length_checkbox = CheckBox(CheckBox.tr("Both directions"))
-        self._full_length_checkbox.setChecked(False)
-        self._full_length_checkbox.toggled.connect(self._full_length_checkbox_toggled_handler)
+        self._both_directions_checkbox = CheckBox(CheckBox.tr("Both directions"))
+        self._both_directions_checkbox.setChecked(False)
+        self._both_directions_checkbox.toggled.connect(self._both_directions_checkbox_toggled_handler)
 
         self._center_checkbox = CheckBox(CheckBox.tr("Center"))
         self._center_checkbox.setChecked(False)
@@ -47,7 +47,7 @@ class CoordinateAxes(GroupBox):
 
         layout.addWidget(self._visibility_checkbox, 0, 0)
         layout.addWidget(self._labels_visibility_checkbox, 0, 1)
-        layout.addWidget(self._full_length_checkbox, 1, 0)
+        layout.addWidget(self._both_directions_checkbox, 1, 0)
         layout.addWidget(self._center_checkbox, 1, 1)
 
         return layout
@@ -55,7 +55,7 @@ class CoordinateAxes(GroupBox):
     def _add_sliders(self) -> QGridLayout:
         layout = QGridLayout()
 
-        self.length_slider, self.length_double_spinbox = add_slider(
+        self._length_slider, self._length_double_spinbox = add_slider(
             layout=layout,
             row=0,
             text=Label.tr("Length:"),
@@ -65,10 +65,10 @@ class CoordinateAxes(GroupBox):
             factor=100,
             decimals=1,
         )
-        self.length_slider.valueChanged.connect(self.length_slider_value_changed_handler)
-        self.length_double_spinbox.valueChanged.connect(self.length_double_spinbox_value_changed_handler)
+        self._length_slider.valueChanged.connect(self._length_slider_value_changed_handler)
+        self._length_double_spinbox.valueChanged.connect(self._length_double_spinbox_value_changed_handler)
 
-        self.thickness_slider, self.thickness_double_spinbox = add_slider(
+        self._thickness_slider, self._thickness_double_spinbox = add_slider(
             layout=layout,
             row=1,
             text=Label.tr("Thickness:"),
@@ -78,10 +78,10 @@ class CoordinateAxes(GroupBox):
             factor=100,
             decimals=2,
         )
-        self.thickness_slider.valueChanged.connect(self.thickness_slider_value_changed_handler)
-        self.thickness_double_spinbox.valueChanged.connect(self.thickness_double_spinbox_value_changed_handler)
+        self._thickness_slider.valueChanged.connect(self._thickness_slider_value_changed_handler)
+        self._thickness_double_spinbox.valueChanged.connect(self._thickness_double_spinbox_value_changed_handler)
 
-        self.label_size_slider, self.label_size_double_spinbox = add_slider(
+        self._font_size_slider, self._font_size_double_spinbox = add_slider(
             layout=layout,
             row=2,
             text=Label.tr("Font size:"),
@@ -89,8 +89,8 @@ class CoordinateAxes(GroupBox):
             max_value=500,
             single_step=1,
         )
-        self.label_size_slider.valueChanged.connect(self.label_size_slider_value_changed_handler)
-        self.label_size_double_spinbox.valueChanged.connect(self.label_size_double_spinbox_value_changed_handler)
+        self._font_size_slider.valueChanged.connect(self._font_size_slider_value_changed_handler)
+        self._font_size_double_spinbox.valueChanged.connect(self._font_size_double_spinbox_value_changed_handler)
 
         adjust_length_button = PushButton(PushButton.tr("Adjust length"))
         adjust_length_button.clicked.connect(self._adjust_labels_length_button_clicked_handler)
@@ -144,37 +144,37 @@ class CoordinateAxes(GroupBox):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axes_labels_visible(value)
 
-    def _full_length_checkbox_toggled_handler(self, value: bool):
+    def _both_directions_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
-            viewer.visualizer.set_coordinate_axes_full_length(value)
+            viewer.visualizer.set_coordinate_axes_both_directions(value)
 
     def _center_checkbox_toggled_handler(self, value: bool):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axes_center(value)
 
-    def length_slider_value_changed_handler(self, i: int):
-        self.length_double_spinbox.setValue(i / 100)
+    def _length_slider_value_changed_handler(self, i: int):
+        self._length_double_spinbox.setValue(i / 100)
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axes_length(i / 100)
 
-    def length_double_spinbox_value_changed_handler(self, value: float):
-        self.length_slider.setValue(int(value * 100))
+    def _length_double_spinbox_value_changed_handler(self, value: float):
+        self._length_slider.setValue(int(value * 100))
 
-    def thickness_slider_value_changed_handler(self, i: int):
-        self.thickness_double_spinbox.setValue(i / 100)
+    def _thickness_slider_value_changed_handler(self, i: int):
+        self._thickness_double_spinbox.setValue(i / 100)
         for viewer in self._settings.viewers:
             viewer.visualizer.set_coordinate_axes_thickness(i / 100)
 
-    def thickness_double_spinbox_value_changed_handler(self, value: float):
-        self.thickness_slider.setValue(int(value * 100))
+    def _thickness_double_spinbox_value_changed_handler(self, value: float):
+        self._thickness_slider.setValue(int(value * 100))
 
-    def label_size_slider_value_changed_handler(self, i: int):
-        self.label_size_double_spinbox.setValue(i)
+    def _font_size_slider_value_changed_handler(self, i: int):
+        self._font_size_double_spinbox.setValue(i)
         for viewer in self._settings.viewers:
-            viewer.visualizer.set_coordinate_axes_labels_size(i)
+            viewer.visualizer.set_coordinate_axes_font_size(i)
 
-    def label_size_double_spinbox_value_changed_handler(self, value: int):
-        self.label_size_slider.setValue(value)
+    def _font_size_double_spinbox_value_changed_handler(self, value: int):
+        self._font_size_slider.setValue(value)
 
     def _axis_label_color_changed_handler(self, axis: str, color: QColor):
         for viewer in self._settings.viewers:
@@ -190,24 +190,24 @@ class CoordinateAxes(GroupBox):
 
     def _adjust_labels_length_button_clicked_handler(self):
         for viewer in self._settings.viewers:
-            viewer.visualizer.adjust_coordinate_axes_length()
+            viewer.visualizer.coordinate_axes_adjust_length()
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         coordinate_axes = viewer.visualizer.coordinate_axes
 
         self._visibility_checkbox.setChecked(coordinate_axes.visible)
         self._labels_visibility_checkbox.setChecked(coordinate_axes.labels_visible)
-        self._full_length_checkbox.setChecked(coordinate_axes.full_length)
+        self._both_directions_checkbox.setChecked(coordinate_axes.both_directions)
         self._center_checkbox.setChecked(not coordinate_axes.at_000)
 
-        self.length_slider.setValue(int(coordinate_axes.length * 100))
-        self.length_double_spinbox.setValue(coordinate_axes.length)
+        self._length_slider.setValue(int(coordinate_axes.length * 100))
+        self._length_double_spinbox.setValue(coordinate_axes.length)
 
-        self.thickness_slider.setValue(int(coordinate_axes.thickness * 100))
-        self.thickness_double_spinbox.setValue(coordinate_axes.thickness)
+        self._thickness_slider.setValue(int(coordinate_axes.thickness * 100))
+        self._thickness_double_spinbox.setValue(coordinate_axes.thickness)
 
-        self.label_size_slider.setValue(coordinate_axes.labels_size)
-        self.label_size_double_spinbox.setValue(coordinate_axes.labels_size)
+        self._font_size_slider.setValue(coordinate_axes.labels_size)
+        self._font_size_double_spinbox.setValue(coordinate_axes.labels_size)
 
         self._x_axis_color_button.set_color(color4f_to_qcolor(coordinate_axes.x.axis_color))
         self._y_axis_color_button.set_color(color4f_to_qcolor(coordinate_axes.y.axis_color))

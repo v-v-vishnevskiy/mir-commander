@@ -38,7 +38,7 @@ class MolecularStructureViewer(Viewer):
         self._draw_item = item
         self._set_draw_item()
         self.visualizer.add_atomic_coordinates(self._draw_item.data().data)
-        self.visualizer.adjust_coordinate_axes_length()
+        self.visualizer.coordinate_axes_adjust_length()
 
         self._context_menu = ContextMenu(parent=self, app_config=app_config)
 

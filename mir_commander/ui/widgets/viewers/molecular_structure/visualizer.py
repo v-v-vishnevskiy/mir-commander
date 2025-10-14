@@ -109,7 +109,7 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
-    def adjust_coordinate_axes_length(self):
+    def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
         self.update()
 
@@ -121,8 +121,8 @@ class Visualizer(OpenGLWidget):
         self._coordinate_axes.set_length(value)
         self.update()
 
-    def set_coordinate_axes_labels_size(self, value: int):
-        self._coordinate_axes.set_labels_size(value)
+    def set_coordinate_axes_font_size(self, value: int):
+        self._coordinate_axes.set_font_size(value)
         self.update()
 
     def set_coordinate_axes_visible(self, value: bool):
@@ -133,8 +133,8 @@ class Visualizer(OpenGLWidget):
         self._coordinate_axes.set_labels_visible(value)
         self.update()
 
-    def set_coordinate_axes_full_length(self, value: bool):
-        self._coordinate_axes.set_full_length(value)
+    def set_coordinate_axes_both_directions(self, value: bool):
+        self._coordinate_axes.set_both_directions(value)
         self.update()
 
     def set_coordinate_axes_center(self, value: bool):
