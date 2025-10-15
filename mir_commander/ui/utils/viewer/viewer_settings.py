@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QSizePolicy, QWidget
 
-from mir_commander.ui.utils.widget import CheckBox
+from mir_commander.ui.utils.widget import CheckBox, GroupVBoxLayout
 
 if TYPE_CHECKING:
     from .viewer import Viewer
@@ -21,8 +21,11 @@ class ViewerSettings(Generic[T], QWidget):
         # "Apply for all" checkbox
         self._apply_for_all = False
 
-        self._layout = QVBoxLayout()
+        self._layout = GroupVBoxLayout()
         self.setLayout(self._layout)
+
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred))
 
         if apply_for_all_checkbox:
             self._apply_for_all_checkbox = CheckBox(CheckBox.tr("Apply for all"), self)
@@ -43,7 +46,7 @@ class ViewerSettings(Generic[T], QWidget):
             return [self._active_viewer] if self._active_viewer is not None else []
 
     @property
-    def layout(self) -> QVBoxLayout:  # type: ignore[override]
+    def layout(self) -> GroupVBoxLayout:  # type: ignore[override]
         return self._layout
 
     def _apply_for_all_checkbox_toggled_handler(self, checked: bool):

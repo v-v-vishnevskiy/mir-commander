@@ -14,3 +14,4 @@ class ObjectDock(BaseDock):
         super().__init__(self.tr("Object"), parent)
 
         self.setMinimumWidth(200)
+        self.setContentsMargins(0, 0, 0, 0)

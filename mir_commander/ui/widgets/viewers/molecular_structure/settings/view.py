@@ -2,9 +2,9 @@ import contextlib
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QSignalBlocker
-from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
+from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout, QWidget
 
-from mir_commander.ui.utils.widget import GroupBox, Label, PushButton, TrString
+from mir_commander.ui.utils.widget import Label, PushButton, TrString
 
 from .utils import add_slider
 
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class View(GroupBox):
+class View(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("View"), parent=parent)
+        super().__init__(parent=parent)
 
         self._settings = parent
 
@@ -28,9 +28,13 @@ class View(GroupBox):
         reset_button = PushButton(PushButton.tr("Reset"))
         reset_button.clicked.connect(self._reset_button_clicked_handler)
 
+        save_image_button = PushButton(PushButton.tr("Save image"))
+        save_image_button.clicked.connect(self._save_image_button_clicked_handler)
+
         layout = QVBoxLayout(self)
         layout.addLayout(self._add_translations())
         layout.addWidget(reset_button)
+        layout.addWidget(save_image_button)
         self.setLayout(layout)
 
     def _add_translations(self) -> QGridLayout:
@@ -93,25 +97,6 @@ class View(GroupBox):
             lambda value: self._rotation_double_spinbox_value_changed_handler(axis, value)
         )
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        values = {axis: value for axis, value in zip(self._axis_order, viewer.visualizer.scene_rotation)}
-
-        with contextlib.ExitStack() as stack:
-            for axis in self._axis_order:
-                stack.enter_context(QSignalBlocker(self._rotation_slider[axis]))
-                stack.enter_context(QSignalBlocker(self._rotation_double_spinbox[axis]))
-            stack.enter_context(QSignalBlocker(self._scale_slider))
-            stack.enter_context(QSignalBlocker(self._scale_double_spinbox))
-
-            for axis, value in values.items():
-                self._axis_prev_value[axis] = value
-                self._rotation_slider[axis].setValue(int(value * 10))
-                self._rotation_double_spinbox[axis].setValue(value)
-
-            self._scale_prev_value = scale = viewer.visualizer.get_scene_scale()
-            self._scale_slider.setValue(int(scale * 100))
-            self._scale_double_spinbox.setValue(scale)
-
     def _rotation_slider_value_changed_handler(self, axis: str, i: int):
         self._rotation_double_spinbox[axis].setValue(i / 10)
 
@@ -152,3 +137,27 @@ class View(GroupBox):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_scene_rotation(0, 0, 0)
             viewer.visualizer.set_scene_scale(1.0)
+
+    def _save_image_button_clicked_handler(self):
+        filenames = []
+        for viewer in self._settings.viewers:
+            filenames.append(viewer.windowTitle())
+
+    def update_values(self, viewer: "MolecularStructureViewer"):
+        values = {axis: value for axis, value in zip(self._axis_order, viewer.visualizer.scene_rotation)}
+
+        with contextlib.ExitStack() as stack:
+            for axis in self._axis_order:
+                stack.enter_context(QSignalBlocker(self._rotation_slider[axis]))
+                stack.enter_context(QSignalBlocker(self._rotation_double_spinbox[axis]))
+            stack.enter_context(QSignalBlocker(self._scale_slider))
+            stack.enter_context(QSignalBlocker(self._scale_double_spinbox))
+
+            for axis, value in values.items():
+                self._axis_prev_value[axis] = value
+                self._rotation_slider[axis].setValue(int(value * 10))
+                self._rotation_double_spinbox[axis].setValue(value)
+
+            self._scale_prev_value = scale = viewer.visualizer.get_scene_scale()
+            self._scale_slider.setValue(int(scale * 100))
+            self._scale_double_spinbox.setValue(scale)

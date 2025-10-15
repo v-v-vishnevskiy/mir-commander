@@ -380,12 +380,12 @@
         <translation>Crop to content</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/utils/viewer/viewer_settings.py" line="28"/>
+        <location filename="../../mir_commander/ui/utils/viewer/viewer_settings.py" line="31"/>
         <source>Apply for all</source>
         <translation>Apply for all</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="225"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="226"/>
         <source>Inverse</source>
         <translation>Inverse</translation>
     </message>
@@ -429,9 +429,8 @@
 <context>
     <name>CoordinateAxes</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="19"/>
         <source>Coordinate Axes</source>
-        <translation>Coordinate Axes</translation>
+        <translation type="vanished">Coordinate Axes</translation>
     </message>
 </context>
 <context>
@@ -525,47 +524,66 @@
         <translation>Axis Z:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="42"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="46"/>
         <source>Rotation X:</source>
         <translation>Rotation X:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="44"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="48"/>
         <source>Rotation angle around the X-axis in window coordinates</source>
         <translation>Rotation angle around the X-axis in window coordinates</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="49"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="53"/>
         <source>Rotation Y:</source>
         <translation>Rotation Y:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="51"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="55"/>
         <source>Rotation angle around the Y-axis in window coordinates</source>
         <translation>Rotation angle around the Y-axis in window coordinates</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="56"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="60"/>
         <source>Rotation Z:</source>
         <translation>Rotation Z:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="58"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="62"/>
         <source>Rotation angle around the Z-axis in window coordinates</source>
         <translation>Rotation angle around the Z-axis in window coordinates</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="64"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="68"/>
         <source>Scale:</source>
         <translation>Scale:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="24"/>
+        <source>View</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="25"/>
+        <source>Coordinate Axes</source>
+        <translation>Coordinate Axes</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="26"/>
+        <source>Labels</source>
+        <translation>Labels</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="27"/>
+        <source>Volume Cube Isosurfaces</source>
+        <translation>Volume Cube Isosurfaces</translation>
     </message>
 </context>
 <context>
     <name>Labels</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/labels.py" line="16"/>
         <source>Labels</source>
-        <translation>Labels</translation>
+        <translation type="vanished">Labels</translation>
     </message>
 </context>
 <context>
@@ -739,7 +757,7 @@
         <translation>Choose...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="222"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="223"/>
         <source>Add</source>
         <translation>Add</translation>
     </message>
@@ -752,6 +770,11 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="28"/>
         <source>Reset</source>
         <translation>Reset</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="31"/>
+        <source>Save image</source>
+        <translation>Save image</translation>
     </message>
 </context>
 <context>
@@ -810,22 +833,22 @@
         <translation>General</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="109"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="110"/>
         <source>{} (inverted)</source>
         <translation>{} (inverted)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="111"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="112"/>
         <source>{} (original)</source>
         <translation>{} (original)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="125"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="126"/>
         <source>inverted</source>
         <translation>inverted</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="127"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="128"/>
         <source>original</source>
         <translation>original</translation>
     </message>
@@ -849,9 +872,8 @@
 <context>
     <name>View</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="18"/>
         <source>View</source>
-        <translation>View</translation>
+        <translation type="vanished">View</translation>
     </message>
 </context>
 <context>
@@ -960,9 +982,8 @@
 <context>
     <name>VolumeCube</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="205"/>
         <source>Volume Cube Isosurfaces</source>
-        <translation>Volume Cube Isosurfaces</translation>
+        <translation type="vanished">Volume Cube Isosurfaces</translation>
     </message>
 </context>
 </TS>

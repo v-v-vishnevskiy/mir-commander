@@ -380,12 +380,12 @@
         <translation>Обрезать до содержимого</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/utils/viewer/viewer_settings.py" line="28"/>
+        <location filename="../../mir_commander/ui/utils/viewer/viewer_settings.py" line="31"/>
         <source>Apply for all</source>
         <translation>Применить для всех</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="225"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="226"/>
         <source>Inverse</source>
         <translation>Инвертировать</translation>
     </message>
@@ -433,9 +433,8 @@
 <context>
     <name>CoordinateAxes</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/coordinate_axes.py" line="19"/>
         <source>Coordinate Axes</source>
-        <translation>Координатные оси</translation>
+        <translation type="vanished">Координатные оси</translation>
     </message>
 </context>
 <context>
@@ -529,47 +528,66 @@
         <translation>Ось Z:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="42"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="46"/>
         <source>Rotation X:</source>
         <translation>Вращение X:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="44"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="48"/>
         <source>Rotation angle around the X-axis in window coordinates</source>
         <translation>Угол поворота вокруг оси X в оконных координатах</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="49"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="53"/>
         <source>Rotation Y:</source>
         <translation>Вращение Y:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="51"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="55"/>
         <source>Rotation angle around the Y-axis in window coordinates</source>
         <translation>Угол поворота вокруг оси Y в оконных координатах</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="56"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="60"/>
         <source>Rotation Z:</source>
         <translation>Вращение Z:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="58"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="62"/>
         <source>Rotation angle around the Z-axis in window coordinates</source>
         <translation>Угол поворота вокруг оси Z в оконных координатах</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="64"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="68"/>
         <source>Scale:</source>
         <translation>Масштаб:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="24"/>
+        <source>View</source>
+        <translation>Вид</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="25"/>
+        <source>Coordinate Axes</source>
+        <translation>Координатные оси</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="26"/>
+        <source>Labels</source>
+        <translation>Подписи</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="27"/>
+        <source>Volume Cube Isosurfaces</source>
+        <translation>Изоповерхности объемного куба</translation>
     </message>
 </context>
 <context>
     <name>Labels</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/labels.py" line="16"/>
         <source>Labels</source>
-        <translation>Подписи</translation>
+        <translation type="vanished">Подписи</translation>
     </message>
 </context>
 <context>
@@ -743,7 +761,7 @@
         <translation>Выбрать...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="222"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="223"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
@@ -756,6 +774,11 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="28"/>
         <source>Reset</source>
         <translation>Сбросить</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="31"/>
+        <source>Save image</source>
+        <translation>Сохраненить изображение</translation>
     </message>
 </context>
 <context>
@@ -814,22 +837,22 @@
         <translation>Основные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="109"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="110"/>
         <source>{} (inverted)</source>
         <translation>{} (инвертированный)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="111"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="112"/>
         <source>{} (original)</source>
         <translation>{} (оригинальный)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="125"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="126"/>
         <source>inverted</source>
         <translation>инвертированный</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="127"/>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="128"/>
         <source>original</source>
         <translation>оригинальный</translation>
     </message>
@@ -853,9 +876,8 @@
 <context>
     <name>View</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/view.py" line="18"/>
         <source>View</source>
-        <translation>Вид</translation>
+        <translation type="vanished">Вид</translation>
     </message>
 </context>
 <context>
@@ -964,9 +986,8 @@
 <context>
     <name>VolumeCube</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/volume_cube.py" line="205"/>
         <source>Volume Cube Isosurfaces</source>
-        <translation>Изоповерхности объемного куба</translation>
+        <translation type="vanished">Изоповерхности объемного куба</translation>
     </message>
 </context>
 </TS>

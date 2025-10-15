@@ -9,10 +9,11 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QPushButton,
     QVBoxLayout,
+    QWidget,
 )
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, PushButton, StandardItem, TreeView
+from mir_commander.ui.utils.widget import CheckBox, PushButton, StandardItem, TreeView
 
 from ..entities import VolumeCubeIsosurfaceGroup
 from ..errors import EmptyScalarFieldError
@@ -200,9 +201,9 @@ class ColorButtonNewIsosurface(QFrame):
             self.set_color(color)
 
 
-class VolumeCube(GroupBox):
+class VolumeCube(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("Volume Cube Isosurfaces"), parent=parent)
+        super().__init__(parent=parent)
 
         self._settings = parent
 

@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, PushButton, TrString
+from mir_commander.ui.utils.widget import CheckBox, Label, PushButton, TrString
 
 from .utils import ColorButton, add_slider
 
@@ -14,9 +14,9 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class CoordinateAxes(GroupBox):
+class CoordinateAxes(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("Coordinate Axes"), parent=parent)
+        super().__init__(parent=parent)
 
         self._settings = parent
 

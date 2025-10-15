@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QGridLayout, QVBoxLayout
+from PySide6.QtWidgets import QGridLayout, QVBoxLayout, QWidget
 
-from mir_commander.ui.utils.widget import GroupBox, Label
+from mir_commander.ui.utils.widget import Label
 
 from .utils import add_slider
 
@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class Labels(GroupBox):
+class Labels(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(self.tr("Labels"))
+        super().__init__(parent=parent)
 
         self._settings = parent
 

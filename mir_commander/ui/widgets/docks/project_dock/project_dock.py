@@ -22,6 +22,7 @@ class ProjectDock(BaseDock):
         self.tree = TreeView(self, project.data, config.tree)
         self.tree.load_data()
         self.setMinimumWidth(200)
+        self.setContentsMargins(0, 0, 0, 0)
         self.setWidget(self.tree)
 
     def add_item_to_root(self, item: Item):

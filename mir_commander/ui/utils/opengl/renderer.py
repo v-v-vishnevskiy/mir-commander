@@ -1,4 +1,5 @@
 import ctypes
+import logging
 from typing import Hashable, cast
 
 import numpy as np
@@ -61,6 +62,8 @@ from .resource_manager import ResourceManager, UniformLocations
 from .scene import Node, NodeType, RenderingContainer, TextNode
 from .utils import Color4f, crop_image_to_content
 from .wboit import WBOIT
+
+logger = logging.getLogger("OpenGL.Renderer")
 
 
 class Renderer:
@@ -404,6 +407,7 @@ class Renderer:
         try:
             return self._render_to_image(width, height, transparent_bg, crop_to_content)
         except OpenGL.error.GLError as e:
+            logger.error("Error rendering to image: %s", e)
             raise Error(f"Error rendering to image: {e}")
 
     def picking_image(self) -> QImage:

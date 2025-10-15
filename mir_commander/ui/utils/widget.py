@@ -1,14 +1,16 @@
 from time import monotonic
 from typing import Any, Self, cast
 
-from PySide6.QtCore import QCoreApplication, QEvent, QObject
-from PySide6.QtGui import QAction, QStandardItem
+from PySide6.QtCore import QCoreApplication, QEvent, QObject, Qt
+from PySide6.QtGui import QAction, QMouseEvent, QStandardItem
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
     QDockWidget,
+    QFrame,
     QGroupBox,
+    QHBoxLayout,
     QLabel,
     QListView,
     QMenu,
@@ -18,6 +20,7 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QToolBar,
     QTreeView,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -307,3 +310,77 @@ class ToolBar(Widget, QToolBar):
             if isinstance(action, Action):
                 action.retranslate()
         self.setTitle(self.__title)
+
+
+class _GroupHeaderWidget(QFrame):
+    def __init__(self, title: str, layout_widget: "_GroupLayoutWidget"):
+        super().__init__()
+
+        self._parent = layout_widget
+
+        self.setFixedHeight(20)
+        self.setStyleSheet("QFrame { border: 0px solid black; padding: 2px; background-color: #D0D0D0; }")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self._icon = QFrame()
+        self._icon.setFixedSize(16, 16)
+
+        label = Label(title)
+        label.setStyleSheet("QLabel { padding: 0px; margin: 0px; }")
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self._icon)
+        layout.addSpacing(4)
+        layout.addWidget(label)
+        layout.addStretch()
+        self.setLayout(layout)
+        self._apply_style()
+
+    def _apply_style(self):
+        if self._parent.collapsed:
+            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-right.png); }")
+        else:
+            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-down.png); }")
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self._parent.toggle_collapse()
+        self._apply_style()
+
+
+class _GroupLayoutWidget(QVBoxLayout):
+    def __init__(self, title: str, widget: QWidget, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._collapsed = False
+        self._widget = widget
+
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+        self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
+        self.addWidget(self._widget)
+
+    @property
+    def collapsed(self) -> bool:
+        return self._collapsed
+
+    def toggle_collapse(self):
+        self._collapsed = not self._collapsed
+
+        if self._collapsed:
+            self._widget.hide()
+            self.removeWidget(self._widget)
+        else:
+            self.insertWidget(1, self._widget)
+            self._widget.show()
+
+
+class GroupVBoxLayout(QVBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+
+    def add_widget(self, title: str, widget: QWidget, *args, **kwargs):
+        super().addLayout(_GroupLayoutWidget(title, widget), *args, **kwargs)
