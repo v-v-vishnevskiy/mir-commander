@@ -25,9 +25,13 @@ class ViewerDock(BaseDock):
         self._viewer_settings_widgets: dict[type, ViewerSettings] = {}
         self._all_viewers: dict[type, list[Viewer]] = defaultdict(list)
 
-    def add_viewer_settings_widget(self, viewer: type[Viewer]):
-        if viewer not in self._viewer_settings_widgets and viewer.settings is not None:
+    def add_viewer_settings_widget(self, viewer: type[Viewer]) -> ViewerSettings | None:
+        if viewer.settings is None:
+            return None
+
+        if viewer not in self._viewer_settings_widgets:
             self._viewer_settings_widgets[viewer] = viewer.settings()
+        return self._viewer_settings_widgets[viewer]
 
     def set_viewer_settings_widget(self, viewer: None | Viewer):
         viewer_cls = viewer.__class__
