@@ -61,6 +61,9 @@ class Transform:
         self._matrix.rotate(self._rotation)
         self._matrix.scale(self._scale)
 
+    def get_scale(self) -> QVector3D:
+        return self._scale
+
     def scale(self, value: QVector3D):
         self._scale *= value
         self._dirty = True

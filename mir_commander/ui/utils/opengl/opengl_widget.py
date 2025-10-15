@@ -140,8 +140,11 @@ class OpenGLWidget(QOpenGLWidget):
         return self._cursor_pos.x(), self._cursor_pos.y()
 
     @property
-    def rotation(self) -> tuple[float, float, float]:
+    def scene_rotation(self) -> tuple[float, float, float]:
         return self.resource_manager.current_scene.transform.rotation_angles
+
+    def get_scene_scale(self) -> float:
+        return self.resource_manager.current_scene.transform.get_scale().x()
 
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
@@ -231,12 +234,22 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.current_scene.transform.rotate(pitch, yaw, roll)
         self.update()
 
-    def set_rotation_scene(self, pitch: float, yaw: float, roll: float):
+    def set_scene_rotation(self, pitch: float, yaw: float, roll: float):
         self.resource_manager.current_scene.transform.set_rotation(pitch, yaw, roll)
         self.update()
 
     def scale_scene(self, factor: float):
+        if factor == 1.0 or factor == 0.0:
+            return
+
         self.resource_manager.current_scene.transform.scale(QVector3D(factor, factor, factor))
+        self.update()
+
+    def set_scene_scale(self, factor: float):
+        if factor == 0.0:
+            return
+
+        self.resource_manager.current_scene.transform.set_scale(QVector3D(factor, factor, factor))
         self.update()
 
     def new_cursor_position(self, x: int, y: int):

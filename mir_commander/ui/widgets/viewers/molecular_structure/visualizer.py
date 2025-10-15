@@ -113,6 +113,11 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
+    def scale_scene(self, value: float):
+        super().scale_scene(value)
+        if self._settings_widget is not None:
+            self._settings_widget.rotation.update_values(self.parent())
+
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
         if self._settings_widget is not None:
