@@ -116,12 +116,12 @@ class Visualizer(OpenGLWidget):
     def scale_scene(self, value: float):
         super().scale_scene(value)
         if self.hasFocus() and self._settings_widget is not None:
-            self._settings_widget.affine_transformation.update_values(self.parent())
+            self._settings_widget.view.update_values(self.parent())
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
         if self.hasFocus() and self._settings_widget is not None:
-            self._settings_widget.affine_transformation.update_values(self.parent())
+            self._settings_widget.view.update_values(self.parent())
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)

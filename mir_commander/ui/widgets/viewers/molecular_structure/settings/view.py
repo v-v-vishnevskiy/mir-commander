@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class AffineTransformation(GroupBox):
+class View(GroupBox):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("Affine Transformation"), parent=parent)
+        super().__init__(text=self.tr("View"), parent=parent)
 
         self._settings = parent
 
