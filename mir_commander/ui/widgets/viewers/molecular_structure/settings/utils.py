@@ -11,13 +11,14 @@ def add_slider(
     text: TrString,
     min_value: float,
     max_value: float,
-    single_step: float,
+    label_tooltip: TrString | None = None,
+    single_step: float = 1.0,
     factor: int = 1,
     decimals: int = 0,
 ) -> tuple[QSlider, QDoubleSpinBox]:
     slider = QSlider(Qt.Orientation.Horizontal)
     slider.setRange(int(min_value * factor), int(max_value * factor))
-    slider.setSingleStep(1)
+    slider.setSingleStep(int(single_step * factor))
 
     double_spinbox = QDoubleSpinBox()
     double_spinbox.setRange(min_value, max_value)
@@ -25,6 +26,8 @@ def add_slider(
     double_spinbox.setDecimals(decimals)
 
     label = Label(text)
+    if label_tooltip is not None:
+        label.setToolTip(label_tooltip)
     label.setAlignment(Qt.AlignmentFlag.AlignLeft)
     layout.addWidget(label, row, 0)
     layout.addWidget(slider, row, 1)

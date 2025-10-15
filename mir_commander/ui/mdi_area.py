@@ -30,11 +30,12 @@ class MdiArea(QMdiArea):
                 self.setActiveSubWindow(viewer)
                 break
         else:
-            self._viewer_settings_dock.add_viewer_settings_widget(viewer_cls)
+            settings_widget = self._viewer_settings_dock.add_viewer_settings_widget(viewer_cls)
             viewer = viewer_cls(
                 parent=self,
                 app_config=self._app_config,
                 item=item,
+                settings_widget=settings_widget,
                 **kwargs,
             )
             self.opened_viewer_signal.emit(viewer)

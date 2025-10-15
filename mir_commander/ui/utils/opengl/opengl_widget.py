@@ -40,7 +40,7 @@ class OpenGLWidget(QOpenGLWidget):
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation
         self._wheel_mode = WheelMode.Scale
-        self._rotation_speed = 1.0
+        self._rotation_speed = 0.5
         self._scale_speed = 1.0
 
         # Initialize components
@@ -128,16 +128,23 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.current_scene.clear()
 
     def init_actions(self):
-        self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1, 0)
-        self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1, 0)
-        self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0, -1)
-        self.action_handler.add_action("rotate_right", True, self.rotate_scene, 0, 1)
-        self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.015)
-        self.action_handler.add_action("zoom_out", True, self.scale_scene, 0.975)
+        self.action_handler.add_action("rotate_up", True, self.rotate_scene, -1.0 * self._rotation_speed, 0.0, 0.0)
+        self.action_handler.add_action("rotate_down", True, self.rotate_scene, 1.0 * self._rotation_speed, 0.0, 0.0)
+        self.action_handler.add_action("rotate_left", True, self.rotate_scene, 0.0, -1.0 * self._rotation_speed, 0.0)
+        self.action_handler.add_action("rotate_right", True, self.rotate_scene, 0.0, 1.0 * self._rotation_speed, 0.0)
+        self.action_handler.add_action("zoom_in", True, self.scale_scene, 1.0 + 0.05 * self._scale_speed)
+        self.action_handler.add_action("zoom_out", True, self.scale_scene, 1.0 - 0.05 * self._scale_speed)
 
     @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
+
+    @property
+    def scene_rotation(self) -> tuple[float, float, float]:
+        return self.resource_manager.current_scene.transform.rotation_angles
+
+    def get_scene_scale(self) -> float:
+        return self.resource_manager.current_scene.transform.get_scale().x()
 
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
@@ -160,7 +167,7 @@ class OpenGLWidget(QOpenGLWidget):
         if event.buttons() == Qt.MouseButton.LeftButton:
             if self._click_and_move_mode == ClickAndMoveMode.Rotation:
                 diff = pos - self._cursor_pos
-                self.rotate_scene(diff.y(), diff.x())
+                self.rotate_scene(self._rotation_speed * diff.y(), self._rotation_speed * diff.x(), 0.0)
         else:
             self.new_cursor_position(pos.x(), pos.y())
 
@@ -220,12 +227,29 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer.set_background_color(color)
         self.update()
 
-    def rotate_scene(self, pitch: float, yaw: float, roll: float = 0.0):
+    def rotate_scene(self, pitch: float, yaw: float, roll: float):
+        if pitch == 0.0 and yaw == 0.0 and roll == 0.0:
+            return
+
         self.resource_manager.current_scene.transform.rotate(pitch, yaw, roll)
         self.update()
 
+    def set_scene_rotation(self, pitch: float, yaw: float, roll: float):
+        self.resource_manager.current_scene.transform.set_rotation(pitch, yaw, roll)
+        self.update()
+
     def scale_scene(self, factor: float):
+        if factor == 1.0 or factor == 0.0:
+            return
+
         self.resource_manager.current_scene.transform.scale(QVector3D(factor, factor, factor))
+        self.update()
+
+    def set_scene_scale(self, factor: float):
+        if factor == 0.0:
+            return
+
+        self.resource_manager.current_scene.transform.set_scale(QVector3D(factor, factor, factor))
         self.update()
 
     def new_cursor_position(self, x: int, y: int):

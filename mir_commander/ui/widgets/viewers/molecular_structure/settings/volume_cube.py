@@ -44,7 +44,7 @@ class ColorButton(QPushButton):
             self._set_style_sheet(color)
             for viewer in self._settings.viewers:
                 viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
-            self._settings._volume_cube.refresh_values()
+            self._settings.volume_cube.refresh_values()
 
 
 class VisibilityButton(QPushButton):
@@ -65,7 +65,7 @@ class VisibilityButton(QPushButton):
 
         for viewer in self._settings.viewers:
             viewer.visualizer.set_node_visible(self._id, self._visible, **kwargs)
-        self._settings._volume_cube.refresh_values()
+        self._settings.volume_cube.refresh_values()
 
 
 class DeleteButton(QPushButton):
@@ -80,7 +80,7 @@ class DeleteButton(QPushButton):
     def clicked_handler(self):
         for viewer in self._settings.viewers:
             viewer.visualizer.remove_node(self._id)
-        self._settings._volume_cube.refresh_values()
+        self._settings.volume_cube.refresh_values()
 
 
 class IsosurfacesTreeView(TreeView):

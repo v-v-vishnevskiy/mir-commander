@@ -12,12 +12,15 @@ class Viewer(QMdiSubWindow):
     long_msg_signal = Signal(str)
     settings: type[ViewerSettings] | None = None
 
-    def __init__(self, parent: QWidget, item: QStandardItem, app_config: AppConfig):
+    def __init__(
+        self, parent: QWidget, item: QStandardItem, app_config: AppConfig, settings_widget: ViewerSettings | None
+    ):
         super().__init__(parent=parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.item = item
         self.app_config = app_config
+        self.settings_widget = settings_widget
 
     def get_config(self) -> BaseModel:
         raise NotImplementedError("This method should be implemented in the subclass")

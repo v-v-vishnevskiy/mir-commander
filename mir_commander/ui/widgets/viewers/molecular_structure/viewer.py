@@ -1,8 +1,6 @@
 from PySide6.QtGui import QContextMenuEvent, QStandardItem
-from PySide6.QtWidgets import QWidget
 
 from mir_commander.core.models import AtomicCoordinates, VolumeCube
-from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.viewer import Viewer
 
 from .config import MolecularStructureViewerConfig
@@ -13,34 +11,31 @@ from .visualizer import Visualizer
 
 class MolecularStructureViewer(Viewer):
     settings = Settings
+    settings_widget: Settings
 
-    def __init__(
-        self,
-        parent: QWidget,
-        item: QStandardItem,
-        app_config: AppConfig,
-        all: bool = False,
-    ):
-        super().__init__(parent=parent, item=item, app_config=app_config)
+    def __init__(self, all: bool = False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self._config = app_config.project_window.widgets.viewers.molecular_structure
+        self._config = self.app_config.project_window.widgets.viewers.molecular_structure
 
         self._all = all
 
-        self.visualizer = Visualizer(parent=self, title=item.text(), app_config=app_config)
+        self.visualizer = Visualizer(
+            parent=self, title=self.item.text(), app_config=self.app_config, settings_widget=self.settings_widget
+        )
         self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
-        match item.data().data:
+        match self.item.data().data:
             case VolumeCube():
-                self.visualizer.set_volume_cube(item.data().data)
+                self.visualizer.set_volume_cube(self.item.data().data)
 
         self._molecule_index = 0
-        self._draw_item = item
+        self._draw_item = self.item
         self._set_draw_item()
         self.visualizer.add_atomic_coordinates(self._draw_item.data().data)
         self.visualizer.coordinate_axes_adjust_length()
 
-        self._context_menu = ContextMenu(parent=self, app_config=app_config)
+        self._context_menu = ContextMenu(parent=self, app_config=self.app_config)
 
         self.setWidget(self.visualizer)
 

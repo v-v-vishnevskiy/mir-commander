@@ -1,10 +1,10 @@
 import logging
-from typing import cast
+from typing import TYPE_CHECKING, Callable, cast
 
 from PIL import Image, ImageCms
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QVector3D
-from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QWidget
+from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.core.models import VolumeCube as CoreVolumeCube
@@ -21,7 +21,6 @@ from mir_commander.ui.utils.opengl.resource_manager import (
 )
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
 from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_smooth_normals, normalize_color
-from mir_commander.ui.utils.viewer import Viewer
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.message_channel import MessageChannel
@@ -34,22 +33,27 @@ from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError
 from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
+from .settings.settings import Settings
 from .style import Style
+
+if TYPE_CHECKING:
+    from .viewer import MolecularStructureViewer
 
 logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 
 
 class Visualizer(OpenGLWidget):
-    def __init__(self, parent: QWidget, title: str, app_config: AppConfig):
-        super().__init__(
-            parent=parent,
-            keymap=Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.model_dump()),
-        )
+    parent: Callable[[], "MolecularStructureViewer"]  # type: ignore[assignment]
 
+    def __init__(self, title: str, app_config: AppConfig, settings_widget: Settings | None, *args, **kwargs):
+        kwargs["keymap"] = Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.model_dump())
+        super().__init__(*args, **kwargs)
+
+        self._title = title
         self._app_config = app_config
+        self._settings_widget = settings_widget
         self._config = app_config.project_window.widgets.viewers.molecular_structure
         self.config = self._config.model_copy(deep=True)
-        self._title = title
 
         self._style = Style(self._config)
 
@@ -108,6 +112,16 @@ class Visualizer(OpenGLWidget):
     @property
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
+
+    def scale_scene(self, value: float):
+        super().scale_scene(value)
+        if self.hasFocus() and self._settings_widget is not None:
+            self._settings_widget.view.update_values(self.parent())
+
+    def rotate_scene(self, pitch: float, yaw: float, roll: float):
+        super().rotate_scene(pitch, yaw, roll)
+        if self.hasFocus() and self._settings_widget is not None:
+            self._settings_widget.view.update_values(self.parent())
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
@@ -331,8 +345,7 @@ class Visualizer(OpenGLWidget):
                         Image.fromarray(image).save(
                             str(dlg.img_file_path), icc_profile=ImageCms.ImageCmsProfile(profile).tobytes()
                         )
-                        parent = cast(Viewer, self.parent())
-                        parent.short_msg_signal.emit(TR.tr("Image saved"))
+                        self.parent().short_msg_signal.emit(TR.tr("Image saved"))
                     except Exception as e:
                         logger.error("Could not save image: %s", e)
                         if isinstance(e, OSError):
