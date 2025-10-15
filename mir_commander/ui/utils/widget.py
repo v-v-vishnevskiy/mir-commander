@@ -98,14 +98,21 @@ class DockWidget(Widget, QDockWidget):
 class Label(Widget, QLabel):
     def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
+        self.__tooltip: str | None = None
         super().__init__(self._tr(text), parent)
 
     def setText(self, value: str):
         self.__text = value
         super().setText(self._tr(value))
 
+    def setToolTip(self, value: str):
+        self.__tooltip = value
+        super().setToolTip(self._tr(value))
+
     def retranslate_ui(self):
         self.setText(self.__text)
+        if self.__tooltip is not None:
+            self.setToolTip(self.__tooltip)
 
 
 class PushButton(Widget, QPushButton):

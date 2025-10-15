@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class Rotation(GroupBox):
+class AffineTransformation(GroupBox):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("Rotation"), parent=parent)
+        super().__init__(text=self.tr("Affine Transformation"), parent=parent)
 
         self._settings = parent
 
@@ -36,9 +36,27 @@ class Rotation(GroupBox):
     def _add_translations(self) -> QGridLayout:
         layout = QGridLayout()
 
-        self._add_axis_rotation(layout, 0, Label.tr("Axis X:"), "pitch")
-        self._add_axis_rotation(layout, 1, Label.tr("Axis Y:"), "yaw")
-        self._add_axis_rotation(layout, 2, Label.tr("Axis Z:"), "roll")
+        self._add_axis_rotation(
+            layout,
+            0,
+            Label.tr("Rotation X:"),
+            "pitch",
+            Label.tr("Rotation angle around the X-axis in window coordinates"),
+        )
+        self._add_axis_rotation(
+            layout,
+            1,
+            Label.tr("Rotation Y:"),
+            "yaw",
+            Label.tr("Rotation angle around the Y-axis in window coordinates"),
+        )
+        self._add_axis_rotation(
+            layout,
+            2,
+            Label.tr("Rotation Z:"),
+            "roll",
+            Label.tr("Rotation angle around the Z-axis in window coordinates"),
+        )
 
         self._scale_slider, self._scale_double_spinbox = add_slider(
             layout=layout,
@@ -55,7 +73,9 @@ class Rotation(GroupBox):
 
         return layout
 
-    def _add_axis_rotation(self, layout: QGridLayout, row: int, label_text: TrString, axis: str):
+    def _add_axis_rotation(
+        self, layout: QGridLayout, row: int, label_text: TrString, axis: str, label_tooltip: TrString | None = None
+    ):
         self._axis_prev_value[axis] = 0.0
         self._rotation_slider[axis], self._rotation_double_spinbox[axis] = add_slider(
             layout=layout,
@@ -66,6 +86,7 @@ class Rotation(GroupBox):
             single_step=0.1,
             decimals=1,
             factor=10,
+            label_tooltip=label_tooltip,
         )
         self._rotation_slider[axis].valueChanged.connect(lambda i: self._rotation_slider_value_changed_handler(axis, i))
         self._rotation_double_spinbox[axis].valueChanged.connect(
