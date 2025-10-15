@@ -62,7 +62,7 @@ class AffineTransformation(GroupBox):
             layout=layout,
             row=3,
             text=Label.tr("Scale:"),
-            min_value=0.1,
+            min_value=0.01,
             max_value=10.0,
             single_step=0.01,
             decimals=2,
