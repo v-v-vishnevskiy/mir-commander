@@ -11,13 +11,13 @@ def add_slider(
     text: TrString,
     min_value: float,
     max_value: float,
-    single_step: float,
+    single_step: float = 1.0,
     factor: int = 1,
     decimals: int = 0,
 ) -> tuple[QSlider, QDoubleSpinBox]:
     slider = QSlider(Qt.Orientation.Horizontal)
     slider.setRange(int(min_value * factor), int(max_value * factor))
-    slider.setSingleStep(1)
+    slider.setSingleStep(int(single_step * factor))
 
     double_spinbox = QDoubleSpinBox()
     double_spinbox.setRange(min_value, max_value)

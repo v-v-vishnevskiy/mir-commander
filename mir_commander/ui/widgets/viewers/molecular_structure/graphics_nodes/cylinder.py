@@ -10,7 +10,7 @@ class Cylinder(BaseGraphicsNode):
         self._radius = 1.0
         self._length = 1.0
         self.set_model(VAO_CYLINDER_RESOURCE_NAME)
-        self.set_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, 1.0), direction))
+        self.set_q_rotation(QQuaternion.rotationTo(QVector3D(0.0, 0.0, 1.0), direction))
         self.set_scale(QVector3D(self._radius, self._radius, self._length))
 
     def set_radius(self, radius: float):

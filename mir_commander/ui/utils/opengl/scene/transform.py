@@ -1,14 +1,34 @@
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
 
+def normalize_angle(angle: float) -> float:
+    """
+    Normalize angle to range [-180, 180].
+
+    Examples:
+        185.0 -> -175.0
+        -185.0 -> 175.0
+        370.0 -> 10.0
+        -370.0 -> -10.0
+    """
+    if angle < -180:
+        angle += int(angle / -180) * 180
+    elif angle > 180:
+        angle -= int(angle / 180) * 180
+    return angle
+
+
 class Transform:
-    __slots__ = ("_matrix", "_scale", "_rotation", "_position", "_dirty")
+    __slots__ = ("_matrix", "_scale", "_rotation", "_position", "_dirty", "_pitch", "_yaw", "_roll")
 
     def __init__(self):
         self._matrix = QMatrix4x4()
         self._scale = QVector3D(1.0, 1.0, 1.0)
         self._rotation = QQuaternion()
         self._position = QVector3D(0.0, 0.0, 0.0)
+        self._pitch = 0.0
+        self._yaw = 0.0
+        self._roll = 0.0
 
         self._dirty = True
 
@@ -18,6 +38,14 @@ class Transform:
             self._update_matrix()
             self._dirty = False
         return self._matrix
+
+    @property
+    def rotation(self) -> QQuaternion:
+        return self._rotation
+
+    @property
+    def rotation_angles(self) -> tuple[float, float, float]:
+        return (self._pitch, self._yaw, self._roll)
 
     @property
     def position(self) -> QVector3D:
@@ -41,16 +69,31 @@ class Transform:
         self._scale = value
         self._dirty = True
 
-    def rotate(self, pitch: float, yaw: float, roll: float = 0.0):
-        pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), pitch)
-        yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0, 1, 0), yaw)
-        roll_quat = QQuaternion.fromAxisAndAngle(QVector3D(0, 0, 1), roll)
+    def rotate(self, pitch: float, yaw: float, roll: float):
+        self._pitch = normalize_angle(self._pitch + pitch)
+        self._yaw = normalize_angle(self._yaw + yaw)
+        self._roll = normalize_angle(self._roll + roll)
 
-        rotation = pitch_quat * yaw_quat * roll_quat
-        self._rotation = rotation * self._rotation
+        pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), pitch)
+        yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), yaw)
+        roll_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), roll)
+
+        self._rotation = pitch_quat * yaw_quat * roll_quat * self._rotation
         self._dirty = True
 
-    def set_rotation(self, value: QQuaternion):
+    def set_rotation(self, pitch: float, yaw: float, roll: float):
+        self._pitch = normalize_angle(pitch)
+        self._yaw = normalize_angle(yaw)
+        self._roll = normalize_angle(roll)
+
+        pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), pitch)
+        yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), yaw)
+        roll_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), roll)
+
+        self._rotation = pitch_quat * yaw_quat * roll_quat
+        self._dirty = True
+
+    def set_q_rotation(self, value: QQuaternion):
         self._rotation = value
         self._dirty = True
 

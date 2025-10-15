@@ -252,8 +252,12 @@ class Node:
         self._transform.rotate(pitch, yaw, roll)
         self.invalidate_transform()
 
-    def set_rotation(self, value: QQuaternion):
-        self._transform.set_rotation(value)
+    def set_rotation(self, pitch: float = 0.0, yaw: float = 0.0, roll: float = 0.0):
+        self._transform.rotate(pitch, yaw, roll)
+        self.invalidate_transform()
+
+    def set_q_rotation(self, value: QQuaternion):
+        self._transform.set_q_rotation(value)
         self.invalidate_transform()
 
     def translate(self, value: QVector3D):
