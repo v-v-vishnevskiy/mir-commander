@@ -4,6 +4,7 @@ from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import Label
 
 from .coordinate_axes import CoordinateAxes
+from .image import Image
 from .labels import Labels
 from .view import View
 from .volume_cube import VolumeCube
@@ -20,11 +21,13 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
         self.labels = Labels(self)
         self.volume_cube = VolumeCube(self)
         self.view = View(self)
+        self.image = Image(self)
 
         self.layout.add_widget(Label.tr("View"), self.view)
         self.layout.add_widget(Label.tr("Coordinate Axes"), self.coordinate_axes)
         self.layout.add_widget(Label.tr("Labels"), self.labels)
         self.layout.add_widget(Label.tr("Volume Cube Isosurfaces"), self.volume_cube)
+        self.layout.add_widget(Label.tr("Image"), self.image, True)
         self.layout.addStretch()
 
     def update_values(self, viewer: "MolecularStructureViewer"):
@@ -32,3 +35,4 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
         self.labels.update_values(viewer)
         self.volume_cube.update_values(viewer)
         self.view.update_values(viewer)
+        self.image.update_values(viewer)

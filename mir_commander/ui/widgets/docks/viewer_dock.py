@@ -18,7 +18,7 @@ class ViewerDock(BaseDock):
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Viewer"), parent)
 
-        self.setMinimumWidth(275)
+        self.setMinimumWidth(330)
 
         self._empty_viewer_settings = EmptyViewerSettings()
         self.setWidget(self._empty_viewer_settings)

@@ -81,6 +81,10 @@ class Renderer:
         self._width = 1
         self._height = 1
 
+    @property
+    def background_color(self) -> Color4f:
+        return self._bg_color
+
     def set_background_color(self, color: Color4f):
         self._bg_color = color
 
@@ -337,14 +341,17 @@ class Renderer:
         return sorted(nodes, key=self._get_node_depth, reverse=True)
 
     def _render_to_image(
-        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+        self, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
     ) -> np.ndarray:
+        bg_color_bak = self._bg_color
+        bg_color = self._bg_color = bg_color if bg_color is not None else self._bg_color
+
         # Create framebuffer
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
-        format = GL_RGBA if transparent_bg else GL_RGB
-        channels = 4 if transparent_bg else 3
+        format = GL_RGBA if bg_color[3] < 1.0 else GL_RGB
+        channels = 4 if bg_color[3] < 1.0 else 3
 
         # Create texture for color attachment
         texture = glGenTextures(1)
@@ -365,13 +372,6 @@ class Renderer:
 
         # Reinitialize WBOIT for new size
         self._wboit.init(width, height)
-
-        # Backup and set background color
-        bg_color_bak = self._bg_color
-        if transparent_bg:
-            self._bg_color = 0.0, 0.0, 0.0, 0.0
-
-        bg_color = self._bg_color
 
         # Render scene
         self.paint(PaintMode.Normal, fbo)
@@ -402,10 +402,10 @@ class Renderer:
         return image_data
 
     def render_to_image(
-        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+        self, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
     ) -> np.ndarray:
         try:
-            return self._render_to_image(width, height, transparent_bg, crop_to_content)
+            return self._render_to_image(width, height, bg_color, crop_to_content)
         except OpenGL.error.GLError as e:
             logger.error("Error rendering to image: %s", e)
             raise Error(f"Error rendering to image: {e}")

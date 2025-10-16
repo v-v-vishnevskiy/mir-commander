@@ -578,6 +578,8 @@ def isosurface(scalar_field: np.ndarray, value: float, factor: float = 1.0) -> t
     Returns:
         Tuple of (vertices, normals), both flattened as [x,y,z, x,y,z, ...]
     """
+    # TODO: This function is too slow.
+
     vertices = []
     normals = []
 

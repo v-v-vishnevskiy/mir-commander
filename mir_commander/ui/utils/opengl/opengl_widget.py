@@ -136,6 +136,10 @@ class OpenGLWidget(QOpenGLWidget):
         self.action_handler.add_action("zoom_out", True, self.scale_scene, 1.0 - 0.05 * self._scale_speed)
 
     @property
+    def background_color(self) -> Color4f:
+        return self.renderer.background_color
+
+    @property
     def cursor_position(self) -> tuple[int, int]:
         return self._cursor_pos.x(), self._cursor_pos.y()
 
@@ -256,10 +260,10 @@ class OpenGLWidget(QOpenGLWidget):
         pass
 
     def render_to_image(
-        self, width: int, height: int, transparent_bg: bool = False, crop_to_content: bool = False
+        self, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
     ) -> np.ndarray:
         self.makeCurrent()
-        return self.renderer.render_to_image(width, height, transparent_bg, crop_to_content)
+        return self.renderer.render_to_image(width, height, bg_color, crop_to_content)
 
     def node_under_cursor(self) -> Node:
         self.makeCurrent()

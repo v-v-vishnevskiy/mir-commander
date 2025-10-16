@@ -28,13 +28,9 @@ class View(QWidget):
         reset_button = PushButton(PushButton.tr("Reset"))
         reset_button.clicked.connect(self._reset_button_clicked_handler)
 
-        save_image_button = PushButton(PushButton.tr("Save image"))
-        save_image_button.clicked.connect(self._save_image_button_clicked_handler)
-
         layout = QVBoxLayout(self)
         layout.addLayout(self._add_translations())
         layout.addWidget(reset_button)
-        layout.addWidget(save_image_button)
         self.setLayout(layout)
 
     def _add_translations(self) -> QGridLayout:
@@ -137,11 +133,6 @@ class View(QWidget):
         for viewer in self._settings.viewers:
             viewer.visualizer.set_scene_rotation(0, 0, 0)
             viewer.visualizer.set_scene_scale(1.0)
-
-    def _save_image_button_clicked_handler(self):
-        filenames = []
-        for viewer in self._settings.viewers:
-            filenames.append(viewer.windowTitle())
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         values = {axis: value for axis, value in zip(self._axis_order, viewer.visualizer.scene_rotation)}

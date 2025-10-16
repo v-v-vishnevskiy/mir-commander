@@ -350,16 +350,20 @@ class _GroupHeaderWidget(QFrame):
 
 
 class _GroupLayoutWidget(QVBoxLayout):
-    def __init__(self, title: str, widget: QWidget, *args, **kwargs):
+    def __init__(self, title: str, widget: QWidget, collapsed: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._collapsed = False
+        self._collapsed = collapsed
         self._widget = widget
 
         self.setContentsMargins(0, 0, 0, 0)
         self.setSpacing(0)
         self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
-        self.addWidget(self._widget)
+
+        if not self._collapsed:
+            self.addWidget(self._widget)
+        else:
+            self._widget.hide()
 
     @property
     def collapsed(self) -> bool:
@@ -382,5 +386,5 @@ class GroupVBoxLayout(QVBoxLayout):
         self.setContentsMargins(0, 0, 0, 0)
         self.setSpacing(0)
 
-    def add_widget(self, title: str, widget: QWidget, *args, **kwargs):
-        super().addLayout(_GroupLayoutWidget(title, widget), *args, **kwargs)
+    def add_widget(self, title: str, widget: QWidget, collapsed: bool = False, *args, **kwargs):
+        super().addLayout(_GroupLayoutWidget(title, widget, collapsed), *args, **kwargs)
