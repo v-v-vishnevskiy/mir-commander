@@ -319,7 +319,7 @@ class _GroupHeaderWidget(QFrame):
         self._parent = layout_widget
 
         self.setFixedHeight(20)
-        self.setStyleSheet("QFrame { border: 0px solid black; padding: 2px; background-color: #D0D0D0; }")
+        self.setStyleSheet("QFrame { padding: 2px; background-color: #D0D0D0; }")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self._icon = QFrame()

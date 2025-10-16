@@ -19,7 +19,6 @@ class ViewerDock(BaseDock):
         super().__init__(self.tr("Viewer"), parent)
 
         self.setMinimumWidth(275)
-        self.setContentsMargins(0, 0, 0, 0)
 
         self._empty_viewer_settings = EmptyViewerSettings()
         self.setWidget(self._empty_viewer_settings)

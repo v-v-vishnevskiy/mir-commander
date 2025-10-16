@@ -24,7 +24,6 @@ class ConsoleDock(BaseDock):
         super().__init__(self.tr("Console output"), parent)
         self.text = Text(self)
         self.setMinimumHeight(50)
-        self.setContentsMargins(0, 0, 0, 0)
         self.setWidget(self.text)
 
     def append(self, text: str):
