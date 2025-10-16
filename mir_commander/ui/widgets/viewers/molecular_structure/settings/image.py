@@ -30,7 +30,7 @@ class Image(QWidget):
             row=0,
             text=Label.tr("Scale factor:"),
             min_value=0.1,
-            max_value=10.0,
+            max_value=20.0,
             single_step=1,
             decimals=1,
             factor=10,
