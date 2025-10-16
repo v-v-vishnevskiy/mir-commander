@@ -1,9 +1,10 @@
 from collections import defaultdict
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QScrollArea, QWidget
 
 from mir_commander.ui.utils.viewer.viewer import Viewer
-from mir_commander.ui.utils.viewer.viewer_settings import EmptyViewerSettings, ViewerSettings
+from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 
 from .base import BaseDock
 
@@ -18,13 +19,17 @@ class ViewerDock(BaseDock):
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Viewer"), parent)
 
-        self.setMinimumWidth(330)
+        self._scroll_area = QScrollArea(self)
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        self._empty_viewer_settings = EmptyViewerSettings()
-        self.setWidget(self._empty_viewer_settings)
+        self.setMinimumWidth(330)
 
         self._viewer_settings_widgets: dict[type, ViewerSettings] = {}
         self._all_viewers: dict[type, list[Viewer]] = defaultdict(list)
+
+        self.setWidget(self._scroll_area)
 
     def add_viewer_settings_widget(self, viewer: type[Viewer]) -> ViewerSettings | None:
         if viewer.settings is None:
@@ -40,9 +45,10 @@ class ViewerDock(BaseDock):
             settings = self._viewer_settings_widgets[viewer_cls]
             settings.set_all_viewers(self._all_viewers[viewer_cls])
             settings.set_active_viewer(viewer)
-            self.setWidget(settings)
-        else:
-            self.setWidget(self._empty_viewer_settings)
+            self._scroll_area.setWidget(settings)
+
+        if not self._all_viewers:
+            self._scroll_area.takeWidget()
 
     def update_viewers_list(self, viewers: list[Viewer]):
         self._all_viewers.clear()

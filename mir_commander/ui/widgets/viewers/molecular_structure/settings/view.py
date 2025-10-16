@@ -2,9 +2,9 @@ import contextlib
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QSignalBlocker
-from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDoubleSpinBox, QSlider, QWidget
 
-from mir_commander.ui.utils.widget import Label, PushButton, TrString
+from mir_commander.ui.utils.widget import GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from .utils import add_slider
 
@@ -28,13 +28,13 @@ class View(QWidget):
         reset_button = PushButton(PushButton.tr("Reset"))
         reset_button.clicked.connect(self._reset_button_clicked_handler)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
         layout.addLayout(self._add_translations())
         layout.addWidget(reset_button)
         self.setLayout(layout)
 
-    def _add_translations(self) -> QGridLayout:
-        layout = QGridLayout()
+    def _add_translations(self) -> GridLayout:
+        layout = GridLayout()
 
         self._add_axis_rotation(
             layout,
@@ -74,7 +74,7 @@ class View(QWidget):
         return layout
 
     def _add_axis_rotation(
-        self, layout: QGridLayout, row: int, label_text: TrString, axis: str, label_tooltip: TrString | None = None
+        self, layout: GridLayout, row: int, label_text: TrString, axis: str, label_tooltip: TrString | None = None
     ):
         self._axis_prev_value[axis] = 0.0
         self._rotation_slider[axis], self._rotation_double_spinbox[axis] = add_slider(

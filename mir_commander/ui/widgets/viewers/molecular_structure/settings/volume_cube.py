@@ -1,19 +1,10 @@
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QColorDialog,
-    QDoubleSpinBox,
-    QFrame,
-    QGridLayout,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QDoubleSpinBox, QFrame, QPushButton, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, PushButton, StandardItem, TreeView
+from mir_commander.ui.utils.widget import CheckBox, GridLayout, PushButton, StandardItem, TreeView, VBoxLayout
 
 from ..entities import VolumeCubeIsosurfaceGroup
 from ..errors import EmptyScalarFieldError
@@ -214,7 +205,7 @@ class VolumeCube(QWidget):
         self._value.setValue(0.05)
 
         # Value layout
-        value_layout = QGridLayout()
+        value_layout = GridLayout()
 
         self._color_button_1 = ColorButtonNewIsosurface(color=QColor(255, 0, 0, a=200))
         self._color_button_2 = ColorButtonNewIsosurface(color=QColor(0, 0, 255, a=200))
@@ -236,7 +227,7 @@ class VolumeCube(QWidget):
         value_layout.addWidget(self._color_button_2, 1, 1)
         value_layout.addWidget(self._isosurfaces_tree_view, 2, 0, 1, 3)
 
-        self.main_layout = QVBoxLayout()
+        self.main_layout = VBoxLayout()
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
 

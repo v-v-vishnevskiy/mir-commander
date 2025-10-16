@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QGridLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import Label
+from mir_commander.ui.utils.widget import GridLayout, Label, VBoxLayout
 
 from .utils import add_slider
 
@@ -17,7 +17,7 @@ class Labels(QWidget):
 
         self._settings = parent
 
-        sliders_layout = QGridLayout()
+        sliders_layout = GridLayout()
 
         self._size_slider, self._size_double_spinbox = add_slider(
             layout=sliders_layout,
@@ -45,7 +45,7 @@ class Labels(QWidget):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        main_layout = QVBoxLayout()
+        main_layout = VBoxLayout()
         main_layout.addLayout(sliders_layout)
         self.setLayout(main_layout)
 

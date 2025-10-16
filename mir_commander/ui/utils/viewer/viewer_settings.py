@@ -73,7 +73,3 @@ class ViewerSettings(Generic[T], QWidget):
     def __del__(self):
         self._active_viewer = None
         self._all_viewers.clear()
-
-
-class EmptyViewerSettings(ViewerSettings):
-    pass

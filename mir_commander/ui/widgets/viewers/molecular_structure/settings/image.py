@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QImageWriter
-from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QGridLayout, QLineEdit, QSpinBox, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinBox, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import TR, Label, PushButton
+from mir_commander.ui.utils.widget import TR, GridLayout, Label, PushButton, VBoxLayout
 
 from .utils import ColorButton, add_slider
 
@@ -23,7 +23,7 @@ class Image(QWidget):
 
         self._settings = parent
 
-        params_layout = QGridLayout()
+        params_layout = GridLayout()
 
         self._scale_slider, self._scale_double_spinbox = add_slider(
             layout=params_layout,
@@ -66,7 +66,7 @@ class Image(QWidget):
         params_layout.addWidget(self._file_path, 4, 0, 1, 2)
         params_layout.addWidget(choose_file_path_button, 4, 2)
 
-        layout = QVBoxLayout(self)
+        layout = VBoxLayout(self)
         layout.addLayout(params_layout)
         layout.addWidget(save_image_button)
         self.setLayout(layout)
