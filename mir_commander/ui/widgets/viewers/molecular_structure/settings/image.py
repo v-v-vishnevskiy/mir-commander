@@ -101,7 +101,8 @@ class Image(QWidget):
         crop_to_content = self._crop_to_content_checkbox.isChecked()
         file_path = self._file_path.text()
         if "%n" not in file_path:
-            file_path = file_path.replace(".png", "_%n.png")
+            path = Path(file_path)
+            file_path = str(path.with_stem(f"{path.stem}_%n"))
 
         for i, viewer in enumerate(self._settings.viewers):
             filename = file_path.replace("%n", str(i + n))
