@@ -61,7 +61,7 @@ class Image(QWidget):
         params_layout.addWidget(self._bg_color_button, 1, 1)
         params_layout.addWidget(Label(Label.tr("Crop to content:"), self), 2, 0)
         params_layout.addWidget(self._crop_to_content_checkbox, 2, 1)
-        params_layout.addWidget(Label(Label.tr("Number:"), self), 3, 0)
+        params_layout.addWidget(Label(Label.tr("%n starts from:"), self), 3, 0)
         params_layout.addWidget(self._n_param, 3, 1)
         params_layout.addWidget(self._file_path, 4, 0, 1, 2)
         params_layout.addWidget(choose_file_path_button, 4, 2)
