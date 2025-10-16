@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QListView,
     QMenu,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QStatusBar,
     QTabWidget,
@@ -374,18 +375,30 @@ class _GroupLayoutWidget(VBoxLayout):
     def __init__(self, title: str, widget: QWidget, visible: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._scroll_area = QScrollArea()
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll_area.setWidget(widget)
+        self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
+
         self._visible = visible
         self._widget = widget
         self._widget.setContentsMargins(5, 5, 5, 10)
-        self._widget_height = 0
-        self._animation = QPropertyAnimation(self._widget, b"maximumHeight")
-        self._animation.setDuration(200)
+        self._widget_height = self._widget_current_height = self._widget.sizeHint().height()
+        self._animation_max = QPropertyAnimation(self._scroll_area, b"maximumHeight")
+        self._animation_max.setDuration(200)
+        self._animation_min = QPropertyAnimation(self._scroll_area, b"minimumHeight")
+        self._animation_min.setDuration(200)
 
         self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
-        self.addWidget(self._widget)
+        self.addWidget(self._scroll_area)
+
+        self._scroll_area.setMinimumHeight(widget.sizeHint().height())
+        self._scroll_area.setMaximumHeight(widget.sizeHint().height())
 
         if not self._visible:
-            self._widget.setMaximumHeight(0)
+            self._scroll_area.setMaximumHeight(0)
 
     @property
     def visible(self) -> bool:
@@ -395,14 +408,22 @@ class _GroupLayoutWidget(VBoxLayout):
         self._visible = not self._visible
 
         if self._visible:
-            self._animation.setStartValue(0)
-            self._animation.setEndValue(self._widget_height)
-            self._animation.start()
+            # Expand the group
+            self._animation_min.setStartValue(0)
+            self._animation_max.setStartValue(0)
+            self._animation_min.setEndValue(self._widget_height)
+            self._animation_max.setEndValue(self._widget_height)
+            self._animation_max.start()
+            self._animation_min.start()
         else:
+            # Collapse the group
             self._widget_height = self._widget.sizeHint().height()
-            self._animation.setStartValue(self._widget_height)
-            self._animation.setEndValue(0)
-            self._animation.start()
+            self._animation_max.setStartValue(self._widget_height)
+            self._animation_min.setStartValue(self._widget_height)
+            self._animation_max.setEndValue(0)
+            self._animation_min.setEndValue(0)
+        self._animation_max.start()
+        self._animation_min.start()
 
 
 class GroupVBoxLayout(VBoxLayout):

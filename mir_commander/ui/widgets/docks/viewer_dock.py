@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QScrollArea, QWidget
+from PySide6.QtWidgets import QFrame, QScrollArea, QWidget
 
 from mir_commander.ui.utils.viewer.viewer import Viewer
 from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
@@ -21,6 +21,7 @@ class ViewerDock(BaseDock):
 
         self._scroll_area = QScrollArea(self)
         self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
         self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
