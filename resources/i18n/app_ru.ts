@@ -431,13 +431,6 @@
     </message>
 </context>
 <context>
-    <name>CoordinateAxes</name>
-    <message>
-        <source>Coordinate Axes</source>
-        <translation type="vanished">Координатные оси</translation>
-    </message>
-</context>
-<context>
     <name>GroupBox</name>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/save_image_dialog.py" line="29"/>
@@ -579,8 +572,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="29"/>
-        <source>Volume Cube Isosurfaces</source>
-        <translation>Изоповерхности объемного куба</translation>
+        <source>Cubes and Surfaces</source>
+        <translation>Кубы и поверхности</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/settings.py" line="30"/>
@@ -606,13 +599,6 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="64"/>
         <source>%n starts from:</source>
         <translation>Начальный %n:</translation>
-    </message>
-</context>
-<context>
-    <name>Labels</name>
-    <message>
-        <source>Labels</source>
-        <translation type="vanished">Подписи</translation>
     </message>
 </context>
 <context>
@@ -806,10 +792,6 @@
         <source>Reset</source>
         <translation>Сбросить</translation>
     </message>
-    <message>
-        <source>Save image</source>
-        <translation type="vanished">Сохраненить изображение</translation>
-    </message>
 </context>
 <context>
     <name>RecentProjectsDialog</name>
@@ -908,48 +890,14 @@
         <translation>Выбор файла</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="121"/>
-        <source>See the log for details.</source>
-        <translation>Подробности смотрите в лог-файле.</translation>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="113"/>
+        <source>{} saved successfully</source>
+        <translation>{} успешно сохранен</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="122"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="124"/>
-        <source>Error</source>
-        <translation>Ошибка</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="122"/>
-        <source>Error saving images.</source>
-        <translation>Ошибка сохранения изображений.</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="124"/>
-        <source>Error saving image.</source>
-        <translation>Ошибка сохранения изображения.</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="127"/>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="129"/>
-        <source>Success</source>
-        <translation>Успех</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="127"/>
-        <source>Images successfully saved.</source>
-        <translation>Изображения успешно сохранены.</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="129"/>
-        <source>Image successfully saved.</source>
-        <translation>Изображение успешно сохранено.</translation>
-    </message>
-</context>
-<context>
-    <name>View</name>
-    <message>
-        <source>View</source>
-        <translation type="vanished">Вид</translation>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="115"/>
+        <source>Error saving image {}</source>
+        <translation>Ошибка сохранения изображения {}</translation>
     </message>
 </context>
 <context>
@@ -1053,13 +1001,6 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/visualizer.py" line="478"/>
         <source>All parameters</source>
         <translation>Все параметры</translation>
-    </message>
-</context>
-<context>
-    <name>VolumeCube</name>
-    <message>
-        <source>Volume Cube Isosurfaces</source>
-        <translation type="vanished">Изоповерхности объемного куба</translation>
     </message>
 </context>
 </TS>

@@ -26,8 +26,8 @@ class Settings(ViewerSettings["MolecularStructureViewer"]):
         self.layout.add_widget(Label.tr("View"), self.view)
         self.layout.add_widget(Label.tr("Coordinate Axes"), self.coordinate_axes)
         self.layout.add_widget(Label.tr("Labels"), self.labels)
-        self.layout.add_widget(Label.tr("Volume Cube Isosurfaces"), self.volume_cube)
-        self.layout.add_widget(Label.tr("Image"), self.image, True)
+        self.layout.add_widget(Label.tr("Cubes and Surfaces"), self.volume_cube, False)
+        self.layout.add_widget(Label.tr("Image"), self.image, False)
         self.layout.addStretch()
 
     def update_values(self, viewer: "MolecularStructureViewer"):

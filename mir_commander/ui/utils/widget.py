@@ -394,10 +394,11 @@ class _GroupLayoutWidget(VBoxLayout):
         self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
         self.addWidget(self._scroll_area)
 
-        self._scroll_area.setMinimumHeight(widget.sizeHint().height())
-        self._scroll_area.setMaximumHeight(widget.sizeHint().height())
-
-        if not self._visible:
+        if self._visible:
+            self._scroll_area.setMinimumHeight(widget.sizeHint().height())
+            self._scroll_area.setMaximumHeight(widget.sizeHint().height())
+        else:
+            self._scroll_area.setMinimumHeight(0)
             self._scroll_area.setMaximumHeight(0)
 
     @property

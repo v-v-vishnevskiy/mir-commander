@@ -25,7 +25,7 @@ class ViewerDock(BaseDock):
         self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        self.setMinimumWidth(330)
+        self.setMinimumWidth(350)
 
         self._viewer_settings_widgets: dict[type, ViewerSettings] = {}
         self._all_viewers: dict[type, list[Viewer]] = defaultdict(list)
