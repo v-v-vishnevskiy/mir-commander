@@ -108,41 +108,23 @@ def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, fl
 
 
 def crop_image_to_content(image: np.ndarray, bg_color: tuple[float, ...]) -> np.ndarray:
-    # TODO: This function is too slow.
     xmin = ymin = xmax = ymax = -1
     color = [round(c * 255) for c in bg_color]
 
-    for y in range(image.shape[0]):
-        for x in range(image.shape[1]):
-            if image[y, x].tolist() != color:
-                ymin = y
-                break
-        if ymin >= 0:
-            break
+    mask = np.any(image != color, axis=-1)
+    rows_with_content = np.any(mask, axis=1)
+    if np.any(rows_with_content):
+        ymin = np.argmax(rows_with_content)  # type: ignore[assignment]
 
-    for y in reversed(range(image.shape[0])):
-        for x in range(image.shape[1]):
-            if image[y, x].tolist() != color:
-                ymax = y
-                break
-        if ymax >= 0:
-            break
+    cols_with_content = np.any(mask, axis=0)
+    if np.any(rows_with_content):
+        ymax = len(rows_with_content) - 1 - np.argmax(rows_with_content[::-1])  # type: ignore[assignment]
 
-    for x in range(image.shape[1]):
-        for y in range(image.shape[0]):
-            if image[y, x].tolist() != color:
-                xmin = x
-                break
-        if xmin >= 0:
-            break
+    if np.any(cols_with_content):
+        xmin = np.argmax(cols_with_content)  # type: ignore[assignment]
 
-    for x in reversed(range(image.shape[1])):
-        for y in range(image.shape[0]):
-            if image[y, x].tolist() != color:
-                xmax = x
-                break
-        if xmax >= 0:
-            break
+    if np.any(cols_with_content):
+        xmax = len(cols_with_content) - 1 - np.argmax(cols_with_content[::-1])  # type: ignore[assignment]
 
     if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
         left, top, width, height = xmin, ymin, xmax - xmin + 1, ymax - ymin + 1
