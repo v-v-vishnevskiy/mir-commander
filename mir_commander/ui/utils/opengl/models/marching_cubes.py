@@ -518,6 +518,34 @@ TRIANGLE_TABLE = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
 ]
 
+# Pre-convert lookup tables to numpy arrays (module-level cache)
+_EDGE_TABLE_NP = np.array(EDGE_TABLE, dtype=np.int32)
+_TRIANGLE_TABLE_NP = np.array(TRIANGLE_TABLE, dtype=np.int32)
+
+# Edge definitions (vertex pairs for each of 12 edges)
+_EDGE_CONNECTIONS = np.array(
+    [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [7, 4],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7],
+    ],
+    dtype=np.int32,
+)
+
+# Pre-allocate corner offsets
+_CORNER_OFFSETS = np.array(
+    [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=np.int32
+)
+
 
 def _compute_gradients(scalar_field: np.ndarray, factor: float = 1.0) -> np.ndarray:
     """
@@ -565,83 +593,68 @@ def isosurface(scalar_field: np.ndarray, value: float, factor: float = 1.0) -> t
     # Scale field values once
     scaled_field = (scalar_field * factor).astype(np.float32)
 
-    # Pre-convert tables to numpy arrays (cache as module-level for future optimization)
-    edge_table = np.array(EDGE_TABLE, dtype=np.int32)
-    triangle_table = np.array(TRIANGLE_TABLE, dtype=np.int32)
+    edge_table = _EDGE_TABLE_NP
+    triangle_table = _TRIANGLE_TABLE_NP
+    edge_connections = _EDGE_CONNECTIONS
+    corner_offsets = _CORNER_OFFSETS
 
+    sx, sy, sz = scaled_field.shape
     vertices = []
     normals = []
 
-    sx, sy, sz = scalar_field.shape
-
-    # Edge definitions (vertex pairs for each of 12 edges)
-    edge_connections = np.array(
-        [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 0],
-            [4, 5],
-            [5, 6],
-            [6, 7],
-            [7, 4],
-            [0, 4],
-            [1, 5],
-            [2, 6],
-            [3, 7],
-        ],
-        dtype=np.int32,
-    )
-
-    # Pre-allocate position and normal index arrays
-    corner_offsets = np.array(
-        [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=np.int32
-    )
-
-    # Process each cube
+    # Vectorized approach - process slices
     for i in range(sx - 1):
         for j in range(sy - 1):
-            for k in range(sz - 1):
-                # Get 8 corner values
-                v000 = scaled_field[i, j, k]
-                v100 = scaled_field[i + 1, j, k]
-                v110 = scaled_field[i + 1, j + 1, k]
-                v010 = scaled_field[i, j + 1, k]
-                v001 = scaled_field[i, j, k + 1]
-                v101 = scaled_field[i + 1, j, k + 1]
-                v111 = scaled_field[i + 1, j + 1, k + 1]
-                v011 = scaled_field[i, j + 1, k + 1]
+            # Get all k values at once for this (i,j) slice
+            k_range = sz - 1
 
-                cube_values = np.array([v000, v100, v110, v010, v001, v101, v111, v011], dtype=np.float32)
+            # Extract cube corner values for all k at once
+            v000_slice = scaled_field[i, j, :k_range]
+            v100_slice = scaled_field[i + 1, j, :k_range]
+            v110_slice = scaled_field[i + 1, j + 1, :k_range]
+            v010_slice = scaled_field[i, j + 1, :k_range]
+            v001_slice = scaled_field[i, j, 1:sz]
+            v101_slice = scaled_field[i + 1, j, 1:sz]
+            v111_slice = scaled_field[i + 1, j + 1, 1:sz]
+            v011_slice = scaled_field[i, j + 1, 1:sz]
 
-                # Calculate cube index
-                cube_index = 0
-                if v000 < value:
-                    cube_index |= 1
-                if v100 < value:
-                    cube_index |= 2
-                if v110 < value:
-                    cube_index |= 4
-                if v010 < value:
-                    cube_index |= 8
-                if v001 < value:
-                    cube_index |= 16
-                if v101 < value:
-                    cube_index |= 32
-                if v111 < value:
-                    cube_index |= 64
-                if v011 < value:
-                    cube_index |= 128
+            # Calculate cube indices for all k at once
+            cube_indices = (
+                (v000_slice < value).astype(np.int32)
+                | ((v100_slice < value).astype(np.int32) << 1)
+                | ((v110_slice < value).astype(np.int32) << 2)
+                | ((v010_slice < value).astype(np.int32) << 3)
+                | ((v001_slice < value).astype(np.int32) << 4)
+                | ((v101_slice < value).astype(np.int32) << 5)
+                | ((v111_slice < value).astype(np.int32) << 6)
+                | ((v011_slice < value).astype(np.int32) << 7)
+            )
 
-                # Skip if entirely inside or outside
+            # Filter out empty cubes
+            active_mask = edge_table[cube_indices] != 0
+            active_k = np.where(active_mask)[0]
+
+            for k in active_k:
+                cube_index = cube_indices[k]
                 edge_bits = edge_table[cube_index]
-                if edge_bits == 0:
-                    continue
 
-                # Cube corner positions using pre-computed offsets
-                positions = corner_offsets + np.array([i, j, k], dtype=np.float32)
+                # Get cube values
+                cube_values = np.array(
+                    [
+                        v000_slice[k],
+                        v100_slice[k],
+                        v110_slice[k],
+                        v010_slice[k],
+                        v001_slice[k],
+                        v101_slice[k],
+                        v111_slice[k],
+                        v011_slice[k],
+                    ],
+                    dtype=np.float32,
+                )
 
-                # Get normals at corners using advanced indexing
+                # Positions and normals
+                positions = corner_offsets.astype(np.float32) + np.array([i, j, k], dtype=np.float32)
                 indices_i = i + corner_offsets[:, 0]
                 indices_j = j + corner_offsets[:, 1]
                 indices_k = k + corner_offsets[:, 2]
