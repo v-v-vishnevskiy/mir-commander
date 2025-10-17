@@ -590,7 +590,7 @@
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="31"/>
         <source>Scale factor:</source>
-        <translation>Масштабирование:</translation>
+        <translation>Масштаб:</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="60"/>
@@ -600,12 +600,12 @@
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="62"/>
         <source>Crop to content:</source>
-        <translation>Обрезать:</translation>
+        <translation>Обрезать края:</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="64"/>
         <source>%n starts from:</source>
-        <translation>%n начинаестся с:</translation>
+        <translation>Начальный %n:</translation>
     </message>
 </context>
 <context>
