@@ -1,18 +1,19 @@
 import logging
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QTreeView, QWidget
+from PySide6.QtWidgets import QTreeView
 
 from mir_commander.core import models
 from mir_commander.core.parsers.consts import babushka_priehala
 from mir_commander.ui.utils.viewer import Viewer
-from mir_commander.ui.utils.widget import Action, Menu
-from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructureViewer
 
 from .config import TreeConfig
-from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Item, Molecule, Unex, VolumeCube
+from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Molecule, TreeItem, Unex, VolumeCube
+
+if TYPE_CHECKING:
+    from .project_dock import ProjectDock
 
 logger = logging.getLogger("ProjectDock.TreeView")
 
@@ -20,8 +21,10 @@ logger = logging.getLogger("ProjectDock.TreeView")
 class TreeView(QTreeView):
     view_item = Signal(QStandardItem, Viewer.__class__, dict)  # type: ignore[arg-type]
 
-    def __init__(self, parent: QWidget, data: models.Data, config: TreeConfig):
+    def __init__(self, parent: "ProjectDock", data: models.Data, config: TreeConfig):
         super().__init__(parent)
+
+        self._project_window = parent.project_window
 
         self._data = data
 
@@ -36,60 +39,40 @@ class TreeView(QTreeView):
         self.setModel(self._model)
 
     def _show_context_menu(self, pos: QPoint):
-        item: Item = cast(Item, self._model.itemFromIndex(self.indexAt(pos)))
-        if item and item.context_menu:
-            menu = self._build_context_menu(item)
-            menu.exec(self.mapToGlobal(pos))
-
-    def _build_context_menu(self, item: Item) -> Menu:
-        result = Menu()
-
-        view_structures_menu = Menu(Menu.tr("View Structures"), result)
-        view_structures_menu.addAction(
-            Action(
-                text=Action.tr("VS_Child"),
-                parent=view_structures_menu,
-                triggered=lambda: self.view_item.emit(item, MolecularStructureViewer, {"all": False}),
-            )
-        )
-        view_structures_menu.addAction(
-            Action(
-                text=Action.tr("VS_All"),
-                parent=view_structures_menu,
-                triggered=lambda: self.view_item.emit(item, MolecularStructureViewer, {"all": True}),
-            )
-        )
-        view_structures_menu.addSeparator()
-
-        result.addMenu(view_structures_menu)
-        return result
+        item: TreeItem = cast(TreeItem, self._model.itemFromIndex(self.indexAt(pos)))
+        if item:
+            if menu := item.build_context_menu(self):
+                menu.exec(self.mapToGlobal(pos))
 
     def _item_double_clicked(self, index: QModelIndex):
-        item: Item = cast(Item, self._model.itemFromIndex(index))
+        item: TreeItem = cast(TreeItem, self._model.itemFromIndex(index))
         if item.default_viewer:
             self.view_item.emit(item, item.default_viewer, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
-    def add_item_to_root(self, item: models.Item):
-        root_item = self._model.invisibleRootItem()
+    def import_file(self, item: TreeItem):
+        self._project_window.import_file(item)
+
+    def add_item(self, item: models.Item, parent: TreeItem | None = None):
+        parent_item = parent if parent is not None else self._model.invisibleRootItem()
         if type(item.data) is models.AtomicCoordinates:
-            root_item.appendRow(AtomicCoordinates(item))
+            parent_item.appendRow(AtomicCoordinates(item))
         elif type(item.data) is models.AtomicCoordinatesGroup:
-            root_item.appendRow(AtomicCoordinatesGroup(item))
+            parent_item.appendRow(AtomicCoordinatesGroup(item))
         elif type(item.data) is models.Molecule:
-            root_item.appendRow(Molecule(item))
+            parent_item.appendRow(Molecule(item))
         elif type(item.data) is models.Unex:
-            root_item.appendRow(Unex(item))
+            parent_item.appendRow(Unex(item))
         elif type(item.data) is models.VolumeCube:
-            root_item.appendRow(VolumeCube(item))
+            parent_item.appendRow(VolumeCube(item))
         else:
-            root_item.appendRow(Container(item))
+            parent_item.appendRow(Container(item))
 
     def load_data(self):
         logger.debug("Loading data ...")
         for item in self._data.items:
-            self.add_item_to_root(item)
+            self.add_item(item)
 
     def expand_top_items(self):
         logger.debug("Expanding top items ...")

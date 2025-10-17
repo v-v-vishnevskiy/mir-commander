@@ -48,11 +48,10 @@ class Translator:
     def tr(value: str, *args: Any, **kwargs: Any) -> TrString:
         return TrString(value)
 
-    def _tr(self, text: str | TrString) -> str:
+    @classmethod
+    def translate(cls, text: str | TrString) -> str:
         if text and isinstance(text, TrString):
-            return QCoreApplication.translate(self.__class__.__name__, text).format(
-                *text.format_args, **text.format_kwargs
-            )
+            return QCoreApplication.translate(cls.__name__, text).format(*text.format_args, **text.format_kwargs)
         return text
 
 
@@ -81,7 +80,7 @@ class Widget(Translator):
 class Dialog(Widget, QDialog):
     def setWindowTitle(self, value: str):
         self.__window_title = value
-        super().setWindowTitle(self._tr(value))
+        super().setWindowTitle(self.translate(value))
 
     def retranslate_ui(self):
         self.setWindowTitle(self.__window_title)
@@ -90,11 +89,11 @@ class Dialog(Widget, QDialog):
 class DockWidget(Widget, QDockWidget):
     def __init__(self, title: str, parent: QWidget | None = None):
         self.__title = title
-        super().__init__(self._tr(title), parent)
+        super().__init__(self.translate(title), parent)
 
     def setWindowTitle(self, value: str):
         self.__title = value
-        super().setWindowTitle(self._tr(value))
+        super().setWindowTitle(self.translate(value))
 
     def retranslate_ui(self):
         self.setWindowTitle(self.__title)
@@ -104,15 +103,15 @@ class Label(Widget, QLabel):
     def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
         self.__tooltip: str | None = None
-        super().__init__(self._tr(text), parent)
+        super().__init__(self.translate(text), parent)
 
     def setText(self, value: str):
         self.__text = value
-        super().setText(self._tr(value))
+        super().setText(self.translate(value))
 
     def setToolTip(self, value: str):
         self.__tooltip = value
-        super().setToolTip(self._tr(value))
+        super().setToolTip(self.translate(value))
 
     def retranslate_ui(self):
         self.setText(self.__text)
@@ -123,11 +122,11 @@ class Label(Widget, QLabel):
 class PushButton(Widget, QPushButton):
     def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
-        super().__init__(self._tr(text), parent)
+        super().__init__(self.translate(text), parent)
 
     def setText(self, value: str):
         self.__text = value
-        super().setText(self._tr(value))
+        super().setText(self.translate(value))
 
     def retranslate_ui(self):
         self.setText(self.__text)
@@ -136,11 +135,11 @@ class PushButton(Widget, QPushButton):
 class GroupBox(Widget, QGroupBox):
     def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
-        super().__init__(self._tr(text), parent)
+        super().__init__(self.translate(text), parent)
 
     def setTitle(self, value: str):
         self.__text = value
-        super().setTitle(self._tr(value))
+        super().setTitle(self.translate(value))
 
     def retranslate_ui(self):
         self.setTitle(self.__text)
@@ -149,11 +148,11 @@ class GroupBox(Widget, QGroupBox):
 class CheckBox(Widget, QCheckBox):
     def __init__(self, text: str, parent: QWidget | None = None):
         self.__text = text
-        super().__init__(self._tr(text), parent)
+        super().__init__(self.translate(text), parent)
 
     def setText(self, value: str):
         self.__text = value
-        super().setText(self._tr(value))
+        super().setText(self.translate(value))
 
     def retranslate_ui(self):
         self.setText(self.__text)
@@ -166,7 +165,7 @@ class SpinBox(Widget, QSpinBox):
 
     def setSuffix(self, value: str):
         self.__suffix = value
-        super().setSuffix(self._tr(value))
+        super().setSuffix(self.translate(value))
 
     def retranslate_ui(self):
         if self.__suffix:
@@ -180,7 +179,7 @@ class ComboBox(Widget, QComboBox):
 
     def addItem(self, text: str, /, userData: Any = None):  # type: ignore[override]
         self.__items.append(text)
-        super().addItem(self._tr(text), userData)
+        super().addItem(self.translate(text), userData)
 
     def removeItem(self, index: int):
         self.__items.pop(index)
@@ -188,7 +187,7 @@ class ComboBox(Widget, QComboBox):
 
     def retranslate_ui(self):
         for i, text in enumerate(self.__items):
-            self.setItemText(i, self._tr(text))
+            self.setItemText(i, self.translate(text))
 
 
 class ListView(Widget, QListView):
@@ -217,15 +216,15 @@ class TreeView(Widget, QTreeView):
 
 class StandardItem(Translator, QStandardItem):
     def __init__(self, text: str):
-        super().__init__(self._tr(text))
+        super().__init__(self.translate(text))
         self.__text = text
 
     def retranslate(self):
-        super().setText(self._tr(self.__text))
+        super().setText(self.translate(self.__text))
 
     def setText(self, text: str):
         self.__text = text
-        super().setText(self._tr(text))
+        super().setText(self.translate(text))
 
 
 class TabWidget(Widget, QTabWidget):
@@ -235,7 +234,7 @@ class TabWidget(Widget, QTabWidget):
 
     def addTab(self, page: QWidget, label: str, /):  # type: ignore[override]
         self.__labels.append(label)
-        super().addTab(page, self._tr(label))
+        super().addTab(page, self.translate(label))
 
     def removeTab(self, index: int):
         self.__labels.pop(index)
@@ -243,30 +242,30 @@ class TabWidget(Widget, QTabWidget):
 
     def retranslate_ui(self):
         for i, label in enumerate(self.__labels):
-            self.setTabText(i, self._tr(label))
+            self.setTabText(i, self.translate(label))
 
 
 class Action(Translator, QAction):
     def __init__(self, text: str, parent: QObject | None = None, *args, **kwargs):
-        super().__init__(self._tr(text), parent, *args, **kwargs)
+        super().__init__(self.translate(text), parent, *args, **kwargs)
         self.__text = text
 
     def retranslate(self):
-        super().setText(self._tr(self.__text))
+        super().setText(self.translate(self.__text))
 
     def setText(self, text: str):
         self.__text = text
-        super().setText(self._tr(text))
+        super().setText(self.translate(text))
 
 
 class Menu(Widget, QMenu):
     def __init__(self, title: str = "", parent: QWidget | None = None):
-        super().__init__(self._tr(title), parent)
+        super().__init__(self.translate(title), parent)
         self.__title = title
 
     def setTitle(self, title: str):
         self.__title = title
-        super().setTitle(self._tr(title))
+        super().setTitle(self.translate(title))
 
     def set_enabled_actions(self, flag: bool):
         for action in self.actions():
@@ -287,7 +286,7 @@ class StatusBar(Widget, QStatusBar):
         self.__message = message
         self.__timeout = timeout
         self.__monotonic = monotonic()
-        super().showMessage(self._tr(message), timeout)
+        super().showMessage(self.translate(message), timeout)
 
     def retranslate_ui(self):
         if self.currentMessage():
@@ -300,12 +299,12 @@ class StatusBar(Widget, QStatusBar):
 
 class ToolBar(Widget, QToolBar):
     def __init__(self, title: str = "", parent: QWidget | None = None):
-        super().__init__(self._tr(title), parent)
+        super().__init__(self.translate(title), parent)
         self.__title = title
 
     def setTitle(self, title: str):
         self.__title = title
-        super().setWindowTitle(self._tr(title))
+        super().setWindowTitle(self.translate(title))
 
     def retranslate_ui(self):
         for action in self.actions():

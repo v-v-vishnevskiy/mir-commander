@@ -18,7 +18,7 @@ from .utils.viewer.viewer import Viewer
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
-from .widgets.docks.object_dock import ObjectDock
+from .widgets.docks.project_dock.items import TreeItem
 from .widgets.docks.project_dock.project_dock import ProjectDock
 from .widgets.docks.viewer_dock import ViewerDock
 from .widgets.settings.settings_dialog import SettingsDialog
@@ -29,7 +29,6 @@ logger = logging.getLogger("ProjectWindow")
 @dataclass
 class Docks:
     project: ProjectDock
-    object: ObjectDock
     console: ConsoleDock
     viewer_settings: ViewerDock
 
@@ -115,16 +114,12 @@ class ProjectWindow(QMainWindow):
                 config=self.config.widgets.docks.project,
                 project=self.project,
             ),
-            ObjectDock(parent=self),
             ConsoleDock(parent=self),
             ViewerDock(parent=self),
         )
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.object)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
-
-        self.tabifyDockWidget(self.docks.object, self.docks.viewer_settings)
 
     def _set_mainwindow_title(self):
         self.setWindowTitle(f"Mir Commander – {self.project.name}")
@@ -148,7 +143,6 @@ class ProjectWindow(QMainWindow):
     def _setup_menubar_view(self) -> Menu:
         menu = Menu(Menu.tr("View"), self)
         menu.addAction(self.docks.project.toggleViewAction())
-        menu.addAction(self.docks.object.toggleViewAction())
         menu.addAction(self.docks.viewer_settings.toggleViewAction())
         menu.addAction(self.docks.console.toggleViewAction())
         return menu
@@ -200,7 +194,7 @@ class ProjectWindow(QMainWindow):
     def _import_file_action(self) -> Action:
         action = Action(Action.tr("Import File..."), self)
         action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
-        action.triggered.connect(self._import_file)
+        action.triggered.connect(self.import_file)
         return action
 
     def _window_actions(self):
@@ -284,8 +278,9 @@ class ProjectWindow(QMainWindow):
         if window:
             self.mdi_area.setActiveSubWindow(window)
 
-    def _import_file(self):
+    def import_file(self, parent: TreeItem | None = None):
         """Import a file into the current project."""
+
         dialog = QFileDialog(self, self.tr("Import File"))
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         dialog.setNameFilter(self.tr("All files (*)"))
@@ -295,7 +290,7 @@ class ProjectWindow(QMainWindow):
             try:
                 logs: list[str] = []
                 imported_item = self.project.import_file(file_path, logs)
-                self.docks.project.add_item_to_root(imported_item)
+                self.docks.project.add_item(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")

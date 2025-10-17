@@ -48,7 +48,7 @@ class ViewerDock(BaseDock):
             settings.set_active_viewer(viewer)
             self._scroll_area.setWidget(settings)
 
-        if not self._all_viewers:
+        if (viewer is not None and viewer.settings is None) or not self._all_viewers:
             self._scroll_area.takeWidget()
 
     def update_viewers_list(self, viewers: list[Viewer]):

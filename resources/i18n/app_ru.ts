@@ -346,12 +346,10 @@
         <source>Import File...</source>
         <translation>Импорт файла...</translation>
     </message>
-</context>
-<context>
-    <name>AffineTransformation</name>
     <message>
-        <source>View</source>
-        <translation type="obsolete">Вид</translation>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="53"/>
+        <source>Import File</source>
+        <translation>Импорт файла</translation>
     </message>
 </context>
 <context>
@@ -658,6 +656,11 @@
         <source>Coordinates set</source>
         <translation>Набор координат</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="57"/>
+        <source>Open With</source>
+        <translation>Открыть в</translation>
+    </message>
 </context>
 <context>
     <name>ObjectDock</name>
@@ -898,6 +901,19 @@
         <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/settings/image.py" line="115"/>
         <source>Error saving image {}</source>
         <translation>Ошибка сохранения изображения {}</translation>
+    </message>
+</context>
+<context>
+    <name>Translator</name>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure_editor/widget.py" line="8"/>
+        <source>Molecular Structure Editor</source>
+        <translation>Редактор молекулярной структуры</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/viewers/molecular_structure/viewer.py" line="17"/>
+        <source>Molecular Structure Viewer</source>
+        <translation>Визуализатор молекулярной структуры</translation>
     </message>
 </context>
 <context>

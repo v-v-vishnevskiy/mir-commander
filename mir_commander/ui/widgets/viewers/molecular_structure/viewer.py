@@ -4,6 +4,7 @@ from PySide6.QtGui import QContextMenuEvent, QStandardItem
 from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.widget import Translator
 
 from .config import MolecularStructureViewerConfig
 from .context_menu import ContextMenu
@@ -12,6 +13,7 @@ from .visualizer import Visualizer
 
 
 class MolecularStructureViewer(Viewer):
+    name = Translator.tr("Molecular Structure Viewer")
     settings = Settings
     settings_widget: Settings
 
@@ -34,7 +36,7 @@ class MolecularStructureViewer(Viewer):
         self._molecule_index = 0
         self._draw_item = self.item
         self._set_draw_item()
-        self.visualizer.add_atomic_coordinates(self._draw_item.data().data)
+        self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
         self.visualizer.coordinate_axes_adjust_length()
 
         self._context_menu = ContextMenu(parent=self, app_config=self.app_config)
@@ -95,7 +97,7 @@ class MolecularStructureViewer(Viewer):
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
 
     def set_next_atomic_coordinates(self):
         self._molecule_index += 1
@@ -103,7 +105,7 @@ class MolecularStructureViewer(Viewer):
         self._set_draw_item()
         if id(item) != id(self._draw_item):
             self.update_window_title()
-            self.visualizer.set_atomic_coordinates(self._draw_item.data().data)
+            self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
 
     def save_image(
         self, filename: str, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
