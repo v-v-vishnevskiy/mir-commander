@@ -110,9 +110,9 @@ class Image(QWidget):
             height = int(viewer.size().height() * viewer.devicePixelRatio() * scale_factor)
             try:
                 viewer.save_image(filename, width, height, bg_color, crop_to_content)
-                viewer.long_msg_signal.emit(TR.tr("{} saved successfully".format(filename)))
+                viewer.long_msg_signal.emit(TR.tr("{} saved successfully").format(filename))
             except Exception as e:
-                txt = TR.tr("Error saving image {}".format(e))
+                txt = TR.tr("Error saving image {}").format(filename)
                 logger.error(f"{txt}: {e}")
                 viewer.long_msg_signal.emit(txt)
 
