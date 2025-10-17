@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QImageWriter
-from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinBox, QWidget
+from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QMessageBox, QSpinBox, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.utils.widget import TR, GridLayout, Label, PushButton, VBoxLayout
@@ -104,6 +104,7 @@ class Image(QWidget):
             path = Path(file_path)
             file_path = str(path.with_stem(f"{path.stem}_%n"))
 
+        error = False
         for i, viewer in enumerate(self._settings.viewers):
             filename = file_path.replace("%n", str(i + n))
             width = int(viewer.size().width() * viewer.devicePixelRatio() * scale_factor)
@@ -113,6 +114,19 @@ class Image(QWidget):
                 logger.debug("Saved image: %s", filename)
             except Exception as e:
                 logger.error("Error saving image: %s", e)
+                error = True
+
+        if error:
+            log_text = TR.tr("See the log for details.")
+            if i > 0:
+                QMessageBox.warning(self, TR.tr("Error"), TR.tr("Error saving images.") + " " + log_text)
+            else:
+                QMessageBox.warning(self, TR.tr("Error"), TR.tr("Error saving image.") + " " + log_text)
+        else:
+            if i > 0:
+                QMessageBox.information(self, TR.tr("Success"), TR.tr("Images successfully saved."))
+            else:
+                QMessageBox.information(self, TR.tr("Success"), TR.tr("Image successfully saved."))
 
     def update_values(self, viewer: "MolecularStructureViewer"):
         if self._bg_color_inited is False:
