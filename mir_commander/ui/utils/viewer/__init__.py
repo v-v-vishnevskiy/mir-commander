@@ -1,4 +1,4 @@
 from .viewer import Viewer
-from .viewer_settings import EmptyViewerSettings, ViewerSettings
+from .viewer_settings import ViewerSettings
 
-__all__ = ["Viewer", "ViewerSettings", "EmptyViewerSettings"]
+__all__ = ["Viewer", "ViewerSettings"]

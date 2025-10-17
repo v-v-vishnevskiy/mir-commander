@@ -1,23 +1,28 @@
 from time import monotonic
 from typing import Any, Self, cast
 
-from PySide6.QtCore import QCoreApplication, QEvent, QObject
-from PySide6.QtGui import QAction, QStandardItem
+from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPropertyAnimation, Qt
+from PySide6.QtGui import QAction, QMouseEvent, QStandardItem
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
     QDockWidget,
+    QFrame,
+    QGridLayout,
     QGroupBox,
+    QHBoxLayout,
     QLabel,
     QListView,
     QMenu,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QStatusBar,
     QTabWidget,
     QToolBar,
     QTreeView,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -307,3 +312,121 @@ class ToolBar(Widget, QToolBar):
             if isinstance(action, Action):
                 action.retranslate()
         self.setTitle(self.__title)
+
+
+class GridLayout(QGridLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(5)
+
+
+class VBoxLayout(QVBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+
+
+class HBoxLayout(QHBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+
+
+class _GroupHeaderWidget(QFrame):
+    def __init__(self, title: str, layout_widget: "_GroupLayoutWidget"):
+        super().__init__()
+
+        self._parent = layout_widget
+
+        self.setFixedHeight(20)
+        self.setStyleSheet("QFrame { padding: 2px; background-color: #D0D0D0; }")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self._icon = QFrame()
+        self._icon.setFixedSize(16, 16)
+
+        label = Label(title)
+        label.setStyleSheet("QLabel { padding: 0px; margin: 0px; }")
+
+        layout = HBoxLayout()
+        layout.addWidget(self._icon)
+        layout.addSpacing(4)
+        layout.addWidget(label)
+        layout.addStretch()
+        self.setLayout(layout)
+        self._apply_style()
+
+    def _apply_style(self):
+        if self._parent.visible:
+            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-down.png); }")
+        else:
+            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-right.png); }")
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self._parent.toggle_visibility()
+        self._apply_style()
+        event.accept()
+
+
+class _GroupLayoutWidget(VBoxLayout):
+    def __init__(self, title: str, widget: QWidget, visible: bool, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._scroll_area = QScrollArea()
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scroll_area.setWidget(widget)
+        self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
+
+        self._visible = visible
+        self._widget = widget
+        self._widget.setContentsMargins(5, 5, 5, 10)
+        self._widget_height = self._widget_current_height = self._widget.sizeHint().height()
+        self._animation_max = QPropertyAnimation(self._scroll_area, b"maximumHeight")
+        self._animation_max.setDuration(200)
+        self._animation_min = QPropertyAnimation(self._scroll_area, b"minimumHeight")
+        self._animation_min.setDuration(200)
+
+        self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
+        self.addWidget(self._scroll_area)
+
+        if self._visible:
+            self._scroll_area.setMinimumHeight(widget.sizeHint().height())
+            self._scroll_area.setMaximumHeight(widget.sizeHint().height())
+        else:
+            self._scroll_area.setMinimumHeight(0)
+            self._scroll_area.setMaximumHeight(0)
+
+    @property
+    def visible(self) -> bool:
+        return self._visible
+
+    def toggle_visibility(self):
+        self._visible = not self._visible
+
+        if self._visible:
+            # Expand the group
+            self._animation_min.setStartValue(0)
+            self._animation_max.setStartValue(0)
+            self._animation_min.setEndValue(self._widget_height)
+            self._animation_max.setEndValue(self._widget_height)
+            self._animation_max.start()
+            self._animation_min.start()
+        else:
+            # Collapse the group
+            self._widget_height = self._widget.sizeHint().height()
+            self._animation_max.setStartValue(self._widget_height)
+            self._animation_min.setStartValue(self._widget_height)
+            self._animation_max.setEndValue(0)
+            self._animation_min.setEndValue(0)
+        self._animation_max.start()
+        self._animation_min.start()
+
+
+class GroupVBoxLayout(VBoxLayout):
+    def add_widget(self, title: str, widget: QWidget, visible: bool = True, *args, **kwargs):
+        super().addLayout(_GroupLayoutWidget(title, widget, visible), *args, **kwargs)

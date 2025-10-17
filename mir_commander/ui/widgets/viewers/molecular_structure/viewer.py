@@ -1,6 +1,8 @@
+from PIL import Image, ImageCms
 from PySide6.QtGui import QContextMenuEvent, QStandardItem
 
 from mir_commander.core.models import AtomicCoordinates, VolumeCube
+from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.viewer import Viewer
 
 from .config import MolecularStructureViewerConfig
@@ -102,3 +104,10 @@ class MolecularStructureViewer(Viewer):
         if id(item) != id(self._draw_item):
             self.update_window_title()
             self.visualizer.set_atomic_coordinates(self._draw_item.data().data)
+
+    def save_image(
+        self, filename: str, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
+    ):
+        image = self.visualizer.render_to_image(width, height, bg_color, crop_to_content)
+        profile = ImageCms.createProfile("sRGB")
+        Image.fromarray(image).save(filename, icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())

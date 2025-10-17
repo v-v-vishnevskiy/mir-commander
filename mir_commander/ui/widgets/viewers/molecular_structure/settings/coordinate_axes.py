@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QGridLayout, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QLineEdit, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GroupBox, Label, PushButton, TrString
+from mir_commander.ui.utils.widget import CheckBox, GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from .utils import ColorButton, add_slider
 
@@ -14,20 +14,20 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class CoordinateAxes(GroupBox):
+class CoordinateAxes(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(text=self.tr("Coordinate Axes"), parent=parent)
+        super().__init__(parent=parent)
 
         self._settings = parent
 
-        self.main_layout = QVBoxLayout(self)
+        self.main_layout = VBoxLayout(self)
         self.main_layout.addLayout(self._add_checkboxes())
         self.main_layout.addLayout(self._add_sliders())
         self.main_layout.addLayout(self._add_axes())
         self.setLayout(self.main_layout)
 
-    def _add_checkboxes(self) -> QGridLayout:
-        layout = QGridLayout()
+    def _add_checkboxes(self) -> GridLayout:
+        layout = GridLayout()
 
         self._visibility_checkbox = CheckBox(CheckBox.tr("Show"))
         self._visibility_checkbox.setChecked(False)
@@ -52,8 +52,8 @@ class CoordinateAxes(GroupBox):
 
         return layout
 
-    def _add_sliders(self) -> QGridLayout:
-        layout = QGridLayout()
+    def _add_sliders(self) -> GridLayout:
+        layout = GridLayout()
 
         self._length_slider, self._length_double_spinbox = add_slider(
             layout=layout,
@@ -99,8 +99,8 @@ class CoordinateAxes(GroupBox):
 
         return layout
 
-    def _add_axes(self) -> QGridLayout:
-        layout = QGridLayout()
+    def _add_axes(self) -> GridLayout:
+        layout = GridLayout()
 
         self._x_axis_color_button, self._x_label_color_button, self._x_line_edit = self._add_axis(
             layout, 0, Label.tr("Axis X:"), "x"
@@ -115,7 +115,7 @@ class CoordinateAxes(GroupBox):
         return layout
 
     def _add_axis(
-        self, layout: QGridLayout, row: int, label_text: TrString, axis: str
+        self, layout: GridLayout, row: int, label_text: TrString, axis: str
     ) -> tuple[ColorButton, ColorButton, QLineEdit]:
         label = Label(label_text)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)

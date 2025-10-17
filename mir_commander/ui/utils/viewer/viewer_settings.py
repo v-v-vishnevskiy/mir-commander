@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QSizePolicy, QWidget
 
-from mir_commander.ui.utils.widget import CheckBox
+from mir_commander.ui.utils.widget import CheckBox, GroupVBoxLayout
 
 if TYPE_CHECKING:
     from .viewer import Viewer
@@ -15,21 +15,27 @@ class ViewerSettings(Generic[T], QWidget):
     def __init__(self, apply_for_all_checkbox: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred))
+
         self._active_viewer: None | T = None
         self._all_viewers: list[T] = []
 
         # "Apply for all" checkbox
         self._apply_for_all = False
 
-        self._layout = QVBoxLayout()
-        self.setLayout(self._layout)
+        self._layout = GroupVBoxLayout()
 
         if apply_for_all_checkbox:
-            self._apply_for_all_checkbox = CheckBox(CheckBox.tr("Apply for all"), self)
+            self._apply_for_all_checkbox = CheckBox(CheckBox.tr("Apply for all"))
+            self._apply_for_all_checkbox.setStyleSheet("QCheckBox { border: 0px; }")
             self._apply_for_all_checkbox.setChecked(self._apply_for_all)
             self._apply_for_all_checkbox.toggled.connect(self._apply_for_all_checkbox_toggled_handler)
+            self._layout.addSpacing(10)
             self._layout.addWidget(self._apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
             self._layout.addSpacing(10)
+
+        self.setLayout(self._layout)
 
     @property
     def active_viewer(self) -> T | None:
@@ -43,7 +49,7 @@ class ViewerSettings(Generic[T], QWidget):
             return [self._active_viewer] if self._active_viewer is not None else []
 
     @property
-    def layout(self) -> QVBoxLayout:  # type: ignore[override]
+    def layout(self) -> GroupVBoxLayout:  # type: ignore[override]
         return self._layout
 
     def _apply_for_all_checkbox_toggled_handler(self, checked: bool):
@@ -67,7 +73,3 @@ class ViewerSettings(Generic[T], QWidget):
     def __del__(self):
         self._active_viewer = None
         self._all_viewers.clear()
-
-
-class EmptyViewerSettings(ViewerSettings):
-    pass

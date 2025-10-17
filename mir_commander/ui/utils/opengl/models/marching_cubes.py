@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 
 EDGE_TABLE = [
@@ -520,50 +518,61 @@ TRIANGLE_TABLE = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
 ]
 
+# Pre-convert lookup tables to numpy arrays (module-level cache)
+_EDGE_TABLE_NP = np.array(EDGE_TABLE, dtype=np.int32)
+_TRIANGLE_TABLE_NP = np.array(TRIANGLE_TABLE, dtype=np.int32)
 
-def _compute_gradient(
-    scalar_field: np.ndarray, i: int, j: int, k: int, factor: float = 1.0
-) -> tuple[float, float, float]:
+# Edge definitions (vertex pairs for each of 12 edges)
+_EDGE_CONNECTIONS = np.array(
+    [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [7, 4],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7],
+    ],
+    dtype=np.int32,
+)
+
+# Pre-allocate corner offsets
+_CORNER_OFFSETS = np.array(
+    [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=np.int32
+)
+
+
+def _compute_gradients(scalar_field: np.ndarray, factor: float = 1.0) -> np.ndarray:
     """
-    Compute gradient at a given point using central differences.
+    Compute gradients for entire scalar field using NumPy.
 
     Args:
         scalar_field: The 3D scalar field
-        i, j, k: Grid coordinates
         factor: Scale factor for field values
 
     Returns:
-        Gradient vector (dx, dy, dz)
+        Gradient field (shape: scalar_field.shape + (3,))
     """
-    sx, sy, sz = scalar_field.shape
+    scaled_field = scalar_field * factor
 
-    # Central differences with boundary handling
-    if i == 0:
-        dx = factor * (scalar_field[i + 1, j, k] - scalar_field[i, j, k])
-    elif i == sx - 1:
-        dx = factor * (scalar_field[i, j, k] - scalar_field[i - 1, j, k])
-    else:
-        dx = factor * (scalar_field[i + 1, j, k] - scalar_field[i - 1, j, k]) * 0.5
+    # Compute gradients using numpy.gradient
+    # np.gradient returns gradients in order of axes: (axis_0, axis_1, axis_2) = (i, j, k) = (x, y, z)
+    grad_x, grad_y, grad_z = np.gradient(scaled_field)
 
-    if j == 0:
-        dy = factor * (scalar_field[i, j + 1, k] - scalar_field[i, j, k])
-    elif j == sy - 1:
-        dy = factor * (scalar_field[i, j, k] - scalar_field[i, j - 1, k])
-    else:
-        dy = factor * (scalar_field[i, j + 1, k] - scalar_field[i, j - 1, k]) * 0.5
+    # Stack gradients
+    gradients = np.stack([grad_x, grad_y, grad_z], axis=-1)
 
-    if k == 0:
-        dz = factor * (scalar_field[i, j, k + 1] - scalar_field[i, j, k])
-    elif k == sz - 1:
-        dz = factor * (scalar_field[i, j, k] - scalar_field[i, j, k - 1])
-    else:
-        dz = factor * (scalar_field[i, j, k + 1] - scalar_field[i, j, k - 1]) * 0.5
+    # Normalize gradients and invert
+    norms = np.linalg.norm(gradients, axis=-1, keepdims=True)
+    norms = np.where(norms > 1e-10, norms, 1.0)
+    gradients = -gradients / norms
 
-    # Normalize gradient and invert (gradient points inward, we want outward normal)
-    length = math.sqrt(dx * dx + dy * dy + dz * dz)
-    if length > 1e-10:
-        return (-dx / length, -dy / length, -dz / length)
-    return (0.0, 0.0, -1.0)
+    return gradients.astype(np.float32)
 
 
 def isosurface(scalar_field: np.ndarray, value: float, factor: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
@@ -578,244 +587,174 @@ def isosurface(scalar_field: np.ndarray, value: float, factor: float = 1.0) -> t
     Returns:
         Tuple of (vertices, normals), both flattened as [x,y,z, x,y,z, ...]
     """
+    # Pre-compute all gradients
+    gradients = _compute_gradients(scalar_field, factor)
+
+    # Scale field values once
+    scaled_field = (scalar_field * factor).astype(np.float32)
+
+    edge_table = _EDGE_TABLE_NP
+    triangle_table = _TRIANGLE_TABLE_NP
+    edge_connections = _EDGE_CONNECTIONS
+    corner_offsets = _CORNER_OFFSETS
+
+    sx, sy, sz = scaled_field.shape
     vertices = []
     normals = []
 
-    # Process each cube in the volume
-    for i in range(scalar_field.shape[0] - 1):
-        for j in range(scalar_field.shape[1] - 1):
-            for k in range(scalar_field.shape[2] - 1):
-                # Get the 8 corner values of the cube
-                cube_values = [
-                    factor * scalar_field[i][j][k],  # 0
-                    factor * scalar_field[i + 1][j][k],  # 1
-                    factor * scalar_field[i + 1][j + 1][k],  # 2
-                    factor * scalar_field[i][j + 1][k],  # 3
-                    factor * scalar_field[i][j][k + 1],  # 4
-                    factor * scalar_field[i + 1][j][k + 1],  # 5
-                    factor * scalar_field[i + 1][j + 1][k + 1],  # 6
-                    factor * scalar_field[i][j + 1][k + 1],  # 7
-                ]
+    # Vectorized approach - process slices
+    for i in range(sx - 1):
+        for j in range(sy - 1):
+            # Get all k values at once for this (i,j) slice
+            k_range = sz - 1
 
-                cube_positions = [
-                    (i, j, k),  # 0
-                    (i + 1, j, k),  # 1
-                    (i + 1, j + 1, k),  # 2
-                    (i, j + 1, k),  # 3
-                    (i, j, k + 1),  # 4
-                    (i + 1, j, k + 1),  # 5
-                    (i + 1, j + 1, k + 1),  # 6
-                    (i, j + 1, k + 1),  # 7
-                ]
+            # Extract cube corner values for all k at once
+            v000_slice = scaled_field[i, j, :k_range]
+            v100_slice = scaled_field[i + 1, j, :k_range]
+            v110_slice = scaled_field[i + 1, j + 1, :k_range]
+            v010_slice = scaled_field[i, j + 1, :k_range]
+            v001_slice = scaled_field[i, j, 1:sz]
+            v101_slice = scaled_field[i + 1, j, 1:sz]
+            v111_slice = scaled_field[i + 1, j + 1, 1:sz]
+            v011_slice = scaled_field[i, j + 1, 1:sz]
 
-                # Compute gradients (normals) at each corner
-                cube_normals = [
-                    _compute_gradient(scalar_field, i, j, k, factor),  # 0
-                    _compute_gradient(scalar_field, i + 1, j, k, factor),  # 1
-                    _compute_gradient(scalar_field, i + 1, j + 1, k, factor),  # 2
-                    _compute_gradient(scalar_field, i, j + 1, k, factor),  # 3
-                    _compute_gradient(scalar_field, i, j, k + 1, factor),  # 4
-                    _compute_gradient(scalar_field, i + 1, j, k + 1, factor),  # 5
-                    _compute_gradient(scalar_field, i + 1, j + 1, k + 1, factor),  # 6
-                    _compute_gradient(scalar_field, i, j + 1, k + 1, factor),  # 7
-                ]
+            # Calculate cube indices for all k at once
+            cube_indices = (
+                (v000_slice < value).astype(np.int32)
+                | ((v100_slice < value).astype(np.int32) << 1)
+                | ((v110_slice < value).astype(np.int32) << 2)
+                | ((v010_slice < value).astype(np.int32) << 3)
+                | ((v001_slice < value).astype(np.int32) << 4)
+                | ((v101_slice < value).astype(np.int32) << 5)
+                | ((v111_slice < value).astype(np.int32) << 6)
+                | ((v011_slice < value).astype(np.int32) << 7)
+            )
 
-                # Calculate cube index based on which vertices are inside/outside
-                cube_index = 0
-                for vertex_idx in range(8):
-                    if cube_values[vertex_idx] < value:
-                        cube_index |= 1 << vertex_idx
+            # Filter out empty cubes
+            active_mask = edge_table[cube_indices] != 0
+            active_k = np.where(active_mask)[0]
 
-                # Skip if cube is entirely inside or outside
-                if EDGE_TABLE[cube_index] == 0:
-                    continue
+            for k in active_k:
+                cube_index = cube_indices[k]
+                edge_bits = edge_table[cube_index]
 
-                # Find intersection points and normals on edges
-                edge_vertices: list[tuple[float, float, float]] = [(0.0, 0.0, 0.0)] * 12
-                edge_normals: list[tuple[float, float, float]] = [(0.0, 0.0, 1.0)] * 12
+                # Get cube values
+                cube_values = np.array(
+                    [
+                        v000_slice[k],
+                        v100_slice[k],
+                        v110_slice[k],
+                        v010_slice[k],
+                        v001_slice[k],
+                        v101_slice[k],
+                        v111_slice[k],
+                        v011_slice[k],
+                    ],
+                    dtype=np.float32,
+                )
 
-                if EDGE_TABLE[cube_index] & 1:
-                    edge_vertices[0] = _interpolate_vertex(
-                        value, cube_positions[0], cube_positions[1], cube_values[0], cube_values[1]
-                    )
-                    edge_normals[0] = _interpolate_normal(
-                        value, cube_normals[0], cube_normals[1], cube_values[0], cube_values[1]
-                    )
-                if EDGE_TABLE[cube_index] & 2:
-                    edge_vertices[1] = _interpolate_vertex(
-                        value, cube_positions[1], cube_positions[2], cube_values[1], cube_values[2]
-                    )
-                    edge_normals[1] = _interpolate_normal(
-                        value, cube_normals[1], cube_normals[2], cube_values[1], cube_values[2]
-                    )
-                if EDGE_TABLE[cube_index] & 4:
-                    edge_vertices[2] = _interpolate_vertex(
-                        value, cube_positions[2], cube_positions[3], cube_values[2], cube_values[3]
-                    )
-                    edge_normals[2] = _interpolate_normal(
-                        value, cube_normals[2], cube_normals[3], cube_values[2], cube_values[3]
-                    )
-                if EDGE_TABLE[cube_index] & 8:
-                    edge_vertices[3] = _interpolate_vertex(
-                        value, cube_positions[3], cube_positions[0], cube_values[3], cube_values[0]
-                    )
-                    edge_normals[3] = _interpolate_normal(
-                        value, cube_normals[3], cube_normals[0], cube_values[3], cube_values[0]
-                    )
-                if EDGE_TABLE[cube_index] & 16:
-                    edge_vertices[4] = _interpolate_vertex(
-                        value, cube_positions[4], cube_positions[5], cube_values[4], cube_values[5]
-                    )
-                    edge_normals[4] = _interpolate_normal(
-                        value, cube_normals[4], cube_normals[5], cube_values[4], cube_values[5]
-                    )
-                if EDGE_TABLE[cube_index] & 32:
-                    edge_vertices[5] = _interpolate_vertex(
-                        value, cube_positions[5], cube_positions[6], cube_values[5], cube_values[6]
-                    )
-                    edge_normals[5] = _interpolate_normal(
-                        value, cube_normals[5], cube_normals[6], cube_values[5], cube_values[6]
-                    )
-                if EDGE_TABLE[cube_index] & 64:
-                    edge_vertices[6] = _interpolate_vertex(
-                        value, cube_positions[6], cube_positions[7], cube_values[6], cube_values[7]
-                    )
-                    edge_normals[6] = _interpolate_normal(
-                        value, cube_normals[6], cube_normals[7], cube_values[6], cube_values[7]
-                    )
-                if EDGE_TABLE[cube_index] & 128:
-                    edge_vertices[7] = _interpolate_vertex(
-                        value, cube_positions[7], cube_positions[4], cube_values[7], cube_values[4]
-                    )
-                    edge_normals[7] = _interpolate_normal(
-                        value, cube_normals[7], cube_normals[4], cube_values[7], cube_values[4]
-                    )
-                if EDGE_TABLE[cube_index] & 256:
-                    edge_vertices[8] = _interpolate_vertex(
-                        value, cube_positions[0], cube_positions[4], cube_values[0], cube_values[4]
-                    )
-                    edge_normals[8] = _interpolate_normal(
-                        value, cube_normals[0], cube_normals[4], cube_values[0], cube_values[4]
-                    )
-                if EDGE_TABLE[cube_index] & 512:
-                    edge_vertices[9] = _interpolate_vertex(
-                        value, cube_positions[1], cube_positions[5], cube_values[1], cube_values[5]
-                    )
-                    edge_normals[9] = _interpolate_normal(
-                        value, cube_normals[1], cube_normals[5], cube_values[1], cube_values[5]
-                    )
-                if EDGE_TABLE[cube_index] & 1024:
-                    edge_vertices[10] = _interpolate_vertex(
-                        value, cube_positions[2], cube_positions[6], cube_values[2], cube_values[6]
-                    )
-                    edge_normals[10] = _interpolate_normal(
-                        value, cube_normals[2], cube_normals[6], cube_values[2], cube_values[6]
-                    )
-                if EDGE_TABLE[cube_index] & 2048:
-                    edge_vertices[11] = _interpolate_vertex(
-                        value, cube_positions[3], cube_positions[7], cube_values[3], cube_values[7]
-                    )
-                    edge_normals[11] = _interpolate_normal(
-                        value, cube_normals[3], cube_normals[7], cube_values[3], cube_values[7]
-                    )
+                # Positions and normals
+                positions = corner_offsets.astype(np.float32) + np.array([i, j, k], dtype=np.float32)
+                indices_i = i + corner_offsets[:, 0]
+                indices_j = j + corner_offsets[:, 1]
+                indices_k = k + corner_offsets[:, 2]
+                cube_normals = gradients[indices_i, indices_j, indices_k]
 
-                # Create triangles
+                # Compute edge vertices and normals
+                edge_vertices = np.zeros((12, 3), dtype=np.float32)
+                edge_normals = np.zeros((12, 3), dtype=np.float32)
+
+                for edge_idx in range(12):
+                    if edge_bits & (1 << edge_idx):
+                        v1_idx, v2_idx = edge_connections[edge_idx]
+                        edge_vertices[edge_idx] = _interpolate_vertex_fast(
+                            value, positions[v1_idx], positions[v2_idx], cube_values[v1_idx], cube_values[v2_idx]
+                        )
+                        edge_normals[edge_idx] = _interpolate_normal_fast(
+                            value, cube_normals[v1_idx], cube_normals[v2_idx], cube_values[v1_idx], cube_values[v2_idx]
+                        )
+
+                # Generate triangles
+                tri_indices = triangle_table[cube_index]
                 tri_idx = 0
-                while TRIANGLE_TABLE[cube_index][tri_idx] != -1:
+                while tri_indices[tri_idx] != -1:
+                    idx0, idx1, idx2 = tri_indices[tri_idx : tri_idx + 3]
+
                     if value >= 0.0:
-                        triangle = [
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][0],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][2],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
-                        ]
-                        triangle_normals = [
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][2],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
-                        ]
+                        vertices.extend(
+                            [
+                                edge_vertices[idx0, 0],
+                                edge_vertices[idx0, 1],
+                                edge_vertices[idx0, 2],
+                                edge_vertices[idx1, 0],
+                                edge_vertices[idx1, 1],
+                                edge_vertices[idx1, 2],
+                                edge_vertices[idx2, 0],
+                                edge_vertices[idx2, 1],
+                                edge_vertices[idx2, 2],
+                            ]
+                        )
                     else:
-                        triangle = [
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][2],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx]][0],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
-                            edge_vertices[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
+                        vertices.extend(
+                            [
+                                edge_vertices[idx0, 2],
+                                edge_vertices[idx0, 1],
+                                edge_vertices[idx0, 0],
+                                edge_vertices[idx1, 2],
+                                edge_vertices[idx1, 1],
+                                edge_vertices[idx1, 0],
+                                edge_vertices[idx2, 2],
+                                edge_vertices[idx2, 1],
+                                edge_vertices[idx2, 0],
+                            ]
+                        )
+
+                    normals.extend(
+                        [
+                            edge_normals[idx0, 0],
+                            edge_normals[idx0, 1],
+                            edge_normals[idx0, 2],
+                            edge_normals[idx1, 0],
+                            edge_normals[idx1, 1],
+                            edge_normals[idx1, 2],
+                            edge_normals[idx2, 0],
+                            edge_normals[idx2, 1],
+                            edge_normals[idx2, 2],
                         ]
-                        triangle_normals = [
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx]][2],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 1]][2],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][0],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][1],
-                            edge_normals[TRIANGLE_TABLE[cube_index][tri_idx + 2]][2],
-                        ]
-                    vertices.extend(triangle)
-                    normals.extend(triangle_normals)
+                    )
+
                     tri_idx += 3
 
     return (np.array(vertices, dtype=np.float32), np.array(normals, dtype=np.float32))
 
 
-def _interpolate_vertex(
-    isovalue: float, p1: tuple[float, float, float], p2: tuple[float, float, float], val1: float, val2: float
-) -> tuple[float, float, float]:
-    """Interpolate vertex position on edge based on isovalue."""
-    if math.isclose(isovalue, val1, rel_tol=1e-6):
+def _interpolate_vertex_fast(isovalue: float, p1: np.ndarray, p2: np.ndarray, val1: float, val2: float) -> np.ndarray:
+    """Interpolate vertex position on edge based on isovalue (NumPy version)."""
+    if abs(isovalue - val1) < 1e-6:
         return p1
-    if math.isclose(isovalue, val2, rel_tol=1e-6):
+    if abs(isovalue - val2) < 1e-6:
         return p2
-    if math.isclose(val1, val2, rel_tol=1e-6):
+    if abs(val1 - val2) < 1e-6:
         return p1
 
     mu = (isovalue - val1) / (val2 - val1)
-    return (
-        p1[0] + (p2[0] - p1[0]) * mu,
-        p1[1] + (p2[1] - p1[1]) * mu,
-        p1[2] + (p2[2] - p1[2]) * mu,
-    )
+    return p1 + (p2 - p1) * mu
 
 
-def _interpolate_normal(
-    isovalue: float,
-    n1: tuple[float, float, float],
-    n2: tuple[float, float, float],
-    val1: float,
-    val2: float,
-) -> tuple[float, float, float]:
-    """Interpolate normal vector on edge based on isovalue."""
-    if math.isclose(isovalue, val1, rel_tol=1e-6):
+def _interpolate_normal_fast(isovalue: float, n1: np.ndarray, n2: np.ndarray, val1: float, val2: float) -> np.ndarray:
+    """Interpolate normal vector on edge based on isovalue (NumPy version)."""
+    if abs(isovalue - val1) < 1e-6:
         return n1
-    if math.isclose(isovalue, val2, rel_tol=1e-6):
+    if abs(isovalue - val2) < 1e-6:
         return n2
-    if math.isclose(val1, val2, rel_tol=1e-6):
+    if abs(val1 - val2) < 1e-6:
         return n1
 
     mu = (isovalue - val1) / (val2 - val1)
-    nx = n1[0] + (n2[0] - n1[0]) * mu
-    ny = n1[1] + (n2[1] - n1[1]) * mu
-    nz = n1[2] + (n2[2] - n1[2]) * mu
+    result = n1 + (n2 - n1) * mu
 
-    # Normalize interpolated normal
-    length = math.sqrt(nx * nx + ny * ny + nz * nz)
-    if length > 1e-10:
-        return (nx / length, ny / length, nz / length)
-    return (0.0, 0.0, 1.0)
+    # Normalize
+    norm = np.linalg.norm(result)
+    if norm > 1e-10:
+        return result / norm
+    return np.array([0.0, 0.0, 1.0], dtype=np.float32)

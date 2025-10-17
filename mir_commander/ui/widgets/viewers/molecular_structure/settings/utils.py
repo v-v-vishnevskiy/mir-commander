@@ -15,15 +15,18 @@ def add_slider(
     single_step: float = 1.0,
     factor: int = 1,
     decimals: int = 0,
+    default_value: float = 0.0,
 ) -> tuple[QSlider, QDoubleSpinBox]:
     slider = QSlider(Qt.Orientation.Horizontal)
     slider.setRange(int(min_value * factor), int(max_value * factor))
     slider.setSingleStep(int(single_step * factor))
+    slider.setValue(int(default_value * factor))
 
     double_spinbox = QDoubleSpinBox()
     double_spinbox.setRange(min_value, max_value)
     double_spinbox.setSingleStep(single_step)
     double_spinbox.setDecimals(decimals)
+    double_spinbox.setValue(default_value)
 
     label = Label(text)
     if label_tooltip is not None:
@@ -43,7 +46,12 @@ class ColorButton(QPushButton):
         super().__init__()
         self._color = color
         self._set_style_sheet(color)
+        self.setFixedSize(20, 20)
         self.clicked.connect(self.clicked_handler)
+
+    @property
+    def color(self) -> QColor:
+        return self._color
 
     def _set_style_sheet(self, color: QColor):
         self.setStyleSheet(
@@ -59,5 +67,6 @@ class ColorButton(QPushButton):
             initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
         if color.isValid():
+            self._color = color
             self._set_style_sheet(color)
             self.color_changed.emit(color)

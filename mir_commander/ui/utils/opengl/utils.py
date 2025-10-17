@@ -14,16 +14,16 @@ def normalize_color(value: Color) -> Color4f:
     """
 
     r, g, b = value.as_rgb_tuple()  # type: ignore[misc]
-    return r / 255, g / 255, b / 255, 1.0
+    return round(r / 255, 4), round(g / 255, 4), round(b / 255, 4), 1.0
 
 
 def color_to_qcolor(value: Color, alpha: bool = True) -> QColor:
     r, g, b, a = value.as_rgb_tuple(alpha=True)  # type: ignore[misc]
-    return QColor(r, g, b, int(a * 255) if alpha else 255)
+    return QColor(r, g, b, round(a * 255) if alpha else 255)
 
 
 def color4f_to_qcolor(value: Color4f) -> QColor:
-    return QColor(int(value[0] * 255), int(value[1] * 255), int(value[2] * 255), int(value[3] * 255))
+    return QColor(*[round(c * 255) for c in value])
 
 
 def qcolor_to_color4f(value: QColor) -> Color4f:
@@ -32,7 +32,7 @@ def qcolor_to_color4f(value: QColor) -> Color4f:
 
 def color_to_color4f(value: Color, alpha: bool = True) -> Color4f:
     r, g, b, a = value.as_rgb_tuple(alpha=True)  # type: ignore[misc]
-    return r / 255, g / 255, b / 255, a if alpha else 1.0
+    return round(r / 255, 4), round(g / 255, 4), round(b / 255, 4), a if alpha else 1.0
 
 
 def id_to_color(obj_id: int) -> Color4f:
@@ -40,13 +40,13 @@ def id_to_color(obj_id: int) -> Color4f:
     r = ((obj_id >> 16) & 0xFF) / 255.0
     g = ((obj_id >> 8) & 0xFF) / 255.0
     b = (obj_id & 0xFF) / 255.0
-    return (r, g, b, 1.0)
+    return (round(r, 4), round(g, 4), round(b, 4), 1.0)
 
 
 def color_to_id(color: QColor) -> int:
-    r = int(color.red())
-    g = int(color.green())
-    b = int(color.blue())
+    r = color.red()
+    g = color.green()
+    b = color.blue()
     return b | (g << 8) | (r << 16)
 
 
@@ -109,39 +109,22 @@ def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, fl
 
 def crop_image_to_content(image: np.ndarray, bg_color: tuple[float, ...]) -> np.ndarray:
     xmin = ymin = xmax = ymax = -1
-    color = [int(c * 255) for c in bg_color]
+    color = [round(c * 255) for c in bg_color]
 
-    for y in range(image.shape[0]):
-        for x in range(image.shape[1]):
-            if image[y, x].tolist() != color:
-                ymin = y
-                break
-        if ymin >= 0:
-            break
+    mask = np.any(image != color, axis=-1)
+    rows_with_content = np.any(mask, axis=1)
+    if np.any(rows_with_content):
+        ymin = np.argmax(rows_with_content)  # type: ignore[assignment]
 
-    for y in reversed(range(image.shape[0])):
-        for x in range(image.shape[1]):
-            if image[y, x].tolist() != color:
-                ymax = y
-                break
-        if ymax >= 0:
-            break
+    cols_with_content = np.any(mask, axis=0)
+    if np.any(rows_with_content):
+        ymax = len(rows_with_content) - 1 - np.argmax(rows_with_content[::-1])  # type: ignore[assignment]
 
-    for x in range(image.shape[1]):
-        for y in range(image.shape[0]):
-            if image[y, x].tolist() != color:
-                xmin = x
-                break
-        if xmin >= 0:
-            break
+    if np.any(cols_with_content):
+        xmin = np.argmax(cols_with_content)  # type: ignore[assignment]
 
-    for x in reversed(range(image.shape[1])):
-        for y in range(image.shape[0]):
-            if image[y, x].tolist() != color:
-                xmax = x
-                break
-        if xmax >= 0:
-            break
+    if np.any(cols_with_content):
+        xmax = len(cols_with_content) - 1 - np.argmax(cols_with_content[::-1])  # type: ignore[assignment]
 
     if xmin >= 0 and xmax >= 0 and ymin >= 0 and ymax >= 0:
         left, top, width, height = xmin, ymin, xmax - xmin + 1, ymax - ymin + 1

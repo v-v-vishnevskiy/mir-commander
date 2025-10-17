@@ -21,3 +21,5 @@ class BaseDock(DockWidget):
         )
 
         self.setObjectName(f"Dock.{self.__class__.__name__}")
+
+        self.setContentsMargins(0, 0, 0, 0)

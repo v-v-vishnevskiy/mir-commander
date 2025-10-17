@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QGridLayout, QVBoxLayout
+from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import GroupBox, Label
+from mir_commander.ui.utils.widget import GridLayout, Label, VBoxLayout
 
 from .utils import add_slider
 
@@ -11,13 +11,13 @@ if TYPE_CHECKING:
     from .settings import Settings
 
 
-class Labels(GroupBox):
+class Labels(QWidget):
     def __init__(self, parent: "Settings"):
-        super().__init__(self.tr("Labels"))
+        super().__init__(parent=parent)
 
         self._settings = parent
 
-        sliders_layout = QGridLayout()
+        sliders_layout = GridLayout()
 
         self._size_slider, self._size_double_spinbox = add_slider(
             layout=sliders_layout,
@@ -45,7 +45,7 @@ class Labels(GroupBox):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        main_layout = QVBoxLayout()
+        main_layout = VBoxLayout()
         main_layout.addLayout(sliders_layout)
         self.setLayout(main_layout)
 

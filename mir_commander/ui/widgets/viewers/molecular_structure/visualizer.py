@@ -328,7 +328,8 @@ class Visualizer(OpenGLWidget):
             if save_flag:
                 image = None
                 try:
-                    image = self.render_to_image(dlg.img_width, dlg.img_height, dlg.transparent_bg, dlg.crop_to_content)
+                    bg_color = (0.0, 0.0, 0.0, 0.0) if dlg.transparent_bg else None
+                    image = self.render_to_image(dlg.img_width, dlg.img_height, bg_color, dlg.crop_to_content)
                 except Error as e:
                     message_box = QMessageBox(
                         QMessageBox.Icon.Critical,
