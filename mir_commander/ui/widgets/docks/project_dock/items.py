@@ -72,24 +72,24 @@ class TreeItem(QStandardItem):
                 open_with_menu.addAction(action)
             result.addMenu(open_with_menu)
 
-        result.addSeparator()
-        view_structures_menu = Menu(Menu.tr("View Structures"), result)
-        view_structures_menu.addAction(
-            Action(
-                text=Action.tr("VS_Child"),
-                parent=view_structures_menu,
-                triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": False}),
+        if self.hasChildren():
+            result.addSeparator()
+            view_structures_menu = Menu(Menu.tr("View Structures"), result)
+            view_structures_menu.addAction(
+                Action(
+                    text=Action.tr("VS_Child"),
+                    parent=view_structures_menu,
+                    triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": False}),
+                )
             )
-        )
-        view_structures_menu.addAction(
-            Action(
-                text=Action.tr("VS_All"),
-                parent=view_structures_menu,
-                triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": True}),
+            view_structures_menu.addAction(
+                Action(
+                    text=Action.tr("VS_All"),
+                    parent=view_structures_menu,
+                    triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": True}),
+                )
             )
-        )
-
-        result.addMenu(view_structures_menu)
+            result.addMenu(view_structures_menu)
 
         return result
 
