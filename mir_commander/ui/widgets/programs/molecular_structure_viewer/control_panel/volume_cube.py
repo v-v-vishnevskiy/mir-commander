@@ -10,16 +10,16 @@ from ..entities import VolumeCubeIsosurfaceGroup
 from ..errors import EmptyScalarFieldError
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
-    from .settings import Settings
+    from ..program import MolecularStructureViewer
+    from .control_panel import ControlPanel
 
 
 class ColorButton(QPushButton):
-    def __init__(self, color: QColor, settings: "Settings", id: int):
+    def __init__(self, color: QColor, control_panel: "ControlPanel", id: int):
         super().__init__()
         self._color = color
         self._id = id
-        self._settings = settings
+        self._control_panel = control_panel
         self._set_style_sheet(color)
         self.clicked.connect(self.clicked_handler)
 
@@ -34,17 +34,17 @@ class ColorButton(QPushButton):
         )
         if color.isValid():
             self._set_style_sheet(color)
-            for viewer in self._settings.viewers:
+            for viewer in self._control_panel.opened_programs:
                 viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
-            self._settings.volume_cube.refresh_values()
+            self._control_panel.volume_cube.refresh_values()
 
 
 class VisibilityButton(QPushButton):
-    def __init__(self, settings: "Settings", id: int, visible: bool):
+    def __init__(self, control_panel: "ControlPanel", id: int, visible: bool):
         super().__init__()
         self._id = id
         self._visible = visible
-        self._settings = settings
+        self._control_panel = control_panel
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/eye.png" if visible else ":/icons/general/square.png"))
         self.clicked.connect(self.clicked_handler)
@@ -55,30 +55,30 @@ class VisibilityButton(QPushButton):
         if self._visible:
             kwargs["apply_to_parents"] = True
 
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_node_visible(self._id, self._visible, **kwargs)
-        self._settings.volume_cube.refresh_values()
+        self._control_panel.volume_cube.refresh_values()
 
 
 class DeleteButton(QPushButton):
-    def __init__(self, settings: "Settings", id: int):
+    def __init__(self, control_panel: "ControlPanel", id: int):
         super().__init__()
         self._id = id
-        self._settings = settings
+        self._control_panel = control_panel
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/delete.png"))
         self.clicked.connect(self.clicked_handler)
 
     def clicked_handler(self):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.remove_node(self._id)
-        self._settings.volume_cube.refresh_values()
+        self._control_panel.volume_cube.refresh_values()
 
 
 class IsosurfacesTreeView(TreeView):
-    def __init__(self, settings: "Settings"):
+    def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
-        self._settings = settings
+        self._control_panel = control_panel
 
         self.setHeaderHidden(True)
         self.setExpandsOnDoubleClick(False)
@@ -130,18 +130,18 @@ class IsosurfacesTreeView(TreeView):
                         isosurface_delete_item,
                     ]
                 )
-                c = ColorButton(color4f_to_qcolor(isosurface.color), self._settings, isosurface.id)
+                c = ColorButton(color4f_to_qcolor(isosurface.color), self._control_panel, isosurface.id)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_color_item), c)
-                v = VisibilityButton(self._settings, isosurface.id, isosurface.visible)
+                v = VisibilityButton(self._control_panel, isosurface.id, isosurface.visible)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
-                d = DeleteButton(self._settings, isosurface.id)
+                d = DeleteButton(self._control_panel, isosurface.id)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
         else:
-            c = ColorButton(color4f_to_qcolor(group.isosurfaces[0].color), self._settings, group.isosurfaces[0].id)
+            c = ColorButton(color4f_to_qcolor(group.isosurfaces[0].color), self._control_panel, group.isosurfaces[0].id)
             self.setIndexWidget(self._model.indexFromItem(group_color_item), c)
-        v = VisibilityButton(self._settings, group.id, group.visible)
+        v = VisibilityButton(self._control_panel, group.id, group.visible)
         self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
-        d = DeleteButton(self._settings, group.id)
+        d = DeleteButton(self._control_panel, group.id)
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
 
     def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
@@ -193,10 +193,10 @@ class ColorButtonNewIsosurface(QFrame):
 
 
 class VolumeCube(QWidget):
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
-        self._settings = parent
+        self._control_panel = parent
 
         self._value = QDoubleSpinBox()
         self._value.setRange(-1000.0, 1000.0)
@@ -218,7 +218,7 @@ class VolumeCube(QWidget):
         self._inverse_checkbox.setChecked(False)
         self._inverse_checkbox.toggled.connect(self._inverse_checkbox_toggled_handler)
 
-        self._isosurfaces_tree_view = IsosurfacesTreeView(self._settings)
+        self._isosurfaces_tree_view = IsosurfacesTreeView(self._control_panel)
 
         value_layout.addWidget(self._value, 0, 0)
         value_layout.addWidget(self._color_button_1, 0, 1)
@@ -232,17 +232,17 @@ class VolumeCube(QWidget):
         self.setLayout(self.main_layout)
 
     def refresh_values(self):
-        if self._settings.active_viewer is not None:
-            self.update_values(self._settings.active_viewer)
+        if self._control_panel.last_active_program is not None:
+            self.update_values(self._control_panel.last_active_program)
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        self._isosurfaces_tree_view.load(viewer.visualizer.get_volume_cube_isosurface_groups())
-        self.setDisabled(viewer.visualizer.is_empty_volume_cube_scalar_field())
+    def update_values(self, program: "MolecularStructureViewer"):
+        self._isosurfaces_tree_view.load(program.visualizer.get_volume_cube_isosurface_groups())
+        self.setDisabled(program.visualizer.is_empty_volume_cube_scalar_field())
 
     def add_button_clicked_handler(self):
         value = self._value.value()
 
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             try:
                 viewer.visualizer.add_volume_cube_isosurface(
                     value,

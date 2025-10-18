@@ -14,13 +14,12 @@ from mir_commander.core.errors import LoadFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
-from .utils.viewer.viewer import Viewer
+from .utils.program import ProgramControlPanel, ProgramWindow
 from .utils.widget import Action, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
 from .widgets.docks.project_dock.items import TreeItem
 from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.docks.viewer_dock import ViewerDock
 from .widgets.settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("ProjectWindow")
@@ -30,7 +29,6 @@ logger = logging.getLogger("ProjectWindow")
 class Docks:
     project: ProjectDock
     console: ConsoleDock
-    viewer_settings: ViewerDock
 
 
 class ProjectWindow(QMainWindow):
@@ -46,6 +44,9 @@ class ProjectWindow(QMainWindow):
     ):
         logger.debug("Initializing main window ...")
         super().__init__(None)
+
+        self._programs_control_panels: dict[type[ProgramControlPanel], ProgramControlPanel] = {}
+
         self.project = project
         self.app_config = app_config
         self.config = app_config.project_window
@@ -84,22 +85,24 @@ class ProjectWindow(QMainWindow):
             self.docks.project.tree.expand_top_items()
             self.docks.project.tree.view_babushka()
 
+    @property
+    def programs_control_panels(self) -> dict[type[ProgramControlPanel], ProgramControlPanel]:
+        return self._programs_control_panels
+
     def append_to_console(self, text: str):
         self.docks.console.append(text)
 
     def setup_mdi_area(self):
-        def opened_viewer_slot(viewer: Viewer):
-            viewer.short_msg_signal.connect(self.status_bar.showMessage)
-            viewer.long_msg_signal.connect(self.docks.console.append)
+        def opened_program_slot(program: ProgramWindow):
+            program.short_msg_signal.connect(self.status_bar.showMessage)
+            program.long_msg_signal.connect(self.docks.console.append)
 
-        self.mdi_area = MdiArea(
-            parent=self, viewer_settings_dock=self.docks.viewer_settings, app_config=self.app_config
-        )
+        self.mdi_area = MdiArea(self, app_config=self.app_config, parent=self)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.opened_viewer_signal.connect(opened_viewer_slot)
+        self.mdi_area.opened_program_signal.connect(opened_program_slot)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks.project.tree.view_item.connect(self.mdi_area.open_viewer)
+        self.docks.project.tree.view_item.connect(self.mdi_area.open_program)
 
     def setup_docks(self):
         self.setTabPosition(Qt.DockWidgetArea.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -115,10 +118,8 @@ class ProjectWindow(QMainWindow):
                 project=self.project,
             ),
             ConsoleDock(parent=self),
-            ViewerDock(parent=self),
         )
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docks.project)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.docks.viewer_settings)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
 
     def _set_mainwindow_title(self):
@@ -141,11 +142,10 @@ class ProjectWindow(QMainWindow):
         return menu
 
     def _setup_menubar_view(self) -> Menu:
-        menu = Menu(Menu.tr("View"), self)
-        menu.addAction(self.docks.project.toggleViewAction())
-        menu.addAction(self.docks.viewer_settings.toggleViewAction())
-        menu.addAction(self.docks.console.toggleViewAction())
-        return menu
+        self._view_menu = Menu(Menu.tr("View"), self)
+        self._view_menu.addAction(self.docks.project.toggleViewAction())
+        self._view_menu.addAction(self.docks.console.toggleViewAction())
+        return self._view_menu
 
     def _setup_menubar_window(self) -> Menu:
         self._window_actions()
@@ -277,6 +277,13 @@ class ProjectWindow(QMainWindow):
     def set_active_sub_window(self, window: QMdiSubWindow) -> None:
         if window:
             self.mdi_area.setActiveSubWindow(window)
+
+    def add_program_control_panel(self, control_panel_cls: type[ProgramControlPanel]) -> ProgramControlPanel:
+        if control_panel_cls not in self._programs_control_panels:
+            self._programs_control_panels[control_panel_cls] = control_panel_cls(parent=self)
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self._programs_control_panels[control_panel_cls])
+            self._view_menu.addAction(self._programs_control_panels[control_panel_cls].toggleViewAction())
+        return self._programs_control_panels[control_panel_cls]
 
     def import_file(self, parent: TreeItem | None = None):
         """Import a file into the current project."""

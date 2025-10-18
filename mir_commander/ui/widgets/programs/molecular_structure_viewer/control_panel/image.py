@@ -11,17 +11,17 @@ from mir_commander.ui.utils.widget import TR, GridLayout, Label, PushButton, VBo
 from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
-    from .settings import Settings
+    from ..program import MolecularStructureViewer
+    from .control_panel import ControlPanel
 
-logger = logging.getLogger("MoleculeStructureViewer.Settings.Image")
+logger = logging.getLogger("MoleculeStructureViewer.ControlPanel.Image")
 
 
 class Image(QWidget):
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
-        self._settings = parent
+        self._control_panel = parent
 
         params_layout = GridLayout()
 
@@ -104,7 +104,7 @@ class Image(QWidget):
             path = Path(file_path)
             file_path = str(path.with_stem(f"{path.stem}_%n"))
 
-        for i, viewer in enumerate(self._settings.viewers):
+        for i, viewer in enumerate(self._control_panel.opened_programs):
             filename = file_path.replace("%n", str(i + n).zfill(6))
             width = int(viewer.size().width() * viewer.devicePixelRatio() * scale_factor)
             height = int(viewer.size().height() * viewer.devicePixelRatio() * scale_factor)
@@ -116,8 +116,8 @@ class Image(QWidget):
                 logger.error(f"{txt}: {e}")
                 viewer.long_msg_signal.emit(txt)
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularStructureViewer"):
         if self._bg_color_inited is False:
             self._bg_color_inited = True
-            color = *viewer.visualizer.background_color[:3], 0.0
+            color = *program.visualizer.background_color[:3], 0.0
             self._bg_color_button.set_color(color4f_to_qcolor(color))

@@ -8,7 +8,7 @@ from mir_commander.ui.utils.widget import Action, Menu
 from .config import AtomLabelType
 
 if TYPE_CHECKING:
-    from .viewer import MolecularStructureViewer
+    from .program import MolecularStructureViewer
 
 
 class ContextMenu(Menu):
@@ -18,7 +18,7 @@ class ContextMenu(Menu):
         self._viewer = parent
         self._visualizer = parent.visualizer
         self._app_config = app_config
-        self._config = app_config.project_window.widgets.viewers.molecular_structure
+        self._config = app_config.project_window.widgets.programs.molecular_structure_viewer
         self._keymap = self._config.keymap
 
         self._init_atom_labels_menu()

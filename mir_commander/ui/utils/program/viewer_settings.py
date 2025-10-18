@@ -6,12 +6,12 @@ from PySide6.QtWidgets import QSizePolicy, QWidget
 from mir_commander.ui.utils.widget import CheckBox, GroupVBoxLayout
 
 if TYPE_CHECKING:
-    from .viewer import Viewer
+    from .program_window import ProgramWindow
 
-T = TypeVar("T", bound="Viewer")
+T = TypeVar("T", bound="ProgramWindow")
 
 
-class ViewerSettings(Generic[T], QWidget):
+class ProgramControlPanel(Generic[T], QWidget):
     def __init__(self, apply_for_all_checkbox: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

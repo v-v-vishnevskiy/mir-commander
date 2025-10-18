@@ -1,8 +1,8 @@
-from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
 
 
-class MolecularStructureEditor(Viewer):
+class MolecularStructureEditor(ProgramWindow):
     name = Translator.tr("Molecular Structure Editor")
 
     def __init__(self, *args, **kwargs):

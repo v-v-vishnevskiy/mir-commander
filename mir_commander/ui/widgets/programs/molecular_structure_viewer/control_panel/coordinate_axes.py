@@ -10,15 +10,15 @@ from mir_commander.ui.utils.widget import CheckBox, GridLayout, Label, PushButto
 from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
-    from .settings import Settings
+    from ..program import MolecularStructureViewer
+    from .control_panel import ControlPanel
 
 
 class CoordinateAxes(QWidget):
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
-        self._settings = parent
+        self._control_panel = parent
 
         self.main_layout = VBoxLayout(self)
         self.main_layout.addLayout(self._add_checkboxes())
@@ -137,24 +137,24 @@ class CoordinateAxes(QWidget):
         return axis_color_button, label_color_button, line_edit
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_visible(value)
 
     def _labels_visibility_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_labels_visible(value)
 
     def _both_directions_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_both_directions(value)
 
     def _center_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_center(value)
 
     def _length_slider_value_changed_handler(self, i: int):
         self._length_double_spinbox.setValue(i / 100)
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_length(i / 100)
 
     def _length_double_spinbox_value_changed_handler(self, value: float):
@@ -162,7 +162,7 @@ class CoordinateAxes(QWidget):
 
     def _thickness_slider_value_changed_handler(self, i: int):
         self._thickness_double_spinbox.setValue(i / 100)
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_thickness(i / 100)
 
     def _thickness_double_spinbox_value_changed_handler(self, value: float):
@@ -170,30 +170,30 @@ class CoordinateAxes(QWidget):
 
     def _font_size_slider_value_changed_handler(self, i: int):
         self._font_size_double_spinbox.setValue(i)
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_font_size(i)
 
     def _font_size_double_spinbox_value_changed_handler(self, value: int):
         self._font_size_slider.setValue(value)
 
     def _axis_label_color_changed_handler(self, axis: str, color: QColor):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axis_label_color(axis, qcolor_to_color4f(color))
 
     def _axis_color_changed_handler(self, axis: str, color: QColor):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axis_color(axis, qcolor_to_color4f(color))
 
     def _axis_text_changed_handler(self, axis: str, text: str):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axis_text(axis, text)
 
     def _adjust_labels_length_button_clicked_handler(self):
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.coordinate_axes_adjust_length()
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        coordinate_axes = viewer.visualizer.coordinate_axes
+    def update_values(self, program: "MolecularStructureViewer"):
+        coordinate_axes = program.visualizer.coordinate_axes
 
         self._visibility_checkbox.setChecked(coordinate_axes.visible)
         self._labels_visibility_checkbox.setChecked(coordinate_axes.labels_visible)

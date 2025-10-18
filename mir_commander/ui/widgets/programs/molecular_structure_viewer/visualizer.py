@@ -29,15 +29,15 @@ from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
 from .config import AtomLabelType
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
+from .control_panel import ControlPanel
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError
 from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
-from .settings.settings import Settings
 from .style import Style
 
 if TYPE_CHECKING:
-    from .viewer import MolecularStructureViewer
+    from .program import MolecularStructureViewer
 
 logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 
@@ -45,14 +45,16 @@ logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 class Visualizer(OpenGLWidget):
     parent: Callable[[], "MolecularStructureViewer"]  # type: ignore[assignment]
 
-    def __init__(self, title: str, app_config: AppConfig, settings_widget: Settings | None, *args, **kwargs):
-        kwargs["keymap"] = Keymap(app_config.project_window.widgets.viewers.molecular_structure.keymap.model_dump())
+    def __init__(self, title: str, app_config: AppConfig, control_panel: ControlPanel | None, *args, **kwargs):
+        kwargs["keymap"] = Keymap(
+            app_config.project_window.widgets.programs.molecular_structure_viewer.keymap.model_dump()
+        )
         super().__init__(*args, **kwargs)
 
         self._title = title
         self._app_config = app_config
-        self._settings_widget = settings_widget
-        self._config = app_config.project_window.widgets.viewers.molecular_structure
+        self._control_panel = control_panel
+        self._config = app_config.project_window.widgets.programs.molecular_structure_viewer
         self.config = self._config.model_copy(deep=True)
 
         self._style = Style(self._config)
@@ -115,13 +117,13 @@ class Visualizer(OpenGLWidget):
 
     def scale_scene(self, value: float):
         super().scale_scene(value)
-        if self.hasFocus() and self._settings_widget is not None:
-            self._settings_widget.view.update_values(self.parent())
+        if self.hasFocus() and self._control_panel is not None:
+            self._control_panel.view.update_values(self.parent())
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
-        if self.hasFocus() and self._settings_widget is not None:
-            self._settings_widget.view.update_values(self.parent())
+        if self.hasFocus() and self._control_panel is not None:
+            self._control_panel.view.update_values(self.parent())
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)

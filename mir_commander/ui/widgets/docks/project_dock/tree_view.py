@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QTreeView
 
 from mir_commander.core import models
 from mir_commander.core.parsers.consts import babushka_priehala
-from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.program import ProgramWindow
 
 from .config import TreeConfig
 from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Molecule, TreeItem, Unex, VolumeCube
@@ -19,7 +19,7 @@ logger = logging.getLogger("ProjectDock.TreeView")
 
 
 class TreeView(QTreeView):
-    view_item = Signal(QStandardItem, Viewer.__class__, dict)  # type: ignore[arg-type]
+    view_item = Signal(QStandardItem, ProgramWindow.__class__, dict)  # type: ignore[arg-type]
 
     def __init__(self, parent: "ProjectDock", data: models.Data, config: TreeConfig):
         super().__init__(parent)

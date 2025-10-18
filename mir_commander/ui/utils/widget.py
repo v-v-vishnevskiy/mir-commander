@@ -87,9 +87,23 @@ class Dialog(Widget, QDialog):
 
 
 class DockWidget(Widget, QDockWidget):
-    def __init__(self, title: str, parent: QWidget | None = None):
+    """The basic class for dockable widgets.
+
+    Has been created as a wrapper of QDockWidget
+    for simple handling of translation.
+    """
+
+    def __init__(self, title: str, *args, **kwargs):
         self.__title = title
-        super().__init__(self.translate(title), parent)
+        super().__init__(self.translate(title), *args, **kwargs)
+
+        self.setObjectName(f"Dock.{self.__class__.__name__}")
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea
+            | Qt.DockWidgetArea.BottomDockWidgetArea
+            | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.setContentsMargins(0, 0, 0, 0)
 
     def setWindowTitle(self, value: str):
         self.__title = value

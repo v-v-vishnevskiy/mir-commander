@@ -4,25 +4,26 @@ from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.viewer.viewer_settings import ViewerSettings
 from mir_commander.ui.utils.widget import Translator, TrString
 
+from .program_control_panel import ProgramControlPanel
 
-class Viewer(QMdiSubWindow):
+
+class ProgramWindow(QMdiSubWindow):
     short_msg_signal = Signal(str)
     long_msg_signal = Signal(str)
-    settings: type[ViewerSettings] | None = None
+    control_panel_cls: type[ProgramControlPanel] | None = None
     name: TrString
 
     def __init__(
-        self, parent: QWidget, item: QStandardItem, app_config: AppConfig, settings_widget: ViewerSettings | None
+        self, parent: QWidget, item: QStandardItem, app_config: AppConfig, control_panel: ProgramControlPanel | None
     ):
         super().__init__(parent=parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.item = item
         self.app_config = app_config
-        self.settings_widget = settings_widget
+        self.control_panel = control_panel
 
     @classmethod
     def get_name(cls) -> str:

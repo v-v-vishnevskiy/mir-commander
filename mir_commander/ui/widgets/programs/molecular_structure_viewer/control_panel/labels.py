@@ -7,15 +7,15 @@ from mir_commander.ui.utils.widget import GridLayout, Label, VBoxLayout
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
-    from .settings import Settings
+    from ..program import MolecularStructureViewer
+    from .control_panel import ControlPanel
 
 
 class Labels(QWidget):
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
-        self._settings = parent
+        self._control_panel = parent
 
         sliders_layout = GridLayout()
 
@@ -51,7 +51,7 @@ class Labels(QWidget):
 
     def _size_slider_value_changed_handler(self, i: int):
         self._size_double_spinbox.setValue(i)
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_label_size_for_all_atoms(size=i)
 
     def _size_double_spinbox_value_changed_handler(self, value: int):
@@ -59,14 +59,14 @@ class Labels(QWidget):
 
     def _offset_slider_value_changed_handler(self, i: int):
         self._offset_double_spinbox.setValue(i / 100)
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_label_offset_for_all_atoms(offset=i / 100)
 
     def _offset_double_spinbox_value_changed_handler(self, value: float):
         self._offset_slider.setValue(int(value * 100))
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        visualizer = viewer.visualizer
+    def update_values(self, program: "MolecularStructureViewer"):
+        visualizer = program.visualizer
         self._size_slider.setValue(visualizer.config.atom_label.size)
         self._size_double_spinbox.setValue(visualizer.config.atom_label.size)
 

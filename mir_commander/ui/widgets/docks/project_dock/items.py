@@ -4,18 +4,18 @@ from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core import models
-from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Action, Menu
-from mir_commander.ui.widgets.viewers.molecular_structure.viewer import MolecularStructureViewer
-from mir_commander.ui.widgets.viewers.molecular_structure_editor.widget import MolecularStructureEditor
+from mir_commander.ui.widgets.programs.molecular_structure_editor.program import MolecularStructureEditor
+from mir_commander.ui.widgets.programs.molecular_structure_viewer.program import MolecularStructureViewer
 
 if TYPE_CHECKING:
     from .tree_view import TreeView
 
 
 class TreeItem(QStandardItem):
-    default_viewer: type[Viewer] | None = None
-    viewers: list[type[Viewer]] = []
+    default_viewer: type[ProgramWindow] | None = None
+    viewers: list[type[ProgramWindow]] = []
 
     def __init__(self, data: models.Item):
         super().__init__(data.name)

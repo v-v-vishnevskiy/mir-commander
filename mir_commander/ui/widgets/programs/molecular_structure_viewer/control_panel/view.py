@@ -9,15 +9,15 @@ from mir_commander.ui.utils.widget import GridLayout, Label, PushButton, TrStrin
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..viewer import MolecularStructureViewer
-    from .settings import Settings
+    from ..program import MolecularStructureViewer
+    from .control_panel import ControlPanel
 
 
 class View(QWidget):
-    def __init__(self, parent: "Settings"):
+    def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
-        self._settings = parent
+        self._control_panel = parent
 
         self._axis_prev_value: dict[str, float] = {}
         self._scale_prev_value: float = 0.0
@@ -100,7 +100,7 @@ class View(QWidget):
         self._rotation_slider[axis].setValue(int(value * 10))
 
         data = {key: value.value() - self._axis_prev_value[key] for key, value in self._rotation_double_spinbox.items()}
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.rotate_scene(**data)
         self._axis_prev_value[axis] = value
 
@@ -111,7 +111,7 @@ class View(QWidget):
         self._scale_slider.setValue(int(value * 100))
         v = value / self._scale_prev_value
 
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.scale_scene(v)
         self._scale_prev_value = value
 
@@ -130,12 +130,12 @@ class View(QWidget):
             self._scale_slider.setValue(100)
             self._scale_double_spinbox.setValue(1.0)
 
-        for viewer in self._settings.viewers:
+        for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_scene_rotation(0, 0, 0)
             viewer.visualizer.set_scene_scale(1.0)
 
-    def update_values(self, viewer: "MolecularStructureViewer"):
-        values = {axis: value for axis, value in zip(self._axis_order, viewer.visualizer.scene_rotation)}
+    def update_values(self, program: "MolecularStructureViewer"):
+        values = {axis: value for axis, value in zip(self._axis_order, program.visualizer.scene_rotation)}
 
         with contextlib.ExitStack() as stack:
             for axis in self._axis_order:
@@ -149,6 +149,6 @@ class View(QWidget):
                 self._rotation_slider[axis].setValue(int(value * 10))
                 self._rotation_double_spinbox[axis].setValue(value)
 
-            self._scale_prev_value = scale = viewer.visualizer.get_scene_scale()
+            self._scale_prev_value = scale = program.visualizer.get_scene_scale()
             self._scale_slider.setValue(int(scale * 100))
             self._scale_double_spinbox.setValue(scale)

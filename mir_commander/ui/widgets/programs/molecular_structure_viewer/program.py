@@ -3,29 +3,29 @@ from PySide6.QtGui import QContextMenuEvent, QStandardItem
 
 from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.utils.opengl.utils import Color4f
-from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
 
 from .config import MolecularStructureViewerConfig
 from .context_menu import ContextMenu
-from .settings.settings import Settings
+from .control_panel import ControlPanel
 from .visualizer import Visualizer
 
 
-class MolecularStructureViewer(Viewer):
+class MolecularStructureViewer(ProgramWindow):
     name = Translator.tr("Molecular Structure Viewer")
-    settings = Settings
-    settings_widget: Settings
+    control_panel_cls = ControlPanel
+    control_panel: ControlPanel
 
     def __init__(self, all: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._config = self.app_config.project_window.widgets.viewers.molecular_structure
+        self._config = self.app_config.project_window.widgets.programs.molecular_structure_viewer
 
         self._all = all
 
         self.visualizer = Visualizer(
-            parent=self, title=self.item.text(), app_config=self.app_config, settings_widget=self.settings_widget
+            parent=self, title=self.item.text(), app_config=self.app_config, control_panel=self.control_panel
         )
         self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
