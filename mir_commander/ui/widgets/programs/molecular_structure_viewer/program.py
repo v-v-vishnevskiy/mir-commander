@@ -28,23 +28,20 @@ class MolecularStructureViewer(ProgramWindow):
         self._config = self.app_config.project_window.widgets.programs.molecular_structure_viewer
 
         self._all = all
-        self._molecule_index = 0
-        self._draw_item = self.item
 
         self.visualizer = Visualizer(
             parent=self, title=self.item.text(), app_config=self.app_config, control_panel=self.control_panel
         )
         self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
-        match self._draw_item.core_item.data:
-            case AtomicCoordinates():
-                self.visualizer.set_atomic_coordinates([self._draw_item.core_item.data])
+        match self.item.core_item.data:
             case VolumeCube():
-                self.visualizer.set_volume_cube(self._draw_item.core_item.data)
-            case _:
-                self._set_draw_item()
-                self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
+                self.visualizer.set_volume_cube(self.item.core_item.data)
 
+        self._molecule_index = 0
+        self._draw_item = self.item
+        self._set_draw_item()
+        self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
         self.visualizer.coordinate_axes_adjust_length()
 
         self._context_menu = ContextMenu(parent=self, app_config=self.app_config)

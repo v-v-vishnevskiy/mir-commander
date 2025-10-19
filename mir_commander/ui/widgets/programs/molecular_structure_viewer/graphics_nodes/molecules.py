@@ -44,6 +44,8 @@ class Molecules(Node):
         return len(self.children)
 
     def get_max_molecule_radius(self) -> float:
+        if len(self.children) == 0:
+            return 0.0
         return max(molecule.radius for molecule in self.children)
 
     def set_style(self, style: Style):
