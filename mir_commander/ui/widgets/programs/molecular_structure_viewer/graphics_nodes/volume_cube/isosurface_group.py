@@ -1,5 +1,6 @@
-import numpy as np
 import math
+
+import numpy as np
 
 from mir_commander.ui.utils.opengl.models import marching_cubes
 from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
@@ -27,7 +28,7 @@ class IsosurfaceGroup(Node):
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
 
-        self._value = value
+        self._value = math.fabs(value)
         self._resource_manager = resource_manager
 
         self._add_isosurfaces(cube_data, math.fabs(value), color_1, value < 0)

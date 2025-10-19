@@ -330,7 +330,7 @@ class ToolBar(Widget, QToolBar):
 class GridLayout(QGridLayout):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(0, 0, 0, 5)
         self.setSpacing(5)
 
 
