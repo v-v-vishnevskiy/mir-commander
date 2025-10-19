@@ -14,12 +14,15 @@ if TYPE_CHECKING:
 
 
 class TreeItem(QStandardItem):
-    default_viewer: type[ProgramWindow] | None = None
-    viewers: list[type[ProgramWindow]] = []
+    default_program: type[ProgramWindow] | None = None
+    programs: list[type[ProgramWindow]] = []
+    child: Callable[..., "TreeItem"]
 
-    def __init__(self, data: models.Item):
-        super().__init__(data.name)
-        self.setData(data)
+    def __init__(self, item: models.Item):
+        super().__init__(item.name)
+
+        self._core_item = item
+
         self.setEditable(False)
         self._set_icon()
         self._load_data()
@@ -36,10 +39,12 @@ class TreeItem(QStandardItem):
         else:
             return part
 
-    def _load_data(self):
-        data: models.Item = self.data()
+    @property
+    def core_item(self) -> models.Item:
+        return self._core_item
 
-        for item in data.items:
+    def _load_data(self):
+        for item in self._core_item.items:
             if type(item.data) is models.AtomicCoordinates:
                 self.appendRow(AtomicCoordinates(item))
             elif type(item.data) is models.AtomicCoordinatesGroup:
@@ -61,13 +66,13 @@ class TreeItem(QStandardItem):
         )
         result.addAction(import_file_action)
 
-        if self.default_viewer:
+        if self.default_program:
 
             def trigger(viewer: type[QWidget]) -> Callable[[], None]:
                 return lambda: tree_view.view_item.emit(self, viewer, {})
 
             open_with_menu = Menu(Menu.tr("Open With"))
-            for viewer in [self.default_viewer] + self.viewers:
+            for viewer in [self.default_program] + self.programs:
                 action = Action(text=viewer.get_name(), parent=open_with_menu, triggered=trigger(viewer))
                 open_with_menu.addAction(action)
             result.addMenu(open_with_menu)
@@ -108,22 +113,22 @@ class Unex(TreeItem):
 
 
 class VolumeCube(TreeItem):
-    default_viewer = MolecularStructureViewer
+    default_program = MolecularStructureViewer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/volume-cube.png"))
 
 
 class AtomicCoordinatesGroup(TreeItem):
-    default_viewer = MolecularStructureViewer
+    default_program = MolecularStructureViewer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
 
 
 class AtomicCoordinates(TreeItem):
-    default_viewer = MolecularStructureViewer
-    viewers = [MolecularStructureEditor]
+    default_program = MolecularStructureViewer
+    programs = [MolecularStructureEditor]
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates.png"))

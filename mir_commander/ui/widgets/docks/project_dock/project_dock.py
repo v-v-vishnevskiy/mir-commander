@@ -1,11 +1,9 @@
 from typing import TYPE_CHECKING
 
 from mir_commander.core import Project
-from mir_commander.core.models.item import Item
 
 from ..base import BaseDock
 from .config import ProjectDockConfig
-from .items import TreeItem
 from .tree_view import TreeView
 
 if TYPE_CHECKING:
@@ -28,6 +26,3 @@ class ProjectDock(BaseDock):
         self.tree.load_data()
         self.setMinimumWidth(200)
         self.setWidget(self.tree)
-
-    def add_item(self, item: Item, parent: TreeItem | None = None):
-        self.tree.add_item(item, parent)

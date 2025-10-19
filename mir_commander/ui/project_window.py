@@ -296,8 +296,10 @@ class ProjectWindow(QMainWindow):
             file_path = Path(dialog.selectedFiles()[0])
             try:
                 logs: list[str] = []
-                imported_item = self.project.import_file(file_path, logs)
-                self.docks.project.add_item(imported_item, parent)
+                imported_item = self.project.import_file(
+                    file_path, logs, parent.core_item if parent is not None else None
+                )
+                self.docks.project.tree.add_item(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")
@@ -306,7 +308,7 @@ class ProjectWindow(QMainWindow):
 
                 self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
             except LoadFileError as e:
-                logger.error(f"Failed to import file {file_path}: {e}")
+                logger.error("Failed to import file %s: %s", file_path, e)
                 self.append_to_console(
                     self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e)
                 )

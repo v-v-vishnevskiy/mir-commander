@@ -92,9 +92,11 @@ class ProgramControlPanel(Generic[T], DockWidget):
     def set_opened_programs(self, programs: list[T]):
         self._opened_programs = programs
         if len(programs) > 0:
+            self.show()
             self._container.show()
         else:
             self._last_active_program = None
+            self.hide()
             self._container.hide()
 
     def set_active_program(self, program: T):

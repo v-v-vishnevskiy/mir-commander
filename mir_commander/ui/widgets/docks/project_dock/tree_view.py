@@ -46,8 +46,8 @@ class TreeView(QTreeView):
 
     def _item_double_clicked(self, index: QModelIndex):
         item: TreeItem = cast(TreeItem, self._model.itemFromIndex(index))
-        if item.default_viewer:
-            self.view_item.emit(item, item.default_viewer, {})
+        if item.default_program:
+            self.view_item.emit(item, item.default_program, {})
         else:
             self.setExpanded(index, not self.isExpanded(index))
 
@@ -71,6 +71,7 @@ class TreeView(QTreeView):
 
     def load_data(self):
         logger.debug("Loading data ...")
+        self._model.clear()
         for item in self._data.items:
             self.add_item(item)
 
@@ -81,13 +82,15 @@ class TreeView(QTreeView):
             self.setExpanded(self._model.indexFromItem(root_item.child(i)), True)
 
     def view_babushka(self):
-        logger.debug("Opening items in respective viewers ...")
-        self._view_babushka(self._model.invisibleRootItem())
+        logger.debug("Opening items in respective programs ...")
+        root_item = self._model.invisibleRootItem()
+        for i in range(root_item.rowCount()):
+            self._view_babushka(cast(TreeItem, root_item.child(i)))
 
-    def _view_babushka(self, item):
-        data = item.data()
-        if data is not None and data.metadata.get(babushka_priehala, False):
-            if item.default_viewer:
-                self.view_item.emit(item, item.default_viewer, {})
+    def _view_babushka(self, item: TreeItem):
+        data = item.core_item
+        if data is not None and data.metadata.pop(babushka_priehala, False):
+            if item.default_program:
+                self.view_item.emit(item, item.default_program, {})
         for i in range(item.rowCount()):
             self._view_babushka(item.child(i))

@@ -1,12 +1,11 @@
-from collections import defaultdict
 from typing import TYPE_CHECKING, Any, cast
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiArea
 
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.program import ProgramControlPanel, ProgramWindow
+from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow
@@ -25,10 +24,10 @@ class MdiArea(QMdiArea):
 
         self.subWindowActivated.connect(self._sub_window_activated_handler)
 
-    def open_program(self, item: QStandardItem, program_cls: type[ProgramWindow], kwargs: dict[str, Any]):
+    def open_program(self, item: TreeItem, program_cls: type[ProgramWindow], kwargs: dict[str, Any]):
         for program in self.subWindowList():
             # checking if program for this item already opened
-            if isinstance(program, program_cls) and id(program.item) == id(item):
+            if isinstance(program, program_cls) and program.item == item:
                 self.setActiveSubWindow(program)
                 break
         else:
@@ -49,7 +48,10 @@ class MdiArea(QMdiArea):
         return self._project_window.add_program_control_panel(program_cls.control_panel_cls)
 
     def _sub_window_activated_handler(self, window: None | ProgramWindow):
-        grouped_programs: dict[type[ProgramControlPanel], list[ProgramWindow]] = defaultdict(list)
+        programs_control_panels = self._project_window.programs_control_panels
+        grouped_programs: dict[type[ProgramControlPanel], list[ProgramWindow]] = {
+            k: [] for k in programs_control_panels.keys()
+        }
         for w in self.subWindowList():
             program = cast(ProgramWindow, w)
             control_panel_cls = program.control_panel_cls
@@ -57,7 +59,6 @@ class MdiArea(QMdiArea):
                 continue
             grouped_programs[control_panel_cls].append(program)
 
-        programs_control_panels = self._project_window.programs_control_panels
         for control_panel_cls, programs in grouped_programs.items():
             if control_panel := programs_control_panels.get(control_panel_cls):
                 control_panel.set_opened_programs(programs)

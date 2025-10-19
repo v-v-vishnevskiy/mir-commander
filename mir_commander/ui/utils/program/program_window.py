@@ -1,12 +1,16 @@
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import Translator, TrString
 
 from .program_control_panel import ProgramControlPanel
+
+if TYPE_CHECKING:
+    from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
 
 class ProgramWindow(QMdiSubWindow):
@@ -16,7 +20,7 @@ class ProgramWindow(QMdiSubWindow):
     name: TrString
 
     def __init__(
-        self, parent: QWidget, item: QStandardItem, app_config: AppConfig, control_panel: ProgramControlPanel | None
+        self, parent: QWidget, item: "TreeItem", app_config: AppConfig, control_panel: ProgramControlPanel | None
     ):
         super().__init__(parent=parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

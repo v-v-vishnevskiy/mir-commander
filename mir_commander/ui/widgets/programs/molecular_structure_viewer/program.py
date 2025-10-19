@@ -1,5 +1,7 @@
+from typing import TYPE_CHECKING
+
 from PIL import Image, ImageCms
-from PySide6.QtGui import QContextMenuEvent, QStandardItem
+from PySide6.QtGui import QContextMenuEvent
 
 from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.utils.opengl.utils import Color4f
@@ -10,6 +12,9 @@ from .config import MolecularStructureViewerConfig
 from .context_menu import ContextMenu
 from .control_panel import ControlPanel
 from .visualizer import Visualizer
+
+if TYPE_CHECKING:
+    from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
 
 class MolecularStructureViewer(ProgramWindow):
@@ -23,20 +28,23 @@ class MolecularStructureViewer(ProgramWindow):
         self._config = self.app_config.project_window.widgets.programs.molecular_structure_viewer
 
         self._all = all
+        self._molecule_index = 0
+        self._draw_item = self.item
 
         self.visualizer = Visualizer(
             parent=self, title=self.item.text(), app_config=self.app_config, control_panel=self.control_panel
         )
         self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
-        match self.item.data().data:
+        match self._draw_item.core_item.data:
+            case AtomicCoordinates():
+                self.visualizer.set_atomic_coordinates([self._draw_item.core_item.data])
             case VolumeCube():
-                self.visualizer.set_volume_cube(self.item.data().data)
+                self.visualizer.set_volume_cube(self._draw_item.core_item.data)
+            case _:
+                self._set_draw_item()
+                self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
 
-        self._molecule_index = 0
-        self._draw_item = self.item
-        self._set_draw_item()
-        self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
         self.visualizer.coordinate_axes_adjust_length()
 
         self._context_menu = ContextMenu(parent=self, app_config=self.app_config)
@@ -65,20 +73,20 @@ class MolecularStructureViewer(ProgramWindow):
         self.setWindowIcon(self._draw_item.icon())
 
     def _atomic_coordinates_item(
-        self, index: int, parent: QStandardItem, counter: int = -1
-    ) -> tuple[bool, int, QStandardItem]:
+        self, index: int, parent: "TreeItem", counter: int = -1
+    ) -> tuple[bool, int, "TreeItem"]:
         """
         Finds item with `AtomicCoordinates` data structure
         """
 
         index = max(0, index)
         last_item = parent
-        if not parent.hasChildren() and isinstance(parent.data().data, AtomicCoordinates):
+        if not parent.hasChildren() and isinstance(parent.core_item.data, AtomicCoordinates):
             return True, 0, last_item
         else:
             for i in range(parent.rowCount()):
                 item = parent.child(i)
-                if isinstance(item.data().data, AtomicCoordinates):
+                if isinstance(item.core_item.data, AtomicCoordinates):
                     last_item = item
                     counter += 1
                     if index == counter:
@@ -92,20 +100,27 @@ class MolecularStructureViewer(ProgramWindow):
     def _set_draw_item(self):
         _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
 
+    def _get_draw_item_atomic_coordinates(self) -> list[AtomicCoordinates]:
+        match self._draw_item.core_item.data:
+            case AtomicCoordinates():
+                return [self._draw_item.core_item.data]
+            case _:
+                return []
+
     def set_prev_atomic_coordinates(self):
         if self._molecule_index > 0:
             self._molecule_index -= 1
             self._set_draw_item()
             self.update_window_title()
-            self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
+            self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
 
     def set_next_atomic_coordinates(self):
         self._molecule_index += 1
         item = self._draw_item
         self._set_draw_item()
-        if id(item) != id(self._draw_item):
+        if item != self._draw_item:
             self.update_window_title()
-            self.visualizer.set_atomic_coordinates([self._draw_item.data().data])
+            self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
 
     def save_image(
         self, filename: str, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
