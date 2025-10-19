@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from mir_commander.ui.utils.opengl.models import marching_cubes
 from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
@@ -29,9 +30,9 @@ class IsosurfaceGroup(Node):
         self._value = value
         self._resource_manager = resource_manager
 
-        self._add_isosurfaces(cube_data, value, color_1, False)
-        if inverse:
-            self._add_isosurfaces(cube_data, value, color_2, True)
+        self._add_isosurfaces(cube_data, math.fabs(value), color_1, value < 0)
+        if inverse and value != 0.0:
+            self._add_isosurfaces(cube_data, math.fabs(value), color_2, value > 0)
 
     @property
     def value(self) -> float:
