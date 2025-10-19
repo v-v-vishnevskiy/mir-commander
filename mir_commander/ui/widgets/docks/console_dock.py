@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QPlainTextEdit, QWidget
+from PySide6.QtWidgets import QFrame, QPlainTextEdit, QWidget
 
 from .base import BaseDock
 
@@ -12,6 +12,7 @@ class Text(QPlainTextEdit):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent=parent)
         self.setReadOnly(True)
+        self.setFrameStyle(QFrame.Shape.NoFrame)
 
 
 class ConsoleDock(BaseDock):

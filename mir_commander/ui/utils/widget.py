@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QStatusBar,
+    QTableView,
     QTabWidget,
     QToolBar,
     QTreeView,
@@ -209,6 +210,10 @@ class ListView(Widget, QListView):
         root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
         for i in range(root.rowCount()):
             root.child(i).retranslate()
+
+
+class TableView(Widget, QTableView):
+    pass
 
 
 class TreeView(Widget, QTreeView):
