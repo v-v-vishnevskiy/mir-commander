@@ -2,8 +2,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QGraphicsDropShadowEffect, QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QMdiSubWindow, QWidget
 
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import Translator, TrString
@@ -25,9 +24,6 @@ class ProgramWindow(QMdiSubWindow):
     ):
         super().__init__(parent=parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(parent=self, blurRadius=100, color=QColor(0, 0, 0, 128), xOffset=0, yOffset=0)
-        )
 
         self.item = item
         self.app_config = app_config

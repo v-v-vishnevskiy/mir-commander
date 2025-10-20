@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, cast
 
 from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QFrame, QTreeView
+from PySide6.QtWidgets import QTreeView
 
 from mir_commander.core import models
 from mir_commander.core.parsers.consts import babushka_priehala
@@ -33,7 +33,6 @@ class TreeView(QTreeView):
 
         self.setHeaderHidden(True)
         self.setExpandsOnDoubleClick(False)
-        self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setIconSize(QSize(icon_size, icon_size))
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)

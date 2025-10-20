@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
+from PySide6.QtWidgets import QScrollArea, QSizePolicy, QWidget
 
 from mir_commander.ui.utils.widget import CheckBox, DockWidget, GroupVBoxLayout
 
@@ -53,7 +53,6 @@ class ProgramControlPanel(Generic[T], DockWidget):
 
         self._scroll_area = QScrollArea(self)
         self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
         self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
