@@ -11,7 +11,7 @@ from mir_commander.ui.utils.widget import TR, GridLayout, Label, PushButton, VBo
 from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
     from .control_panel import ControlPanel
 
 logger = logging.getLogger("MoleculeStructureViewer.ControlPanel.Image")
@@ -116,7 +116,7 @@ class Image(QWidget):
                 logger.error(f"{txt}: {e}")
                 viewer.long_msg_signal.emit(txt)
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         if self._bg_color_inited is False:
             self._bg_color_inited = True
             color = *program.visualizer.background_color[:3], 0.0

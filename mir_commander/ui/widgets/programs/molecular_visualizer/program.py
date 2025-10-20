@@ -8,7 +8,7 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
 
-from .config import MolecularStructureViewerConfig
+from .config import MolecularVisualizerConfig
 from .context_menu import ContextMenu
 from .control_panel import ControlPanel
 from .visualizer import Visualizer
@@ -17,15 +17,15 @@ if TYPE_CHECKING:
     from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
 
-class MolecularStructureViewer(ProgramWindow):
-    name = Translator.tr("Molecular Structure Viewer")
+class MolecularVisualizer(ProgramWindow):
+    name = Translator.tr("Molecular visualizer")
     control_panel_cls = ControlPanel
     control_panel: ControlPanel
 
     def __init__(self, all: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._config = self.app_config.project_window.widgets.programs.molecular_structure_viewer
+        self._config = self.app_config.project_window.widgets.programs.molecular_visualizer
 
         self._all = all
 
@@ -53,7 +53,7 @@ class MolecularStructureViewer(ProgramWindow):
         self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
         self.resize(self._config.size[0], self._config.size[1])
 
-    def get_config(self) -> MolecularStructureViewerConfig:
+    def get_config(self) -> MolecularVisualizerConfig:
         return self._config
 
     def contextMenuEvent(self, event: QContextMenuEvent):

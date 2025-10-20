@@ -10,14 +10,12 @@ from .view import View
 from .volume_cube import VolumeCube
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
 
 
-class ControlPanel(ProgramControlPanel["MolecularStructureViewer"]):
+class ControlPanel(ProgramControlPanel["MolecularVisualizer"]):
     def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, **(kwargs | {"title": self.tr("Molecular Structure Viewer"), "apply_for_all_checkbox": True})
-        )
+        super().__init__(*args, **(kwargs | {"title": self.tr("Molecular visualizer"), "apply_for_all_checkbox": True}))
 
         self.coordinate_axes = CoordinateAxes(self)
         self.labels = Labels(self)
@@ -32,7 +30,7 @@ class ControlPanel(ProgramControlPanel["MolecularStructureViewer"]):
         self.layout.add_widget(Label.tr("Image"), self.image, False)
         self.layout.addStretch()
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         self.coordinate_axes.update_values(program)
         self.labels.update_values(program)
         self.volume_cube.update_values(program)

@@ -10,7 +10,7 @@ from ..entities import VolumeCubeIsosurfaceGroup
 from ..errors import EmptyScalarFieldError
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
     from .control_panel import ControlPanel
 
 
@@ -235,7 +235,7 @@ class VolumeCube(QWidget):
         if self._control_panel.last_active_program is not None:
             self.update_values(self._control_panel.last_active_program)
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         self._isosurfaces_tree_view.load(program.visualizer.get_volume_cube_isosurface_groups())
         self.setDisabled(program.visualizer.is_empty_volume_cube_scalar_field())
 

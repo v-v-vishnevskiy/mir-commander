@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QFrame, QHeaderView, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.program import ProgramWindow
-from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
+from mir_commander.ui.utils.widget import PushButton, TableView, Translator, VBoxLayout
 from mir_commander.utils.chem import atomic_number_to_symbol, symbol_to_atomic_number
 
 
@@ -97,8 +97,8 @@ class AtomicCoordinatesTableView(TableView):
         return AtomicCoordinates(atomic_num=atomic_num_list, x=x_list, y=y_list, z=z_list)
 
 
-class MolecularStructureEditor(ProgramWindow):
-    name = Translator.tr("Molecular Structure Editor")
+class CartesianEditor(ProgramWindow):
+    name = Translator.tr("Cartesian editor")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -109,6 +109,7 @@ class MolecularStructureEditor(ProgramWindow):
         self._atomic_coordinates_table_view = AtomicCoordinatesTableView()
 
         layout.addWidget(self._atomic_coordinates_table_view, stretch=1)
+        layout.addWidget(PushButton("Add"))
 
         match self.item.core_item.data:
             case AtomicCoordinates():

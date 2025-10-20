@@ -7,7 +7,7 @@ from mir_commander.ui.utils.widget import GridLayout, Label, VBoxLayout
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
     from .control_panel import ControlPanel
 
 
@@ -65,7 +65,7 @@ class Labels(QWidget):
     def _offset_double_spinbox_value_changed_handler(self, value: float):
         self._offset_slider.setValue(int(value * 100))
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         visualizer = program.visualizer
         self._size_slider.setValue(visualizer.config.atom_label.size)
         self._size_double_spinbox.setValue(visualizer.config.atom_label.size)

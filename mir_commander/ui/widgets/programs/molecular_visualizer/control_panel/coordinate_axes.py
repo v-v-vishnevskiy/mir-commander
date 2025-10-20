@@ -10,7 +10,7 @@ from mir_commander.ui.utils.widget import CheckBox, GridLayout, Label, PushButto
 from .utils import ColorButton, add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
     from .control_panel import ControlPanel
 
 
@@ -192,7 +192,7 @@ class CoordinateAxes(QWidget):
         for viewer in self._control_panel.opened_programs:
             viewer.visualizer.coordinate_axes_adjust_length()
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         coordinate_axes = program.visualizer.coordinate_axes
 
         self._visibility_checkbox.setChecked(coordinate_axes.visible)

@@ -37,24 +37,22 @@ from .save_image_dialog import SaveImageDialog
 from .style import Style
 
 if TYPE_CHECKING:
-    from .program import MolecularStructureViewer
+    from .program import MolecularVisualizer
 
 logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
 
 
 class Visualizer(OpenGLWidget):
-    parent: Callable[[], "MolecularStructureViewer"]  # type: ignore[assignment]
+    parent: Callable[[], "MolecularVisualizer"]  # type: ignore[assignment]
 
     def __init__(self, title: str, app_config: AppConfig, control_panel: ControlPanel | None, *args, **kwargs):
-        kwargs["keymap"] = Keymap(
-            app_config.project_window.widgets.programs.molecular_structure_viewer.keymap.model_dump()
-        )
+        kwargs["keymap"] = Keymap(app_config.project_window.widgets.programs.molecular_visualizer.keymap.model_dump())
         super().__init__(*args, **kwargs)
 
         self._title = title
         self._app_config = app_config
         self._control_panel = control_panel
-        self._config = app_config.project_window.widgets.programs.molecular_structure_viewer
+        self._config = app_config.project_window.widgets.programs.molecular_visualizer
         self.config = self._config.model_copy(deep=True)
 
         self._style = Style(self._config)

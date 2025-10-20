@@ -9,7 +9,7 @@ from mir_commander.ui.utils.widget import GridLayout, Label, PushButton, TrStrin
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularStructureViewer
+    from ..program import MolecularVisualizer
     from .control_panel import ControlPanel
 
 
@@ -134,7 +134,7 @@ class View(QWidget):
             viewer.visualizer.set_scene_rotation(0, 0, 0)
             viewer.visualizer.set_scene_scale(1.0)
 
-    def update_values(self, program: "MolecularStructureViewer"):
+    def update_values(self, program: "MolecularVisualizer"):
         values = {axis: value for axis, value in zip(self._axis_order, program.visualizer.scene_rotation)}
 
         with contextlib.ExitStack() as stack:

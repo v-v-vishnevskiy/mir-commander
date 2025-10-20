@@ -328,7 +328,7 @@ class Quality(BaseModel):
     smooth: bool = True
 
 
-class MolecularStructureViewerConfig(BaseModel):
+class MolecularVisualizerConfig(BaseModel):
     keymap: Keymap = Keymap()
     geom_bond_tolerance: float = 0.15
     size: tuple[int, int] = (500, 500)
@@ -346,7 +346,7 @@ class MolecularStructureViewerConfig(BaseModel):
             ),
         ],
         min_length=1,
-        description="List of available styles for the molecular structure viewer.",
+        description="List of available styles for the molecular visualizer.",
     )
     atom_label: AtomLabelConfig = AtomLabelConfig()
 

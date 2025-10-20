@@ -6,8 +6,8 @@ from PySide6.QtWidgets import QWidget
 from mir_commander.core import models
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Action, Menu
-from mir_commander.ui.widgets.programs.molecular_structure_editor.program import MolecularStructureEditor
-from mir_commander.ui.widgets.programs.molecular_structure_viewer.program import MolecularStructureViewer
+from mir_commander.ui.widgets.programs.cartesian_editor.program import CartesianEditor
+from mir_commander.ui.widgets.programs.molecular_visualizer.program import MolecularVisualizer
 
 if TYPE_CHECKING:
     from .tree_view import TreeView
@@ -84,14 +84,14 @@ class TreeItem(QStandardItem):
                 Action(
                     text=Action.tr("VS_Child"),
                     parent=view_structures_menu,
-                    triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": False}),
+                    triggered=lambda: tree_view.view_item.emit(self, MolecularVisualizer, {"all": False}),
                 )
             )
             view_structures_menu.addAction(
                 Action(
                     text=Action.tr("VS_All"),
                     parent=view_structures_menu,
-                    triggered=lambda: tree_view.view_item.emit(self, MolecularStructureViewer, {"all": True}),
+                    triggered=lambda: tree_view.view_item.emit(self, MolecularVisualizer, {"all": True}),
                 )
             )
             result.addMenu(view_structures_menu)
@@ -113,22 +113,22 @@ class Unex(TreeItem):
 
 
 class VolumeCube(TreeItem):
-    default_program = MolecularStructureViewer
+    default_program = MolecularVisualizer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/volume-cube.png"))
 
 
 class AtomicCoordinatesGroup(TreeItem):
-    default_program = MolecularStructureViewer
+    default_program = MolecularVisualizer
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
 
 
 class AtomicCoordinates(TreeItem):
-    default_program = MolecularStructureViewer
-    programs = [MolecularStructureEditor]
+    default_program = MolecularVisualizer
+    programs = [CartesianEditor]
 
     def _set_icon(self):
         self.setIcon(QIcon(":/icons/items/coordinates.png"))
