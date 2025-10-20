@@ -67,11 +67,13 @@ class Molecule(Node):
 
         self.radius = 0
 
+        x = self._atomic_coordinates.x
+        y = self._atomic_coordinates.y
+        z = self._atomic_coordinates.z
+
         # add atoms
         for i, atomic_num in enumerate(self._atomic_coordinates.atomic_num):
-            position = QVector3D(
-                self._atomic_coordinates.x[i], self._atomic_coordinates.y[i], self._atomic_coordinates.z[i]
-            )
+            position = QVector3D(x[i], y[i], z[i])
             atom = self.add_atom(i, atomic_num, position)
 
             d = position.distanceToPoint(self.center) + atom.radius
@@ -210,22 +212,40 @@ class Molecule(Node):
         super().clear()
 
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
-        for i in range(len(atomic_coordinates.atomic_num)):
-            if atomic_coordinates.atomic_num[i] < 1:
+        atomic_num = np.array(atomic_coordinates.atomic_num)
+        x = np.array(atomic_coordinates.x)
+        y = np.array(atomic_coordinates.y)
+        z = np.array(atomic_coordinates.z)
+        atom_single_bond_covalent_radius = np.array(
+            [ATOM_SINGLE_BOND_COVALENT_RADIUS[i] if i > 0 else 0 for i in atomic_num]
+        )
+
+        for i in range(len(atomic_num)):
+            if atomic_num[i] < 1:
                 continue
-            crad_i = ATOM_SINGLE_BOND_COVALENT_RADIUS[atomic_coordinates.atomic_num[i]]
-            for j in range(i):
-                if atomic_coordinates.atomic_num[j] < 1:
-                    continue
-                crad_j = ATOM_SINGLE_BOND_COVALENT_RADIUS[atomic_coordinates.atomic_num[j]]
-                crad_sum = crad_i + crad_j
-                dist_ij = math.sqrt(
-                    (atomic_coordinates.x[i] - atomic_coordinates.x[j]) ** 2
-                    + (atomic_coordinates.y[i] - atomic_coordinates.y[j]) ** 2
-                    + (atomic_coordinates.z[i] - atomic_coordinates.z[j]) ** 2
-                )
-                if dist_ij < (crad_sum + crad_sum * geom_bond_tolerance):
-                    self.add_bond(self.atom(i), self.atom(j))
+
+            crad_i = atom_single_bond_covalent_radius[i]
+            j_indices = np.arange(i)
+            valid_j = atomic_num[:i] >= 1
+
+            if not np.any(valid_j):
+                continue
+
+            crad_j = atom_single_bond_covalent_radius[:i][valid_j]
+            crad_sum = crad_i + crad_j
+
+            dx = x[i] - x[:i][valid_j]
+            dy = y[i] - y[:i][valid_j]
+            dz = z[i] - z[:i][valid_j]
+
+            dist_ij = np.sqrt(dx * dx + dy * dy + dz * dz)
+            threshold = crad_sum + crad_sum * geom_bond_tolerance
+
+            bonded = dist_ij < threshold
+            j_valid_indices = j_indices[valid_j][bonded]
+
+            for j in j_valid_indices:
+                self.add_bond(self.atom(i), self.atom(j))
 
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
