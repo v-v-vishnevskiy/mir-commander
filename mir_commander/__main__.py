@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from mir_commander.ui.application import Application
+from mir_commander.utils.consts import DIR
 from mir_commander.utils.logging import init_logging
 
 logger = logging.getLogger("Main")
@@ -16,6 +17,9 @@ def run():
     )
     parser.add_argument("-p", "--project", type=Path, help="Path to project directory")
     args = parser.parse_args()
+
+    if not DIR.HOME_CONFIG.exists():
+        DIR.HOME_CONFIG.mkdir(parents=True, exist_ok=True)
 
     init_logging()
     logger.debug("Starting Mir Commander ...")
