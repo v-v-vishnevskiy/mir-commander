@@ -29,6 +29,9 @@ class MolecularVisualizer(ProgramWindow):
 
         self._all = all
 
+        self._atomic_coordinates_items: list["TreeItem"] = []
+        self._volume_cube_items: list["TreeItem"] = []
+
         self.visualizer = Visualizer(
             parent=self, title=self.item.text(), app_config=self.app_config, control_panel=self.control_panel
         )
@@ -36,6 +39,7 @@ class MolecularVisualizer(ProgramWindow):
 
         match self.item.core_item.data:
             case VolumeCube():
+                self._volume_cube_items.append(self.item)
                 self.visualizer.set_volume_cube(self.item.core_item.data)
 
         self._molecule_index = 0
@@ -52,6 +56,13 @@ class MolecularVisualizer(ProgramWindow):
 
         self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
         self.resize(self._config.size[0], self._config.size[1])
+
+    def _get_item(self, item_id: int) -> "TreeItem":
+        for items_list in [self._atomic_coordinates_items, self._volume_cube_items]:
+            for item in items_list:
+                if item.id == item_id:
+                    return item
+        raise ValueError(f"Item with id {item_id} not found")
 
     def get_config(self) -> MolecularVisualizerConfig:
         return self._config
@@ -96,6 +107,7 @@ class MolecularVisualizer(ProgramWindow):
 
     def _set_draw_item(self):
         _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
+        self._atomic_coordinates_items = [self._draw_item]
 
     def _get_draw_item_atomic_coordinates(self) -> list[AtomicCoordinates]:
         match self._draw_item.core_item.data:
@@ -125,3 +137,16 @@ class MolecularVisualizer(ProgramWindow):
         image = self.visualizer.render_to_image(width, height, bg_color, crop_to_content)
         profile = ImageCms.createProfile("sRGB")
         Image.fromarray(image).save(filename, icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
+
+    def contains_item(self, item_id: int) -> bool:
+        try:
+            self._get_item(item_id)
+            return True
+        except ValueError:
+            return False
+
+    def item_changed_event(self, item_id: int):
+        data = self._get_item(item_id).core_item.data
+        match data:
+            case AtomicCoordinates():
+                self.visualizer.set_atomic_coordinates([data])

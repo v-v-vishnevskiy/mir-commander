@@ -14,11 +14,16 @@ if TYPE_CHECKING:
 
 
 class TreeItem(QStandardItem):
+    _id_counter = 0
+
     default_program: type[ProgramWindow] | None = None
     programs: list[type[ProgramWindow]] = []
     child: Callable[..., "TreeItem"]
 
     def __init__(self, item: models.Item):
+        TreeItem._id_counter += 1
+        self._id = TreeItem._id_counter
+
         super().__init__(item.name)
 
         self._core_item = item
@@ -29,6 +34,10 @@ class TreeItem(QStandardItem):
 
     def _set_icon(self):
         self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
+
+    @property
+    def id(self) -> int:
+        return self._id
 
     @property
     def path(self) -> str:
@@ -97,6 +106,9 @@ class TreeItem(QStandardItem):
             result.addMenu(view_structures_menu)
 
         return result
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(id={self._id})"
 
 
 class Container(TreeItem):

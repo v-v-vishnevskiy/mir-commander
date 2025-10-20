@@ -38,6 +38,7 @@ class MdiArea(QMdiArea):
                 control_panel=self._add_program_control_panel(program_cls),
                 **kwargs,
             )
+            program.item_changed_signal.connect(self._item_changed_handler)
             self.opened_program_signal.emit(program)
             self.addSubWindow(program)
         program.show()
@@ -66,3 +67,9 @@ class MdiArea(QMdiArea):
         if window is not None and window.control_panel_cls is not None:
             if control_panel := programs_control_panels.get(window.control_panel_cls):
                 control_panel.set_active_program(window)
+
+    def _item_changed_handler(self, item_id: int, program_window_id: int):
+        for w in self.subWindowList():
+            program = cast(ProgramWindow, w)
+            if program.id != program_window_id and program.contains_item(item_id):
+                program.item_changed_event(item_id)
