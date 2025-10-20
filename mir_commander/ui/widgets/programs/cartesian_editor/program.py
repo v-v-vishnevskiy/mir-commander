@@ -9,13 +9,17 @@ from mir_commander.utils.chem import atomic_number_to_symbol, symbol_to_atomic_n
 
 
 class AtomicCoordinatesTableView(TableView):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, cartesian_editor: "CartesianEditor", *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._cartesian_editor = cartesian_editor
 
         self._model = QStandardItemModel(parent=self)
         self.setModel(self._model)
 
         self._model.setHorizontalHeaderLabels(["Symbol", "X", "Y", "Z"])
+
+        self._model.itemChanged.connect(self._on_item_changed)
 
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setAlternatingRowColors(True)
@@ -25,6 +29,12 @@ class AtomicCoordinatesTableView(TableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self._atomic_coordinates: AtomicCoordinates | None = None
+
+    def _on_item_changed(self, item: QStandardItem):
+        """Handle item changes in the table."""
+        updated_data = self.save_data()
+        self._cartesian_editor.item.core_item.data = updated_data
+        self._cartesian_editor.send_item_changed_signal()
 
     def _create_symbol_item(self, symbol: str) -> QStandardItem:
         item = QStandardItem(symbol)
@@ -46,6 +56,7 @@ class AtomicCoordinatesTableView(TableView):
 
     def load_data(self, atomic_coordinates: AtomicCoordinates):
         self._atomic_coordinates = atomic_coordinates
+        self._model.blockSignals(True)
         self._model.removeRows(0, self._model.rowCount())
 
         n_atoms = len(atomic_coordinates.atomic_num)
@@ -56,6 +67,7 @@ class AtomicCoordinatesTableView(TableView):
                 atomic_coordinates.y[i],
                 atomic_coordinates.z[i],
             )
+        self._model.blockSignals(False)
 
     def _extract_row_data(self, row: int) -> tuple[int, float, float, float] | None:
         symbol_item = self._model.item(row, 0)
@@ -66,20 +78,18 @@ class AtomicCoordinatesTableView(TableView):
         if not (symbol_item and x_item and y_item and z_item):
             return None
 
-        symbol = symbol_item.text()
-        atomic_num = symbol_to_atomic_number(symbol)
-        x = float(x_item.text())
-        y = float(y_item.text())
-        z = float(z_item.text())
-
-        return atomic_num, x, y, z
+        try:
+            symbol = symbol_item.text()
+            atomic_num = symbol_to_atomic_number(symbol)
+            x = float(x_item.text())
+            y = float(y_item.text())
+            z = float(z_item.text())
+            return atomic_num, x, y, z
+        except (ValueError, KeyError):
+            return None
 
     def save_data(self) -> AtomicCoordinates:
-        # TODO: Implement data saving
-        # This is a mock implementation for now
-        if self._atomic_coordinates is None:
-            return AtomicCoordinates()
-
+        """Extract data from table and return as AtomicCoordinates."""
         atomic_num_list = []
         x_list = []
         y_list = []
@@ -106,7 +116,7 @@ class CartesianEditor(ProgramWindow):
         central_widget = QWidget()
         layout = VBoxLayout()
 
-        self._atomic_coordinates_table_view = AtomicCoordinatesTableView()
+        self._atomic_coordinates_table_view = AtomicCoordinatesTableView(self)
 
         layout.addWidget(self._atomic_coordinates_table_view, stretch=1)
         layout.addWidget(PushButton("Add"))
