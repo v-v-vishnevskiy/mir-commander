@@ -196,7 +196,7 @@ class Renderer:
             vao.bind()
         return vao.triangles_count
 
-    def _setup_instanced_rendering(self, rc: RenderingContainer[Node], group_id: Hashable, nodes: list[Node]):
+    def _setup_instanced_rendering(self, rc: RenderingContainer[Node], group_id: Hashable, nodes: set[Node]):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
             color_buffer_id,
@@ -236,7 +236,7 @@ class Renderer:
             )
         return self._transformation_buffers[key]
 
-    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_model_matrix_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data = []
         for node in nodes:
@@ -244,7 +244,7 @@ class Renderer:
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
-    def _update_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -252,7 +252,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_color_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_color_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         color_data = []
         for node in nodes:
@@ -260,7 +260,7 @@ class Renderer:
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
 
-    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -271,7 +271,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -284,7 +284,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:

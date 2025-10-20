@@ -92,6 +92,7 @@ class Node:
 
         self._children: list[Self] = []
         self.metadata: dict[str, Any] = {}
+        # self._root_node.notify_add_node(self)
 
     @property
     def id(self) -> int:
@@ -306,6 +307,9 @@ class Node:
 
         self._color = color
         self._root_node.notify_set_dirty(self)
+
+    def __hash__(self) -> int:
+        return self._id
 
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self._id}, visible={self.visible})"

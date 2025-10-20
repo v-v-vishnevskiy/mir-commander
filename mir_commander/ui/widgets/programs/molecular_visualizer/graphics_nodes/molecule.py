@@ -231,7 +231,6 @@ class Molecule(Node):
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
         item = Atom(
-            self,
             index_num,
             atomic_num,
             atomic_number_to_symbol(atomic_num),
@@ -240,6 +239,7 @@ class Molecule(Node):
             color,
             selected_atom_config=self._style.selected_atom,
             label_config=self._atom_label_config,
+            parent=self,
         )
         self.atom_items.append(item)
 
@@ -254,20 +254,19 @@ class Molecule(Node):
             atoms_color = True
 
         item = Bond(
-            self,
             atom_1,
             atom_2,
             self._style.bond.radius,
             atoms_color,
             color,
+            parent=self,
         )
         self.bond_items.append(item)
 
         return item
 
     def remove_bond(self, index: int):
-        self.bond_items[index].remove()
-        self.bond_items.pop(index)
+        self.bond_items.pop(index).remove()
 
     def remove_bond_all(self):
         for bond in self.bond_items:

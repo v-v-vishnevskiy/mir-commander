@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QVector3D
 
@@ -13,8 +13,10 @@ if TYPE_CHECKING:
 
 
 class Sphere(BaseGraphicsNode):
-    def __init__(self, parent: "Atom", radius: float, color: Color4f):
-        super().__init__(parent=parent, node_type=NodeType.OPAQUE, visible=True, picking_visible=True)
+    parent: "Atom"
+
+    def __init__(self, radius: float, color: Color4f, *args, **kwargs):
+        super().__init__(*args, **kwargs | dict(node_type=NodeType.OPAQUE, picking_visible=True))
         self.set_scale(QVector3D(radius, radius, radius))
         self.set_color(color)
         self.set_model(VAO_SPHERE_RESOURCE_NAME)
@@ -38,9 +40,8 @@ class Sphere(BaseGraphicsNode):
         self.set_scale(QVector3D(radius, radius, radius))
 
     def get_text(self) -> str:
-        atom = cast("Atom", self._parent)
+        atom = self.parent
         return f"Atom: {atom.element_symbol}{atom.index_num + 1}"
 
     def toggle_selection(self) -> bool:
-        atom = cast("Atom", self._parent)
-        return atom.toggle_selection()
+        return self.parent.toggle_selection()

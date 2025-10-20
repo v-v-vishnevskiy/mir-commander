@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 class Atom(Node):
     def __init__(
         self,
-        parent: Node,
         index_num: int,
         atomic_num: int,
         element_symbol: str,
@@ -27,8 +26,11 @@ class Atom(Node):
         color: Color4f,
         selected_atom_config: SelectedAtom,
         label_config: AtomLabelConfig,
+        *args,
+        **kwargs,
     ):
-        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
+        super().__init__(*args, **kwargs | dict(node_type=NodeType.CONTAINER))
+
         self.translate(position)
 
         self.index_num = index_num
@@ -37,13 +39,12 @@ class Atom(Node):
         self._related_bonds: list["Bond"] = []
         self._cloaked = False  # if `True` do not draw this atom and its bonds.
         self._selected = False
-        self._sphere = Sphere(self, radius, color)
-        self._bounding_sphere = BoundingSphere(self._sphere, color, selected_atom_config)
+        self._selected_atom_config = selected_atom_config
         self._label_config = label_config
-        self._label = Label(self, label_config)
-        self._label.set_position(QVector3D(0.0, 0.0, radius * label_config.offset))
-        self.set_label_type(label_config.type)
-        self._selection_update = monotonic()
+        self._sphere = Sphere(radius, color, parent=self)
+        self._bounding_sphere: None | BoundingSphere = None
+        self._label: None | Label = None
+        self._selection_update = 0.0
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.append(bond)
@@ -79,6 +80,20 @@ class Atom(Node):
     def selection_update(self) -> float:
         return self._selection_update
 
+    @property
+    def bounding_sphere(self) -> BoundingSphere:
+        if self._bounding_sphere is None:
+            self._bounding_sphere = BoundingSphere(self._selected_atom_config, parent=self._sphere)
+        return self._bounding_sphere
+
+    @property
+    def label(self) -> Label:
+        if self._label is None:
+            self._label = Label(self._label_config, parent=self)
+            self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
+            self.set_label_type(self._label_config.type)
+        return self._label
+
     def set_color(self, color: Color4f):
         self._sphere.set_color(color)
 
@@ -88,7 +103,7 @@ class Atom(Node):
     def set_selected(self, value: bool):
         self._selection_update = monotonic()
         self._selected = value
-        self._bounding_sphere.set_visible(value)
+        self.bounding_sphere.set_visible(value)
 
     def toggle_selection(self) -> bool:
         self._selection_update = monotonic()
@@ -96,28 +111,28 @@ class Atom(Node):
         return self._selected
 
     def set_label_visible(self, value: bool):
-        self._label.set_visible(value)
+        self.label.set_visible(value)
 
     def set_label_type(self, value: AtomLabelType):
         if value == AtomLabelType.INDEX_NUMBER:
-            self._label.set_text(f"{self.index_num + 1}")
+            self.label.set_text(f"{self.index_num + 1}")
         elif value == AtomLabelType.ELEMENT_SYMBOL:
-            self._label.set_text(f"{self.element_symbol}")
+            self.label.set_text(f"{self.element_symbol}")
         elif value == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
-            self._label.set_text(f"{self.element_symbol}{self.index_num + 1}")
+            self.label.set_text(f"{self.element_symbol}{self.index_num + 1}")
 
     def set_selected_atom_config(self, config: SelectedAtom):
-        self._bounding_sphere.set_config(config)
+        self.bounding_sphere.set_config(config)
 
     def set_label_config(self, config: AtomLabelConfig):
-        self._label.set_config(config)
+        self.label.set_config(config)
 
     def set_label_size(self, size: int):
-        self._label.set_size(size)
+        self.label.set_size(size)
 
     def set_label_offset(self, offset: float):
         self._label_config.offset = offset
-        self._label.set_position(QVector3D(0.0, 0.0, self.radius * offset))
+        self.label.set_position(QVector3D(0.0, 0.0, self.radius * offset))
 
     def __repr__(self) -> str:
         return (

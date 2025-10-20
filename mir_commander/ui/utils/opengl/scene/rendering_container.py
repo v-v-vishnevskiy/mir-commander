@@ -10,14 +10,14 @@ T = TypeVar("T", bound=Node)
 class RenderingContainer(Generic[T]):
     def __init__(self, name: str):
         self.name = name
-        self._batches: dict[Hashable, list[T]] = {}
+        self._batches: dict[Hashable, set[T]] = {}
         self._dirty: dict[Hashable, bool] = {}
 
     def __bool__(self):
         return bool(self._batches)
 
     @property
-    def batches(self) -> list[tuple[Hashable, list[T]]]:
+    def batches(self) -> list[tuple[Hashable, set[T]]]:
         # TODO: remove
         return sorted(((group_id, nodes) for group_id, nodes in self._batches.items()))
 
@@ -28,11 +28,11 @@ class RenderingContainer(Generic[T]):
         group_id = node.group_id
 
         if group_id not in self._batches:
-            self._batches[group_id] = []
+            self._batches[group_id] = set()
 
         if node not in self._batches[group_id]:
             self._dirty[group_id] = True
-            self._batches[group_id].append(node)
+            self._batches[group_id].add(node)
 
     def remove_node(self, node: T):
         group_id = node.group_id

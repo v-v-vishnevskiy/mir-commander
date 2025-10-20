@@ -10,14 +10,15 @@ from .cylinder import Cylinder
 class Bond(Node):
     def __init__(
         self,
-        parent: Node,
         atom_1: Atom,
         atom_2: Atom,
         radius: float = 0.1,
         atoms_color: bool = True,
         color: Color4f = (0.5, 0.5, 0.5, 1.0),
+        *args,
+        **kwargs,
     ):
-        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
+        super().__init__(*args, **kwargs | dict(node_type=NodeType.CONTAINER, visible=True))
 
         self._radius = radius
         self._atom_1 = atom_1
