@@ -1,5 +1,5 @@
 @echo off
 call .venv/Scripts/activate
 set PYTHONPATH=%~dp0
-python mir_commander
+.venv\Scripts\mircmd.exe %*
 call .venv/Scripts/deactivate

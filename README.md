@@ -38,9 +38,9 @@ So the first steps are (run in `cmd` from the top level directory of the reposit
 
 ```shell
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate.bat
 pip install uv
-VIRTUAL_ENV=.venv uv sync --active --all-groups
+uv sync --active --all-groups
 ```
 
 Mir Commander can now be started from command line in the virtual environment as
