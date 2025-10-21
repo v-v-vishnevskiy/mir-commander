@@ -1,6 +1,6 @@
 from typing import Callable, cast
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
@@ -8,6 +8,8 @@ from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
+
+from .control_panel import ControlPanel
 
 
 class TableItem(QStandardItem):
@@ -31,12 +33,10 @@ class TableItem(QStandardItem):
         pass
 
     def set_valid_state(self, valid: bool):
-        self.model().blockSignals(True)
         if valid:
             self.setForeground(QColor(0, 0, 0))
         else:
             self.setForeground(QColor(255, 0, 0))
-        self.model().blockSignals(False)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(index={self.idx}, text={self.text()})"
@@ -80,16 +80,20 @@ class SymbolItem(TableItem):
 
 
 class FloatItem(TableItem):
-    def __init__(self, value: float, *args, **kwargs):
-        super().__init__(f"{value:.6f}", *args, **kwargs)
+    def __init__(self, value: str, *args, **kwargs):
+        super().__init__(value, *args, **kwargs)
         self.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+    @staticmethod
+    def format_value(value: float, decimal: int) -> str:
+        return f"{value:.{decimal}f}"
 
     @property
     def value(self) -> float:
         return float(self.text())
 
     def reset(self):
-        self.setText(f"{0.0:.6f}")
+        self.setText("0.0")
         self.set_valid_state(True)
 
     def validate(self) -> bool:
@@ -112,10 +116,11 @@ class FloatItemZ(FloatItem): ...
 
 
 class AtomicCoordinatesTableView(TableView):
-    def __init__(self, cartesian_editor: "CartesianEditor", *args, **kwargs):
+    def __init__(self, cartesian_editor: "CartesianEditor", decimals: int = 6, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._cartesian_editor = cartesian_editor
+        self._decimals = decimals
 
         self._all_symbols = all_symbols()
 
@@ -137,6 +142,10 @@ class AtomicCoordinatesTableView(TableView):
 
         self._init_new_atom_row()
 
+    @property
+    def decimals(self) -> int:
+        return self._decimals
+
     def _get_item(self, row: int, column: int = 0) -> TableItem:
         return cast(TableItem, self._model.item(row, column))
 
@@ -144,9 +153,9 @@ class AtomicCoordinatesTableView(TableView):
         self._new_atom_plus_item = QStandardItem()
         self._new_atom_plus_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self._new_atom_symbol_item = SymbolItem("", index=-1)
-        self._new_atom_x_item = FloatItem(0.0, index=-1)
-        self._new_atom_y_item = FloatItem(0.0, index=-1)
-        self._new_atom_z_item = FloatItem(0.0, index=-1)
+        self._new_atom_x_item = FloatItem("0.0", index=-1)
+        self._new_atom_y_item = FloatItem("0.0", index=-1)
+        self._new_atom_z_item = FloatItem("0.0", index=-1)
 
         self._plus_button = QPushButton(QIcon(":/icons/general/plus.png"), "")
         self._plus_button.setIconSize(QSize(16, 16))
@@ -167,29 +176,33 @@ class AtomicCoordinatesTableView(TableView):
         if not isinstance(item, TableItem):
             return
 
-        if item in [self._new_atom_symbol_item, self._new_atom_x_item, self._new_atom_y_item, self._new_atom_z_item]:
-            if self._is_valid_values_for_new_atom_row():
-                self._plus_button.setEnabled(True)
-            else:
-                self._plus_button.setEnabled(False)
-            return
+        with QSignalBlocker(self._model):
+            if item in [
+                self._new_atom_symbol_item,
+                self._new_atom_x_item,
+                self._new_atom_y_item,
+                self._new_atom_z_item,
+            ]:
+                if self._is_valid_values_for_new_atom_row():
+                    self._plus_button.setEnabled(True)
+                else:
+                    self._plus_button.setEnabled(False)
+                return
 
-        if not item.validate():
-            return
+            if not item.validate():
+                return
 
-        match item:
-            case SymbolItem():
-                self._raw_data.atomic_num[item.idx] = item.atomic_number
-            case FloatItemX():
-                self._raw_data.x[item.idx] = item.value
-            case FloatItemY():
-                self._raw_data.y[item.idx] = item.value
-            case FloatItemZ():
-                self._raw_data.z[item.idx] = item.value
-            case TagItem():
-                self._model.blockSignals(True)
-                self._apply_new_tag(item)
-                self._model.blockSignals(False)
+            match item:
+                case SymbolItem():
+                    self._raw_data.atomic_num[item.idx] = item.atomic_number
+                case FloatItemX():
+                    self._raw_data.x[item.idx] = item.value
+                case FloatItemY():
+                    self._raw_data.y[item.idx] = item.value
+                case FloatItemZ():
+                    self._raw_data.z[item.idx] = item.value
+                case TagItem():
+                    self._apply_new_tag(item)
 
         self._cartesian_editor.send_item_changed_signal()
 
@@ -246,16 +259,15 @@ class AtomicCoordinatesTableView(TableView):
         self._raw_data.z.append(z)
         self._cartesian_editor.send_item_changed_signal()
 
-        self._model.blockSignals(True)
-        self._reset_new_atom_row()
-        self._model.blockSignals(False)
+        with QSignalBlocker(self._model):
+            self._reset_new_atom_row()
 
     def _add_atom_row(self, tag: int, symbol: str, x: float, y: float, z: float, append: bool = True):
         tag_item = TagItem(tag, self._model.rowCount, index=tag - 1)
         symbol_item = SymbolItem(symbol, index=tag - 1)
-        x_item = FloatItemX(x, index=tag - 1)
-        y_item = FloatItemY(y, index=tag - 1)
-        z_item = FloatItemZ(z, index=tag - 1)
+        x_item = FloatItemX(FloatItem.format_value(x, self._decimals), index=tag - 1)
+        y_item = FloatItemY(FloatItem.format_value(y, self._decimals), index=tag - 1)
+        z_item = FloatItemZ(FloatItem.format_value(z, self._decimals), index=tag - 1)
         if append:
             self._model.appendRow([tag_item, symbol_item, x_item, y_item, z_item])
         else:
@@ -275,24 +287,37 @@ class AtomicCoordinatesTableView(TableView):
 
     def load_data(self, atomic_coordinates: AtomicCoordinates):
         self._raw_data = atomic_coordinates
-        self._model.blockSignals(True)
-        self._model.removeRows(0, self._model.rowCount())
 
-        n_atoms = len(atomic_coordinates.atomic_num)
-        for i in range(n_atoms):
-            self._add_atom_row(
-                i + 1,
-                atomic_number_to_symbol(atomic_coordinates.atomic_num[i]),
-                atomic_coordinates.x[i],
-                atomic_coordinates.y[i],
-                atomic_coordinates.z[i],
-            )
-        self._add_new_atom_row()
-        self._reset_new_atom_row()
-        self._model.blockSignals(False)
+        with QSignalBlocker(self._model):
+            self._model.removeRows(0, self._model.rowCount())
+
+            n_atoms = len(atomic_coordinates.atomic_num)
+            for i in range(n_atoms):
+                self._add_atom_row(
+                    i + 1,
+                    atomic_number_to_symbol(atomic_coordinates.atomic_num[i]),
+                    atomic_coordinates.x[i],
+                    atomic_coordinates.y[i],
+                    atomic_coordinates.z[i],
+                )
+            self._add_new_atom_row()
+            self._reset_new_atom_row()
+
+    def set_decimals(self, value: int):
+        self._decimals = value
+
+        columns = [(2, self._raw_data.x), (3, self._raw_data.y), (4, self._raw_data.z)]
+        with QSignalBlocker(self._model):
+            for row in range(self._model.rowCount() - 1):
+                index = self._get_item(row, 0).idx
+                for column, data in columns:
+                    self._get_item(row, column).setText(FloatItem.format_value(data[index], value))
+        self.viewport().update()
 
 
 class CartesianEditor(ProgramWindow):
+    control_panel_cls = ControlPanel
+    control_panel: ControlPanel
     name = Translator.tr("Cartesian editor")
 
     def __init__(self, *args, **kwargs):
@@ -314,3 +339,10 @@ class CartesianEditor(ProgramWindow):
 
         self.setMinimumSize(350, 300)
         self.resize(350, 300)
+
+    @property
+    def decimals(self) -> int:
+        return self._atomic_coordinates_table_view.decimals
+
+    def set_decimals(self, value: int):
+        self._atomic_coordinates_table_view.set_decimals(value)
