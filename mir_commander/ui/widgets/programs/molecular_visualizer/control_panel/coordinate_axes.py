@@ -5,9 +5,9 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QLineEdit, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GridLayout, Label, PushButton, TrString, VBoxLayout
+from mir_commander.ui.utils.widget import CheckBox, ColorButton, GridLayout, Label, PushButton, TrString, VBoxLayout
 
-from .utils import ColorButton, add_slider
+from .utils import add_slider
 
 if TYPE_CHECKING:
     from ..program import MolecularVisualizer

@@ -1,6 +1,5 @@
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QColorDialog, QDoubleSpinBox, QGridLayout, QPushButton, QSlider
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider
 
 from mir_commander.ui.utils.widget import Label, TrString
 
@@ -37,36 +36,3 @@ def add_slider(
     layout.addWidget(double_spinbox, row, 2)
 
     return slider, double_spinbox
-
-
-class ColorButton(QPushButton):
-    color_changed = Signal(QColor)
-
-    def __init__(self, color: QColor = QColor(255, 255, 255, a=255)):
-        super().__init__()
-        self._color = color
-        self._set_style_sheet(color)
-        self.setFixedSize(20, 20)
-        self.clicked.connect(self.clicked_handler)
-
-    @property
-    def color(self) -> QColor:
-        return self._color
-
-    def _set_style_sheet(self, color: QColor):
-        self.setStyleSheet(
-            f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
-        )
-
-    def set_color(self, color: QColor):
-        self._color = color
-        self._set_style_sheet(color)
-
-    def clicked_handler(self):
-        color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-        )
-        if color.isValid():
-            self._color = color
-            self._set_style_sheet(color)
-            self.color_changed.emit(color)

@@ -1,10 +1,11 @@
 from time import monotonic
 from typing import Any, Self, cast
 
-from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPropertyAnimation, Qt
-from PySide6.QtGui import QAction, QMouseEvent, QStandardItem
+from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPropertyAnimation, Qt, Signal
+from PySide6.QtGui import QAction, QColor, QMouseEvent, QStandardItem
 from PySide6.QtWidgets import (
     QCheckBox,
+    QColorDialog,
     QComboBox,
     QDialog,
     QDockWidget,
@@ -145,6 +146,38 @@ class PushButton(Widget, QPushButton):
 
     def retranslate_ui(self):
         self.setText(self.__text)
+
+
+class ColorButton(QPushButton):
+    color_changed = Signal(QColor)
+
+    def __init__(self, color: QColor = QColor(255, 255, 255, a=255), *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._color = color
+        self._set_style_sheet(color)
+        self.setFixedSize(20, 20)
+        self.clicked.connect(self.clicked_handler)
+
+    @property
+    def color(self) -> QColor:
+        return self._color
+
+    def _set_style_sheet(self, color: QColor):
+        color_name = color.name(QColor.NameFormat.HexArgb)
+        self.setStyleSheet(f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color_name}; }}")
+
+    def set_color(self, color: QColor):
+        self._color = color
+        self._set_style_sheet(color)
+
+    def clicked_handler(self):
+        color = QColorDialog.getColor(
+            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+        )
+        if color.isValid():
+            self._color = color
+            self._set_style_sheet(color)
+            self.color_changed.emit(color)
 
 
 class GroupBox(Widget, QGroupBox):

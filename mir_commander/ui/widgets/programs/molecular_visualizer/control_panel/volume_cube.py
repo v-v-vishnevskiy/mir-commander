@@ -4,7 +4,15 @@ from PySide6.QtGui import QColor, QIcon, QMouseEvent, QResizeEvent, QStandardIte
 from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QDoubleSpinBox, QFrame, QPushButton, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.widget import CheckBox, GridLayout, PushButton, StandardItem, TreeView, VBoxLayout
+from mir_commander.ui.utils.widget import (
+    CheckBox,
+    ColorButton,
+    GridLayout,
+    PushButton,
+    StandardItem,
+    TreeView,
+    VBoxLayout,
+)
 
 from ..entities import VolumeCubeIsosurfaceGroup
 from ..errors import EmptyScalarFieldError
@@ -14,29 +22,29 @@ if TYPE_CHECKING:
     from .control_panel import ControlPanel
 
 
-class ColorButton(QPushButton):
-    def __init__(self, color: QColor, control_panel: "ControlPanel", id: int):
-        super().__init__()
-        self._color = color
-        self._id = id
-        self._control_panel = control_panel
-        self._set_style_sheet(color)
-        self.clicked.connect(self.clicked_handler)
+# class ColorButton(QPushButton):
+#     def __init__(self, color: QColor, control_panel: "ControlPanel", id: int):
+#         super().__init__()
+#         self._color = color
+#         self._id = id
+#         self._control_panel = control_panel
+#         self._set_style_sheet(color)
+#         self.clicked.connect(self.clicked_handler)
 
-    def _set_style_sheet(self, color: QColor):
-        self.setStyleSheet(
-            f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
-        )
+#     def _set_style_sheet(self, color: QColor):
+#         self.setStyleSheet(
+#             f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
+#         )
 
-    def clicked_handler(self):
-        color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-        )
-        if color.isValid():
-            self._set_style_sheet(color)
-            for viewer in self._control_panel.opened_programs:
-                viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
-            self._control_panel.volume_cube.refresh_values()
+#     def clicked_handler(self):
+#         color = QColorDialog.getColor(
+#             initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
+#         )
+#         if color.isValid():
+#             self._set_style_sheet(color)
+#             for viewer in self._control_panel.opened_programs:
+#                 viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
+#             self._control_panel.volume_cube.refresh_values()
 
 
 class VisibilityButton(QPushButton):
@@ -111,6 +119,9 @@ class IsosurfacesTreeView(TreeView):
         group_delete_item = QStandardItem()
         root_item.appendRow([group_text_item, group_color_item, group_visibility_item, group_delete_item])
 
+        def color_changed_handler(node_id: int):
+            return lambda color: self._color_changed_handler(color, node_id)
+
         if len(group.isosurfaces) > 1:
             for isosurface in group.isosurfaces:
                 isosurface_text_item = (
@@ -130,19 +141,26 @@ class IsosurfacesTreeView(TreeView):
                         isosurface_delete_item,
                     ]
                 )
-                c = ColorButton(color4f_to_qcolor(isosurface.color), self._control_panel, isosurface.id)
+                c = ColorButton(color4f_to_qcolor(isosurface.color))
+                c.color_changed.connect(color_changed_handler(isosurface.id))
                 self.setIndexWidget(self._model.indexFromItem(isosurface_color_item), c)
                 v = VisibilityButton(self._control_panel, isosurface.id, isosurface.visible)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_visibility_item), v)
                 d = DeleteButton(self._control_panel, isosurface.id)
                 self.setIndexWidget(self._model.indexFromItem(isosurface_delete_item), d)
         else:
-            c = ColorButton(color4f_to_qcolor(group.isosurfaces[0].color), self._control_panel, group.isosurfaces[0].id)
+            c = ColorButton(color4f_to_qcolor(group.isosurfaces[0].color))
+            c.color_changed.connect(color_changed_handler(group.isosurfaces[0].id))
             self.setIndexWidget(self._model.indexFromItem(group_color_item), c)
         v = VisibilityButton(self._control_panel, group.id, group.visible)
         self.setIndexWidget(self._model.indexFromItem(group_visibility_item), v)
         d = DeleteButton(self._control_panel, group.id)
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
+
+    def _color_changed_handler(self, color: QColor, node_id: int):
+        for viewer in self._control_panel.opened_programs:
+            viewer.visualizer.set_node_color_by_id(node_id, qcolor_to_color4f(color))
+        self._control_panel.volume_cube.refresh_values()
 
     def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
         self._model.clear()
