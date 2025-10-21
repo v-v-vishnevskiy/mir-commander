@@ -34,6 +34,7 @@ class ProgramWindow(QMdiSubWindow):
         self.item = item
         self.app_config = app_config
         self.control_panel = control_panel
+        self.update_window_title(self.item)
 
     @property
     def id(self) -> int:
@@ -42,6 +43,15 @@ class ProgramWindow(QMdiSubWindow):
     @classmethod
     def get_name(cls) -> str:
         return Translator.translate(cls.name)
+
+    def update_window_title(self, item: "TreeItem"):
+        title = item.text()
+        parent_item = item.parent()
+        while parent_item:
+            title = parent_item.text() + "/" + title
+            parent_item = parent_item.parent()
+        self.setWindowTitle(title)
+        self.setWindowIcon(item.icon())
 
     def contains_item(self, item_id: int) -> bool:
         """Checks if the program window contains an item with the specified identifier."""
@@ -54,7 +64,7 @@ class ProgramWindow(QMdiSubWindow):
         self.item_changed_signal.emit(self.item.id, self._id)
 
     def item_changed_event(self, item_id: int):
-        print(f"item_changed_event: {item_id}")
+        pass
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self._id}, item={self.item})"

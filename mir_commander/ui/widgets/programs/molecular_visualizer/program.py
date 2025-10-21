@@ -52,7 +52,7 @@ class MolecularVisualizer(ProgramWindow):
 
         self.setWidget(self.visualizer)
 
-        self.update_window_title()
+        self.update_window_title(self._draw_item)
 
         self.setMinimumSize(self._config.min_size[0], self._config.min_size[1])
         self.resize(self._config.size[0], self._config.size[1])
@@ -69,16 +69,6 @@ class MolecularVisualizer(ProgramWindow):
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())
-
-    def update_window_title(self):
-        title = self._draw_item.text()
-        parent_item = self._draw_item.parent()
-        while parent_item:
-            title = parent_item.text() + "/" + title
-            parent_item = parent_item.parent()
-        self.visualizer.set_title(title)
-        self.setWindowTitle(title)
-        self.setWindowIcon(self._draw_item.icon())
 
     def _atomic_coordinates_item(
         self, index: int, parent: "TreeItem", counter: int = -1
@@ -120,7 +110,7 @@ class MolecularVisualizer(ProgramWindow):
         if self._molecule_index > 0:
             self._molecule_index -= 1
             self._set_draw_item()
-            self.update_window_title()
+            self.update_window_title(self._draw_item)
             self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
 
     def set_next_atomic_coordinates(self):
@@ -128,7 +118,7 @@ class MolecularVisualizer(ProgramWindow):
         item = self._draw_item
         self._set_draw_item()
         if item != self._draw_item:
-            self.update_window_title()
+            self.update_window_title(self._draw_item)
             self.visualizer.set_atomic_coordinates(self._get_draw_item_atomic_coordinates())
 
     def save_image(

@@ -23,3 +23,8 @@ def symbol_to_atomic_number(symbol: str) -> int:
         return -2
     else:
         return elements.symbol(symbol).number
+
+
+@cache
+def all_symbols() -> list[str]:
+    return [element.symbol for element in elements]

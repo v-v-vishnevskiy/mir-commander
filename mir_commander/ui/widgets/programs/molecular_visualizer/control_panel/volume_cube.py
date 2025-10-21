@@ -22,31 +22,6 @@ if TYPE_CHECKING:
     from .control_panel import ControlPanel
 
 
-# class ColorButton(QPushButton):
-#     def __init__(self, color: QColor, control_panel: "ControlPanel", id: int):
-#         super().__init__()
-#         self._color = color
-#         self._id = id
-#         self._control_panel = control_panel
-#         self._set_style_sheet(color)
-#         self.clicked.connect(self.clicked_handler)
-
-#     def _set_style_sheet(self, color: QColor):
-#         self.setStyleSheet(
-#             f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
-#         )
-
-#     def clicked_handler(self):
-#         color = QColorDialog.getColor(
-#             initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-#         )
-#         if color.isValid():
-#             self._set_style_sheet(color)
-#             for viewer in self._control_panel.opened_programs:
-#                 viewer.visualizer.set_node_color_by_id(self._id, qcolor_to_color4f(color))
-#             self._control_panel.volume_cube.refresh_values()
-
-
 class VisibilityButton(QPushButton):
     def __init__(self, control_panel: "ControlPanel", id: int, visible: bool):
         super().__init__()
@@ -70,11 +45,10 @@ class VisibilityButton(QPushButton):
 
 class DeleteButton(QPushButton):
     def __init__(self, control_panel: "ControlPanel", id: int):
-        super().__init__()
+        super().__init__(QIcon(":/icons/general/delete.png"), "")
         self._id = id
         self._control_panel = control_panel
         self.setStyleSheet("QPushButton { border: none; }")
-        self.setIcon(QIcon(":/icons/general/delete.png"))
         self.clicked.connect(self.clicked_handler)
 
     def clicked_handler(self):
