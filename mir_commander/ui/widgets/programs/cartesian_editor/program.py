@@ -67,6 +67,10 @@ class TagItem(TableItem):
     def value(self) -> int:
         return int(self.text())
 
+    def setText(self, text: str):
+        super().setText(text)
+        self.validate()
+
     def validate(self) -> bool:
         try:
             if 0 < self.value <= self._row_count_fn() - 1:
