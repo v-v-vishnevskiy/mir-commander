@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any
+import logging
+from typing import TYPE_CHECKING
 
 from PIL import Image, ImageCms
 from PySide6.QtGui import QContextMenuEvent
@@ -7,6 +8,11 @@ from mir_commander.core.models import AtomicCoordinates, VolumeCube
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
+from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
+    AtomicCoordinatesNewSymbolAction,
+    AtomicCoordinatesRemoveAtomsAction,
+    ItemChangedAction,
+)
 
 from .config import MolecularVisualizerConfig
 from .context_menu import ContextMenu
@@ -15,6 +21,8 @@ from .visualizer import Visualizer
 
 if TYPE_CHECKING:
     from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
+
+logger = logging.getLogger("Program.MolecularVisualizer")
 
 
 class MolecularVisualizer(ProgramWindow):
@@ -99,10 +107,10 @@ class MolecularVisualizer(ProgramWindow):
         _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
         self._atomic_coordinates_items = [self._draw_item]
 
-    def _get_draw_item_atomic_coordinates(self) -> list[AtomicCoordinates]:
+    def _get_draw_item_atomic_coordinates(self) -> list[tuple[int, AtomicCoordinates]]:
         match self._draw_item.core_item.data:
             case AtomicCoordinates():
-                return [self._draw_item.core_item.data]
+                return [(self._draw_item.id, self._draw_item.core_item.data)]
             case _:
                 return []
 
@@ -135,8 +143,17 @@ class MolecularVisualizer(ProgramWindow):
         except ValueError:
             return False
 
-    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
-        data = self._get_item(item_id).core_item.data
+    def item_changed_event(self, item_id: int, action: None | ItemChangedAction):
+        data = self._get_item(item_id).core_item.data  # already has updated data
         match data:
             case AtomicCoordinates():
-                self.visualizer.set_atomic_coordinates([data])
+                if action is None:
+                    self.visualizer.set_atomic_coordinates([(item_id, data)])
+                else:
+                    match action:
+                        case AtomicCoordinatesNewSymbolAction():
+                            self.visualizer.set_atomic_number(item_id, action.idx, action.atomic_number)
+                        case AtomicCoordinatesRemoveAtomsAction():
+                            self.visualizer.remove_atoms(item_id, action.indices)
+                        case _:
+                            logger.warning("Unknown action: %s", action)

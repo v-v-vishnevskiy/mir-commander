@@ -1,6 +1,7 @@
 import logging
 import math
 from itertools import combinations
+from typing import Generator
 
 import numpy as np
 from pydantic_extra_types.color import Color
@@ -9,7 +10,6 @@ from PySide6.QtGui import QVector3D
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
-from mir_commander.utils.chem import atomic_number_to_symbol
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
@@ -25,30 +25,52 @@ logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
 class Molecule(Node):
     def __init__(
         self,
-        parent: Node,
+        tree_item_id: int,
         atomic_coordinates: AtomicCoordinates,
         geom_bond_tolerance: float,
         style: Style,
         atom_label_config: AtomLabelConfig,
+        *args,
+        **kwargs,
     ):
-        super().__init__(parent=parent, node_type=NodeType.CONTAINER, visible=True)
+        super().__init__(*args, **kwargs | dict(node_type=NodeType.CONTAINER))
 
+        self._tree_item_id = tree_item_id
         self._atomic_coordinates = atomic_coordinates
         self._geom_bond_tolerance = geom_bond_tolerance
         self._style = style
         self._atom_label_config = atom_label_config
 
-        self.center = QVector3D(0, 0, 0)
         self.radius: float = 0
 
         self.atom_items: list[Atom] = []
-        self.bond_items: list[Bond] = []
 
         self._build()
 
     @property
+    def center(self) -> QVector3D:
+        if len(self._atomic_coordinates.x) == 0:
+            return QVector3D(0, 0, 0)
+
+        return QVector3D(
+            np.sum(self._atomic_coordinates.x) / len(self._atomic_coordinates.x),
+            np.sum(self._atomic_coordinates.y) / len(self._atomic_coordinates.y),
+            np.sum(self._atomic_coordinates.z) / len(self._atomic_coordinates.z),
+        )
+
+    @property
+    def tree_item_id(self) -> int:
+        return self._tree_item_id
+
+    @property
     def name(self) -> str:
         return "Molecule"
+
+    @property
+    def bonds(self) -> Generator[Bond, None, None]:
+        for child in self.children:
+            if isinstance(child, Bond):
+                yield child
 
     @property
     def _selected_atoms(self) -> list[Atom]:
@@ -63,11 +85,7 @@ class Molecule(Node):
             logger.debug("Can't build molecule because AtomicCoordinates is empty")
             return
 
-        self.center = QVector3D(
-            np.sum(self._atomic_coordinates.x) / len(self._atomic_coordinates.x),
-            np.sum(self._atomic_coordinates.y) / len(self._atomic_coordinates.y),
-            np.sum(self._atomic_coordinates.z) / len(self._atomic_coordinates.z),
-        )
+        center = self.center
 
         self.radius = 0
 
@@ -80,12 +98,29 @@ class Molecule(Node):
             position = QVector3D(x[i], y[i], z[i])
             atom = self.add_atom(i, atomic_num, position)
 
-            d = position.distanceToPoint(self.center) + atom.radius
+            d = position.distanceToPoint(center) + atom.radius
             if self.radius < d:
                 self.radius = d
 
         # add bonds
         self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
+
+    def set_atomic_number(self, atom_index: int, atomic_number: int):
+        try:
+            atom = self.atom_items[atom_index]
+        except IndexError:
+            raise IndexError(f"Atom with index {atom_index} not found")
+
+        if atom.atomic_num == atomic_number:
+            return
+
+        radius, color = self._get_atom_radius_and_color(atomic_number)
+
+        atom.set_radius(radius)
+        atom.set_color(color)
+        atom.set_atomic_number(atomic_number)
+
+        self.rebuild_bonds()
 
     def select_all_atoms(self):
         for atom in self.atom_items:
@@ -202,7 +237,7 @@ class Molecule(Node):
 
     def _apply_bonds_style(self):
         # update items
-        for bond in self.bond_items:
+        for bond in self.bonds:
             bond.set_radius(self._style.bond.radius)
 
             if self._style.bond.color == "atoms":
@@ -212,7 +247,6 @@ class Molecule(Node):
 
     def clear(self):
         self.atom_items.clear()
-        self.bond_items.clear()
         super().clear()
 
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
@@ -251,13 +285,16 @@ class Molecule(Node):
             for j in j_valid_indices:
                 self.add_bond(self.atom(i), self.atom(j))
 
+    def rebuild_bonds(self):
+        self.remove_all_bonds()
+        self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
+
     def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
         radius, color = self._get_atom_radius_and_color(atomic_num)
 
         item = Atom(
             index_num,
             atomic_num,
-            atomic_number_to_symbol(atomic_num),
             position,
             radius,
             color,
@@ -269,7 +306,20 @@ class Molecule(Node):
 
         return item
 
-    def add_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
+    def remove_atoms(self, indices: list[int]):
+        for index in sorted(indices, reverse=True):
+            try:
+                self.atom_items.pop(index).remove()
+            except IndexError:
+                logger.error("Failed to remove atom with index %s", index)
+
+        for i, atom in enumerate(self.atom_items):
+            atom.set_index_number(i)
+
+    def add_bond(self, atom_1: Atom, atom_2: Atom):
+        if atom_1 == atom_2:
+            raise ValueError(f"The same atom {atom_1.index} cannot be bonded to itself")
+
         if type(self._style.bond.color) is Color:
             color = normalize_color(self._style.bond.color)
             atoms_color = False
@@ -277,7 +327,7 @@ class Molecule(Node):
             color = (0.5, 0.5, 0.5, 1.0)
             atoms_color = True
 
-        item = Bond(
+        Bond(
             atom_1,
             atom_2,
             self._style.bond.radius,
@@ -285,30 +335,28 @@ class Molecule(Node):
             color,
             parent=self,
         )
-        self.bond_items.append(item)
 
-        return item
-
-    def remove_bond(self, index: int):
-        self.bond_items.pop(index).remove()
-
-    def remove_bond_all(self):
-        for bond in self.bond_items:
-            bond.remove()
-        self.bond_items.clear()
+    def remove_all_bonds(self):
+        for child in self.children.copy():
+            if isinstance(child, Bond):
+                child.remove()
 
     def atom(self, index: int) -> Atom:
         return self.atom_items[index]
 
-    def bond_index(self, atom1: Atom, atom2: Atom) -> int:
+    def get_bond(self, atom_1: Atom, atom_2: Atom) -> Bond:
         """
-        Check the list of bonds if there exists a bond between atoms atom1 and atom2.
-        Return the index of the bond in the list or -1 if no bond has been found.
+        Get the bond between atoms atom1 and atom2.
         """
-        for idx, bond in enumerate(self.bond_items):
-            if (bond._atom_1 == atom1 and bond._atom_2 == atom2) or (bond._atom_1 == atom2 and bond._atom_2 == atom1):
-                return idx
-        return -1
+
+        if atom_1 == atom_2:
+            raise ValueError(f"The same atom {atom_1.id} cannot be bonded to itself")
+
+        for bond_1 in atom_1.related_bonds:
+            for bond_2 in atom_2.related_bonds:
+                if bond_1.id == bond_2.id:
+                    return bond_1
+        raise ValueError(f"No bond found between atoms {atom_1.id} and {atom_2.id}")
 
     def calc_auto_lastsel_atoms(self) -> str:
         """
@@ -338,7 +386,7 @@ class Molecule(Node):
             pos1 = atom1.position
             pos2 = atom2.position
             distance = geom_distance_xyz(pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z())
-            return f"r({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1})={distance:.3f}"
+            return f"r({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1})={distance:.3f}"
         else:
             raise CalcError("At least two atoms must be selected!")
 
@@ -359,8 +407,8 @@ class Molecule(Node):
                 pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z(), pos3.x(), pos3.y(), pos3.z()
             ) * (180.0 / math.pi)
             return (
-                f"a({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
-                f"{atom3.element_symbol}{atom3.index_num + 1})={angle:.1f}"
+                f"a({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}-"
+                f"{atom3.element_symbol}{atom3.index + 1})={angle:.1f}"
             )
         else:
             raise CalcError("At least three atoms must be selected!")
@@ -395,8 +443,8 @@ class Molecule(Node):
                 pos4.z(),
             ) * (180.0 / math.pi)
             return (
-                f"t({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}-"
-                f"{atom3.element_symbol}{atom3.index_num + 1}-{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
+                f"t({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}-"
+                f"{atom3.element_symbol}{atom3.index + 1}-{atom4.element_symbol}{atom4.index + 1})={angle:.1f}"
             )
         else:
             raise CalcError("At least four atoms must be selected!")
@@ -431,8 +479,8 @@ class Molecule(Node):
                 pos4.z(),
             ) * (180.0 / math.pi)
             return (
-                f"o({atom1.element_symbol}{atom1.index_num + 1}-{atom2.element_symbol}{atom2.index_num + 1}<"
-                f"{atom3.element_symbol}{atom3.index_num + 1}/{atom4.element_symbol}{atom4.index_num + 1})={angle:.1f}"
+                f"o({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}<"
+                f"{atom3.element_symbol}{atom3.index + 1}/{atom4.element_symbol}{atom4.index + 1})={angle:.1f}"
             )
         else:
             raise CalcError("At least four atoms must be selected!")
@@ -448,9 +496,10 @@ class Molecule(Node):
         outofplanes: list[InteratomicOutOfPlane] = []
 
         # Generate list of distances, which are bonds formed by selected atoms
-        for bond in self.bond_items:
-            if bond._atom_1.selected and bond._atom_2.selected:
-                distances.append(InteratomicDistance(bond._atom_1, bond._atom_2))
+        for bond in self.bonds:
+            atom_1, atom_2 = bond.atoms
+            if atom_1.selected and atom_2.selected:
+                distances.append(InteratomicDistance(atom_1, atom_2))
 
         # Calculate distances
         for dist in distances:
@@ -620,32 +669,32 @@ class Molecule(Node):
         out_str = ""
         for dist in distances:
             out_str += (
-                f"r({dist.atom1.element_symbol}{dist.atom1.index_num + 1}-"
-                f"{dist.atom2.element_symbol}{dist.atom2.index_num + 1})={dist.value:.3f}, "
+                f"r({dist.atom1.element_symbol}{dist.atom1.index + 1}-"
+                f"{dist.atom2.element_symbol}{dist.atom2.index + 1})={dist.value:.3f}, "
             )
 
         for angle in angles:
             out_str += (
-                f"a({angle.atom1.element_symbol}{angle.atom1.index_num + 1}-"
-                f"{angle.atom2.element_symbol}{angle.atom2.index_num + 1}-"
-                f"{angle.atom3.element_symbol}{angle.atom3.index_num + 1})={angle.value:.1f}, "
+                f"a({angle.atom1.element_symbol}{angle.atom1.index + 1}-"
+                f"{angle.atom2.element_symbol}{angle.atom2.index + 1}-"
+                f"{angle.atom3.element_symbol}{angle.atom3.index + 1})={angle.value:.1f}, "
             )
 
         for torsion in torsions:
             out_str += (
-                f"t({torsion.atom1.element_symbol}{torsion.atom1.index_num + 1}-"
-                f"{torsion.atom2.element_symbol}{torsion.atom2.index_num + 1}-"
-                f"{torsion.atom3.element_symbol}{torsion.atom3.index_num + 1}-"
-                f"{torsion.atom4.element_symbol}{torsion.atom4.index_num + 1})={torsion.value:.1f}, "
+                f"t({torsion.atom1.element_symbol}{torsion.atom1.index + 1}-"
+                f"{torsion.atom2.element_symbol}{torsion.atom2.index + 1}-"
+                f"{torsion.atom3.element_symbol}{torsion.atom3.index + 1}-"
+                f"{torsion.atom4.element_symbol}{torsion.atom4.index + 1})={torsion.value:.1f}, "
             )
 
         for outofplane in outofplanes:
             if abs(outofplane.value) <= 10.0:
                 out_str += (
-                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index_num + 1}-"
-                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index_num + 1}<"
-                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index_num + 1}/"
-                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index_num + 1})={outofplane.value:.1f}, "
+                    f"o({outofplane.atom1.element_symbol}{outofplane.atom1.index + 1}-"
+                    f"{outofplane.atom2.element_symbol}{outofplane.atom2.index + 1}<"
+                    f"{outofplane.atom3.element_symbol}{outofplane.atom3.index + 1}/"
+                    f"{outofplane.atom4.element_symbol}{outofplane.atom4.index + 1})={outofplane.value:.1f}, "
                 )
 
         return out_str.rstrip(", ")
@@ -657,11 +706,10 @@ class Molecule(Node):
 
         selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
-            idx = self.bond_index(atom1, atom2)
-            if idx < 0:
+            try:
+                self.get_bond(atom1, atom2).remove()
+            except ValueError:
                 self.add_bond(atom1, atom2)
-            else:
-                self.remove_bond(idx)
 
     def add_bonds_for_selected_atoms(self):
         """
@@ -670,8 +718,9 @@ class Molecule(Node):
 
         selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
-            idx = self.bond_index(atom1, atom2)
-            if idx < 0:
+            try:
+                self.get_bond(atom1, atom2)
+            except ValueError:
                 self.add_bond(atom1, atom2)
 
     def remove_bonds_for_selected_atoms(self):
@@ -681,9 +730,10 @@ class Molecule(Node):
 
         selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
         for atom1, atom2 in combinations(selected_atoms, 2):
-            idx = self.bond_index(atom1, atom2)
-            if idx >= 0:
-                self.remove_bond(idx)
+            try:
+                self.get_bond(atom1, atom2).remove()
+            except ValueError:
+                pass
 
     def set_geom_bond_tolerance(self, geom_bond_tolerance: float = -2.0):
         """
@@ -693,5 +743,4 @@ class Molecule(Node):
         if geom_bond_tolerance < -1.0:
             geom_bond_tolerance = self._geom_bond_tolerance
         self._geom_bond_tolerance = geom_bond_tolerance
-        self.remove_bond_all()
-        self.build_bonds(self._atomic_coordinates, geom_bond_tolerance)
+        self.rebuild_bonds()

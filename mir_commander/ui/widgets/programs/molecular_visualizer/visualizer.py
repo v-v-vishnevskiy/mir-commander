@@ -170,17 +170,39 @@ class Visualizer(OpenGLWidget):
         self._get_axis_by_name(axis).set_text(text)
         self.update()
 
-    def set_atomic_coordinates(self, atomic_coordinates: list[AtomicCoordinates]):
+    def set_atomic_coordinates(self, atomic_coordinates: list[tuple[int, AtomicCoordinates]]):
         self._molecules.clear()
-        for item in atomic_coordinates:
-            self._add_atomic_coordinates(item)
+        for tree_item_id, data in atomic_coordinates:
+            self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
 
-    def add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
-        self._add_atomic_coordinates(atomic_coordinates)
+    def add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
+        self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
+
+    def set_atomic_number(self, tree_item_id: int, atom_index: int, atomic_number: int):
+        try:
+            molecule = self._get_molecule(tree_item_id)
+            molecule.set_atomic_number(atom_index, atomic_number)
+            self.update()
+        except (ValueError, IndexError) as e:
+            logger.error("Failed to set atomic number: %s", e)
+
+    def remove_atoms(self, tree_item_id: int, indices: list[int]):
+        try:
+            self._get_molecule(tree_item_id).remove_atoms(indices)
+            self._main_node.set_position(-self._molecules.center)
+            self.update()
+        except ValueError as e:
+            logger.error("Failed to remove atoms: %s", e)
+
+    def _get_molecule(self, tree_item_id: int) -> Molecule:
+        for molecule in self._molecules.children:
+            if molecule.tree_item_id == tree_item_id:
+                return molecule
+        raise ValueError(f"Molecule with tree_item_id {tree_item_id} not found")
 
     def _get_axis_by_name(self, name: str) -> Axis:
         if name == "x":
@@ -191,13 +213,14 @@ class Visualizer(OpenGLWidget):
             return self._coordinate_axes.z
         raise ValueError(f"Invalid axis name: {name}")
 
-    def _add_atomic_coordinates(self, atomic_coordinates: AtomicCoordinates):
+    def _add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
         Molecule(
-            parent=self._molecules,
-            atomic_coordinates=atomic_coordinates,
+            tree_item_id=tree_item_id,
+            atomic_coordinates=data,
             geom_bond_tolerance=self._config.geom_bond_tolerance,
             style=self._style.current,
             atom_label_config=self._config.atom_label,
+            parent=self._molecules,
         )
 
     def set_volume_cube(self, volume_cube: CoreVolumeCube):

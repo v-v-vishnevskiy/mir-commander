@@ -41,7 +41,7 @@ class Sphere(BaseGraphicsNode):
 
     def get_text(self) -> str:
         atom = self.parent
-        return f"Atom: {atom.element_symbol}{atom.index_num + 1}"
+        return f"Atom: {atom.element_symbol}{atom.index + 1}"
 
     def toggle_selection(self) -> bool:
         return self.parent.toggle_selection()

@@ -66,7 +66,7 @@ class Node:
 
         self._parent = parent
         if parent is not None:
-            parent._children.append(self)
+            parent._children.add(self)
 
         self._visible = visible
         self._picking_visible = picking_visible
@@ -90,7 +90,7 @@ class Node:
         self._model_name: str = ""
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
 
-        self._children: list[Self] = []
+        self._children: set[Self] = set()
         self.metadata: dict[str, Any] = {}
         # self._root_node.notify_add_node(self)
 
@@ -164,7 +164,7 @@ class Node:
         return None
 
     @property
-    def children(self) -> list[Self]:
+    def children(self) -> set[Self]:
         return self._children
 
     def _get_all_children(self, include_self: bool = True) -> list[Self]:
@@ -176,7 +176,7 @@ class Node:
         while stack:
             node = stack.pop()
             result.append(node)
-            stack.extend(node._children)
+            stack.update(node._children)
 
         return result
 
@@ -198,7 +198,7 @@ class Node:
 
     def remove(self):
         if self._parent is not None:
-            self._parent._children.remove(self)
+            self._parent._children.discard(self)
             self._parent = None
 
         self.clear()
@@ -307,6 +307,11 @@ class Node:
 
         self._color = color
         self._root_node.notify_set_dirty(self)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Node):
+            return False
+        return self._id == other.id
 
     def __hash__(self) -> int:
         return self._id

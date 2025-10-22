@@ -1,5 +1,5 @@
 from bisect import bisect
-from typing import Any, Callable, cast
+from typing import Callable, cast
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItem, QStandardItemModel
@@ -8,6 +8,11 @@ from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
+from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
+    AtomicCoordinatesNewSymbolAction,
+    AtomicCoordinatesRemoveAtomsAction,
+    ItemChangedAction,
+)
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
 
 from .control_panel import ControlPanel
@@ -199,19 +204,22 @@ class AtomicCoordinatesTableView(TableView):
             if not item.validate():
                 return
 
+            idx = item.idx
+
             match item:
                 case SymbolItem():
-                    self._raw_data.atomic_num[item.idx] = item.atomic_number
+                    self._raw_data.atomic_num[idx] = item.atomic_number
+                    self._cartesian_editor.send_item_changed_signal(
+                        AtomicCoordinatesNewSymbolAction(idx, item.atomic_number)
+                    )
                 case FloatItemX():
-                    self._raw_data.x[item.idx] = item.value
+                    self._raw_data.x[idx] = item.value
                 case FloatItemY():
-                    self._raw_data.y[item.idx] = item.value
+                    self._raw_data.y[idx] = item.value
                 case FloatItemZ():
-                    self._raw_data.z[item.idx] = item.value
+                    self._raw_data.z[idx] = item.value
                 case TagItem():
                     self._apply_new_tag(item)
-
-        self._cartesian_editor.send_item_changed_signal()
 
     def _apply_new_tag(self, item: TagItem):
         index_1 = item.idx
@@ -238,6 +246,8 @@ class AtomicCoordinatesTableView(TableView):
         data.x[index_1], data.x[index_2] = data.x[index_2], data.x[index_1]
         data.y[index_1], data.y[index_2] = data.y[index_2], data.y[index_1]
         data.z[index_1], data.z[index_2] = data.z[index_2], data.z[index_1]
+
+        self._cartesian_editor.send_item_changed_signal()
 
     def _is_valid_values_for_new_atom_row(self) -> bool:
         return (
@@ -370,7 +380,7 @@ class AtomicCoordinatesTableView(TableView):
                         self._get_item(row, column).set_index(new_index)
             self.viewport().update()
 
-        self._cartesian_editor.send_item_changed_signal()
+        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesRemoveAtomsAction(indices_to_delete))
 
     def _restore_last_valid_selected_item(self):
         selected_indexes = self.selectionModel().selectedRows()
@@ -416,5 +426,5 @@ class CartesianEditor(ProgramWindow):
     def set_decimals(self, value: int):
         self._atomic_coordinates_table_view.set_decimals(value)
 
-    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
+    def item_changed_event(self, item_id: int, action: None | ItemChangedAction):
         pass

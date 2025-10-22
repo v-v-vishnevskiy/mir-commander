@@ -36,6 +36,11 @@ class Bond(Node):
     def atoms(self) -> tuple[Atom, Atom]:
         return self._atom_1, self._atom_2
 
+    def remove(self):
+        self._atom_1.remove_bond(self)
+        self._atom_2.remove_bond(self)
+        super().remove()
+
     def _build_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
         result = []
 
@@ -69,7 +74,7 @@ class Bond(Node):
 
     def set_radius(self, radius: float):
         self._radius = radius
-        for bond in self._children:
+        for bond in self.children:
             bond.set_radius(radius)
 
     def set_atoms_color(self, value: bool):
@@ -83,7 +88,7 @@ class Bond(Node):
             self._atoms_color = False
             self._add_bonds()
         else:
-            for bond in self._children:
+            for bond in self.children:
                 bond.set_color(color)
 
     def __repr__(self) -> str:

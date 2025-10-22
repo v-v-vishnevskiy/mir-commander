@@ -38,7 +38,7 @@ class TextNode(Node):
         return self._align
 
     def _build(self, text: str):
-        for char in text:
+        for i, char in enumerate(text):
             char_node = Node(
                 parent=self,
                 node_type=NodeType.CHAR,
@@ -50,6 +50,7 @@ class TextNode(Node):
             char_node.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
             char_node.set_color(self._color)
             char_node.metadata["char"] = char
+            char_node.metadata["idx"] = i
 
     def set_text(self, text: str):
         self._text = text
@@ -78,7 +79,7 @@ class TextNode(Node):
 
     def update_char_translation(self, font_atlas: FontAtlas):
         x_offset = 0.0
-        children = self.children
+        children = sorted(self.children, key=lambda x: x.metadata["idx"])
 
         x_offset = 0.0
         for i, char in enumerate(self._text):
@@ -95,7 +96,7 @@ class TextNode(Node):
         else:
             vector = QVector3D(0.0, 0.0, 0.0)
 
-        for n in children:
+        for n in self.children:
             n.translate(vector)
 
     def __repr__(self):

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, Signal
@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QMdiSubWindow
 
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import Translator, TrString
+from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import ItemChangedAction
 
 from .program_control_panel import ProgramControlPanel
 
@@ -18,7 +19,7 @@ class ProgramWindow(QMdiSubWindow):
 
     short_msg_signal = Signal(str)
     long_msg_signal = Signal(str)
-    item_changed_signal = Signal(int, int, dict)  # item_id, program_id, metainfo
+    item_changed_signal = Signal(int, int, ItemChangedAction)  # item_id, program_id, action
     control_panel_cls: type[ProgramControlPanel] | None = None
     name: TrString
 
@@ -60,10 +61,10 @@ class ProgramWindow(QMdiSubWindow):
     def get_config(self) -> BaseModel:
         raise NotImplementedError("This method should be implemented in the subclass")
 
-    def send_item_changed_signal(self, metainfo: None | dict[str, Any] = None):
-        self.item_changed_signal.emit(self.item.id, self._id, metainfo or {})
+    def send_item_changed_signal(self, action: None | ItemChangedAction = None):
+        self.item_changed_signal.emit(self.item.id, self._id, action)
 
-    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
+    def item_changed_event(self, item_id: int, action: None | ItemChangedAction):
         raise NotImplementedError("This method should be implemented in the subclass")
 
     def __repr__(self) -> str:

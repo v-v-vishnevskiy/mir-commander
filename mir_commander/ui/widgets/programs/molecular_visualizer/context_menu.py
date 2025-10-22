@@ -15,7 +15,7 @@ class ContextMenu(Menu):
     def __init__(self, parent: "MolecularVisualizer", app_config: AppConfig):
         super().__init__(parent=parent)
 
-        self._viewer = parent
+        self._program = parent
         self._visualizer = parent.visualizer
         self._app_config = app_config
         self._config = app_config.project_window.widgets.programs.molecular_visualizer
@@ -268,15 +268,15 @@ class ContextMenu(Menu):
 
         next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
         next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
-        next_atomic_coordinates_act.triggered.connect(self._viewer.set_next_atomic_coordinates)
+        next_atomic_coordinates_act.triggered.connect(self._program.set_next_atomic_coordinates)
         menu.addAction(next_atomic_coordinates_act)
-        self._viewer.addAction(next_atomic_coordinates_act)
+        self._program.addAction(next_atomic_coordinates_act)
 
         prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
         prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
-        prev_atomic_coordinates_act.triggered.connect(self._viewer.set_prev_atomic_coordinates)
+        prev_atomic_coordinates_act.triggered.connect(self._program.set_prev_atomic_coordinates)
         menu.addAction(prev_atomic_coordinates_act)
-        self._viewer.addAction(prev_atomic_coordinates_act)
+        self._program.addAction(prev_atomic_coordinates_act)
 
     def labels_set_element_symbol_and_index_number_handler(self):
         self.set_index_number_act.setChecked(False)
