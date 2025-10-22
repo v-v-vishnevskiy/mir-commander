@@ -27,4 +27,4 @@ def symbol_to_atomic_number(symbol: str) -> int:
 
 @cache
 def all_symbols() -> list[str]:
-    return [element.symbol for element in elements]
+    return ["X", "Q"] + [element.symbol for element in elements]

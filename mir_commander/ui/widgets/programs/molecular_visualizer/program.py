@@ -9,9 +9,10 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
+    AtomicCoordinatesAddAtomAction,
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
-    AtomicCoordinatesSwapAction,
+    AtomicCoordinatesSwapAtomsIndicesAction,
     ItemChangedAction,
 )
 
@@ -152,11 +153,13 @@ class MolecularVisualizer(ProgramWindow):
                     self.visualizer.set_atomic_coordinates([(item_id, data)])
                 else:
                     match action:
+                        case AtomicCoordinatesAddAtomAction():
+                            self.visualizer.build_molecule(item_id)
                         case AtomicCoordinatesNewSymbolAction():
                             self.visualizer.set_atomic_number(item_id, action.idx, action.atomic_number)
                         case AtomicCoordinatesRemoveAtomsAction():
                             self.visualizer.remove_atoms(item_id, action.indices)
-                        case AtomicCoordinatesSwapAction():
-                            self.visualizer.swap_atoms(item_id, action.index_1, action.index_2)
+                        case AtomicCoordinatesSwapAtomsIndicesAction():
+                            self.visualizer.swap_atoms_indices(item_id, action.index_1, action.index_2)
                         case _:
                             logger.warning("Unknown action: %s", action)

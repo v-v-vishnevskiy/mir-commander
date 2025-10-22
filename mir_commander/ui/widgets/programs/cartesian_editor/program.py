@@ -9,9 +9,10 @@ from mir_commander.core.models import AtomicCoordinates
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
+    AtomicCoordinatesAddAtomAction,
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
-    AtomicCoordinatesSwapAction,
+    AtomicCoordinatesSwapAtomsIndicesAction,
     ItemChangedAction,
 )
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
@@ -248,7 +249,7 @@ class AtomicCoordinatesTableView(TableView):
         data.y[index_1], data.y[index_2] = data.y[index_2], data.y[index_1]
         data.z[index_1], data.z[index_2] = data.z[index_2], data.z[index_1]
 
-        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesSwapAction(index_1, index_2))
+        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesSwapAtomsIndicesAction(index_1, index_2))
 
     def _is_valid_values_for_new_atom_row(self) -> bool:
         return (
@@ -271,14 +272,16 @@ class AtomicCoordinatesTableView(TableView):
         self._add_atom_row(self._model.rowCount(), symbol, x, y, z, append=False)
 
         # update the data in core item
-        self._raw_data.atomic_num.append(symbol_to_atomic_number(symbol))
+        atomic_number = symbol_to_atomic_number(symbol)
+        self._raw_data.atomic_num.append(atomic_number)
         self._raw_data.x.append(x)
         self._raw_data.y.append(y)
         self._raw_data.z.append(z)
-        self._cartesian_editor.send_item_changed_signal()
 
         with QSignalBlocker(self._model):
             self._reset_new_atom_row()
+
+        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesAddAtomAction())
 
     def _add_atom_row(self, tag: int, symbol: str, x: float, y: float, z: float, append: bool = True):
         tag_item = TagItem(tag, self._model.rowCount, index=tag - 1)

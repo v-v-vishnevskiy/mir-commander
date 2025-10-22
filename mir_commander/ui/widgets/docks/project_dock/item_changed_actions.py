@@ -6,6 +6,10 @@ class ItemChangedAction: ...
 
 
 @dataclass
+class AtomicCoordinatesAddAtomAction(ItemChangedAction): ...
+
+
+@dataclass
 class AtomicCoordinatesNewSymbolAction(ItemChangedAction):
     idx: int
     atomic_number: int
@@ -17,6 +21,6 @@ class AtomicCoordinatesRemoveAtomsAction(ItemChangedAction):
 
 
 @dataclass
-class AtomicCoordinatesSwapAction(ItemChangedAction):
+class AtomicCoordinatesSwapAtomsIndicesAction(ItemChangedAction):
     index_1: int
     index_2: int

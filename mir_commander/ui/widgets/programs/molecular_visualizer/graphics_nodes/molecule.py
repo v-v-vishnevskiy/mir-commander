@@ -45,7 +45,7 @@ class Molecule(Node):
 
         self.atom_items: list[Atom] = []
 
-        self._build()
+        self.build()
 
     @property
     def center(self) -> QVector3D:
@@ -76,7 +76,7 @@ class Molecule(Node):
     def _selected_atoms(self) -> list[Atom]:
         return sorted((atom for atom in self.atom_items if atom.selected), key=lambda x: x.selection_update)
 
-    def _build(self):
+    def build(self):
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
@@ -85,25 +85,39 @@ class Molecule(Node):
             logger.debug("Can't build molecule because AtomicCoordinates is empty")
             return
 
-        center = self.center
-
-        self.radius = 0
-
-        x = self._atomic_coordinates.x
-        y = self._atomic_coordinates.y
-        z = self._atomic_coordinates.z
+        loaded = len(self.atom_items)
 
         # add atoms
-        for i, atomic_num in enumerate(self._atomic_coordinates.atomic_num):
-            position = QVector3D(x[i], y[i], z[i])
-            atom = self.add_atom(i, atomic_num, position)
+        self._load_atoms()
 
-            d = position.distanceToPoint(center) + atom.radius
+        # add bonds
+        if loaded == 0:
+            self._build_all_bonds()
+        else:
+            self._build_bonds_for_atoms(loaded)
+
+    def _load_atoms(self):
+        center = self.center
+        loaded = len(self.atom_items)
+        total = len(self._atomic_coordinates.atomic_num)
+
+        for index in range(loaded, total):
+            atom = self.add_atom(index)
+            d = atom.position.distanceToPoint(center) + atom.radius
             if self.radius < d:
                 self.radius = d
 
-        # add bonds
-        self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
+    def remove_atoms(self, indices: list[int]):
+        for index in sorted(indices, reverse=True):
+            try:
+                self.atom_items.pop(index).remove()
+            except IndexError:
+                logger.error("Failed to remove atom with index %s", index)
+
+        # TODO: update self.radius
+
+        for i, atom in enumerate(self.atom_items):
+            atom.set_index_number(i)
 
     def set_atomic_number(self, atom_index: int, atomic_number: int):
         try:
@@ -249,16 +263,34 @@ class Molecule(Node):
         self.atom_items.clear()
         super().clear()
 
-    def swap_atoms(self, index_1: int, index_2: int):
+    def swap_atoms_indices(self, index_1: int, index_2: int):
         self.atom_items[index_1].set_index_number(index_2)
         self.atom_items[index_2].set_index_number(index_1)
         self.atom_items[index_1], self.atom_items[index_2] = self.atom_items[index_2], self.atom_items[index_1]
 
-    def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
-        atomic_num = np.array(atomic_coordinates.atomic_num)
-        x = np.array(atomic_coordinates.x)
-        y = np.array(atomic_coordinates.y)
-        z = np.array(atomic_coordinates.z)
+    def _build_bonds_for_atoms(self, start_index: int):
+        for index in range(start_index, len(self.atom_items)):
+            atom = self.atom_items[index]
+            if atom.atomic_num < 1:
+                continue
+
+            atom_crad = ATOM_SINGLE_BOND_COVALENT_RADIUS[atom.atomic_num]
+            for index_2 in range(index):
+                other_atom = self.atom_items[index_2]
+                if other_atom.atomic_num < 1 or atom == other_atom:
+                    continue
+
+                other_atom_crad = ATOM_SINGLE_BOND_COVALENT_RADIUS[other_atom.atomic_num]
+                crad_sum = atom_crad + other_atom_crad
+                dist = atom.position.distanceToPoint(other_atom.position)
+                if dist < crad_sum + crad_sum * self._geom_bond_tolerance:
+                    self.add_bond(atom, other_atom)
+
+    def _build_all_bonds(self):
+        atomic_num = np.array(self._atomic_coordinates.atomic_num)
+        x = np.array(self._atomic_coordinates.x)
+        y = np.array(self._atomic_coordinates.y)
+        z = np.array(self._atomic_coordinates.z)
         atom_single_bond_covalent_radius = np.array(
             [ATOM_SINGLE_BOND_COVALENT_RADIUS[i] if i > 0 else 0 for i in atomic_num]
         )
@@ -282,7 +314,7 @@ class Molecule(Node):
             dz = z[i] - z[:i][valid_j]
 
             dist_ij = np.sqrt(dx * dx + dy * dy + dz * dz)
-            threshold = crad_sum + crad_sum * geom_bond_tolerance
+            threshold = crad_sum + crad_sum * self._geom_bond_tolerance
 
             bonded = dist_ij < threshold
             j_valid_indices = j_indices[valid_j][bonded]
@@ -292,13 +324,17 @@ class Molecule(Node):
 
     def rebuild_bonds(self):
         self.remove_all_bonds()
-        self.build_bonds(self._atomic_coordinates, self._geom_bond_tolerance)
+        self._build_all_bonds()
 
-    def add_atom(self, index_num: int, atomic_num: int, position: QVector3D) -> Atom:
+    def add_atom(self, index: int) -> Atom:
+        atomic_num = self._atomic_coordinates.atomic_num[index]
         radius, color = self._get_atom_radius_and_color(atomic_num)
+        position = QVector3D(
+            self._atomic_coordinates.x[index], self._atomic_coordinates.y[index], self._atomic_coordinates.z[index]
+        )
 
         item = Atom(
-            index_num,
+            index,
             atomic_num,
             position,
             radius,
@@ -310,16 +346,6 @@ class Molecule(Node):
         self.atom_items.append(item)
 
         return item
-
-    def remove_atoms(self, indices: list[int]):
-        for index in sorted(indices, reverse=True):
-            try:
-                self.atom_items.pop(index).remove()
-            except IndexError:
-                logger.error("Failed to remove atom with index %s", index)
-
-        for i, atom in enumerate(self.atom_items):
-            atom.set_index_number(i)
 
     def add_bond(self, atom_1: Atom, atom_2: Atom):
         if atom_1 == atom_2:

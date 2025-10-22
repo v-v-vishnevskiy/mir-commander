@@ -182,6 +182,15 @@ class Visualizer(OpenGLWidget):
         self._main_node.set_position(-self._molecules.center)
         self.update()
 
+    def build_molecule(self, tree_item_id: int):
+        try:
+            molecule = self._get_molecule(tree_item_id)
+            molecule.build()
+            self._main_node.set_position(-self._molecules.center)
+            self.update()
+        except (ValueError, IndexError) as e:
+            logger.error("Failed to add new atom: %s", e)
+
     def set_atomic_number(self, tree_item_id: int, atom_index: int, atomic_number: int):
         try:
             molecule = self._get_molecule(tree_item_id)
@@ -198,9 +207,9 @@ class Visualizer(OpenGLWidget):
         except ValueError as e:
             logger.error("Failed to remove atoms: %s", e)
 
-    def swap_atoms(self, tree_item_id: int, index_1: int, index_2: int):
+    def swap_atoms_indices(self, tree_item_id: int, index_1: int, index_2: int):
         try:
-            self._get_molecule(tree_item_id).swap_atoms(index_1, index_2)
+            self._get_molecule(tree_item_id).swap_atoms_indices(index_1, index_2)
             self.update()
         except ValueError as e:
             logger.error("Failed to swap atoms: %s", e)
@@ -543,11 +552,13 @@ class Visualizer(OpenGLWidget):
             self.update()
 
     def atom_labels_show_for_all_atoms(self):
+        self._config.atom_label.visible = True
         for molecule in self._molecules.children:
             molecule.show_labels_for_all_atoms()
         self.update()
 
     def atom_labels_hide_for_all_atoms(self):
+        self._config.atom_label.visible = False
         for molecule in self._molecules.children:
             molecule.hide_labels_for_all_atoms()
         self.update()

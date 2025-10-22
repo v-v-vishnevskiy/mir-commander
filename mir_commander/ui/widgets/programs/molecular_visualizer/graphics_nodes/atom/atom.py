@@ -45,6 +45,9 @@ class Atom(Node):
         self._label: None | Label = None
         self._selection_update = 0.0
 
+        if self._label_config.visible:
+            self.label  # force creation of the label if it is visible
+
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.add(bond)
 
@@ -106,9 +109,12 @@ class Atom(Node):
         return self._label
 
     def remove(self):
+        self.remove_all_bonds()
+        super().remove()
+
+    def remove_all_bonds(self):
         while len(self._related_bonds) > 0:
             self._related_bonds.pop().remove()
-        super().remove()
 
     def remove_bond(self, bond: "Bond"):
         self._related_bonds.discard(bond)
