@@ -11,6 +11,7 @@ from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
+    AtomicCoordinatesSwapAction,
     ItemChangedAction,
 )
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
@@ -247,7 +248,7 @@ class AtomicCoordinatesTableView(TableView):
         data.y[index_1], data.y[index_2] = data.y[index_2], data.y[index_1]
         data.z[index_1], data.z[index_2] = data.z[index_2], data.z[index_1]
 
-        self._cartesian_editor.send_item_changed_signal()
+        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesSwapAction(index_1, index_2))
 
     def _is_valid_values_for_new_atom_row(self) -> bool:
         return (

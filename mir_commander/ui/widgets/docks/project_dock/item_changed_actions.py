@@ -14,3 +14,9 @@ class AtomicCoordinatesNewSymbolAction(ItemChangedAction):
 @dataclass
 class AtomicCoordinatesRemoveAtomsAction(ItemChangedAction):
     indices: list[int]
+
+
+@dataclass
+class AtomicCoordinatesSwapAction(ItemChangedAction):
+    index_1: int
+    index_2: int

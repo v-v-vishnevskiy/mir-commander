@@ -198,6 +198,13 @@ class Visualizer(OpenGLWidget):
         except ValueError as e:
             logger.error("Failed to remove atoms: %s", e)
 
+    def swap_atoms(self, tree_item_id: int, index_1: int, index_2: int):
+        try:
+            self._get_molecule(tree_item_id).swap_atoms(index_1, index_2)
+            self.update()
+        except ValueError as e:
+            logger.error("Failed to swap atoms: %s", e)
+
     def _get_molecule(self, tree_item_id: int) -> Molecule:
         for molecule in self._molecules.children:
             if molecule.tree_item_id == tree_item_id:

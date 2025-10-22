@@ -249,6 +249,11 @@ class Molecule(Node):
         self.atom_items.clear()
         super().clear()
 
+    def swap_atoms(self, index_1: int, index_2: int):
+        self.atom_items[index_1].set_index_number(index_2)
+        self.atom_items[index_2].set_index_number(index_1)
+        self.atom_items[index_1], self.atom_items[index_2] = self.atom_items[index_2], self.atom_items[index_1]
+
     def build_bonds(self, atomic_coordinates: AtomicCoordinates, geom_bond_tolerance: float):
         atomic_num = np.array(atomic_coordinates.atomic_num)
         x = np.array(atomic_coordinates.x)
