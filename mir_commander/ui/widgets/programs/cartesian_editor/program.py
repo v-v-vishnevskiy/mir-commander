@@ -1,7 +1,8 @@
 from typing import Callable, cast
+from bisect import bisect
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
-from PySide6.QtGui import QColor, QIcon, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
 from mir_commander.core.models import AtomicCoordinates
@@ -313,6 +314,57 @@ class AtomicCoordinatesTableView(TableView):
                 for column, data in columns:
                     self._get_item(row, column).setText(FloatItem.format_value(data[index], value))
         self.viewport().update()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+            self._delete_selected_rows()
+        else:
+            super().keyPressEvent(event)
+
+    def _delete_selected_rows(self):
+        selected_indexes = self.selectionModel().selectedRows()
+        if not selected_indexes:
+            return
+
+        last_row_index = self._model.rowCount() - 1
+
+        rows_to_delete = []
+        indices_to_delete = []
+        for index in selected_indexes:
+            row = index.row()
+            if row != last_row_index:
+                rows_to_delete.append(row)
+                indices_to_delete.append(self._get_item(row, 0).idx)
+
+        if not rows_to_delete:
+            return
+
+        rows_to_delete
+        indices_to_delete.sort()
+
+        for row in sorted(rows_to_delete, reverse=True):
+            self._model.removeRow(row)
+
+        for idx in reversed(indices_to_delete):
+            self._raw_data.atomic_num.pop(idx)
+            self._raw_data.x.pop(idx)
+            self._raw_data.y.pop(idx)
+            self._raw_data.z.pop(idx)
+
+        with QSignalBlocker(self._model):
+            for row in range(self._model.rowCount() - 1):
+                tag_item = self._get_item(row, 0)
+                idx = tag_item.idx
+                n = bisect(indices_to_delete, idx)
+                if n > 0:
+                    new_index = idx - n
+                    tag_item.setText(str(new_index + 1))
+                    tag_item.set_index(new_index)
+                    for column in range(1, self._model.columnCount()):
+                        self._get_item(row, column).set_index(new_index)
+
+            self.viewport().update()
+        self._cartesian_editor.send_item_changed_signal()
 
 
 class CartesianEditor(ProgramWindow):

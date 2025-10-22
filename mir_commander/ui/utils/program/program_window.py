@@ -18,7 +18,7 @@ class ProgramWindow(QMdiSubWindow):
 
     short_msg_signal = Signal(str)
     long_msg_signal = Signal(str)
-    item_changed_signal = Signal(int, int)
+    item_changed_signal = Signal(int, int)  # item_id, program_id
     control_panel_cls: type[ProgramControlPanel] | None = None
     name: TrString
 

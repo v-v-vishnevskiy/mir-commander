@@ -59,6 +59,10 @@ class Molecule(Node):
         Builds molecule graphics object from `AtomicCoordinates` data structure
         """
 
+        if len(self._atomic_coordinates.atomic_num) == 0:
+            logger.debug("Can't build molecule because AtomicCoordinates is empty")
+            return
+
         self.center = QVector3D(
             np.sum(self._atomic_coordinates.x) / len(self._atomic_coordinates.x),
             np.sum(self._atomic_coordinates.y) / len(self._atomic_coordinates.y),
