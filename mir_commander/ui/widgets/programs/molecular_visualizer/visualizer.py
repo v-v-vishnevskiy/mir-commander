@@ -197,7 +197,15 @@ class Visualizer(OpenGLWidget):
             molecule.update_atomic_number(atom_index)
             self.update()
         except (ValueError, IndexError) as e:
-            logger.error("Failed to set atomic number: %s", e)
+            logger.error("Failed to update atomic number: %s", e)
+
+    def update_atom_position(self, tree_item_id: int, atom_index: int):
+        try:
+            molecule = self._get_molecule(tree_item_id)
+            molecule.update_atom_position(atom_index)
+            self.update()
+        except (ValueError, IndexError) as e:
+            logger.error("Failed to update atom position: %s", e)
 
     def remove_atoms(self, tree_item_id: int, indices: list[int]):
         try:
@@ -212,7 +220,7 @@ class Visualizer(OpenGLWidget):
             self._get_molecule(tree_item_id).swap_atoms_indices(index_1, index_2)
             self.update()
         except ValueError as e:
-            logger.error("Failed to swap atoms: %s", e)
+            logger.error("Failed to swap atoms indices: %s", e)
 
     def _get_molecule(self, tree_item_id: int) -> Molecule:
         for molecule in self._molecules.children:

@@ -15,6 +15,11 @@ class AtomicCoordinatesNewSymbolAction(ItemChangedAction):
 
 
 @dataclass
+class AtomicCoordinatesNewPositionAction(ItemChangedAction):
+    atom_index: int
+
+
+@dataclass
 class AtomicCoordinatesRemoveAtomsAction(ItemChangedAction):
     atom_indices: list[int]
 

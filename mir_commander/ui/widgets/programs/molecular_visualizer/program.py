@@ -10,6 +10,7 @@ from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
     AtomicCoordinatesAddAtomAction,
+    AtomicCoordinatesNewPositionAction,
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
     AtomicCoordinatesSwapAtomsIndicesAction,
@@ -157,6 +158,8 @@ class MolecularVisualizer(ProgramWindow):
                             self.visualizer.build_molecule(item_id)
                         case AtomicCoordinatesNewSymbolAction():
                             self.visualizer.update_atomic_number(item_id, action.atom_index)
+                        case AtomicCoordinatesNewPositionAction():
+                            self.visualizer.update_atom_position(item_id, action.atom_index)
                         case AtomicCoordinatesRemoveAtomsAction():
                             self.visualizer.remove_atoms(item_id, action.atom_indices)
                         case AtomicCoordinatesSwapAtomsIndicesAction():

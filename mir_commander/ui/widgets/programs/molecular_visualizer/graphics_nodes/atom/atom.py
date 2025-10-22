@@ -31,7 +31,7 @@ class Atom(Node):
     ):
         super().__init__(*args, **kwargs | dict(node_type=NodeType.CONTAINER))
 
-        self.translate(position)
+        self.set_position(position)
 
         self._index = index_number
         self.atomic_num = atomic_number

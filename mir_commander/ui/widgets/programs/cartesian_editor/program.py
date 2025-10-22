@@ -10,6 +10,7 @@ from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import TableView, Translator, VBoxLayout
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
     AtomicCoordinatesAddAtomAction,
+    AtomicCoordinatesNewPositionAction,
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
     AtomicCoordinatesSwapAtomsIndicesAction,
@@ -214,10 +215,13 @@ class AtomicCoordinatesTableView(TableView):
                     self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewSymbolAction(idx))
                 case FloatItemX():
                     self._raw_data.x[idx] = item.value
+                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
                 case FloatItemY():
                     self._raw_data.y[idx] = item.value
+                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
                 case FloatItemZ():
                     self._raw_data.z[idx] = item.value
+                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
                 case TagItem():
                     self._apply_new_tag(item)
 

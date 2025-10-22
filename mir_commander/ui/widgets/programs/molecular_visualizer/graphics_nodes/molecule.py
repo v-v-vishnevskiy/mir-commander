@@ -76,6 +76,12 @@ class Molecule(Node):
     def _selected_atoms(self) -> list[Atom]:
         return sorted((atom for atom in self.atom_items if atom.selected), key=lambda x: x.selection_update)
 
+    def _get_atom(self, atom_index: int) -> Atom:
+        try:
+            return self.atom_items[atom_index]
+        except IndexError:
+            raise IndexError(f"Atom with index {atom_index} not found")
+
     def build(self):
         """
         Builds molecule graphics object from `AtomicCoordinates` data structure
@@ -120,10 +126,7 @@ class Molecule(Node):
             atom.set_index_number(i)
 
     def update_atomic_number(self, atom_index: int):
-        try:
-            atom = self.atom_items[atom_index]
-        except IndexError:
-            raise IndexError(f"Atom with index {atom_index} not found")
+        atom = self._get_atom(atom_index)
 
         atomic_number = self._atomic_coordinates.atomic_num[atom_index]
 
@@ -136,6 +139,17 @@ class Molecule(Node):
         atom.set_color(color)
         atom.set_atomic_number(atomic_number)
 
+        self.rebuild_bonds()
+
+    def update_atom_position(self, atom_index: int):
+        atom = self._get_atom(atom_index)
+        atom.set_position(
+            QVector3D(
+                self._atomic_coordinates.x[atom_index],
+                self._atomic_coordinates.y[atom_index],
+                self._atomic_coordinates.z[atom_index],
+            )
+        )
         self.rebuild_bonds()
 
     def select_all_atoms(self):
