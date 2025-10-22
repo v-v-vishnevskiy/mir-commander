@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PIL import Image, ImageCms
 from PySide6.QtGui import QContextMenuEvent
@@ -135,7 +135,7 @@ class MolecularVisualizer(ProgramWindow):
         except ValueError:
             return False
 
-    def item_changed_event(self, item_id: int):
+    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
         data = self._get_item(item_id).core_item.data
         match data:
             case AtomicCoordinates():

@@ -1,5 +1,5 @@
 from bisect import bisect
-from typing import Callable, cast
+from typing import Any, Callable, cast
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItem, QStandardItemModel
@@ -334,8 +334,8 @@ class AtomicCoordinatesTableView(TableView):
         if not selected_indexes:
             return
 
+        # get the rows and indices of the selected items to delete
         last_row_index = self._model.rowCount() - 1
-
         rows_to_delete = []
         indices_to_delete = []
         for index in selected_indexes:
@@ -343,22 +343,20 @@ class AtomicCoordinatesTableView(TableView):
             if row != last_row_index:
                 rows_to_delete.append(row)
                 indices_to_delete.append(self._get_item(row, 0).idx)
-
-        if not rows_to_delete:
-            return
-
-        rows_to_delete
         indices_to_delete.sort()
 
+        # remove the rows from the table
         for row in sorted(rows_to_delete, reverse=True):
             self._model.removeRow(row)
 
+        # remove the data from the core item
         for idx in reversed(indices_to_delete):
             self._raw_data.atomic_num.pop(idx)
             self._raw_data.x.pop(idx)
             self._raw_data.y.pop(idx)
             self._raw_data.z.pop(idx)
 
+        # update the tag values and the indices of the items in the table
         with QSignalBlocker(self._model):
             for row in range(self._model.rowCount() - 1):
                 tag_item = self._get_item(row, 0)
@@ -370,8 +368,8 @@ class AtomicCoordinatesTableView(TableView):
                     tag_item.set_index(new_index)
                     for column in range(1, self._model.columnCount()):
                         self._get_item(row, column).set_index(new_index)
-
             self.viewport().update()
+
         self._cartesian_editor.send_item_changed_signal()
 
     def _restore_last_valid_selected_item(self):
@@ -417,3 +415,6 @@ class CartesianEditor(ProgramWindow):
 
     def set_decimals(self, value: int):
         self._atomic_coordinates_table_view.set_decimals(value)
+
+    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
+        pass

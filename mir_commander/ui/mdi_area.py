@@ -68,8 +68,8 @@ class MdiArea(QMdiArea):
             if control_panel := programs_control_panels.get(window.control_panel_cls):
                 control_panel.set_active_program(window)
 
-    def _item_changed_handler(self, item_id: int, program_window_id: int):
+    def _item_changed_handler(self, item_id: int, program_window_id: int, metainfo: dict[str, Any]):
         for w in self.subWindowList():
             program = cast(ProgramWindow, w)
             if program.id != program_window_id and program.contains_item(item_id):
-                program.item_changed_event(item_id)
+                program.item_changed_event(item_id, metainfo)

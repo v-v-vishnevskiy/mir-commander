@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, Signal
@@ -18,7 +18,7 @@ class ProgramWindow(QMdiSubWindow):
 
     short_msg_signal = Signal(str)
     long_msg_signal = Signal(str)
-    item_changed_signal = Signal(int, int)  # item_id, program_id
+    item_changed_signal = Signal(int, int, dict)  # item_id, program_id, metainfo
     control_panel_cls: type[ProgramControlPanel] | None = None
     name: TrString
 
@@ -60,11 +60,11 @@ class ProgramWindow(QMdiSubWindow):
     def get_config(self) -> BaseModel:
         raise NotImplementedError("This method should be implemented in the subclass")
 
-    def send_item_changed_signal(self):
-        self.item_changed_signal.emit(self.item.id, self._id)
+    def send_item_changed_signal(self, metainfo: None | dict[str, Any] = None):
+        self.item_changed_signal.emit(self.item.id, self._id, metainfo or {})
 
-    def item_changed_event(self, item_id: int):
-        pass
+    def item_changed_event(self, item_id: int, metainfo: dict[str, Any]):
+        raise NotImplementedError("This method should be implemented in the subclass")
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self._id}, item={self.item})"
