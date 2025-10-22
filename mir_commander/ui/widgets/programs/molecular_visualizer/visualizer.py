@@ -191,10 +191,10 @@ class Visualizer(OpenGLWidget):
         except (ValueError, IndexError) as e:
             logger.error("Failed to add new atom: %s", e)
 
-    def set_atomic_number(self, tree_item_id: int, atom_index: int, atomic_number: int):
+    def update_atomic_number(self, tree_item_id: int, atom_index: int):
         try:
             molecule = self._get_molecule(tree_item_id)
-            molecule.set_atomic_number(atom_index, atomic_number)
+            molecule.update_atomic_number(atom_index)
             self.update()
         except (ValueError, IndexError) as e:
             logger.error("Failed to set atomic number: %s", e)

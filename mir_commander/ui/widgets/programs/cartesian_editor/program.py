@@ -211,9 +211,7 @@ class AtomicCoordinatesTableView(TableView):
             match item:
                 case SymbolItem():
                     self._raw_data.atomic_num[idx] = item.atomic_number
-                    self._cartesian_editor.send_item_changed_signal(
-                        AtomicCoordinatesNewSymbolAction(idx, item.atomic_number)
-                    )
+                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewSymbolAction(idx))
                 case FloatItemX():
                     self._raw_data.x[idx] = item.value
                 case FloatItemY():

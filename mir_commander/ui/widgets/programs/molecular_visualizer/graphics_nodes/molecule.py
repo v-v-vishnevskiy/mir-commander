@@ -119,11 +119,13 @@ class Molecule(Node):
         for i, atom in enumerate(self.atom_items):
             atom.set_index_number(i)
 
-    def set_atomic_number(self, atom_index: int, atomic_number: int):
+    def update_atomic_number(self, atom_index: int):
         try:
             atom = self.atom_items[atom_index]
         except IndexError:
             raise IndexError(f"Atom with index {atom_index} not found")
+
+        atomic_number = self._atomic_coordinates.atomic_num[atom_index]
 
         if atom.atomic_num == atomic_number:
             return

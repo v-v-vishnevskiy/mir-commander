@@ -156,10 +156,10 @@ class MolecularVisualizer(ProgramWindow):
                         case AtomicCoordinatesAddAtomAction():
                             self.visualizer.build_molecule(item_id)
                         case AtomicCoordinatesNewSymbolAction():
-                            self.visualizer.set_atomic_number(item_id, action.idx, action.atomic_number)
+                            self.visualizer.update_atomic_number(item_id, action.atom_index)
                         case AtomicCoordinatesRemoveAtomsAction():
-                            self.visualizer.remove_atoms(item_id, action.indices)
+                            self.visualizer.remove_atoms(item_id, action.atom_indices)
                         case AtomicCoordinatesSwapAtomsIndicesAction():
-                            self.visualizer.swap_atoms_indices(item_id, action.index_1, action.index_2)
+                            self.visualizer.swap_atoms_indices(item_id, action.atom_index_1, action.atom_index_2)
                         case _:
                             logger.warning("Unknown action: %s", action)
