@@ -1,5 +1,5 @@
-from typing import Callable, cast
 from bisect import bisect
+from typing import Callable, cast
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItem, QStandardItemModel
@@ -19,6 +19,7 @@ class TableItem(QStandardItem):
         self.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self._index = index
+        self._old_text = self.text()
 
     @property
     def idx(self) -> int:
@@ -35,9 +36,14 @@ class TableItem(QStandardItem):
 
     def set_valid_state(self, valid: bool):
         if valid:
+            self._old_text = self.text()
             self.setForeground(QColor(0, 0, 0))
         else:
             self.setForeground(QColor(255, 0, 0))
+
+    def restore_last_valid_text(self):
+        self.setText(self._old_text)
+        self.set_valid_state(True)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(index={self.idx}, text={self.text()})"
@@ -318,6 +324,8 @@ class AtomicCoordinatesTableView(TableView):
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             self._delete_selected_rows()
+        elif event.key() == Qt.Key.Key_Escape:
+            self._restore_last_valid_selected_item()
         else:
             super().keyPressEvent(event)
 
@@ -365,6 +373,17 @@ class AtomicCoordinatesTableView(TableView):
 
             self.viewport().update()
         self._cartesian_editor.send_item_changed_signal()
+
+    def _restore_last_valid_selected_item(self):
+        selected_indexes = self.selectionModel().selectedRows()
+        if not selected_indexes:
+            return
+
+        with QSignalBlocker(self._model):
+            for index in selected_indexes:
+                for column in range(self._model.columnCount()):
+                    self._get_item(index.row(), column).restore_last_valid_text()
+            self.viewport().update()
 
 
 class CartesianEditor(ProgramWindow):
