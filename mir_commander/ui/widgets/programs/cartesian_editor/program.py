@@ -133,7 +133,7 @@ class AtomicCoordinatesTableView(TableView):
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(TableView.SelectionBehavior.SelectRows)
-        self.setSelectionMode(TableView.SelectionMode.SingleSelection)
+        self.setSelectionMode(TableView.SelectionMode.ExtendedSelection)
 
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.verticalHeader().setVisible(False)
