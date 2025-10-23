@@ -113,6 +113,11 @@ class Visualizer(OpenGLWidget):
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
+    def _update_coordinate_axes(self):
+        if self._coordinate_axes.at_000:
+            return
+        self._coordinate_axes.set_position(self._molecules.center)
+
     def scale_scene(self, value: float):
         super().scale_scene(value)
         if self.hasFocus() and self._control_panel is not None:
@@ -187,6 +192,7 @@ class Visualizer(OpenGLWidget):
             molecule = self._get_molecule(tree_item_id)
             molecule.build()
             self._main_node.set_position(-self._molecules.center)
+            self._update_coordinate_axes()
             self.update()
         except (ValueError, IndexError) as e:
             logger.error("Failed to add new atom: %s", e)
@@ -203,6 +209,7 @@ class Visualizer(OpenGLWidget):
         try:
             molecule = self._get_molecule(tree_item_id)
             molecule.update_atom_position(atom_index)
+            self._update_coordinate_axes()
             self.update()
         except (ValueError, IndexError) as e:
             logger.error("Failed to update atom position: %s", e)
@@ -211,6 +218,7 @@ class Visualizer(OpenGLWidget):
         try:
             self._get_molecule(tree_item_id).remove_atoms(indices)
             self._main_node.set_position(-self._molecules.center)
+            self._update_coordinate_axes()
             self.update()
         except ValueError as e:
             logger.error("Failed to remove atoms: %s", e)
