@@ -154,7 +154,7 @@ class AtomicCoordinatesTableView(TableView):
         self.setSelectionBehavior(TableView.SelectionBehavior.SelectRows)
         self.setSelectionMode(TableView.SelectionMode.ExtendedSelection)
 
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setVisible(False)
 
         self._raw_data = AtomicCoordinates()
@@ -339,6 +339,7 @@ class AtomicCoordinatesTableView(TableView):
                 index = self._get_item(row, 0).idx
                 for column, data in columns:
                     self._get_item(row, column).setText(FloatItem.format_value(data[index], value))
+        self.horizontalHeader().resizeSections(QHeaderView.ResizeMode.ResizeToContents)
         self.viewport().update()
 
     def keyPressEvent(self, event: QKeyEvent):

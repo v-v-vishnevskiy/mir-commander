@@ -139,7 +139,7 @@ class AtomicCoordinatesGroup(TreeItem):
 
 
 class AtomicCoordinates(TreeItem):
-    default_program = MolecularVisualizer
+    default_program = CartesianEditor
     programs = [CartesianEditor]
 
     def _set_icon(self):
