@@ -2,7 +2,7 @@ from time import monotonic
 from typing import Any, Self, cast
 
 from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPropertyAnimation, Qt, Signal
-from PySide6.QtGui import QAction, QColor, QMouseEvent, QStandardItem
+from PySide6.QtGui import QAction, QColor, QMouseEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QCheckBox,
     QColorDialog,
@@ -240,28 +240,42 @@ class ComboBox(Widget, QComboBox):
 
 class ListView(Widget, QListView):
     def retranslate_ui(self):
-        root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
+        model = cast(QStandardItemModel, self.model())
+        root = model.invisibleRootItem()
         for i in range(root.rowCount()):
-            root.child(i).retranslate()
+            item = root.child(i)
+            if isinstance(item, StandardItem):
+                item.retranslate()
 
 
 class TableView(Widget, QTableView):
-    pass
+    def retranslate_ui(self):
+        model = cast(QStandardItemModel, self.model())
+
+        for i in range(self.horizontalHeader().count()):
+            item = model.horizontalHeaderItem(i)
+            if isinstance(item, StandardItem):
+                item.retranslate()
+
+        for row in range(model.rowCount()):
+            for column in range(model.columnCount()):
+                item = model.item(row, column)
+                if isinstance(item, StandardItem):
+                    item.retranslate()
 
 
 class TreeView(Widget, QTreeView):
     def retranslate_ui(self):
-        root = self.model().invisibleRootItem()  # type: ignore[attr-defined]
+        model = cast(QStandardItemModel, self.model())
+        root = model.invisibleRootItem()
         self._retranslate(root)
 
     def _retranslate(self, root_item: QStandardItem):
         for i in range(root_item.rowCount()):
             for j in range(root_item.columnCount()):
                 item = root_item.child(i, j)
-                try:
-                    item.retranslate()  # type: ignore[attr-defined]
-                except AttributeError:
-                    pass  # it can be a QStandardItem, which doesn't have a retranslate method
+                if isinstance(item, StandardItem):
+                    item.retranslate()
                 if item.hasChildren():
                     self._retranslate(item)
 
@@ -277,6 +291,9 @@ class StandardItem(Translator, QStandardItem):
     def setText(self, text: str):
         self.__text = text
         super().setText(self.translate(text))
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(text={self.text()})"
 
 
 class TabWidget(Widget, QTabWidget):
