@@ -108,7 +108,7 @@ class TreeItem(QStandardItem):
         return result
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(id={self._id})"
+        return f"{self.__class__.__name__}(id={self._id}, name={self.text()})"
 
 
 class Container(TreeItem):

@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,6 +19,8 @@ logger = logging.getLogger("MoleculeStructureViewer.ControlPanel.Image")
 
 
 class Image(QWidget):
+    _file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
+
     def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
 
@@ -45,12 +48,12 @@ class Image(QWidget):
         self._crop_to_content_checkbox = QCheckBox()
         self._crop_to_content_checkbox.setChecked(True)
 
-        self._n_param = QSpinBox()
-        self._n_param.setRange(1, 100000)
-        self._n_param.setValue(1)
+        self._i_param = QSpinBox()
+        self._i_param.setRange(1, 100000)
+        self._i_param.setValue(1)
 
         self._file_path = QLineEdit()
-        self._file_path.setText(str(Path.cwd() / "image_%n.png"))
+        self._file_path.setText(str(Path.cwd() / "%n_%i.png"))
         choose_file_path_button = PushButton(PushButton.tr("Choose..."))
         choose_file_path_button.clicked.connect(self._choose_file_path_button_clicked_handler)
 
@@ -61,8 +64,8 @@ class Image(QWidget):
         params_layout.addWidget(self._bg_color_button, 1, 1)
         params_layout.addWidget(Label(Label.tr("Crop to content:"), self), 2, 0)
         params_layout.addWidget(self._crop_to_content_checkbox, 2, 1)
-        params_layout.addWidget(Label(Label.tr("%n starts from:"), self), 3, 0)
-        params_layout.addWidget(self._n_param, 3, 1)
+        params_layout.addWidget(Label(Label.tr("%i starts from:"), self), 3, 0)
+        params_layout.addWidget(self._i_param, 3, 1)
         params_layout.addWidget(self._file_path, 4, 0, 1, 2)
         params_layout.addWidget(choose_file_path_button, 4, 2)
 
@@ -94,20 +97,35 @@ class Image(QWidget):
             file_name = fileDialog.selectedFiles()[0]
             self._file_path.setText(file_name)
 
+    def _sanitize_filename(self, value: str) -> str:
+        value = value.strip().replace(".", "_").replace(" ", "_").replace("/", "_")
+        value = re.sub(self._file_name_sanitize_re, "", value)
+        return value
+
+    def _get_images_sizes(self, scale_factor: float) -> tuple[int, int]:
+        sizes: list[tuple[int, int]] = []
+        for viewer in self._control_panel.opened_programs:
+            sizes.append(
+                (
+                    int(viewer.size().width() * viewer.devicePixelRatio() * scale_factor),
+                    int(viewer.size().height() * viewer.devicePixelRatio() * scale_factor),
+                )
+            )
+
+        sizes.sort(key=lambda x: x[1])
+        return sizes[0][0], sizes[0][1]
+
     def _save_image_button_clicked_handler(self):
-        scale_factor = self._scale_double_spinbox.value()
-        n = self._n_param.value()
+        i_value = self._i_param.value()
         bg_color = qcolor_to_color4f(self._bg_color_button.color)
         crop_to_content = self._crop_to_content_checkbox.isChecked()
         file_path = self._file_path.text()
-        if "%n" not in file_path:
-            path = Path(file_path)
-            file_path = str(path.with_stem(f"{path.stem}_%n"))
+        width, height = self._get_images_sizes(self._scale_double_spinbox.value())
 
         for i, viewer in enumerate(self._control_panel.opened_programs):
-            filename = file_path.replace("%n", str(i + n).zfill(6))
-            width = int(viewer.size().width() * viewer.devicePixelRatio() * scale_factor)
-            height = int(viewer.size().height() * viewer.devicePixelRatio() * scale_factor)
+            filename = file_path.replace("%i", str(i + i_value).zfill(6)).replace(
+                "%n", self._sanitize_filename(viewer.item_name)
+            )
             try:
                 viewer.save_image(filename, width, height, bg_color, crop_to_content)
                 viewer.long_msg_signal.emit(TR.tr("{} saved successfully").format(filename))

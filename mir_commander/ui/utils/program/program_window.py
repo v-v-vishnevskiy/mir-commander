@@ -45,13 +45,17 @@ class ProgramWindow(QMdiSubWindow):
     def get_name(cls) -> str:
         return Translator.translate(cls.name)
 
-    def update_window_title(self, item: "TreeItem"):
-        title = item.text()
-        parent_item = item.parent()
+    @property
+    def item_name(self) -> str:
+        name = self.item.text()
+        parent_item = self.item.parent()
         while parent_item:
-            title = parent_item.text() + "/" + title
+            name = parent_item.text() + "/" + name
             parent_item = parent_item.parent()
-        self.setWindowTitle(title)
+        return name
+
+    def update_window_title(self, item: "TreeItem"):
+        self.setWindowTitle(self.item_name)
         self.setWindowIcon(item.icon())
 
     def contains_item(self, item_id: int) -> bool:
