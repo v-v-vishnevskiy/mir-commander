@@ -196,7 +196,7 @@ class Renderer:
             vao.bind()
         return vao.triangles_count
 
-    def _setup_instanced_rendering(self, rc: RenderingContainer[Node], group_id: Hashable, nodes: list[Node]):
+    def _setup_instanced_rendering(self, rc: RenderingContainer[Node], group_id: Hashable, nodes: set[Node]):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
         (
             color_buffer_id,
@@ -236,7 +236,7 @@ class Renderer:
             )
         return self._transformation_buffers[key]
 
-    def _update_model_matrix_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_model_matrix_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data = []
         for node in nodes:
@@ -244,7 +244,7 @@ class Renderer:
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
-    def _update_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -252,7 +252,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_color_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_color_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         color_data = []
         for node in nodes:
@@ -260,7 +260,7 @@ class Renderer:
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
 
-    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -271,7 +271,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -284,7 +284,7 @@ class Renderer:
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
-    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: list[Node]):
+    def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data = []
         for node in nodes:
@@ -367,10 +367,10 @@ class Renderer:
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo)
 
-        # Set viewport
+        # Initialize projections, viewport, and WBOIT for new size
+        # TODO: replace with context manager
+        self._projection_manager.build_projections(width, height)
         glViewport(0, 0, width, height)
-
-        # Reinitialize WBOIT for new size
         self._wboit.init(width, height)
 
         # Render scene
@@ -388,7 +388,9 @@ class Renderer:
         glDeleteRenderbuffers(1, [rbo])
         glDeleteFramebuffers(1, [fbo])
 
-        # Restore WBOIT to original size
+        # Restore projection, viewport, and WBOIT to original size
+        self._projection_manager.build_projections(self._width, self._height)
+        glViewport(0, 0, self._width, self._height)
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
         # Convert to numpy array

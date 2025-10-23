@@ -4,8 +4,9 @@
     <file>general/arrow-down.png</file>
     <file>general/arrow-right.png</file>
     <file>general/delete.png</file>
+    <file>general/eye.png</file>
+    <file>general/plus.png</file>
     <file>general/settings.png</file>
     <file>general/square.png</file>
-    <file>general/eye.png</file>
   </qresource>
 </RCC>

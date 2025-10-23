@@ -1,11 +1,13 @@
-from PySide6.QtWidgets import QWidget
+from typing import TYPE_CHECKING
 
 from mir_commander.core import Project
-from mir_commander.core.models.item import Item
 
 from ..base import BaseDock
 from .config import ProjectDockConfig
 from .tree_view import TreeView
+
+if TYPE_CHECKING:
+    from mir_commander.ui.project_window import ProjectWindow
 
 
 class ProjectDock(BaseDock):
@@ -16,13 +18,11 @@ class ProjectDock(BaseDock):
     for showing a tree widget with objects of the project.
     """
 
-    def __init__(self, parent: QWidget, config: ProjectDockConfig, project: Project):
+    def __init__(self, parent: "ProjectWindow", config: ProjectDockConfig, project: Project):
         super().__init__(self.tr("Project"), parent)
-        self._project = project
+        self.project_window = parent
+
         self.tree = TreeView(self, project.data, config.tree)
         self.tree.load_data()
         self.setMinimumWidth(200)
         self.setWidget(self.tree)
-
-    def add_item_to_root(self, item: Item):
-        self.tree.add_item_to_root(item)

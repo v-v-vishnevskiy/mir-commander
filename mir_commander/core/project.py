@@ -21,9 +21,12 @@ class Project:
     def is_temporary(self) -> bool:
         return self._is_temporary
 
-    def import_file(self, file_path: Path, logs: list[str]) -> Item:
-        imported_item = load_file(file_path, logs)
-        self.data.items.append(imported_item)
+    def import_file(self, path: Path, logs: list[str], parent: Item | None = None) -> Item:
+        imported_item = load_file(path, logs)
+        if parent is not None:
+            parent.items.append(imported_item)
+        else:
+            self.data.items.append(imported_item)
         self.save()
         return imported_item
 

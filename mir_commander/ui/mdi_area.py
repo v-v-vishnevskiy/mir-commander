@@ -1,50 +1,75 @@
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QStandardItem
-from PySide6.QtWidgets import QMdiArea, QWidget
+from PySide6.QtWidgets import QMdiArea
 
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.viewer import Viewer
+from mir_commander.ui.utils.program import ProgramControlPanel, ProgramWindow
+from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
-from .widgets.docks.viewer_dock import ViewerDock
+if TYPE_CHECKING:
+    from .project_window import ProjectWindow
 
 
 class MdiArea(QMdiArea):
-    opened_viewer_signal = Signal(Viewer)
+    opened_program_signal = Signal(ProgramWindow)
 
-    def __init__(self, parent: QWidget, viewer_settings_dock: ViewerDock, app_config: AppConfig):
-        super().__init__(parent)
-        self._viewer_settings_dock = viewer_settings_dock
+    def __init__(self, project_window: "ProjectWindow", app_config: AppConfig, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._project_window = project_window
         self._app_config = app_config
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
-        self.subWindowActivated.connect(self.sub_window_activated_handler)
+        self.subWindowActivated.connect(self._sub_window_activated_handler)
 
-    def open_viewer(self, item: QStandardItem, viewer_cls: type[Viewer], kwargs: dict[str, Any]):
-        for viewer in self.subWindowList():
-            # checking if viewer for this item already opened
-            if isinstance(viewer, viewer_cls) and id(viewer.item) == id(item):
-                self.setActiveSubWindow(viewer)
+    def open_program(self, item: TreeItem, program_cls: type[ProgramWindow], kwargs: dict[str, Any]):
+        for program in self.subWindowList():
+            # checking if program for this item already opened
+            if isinstance(program, program_cls) and program.item == item:
+                self.setActiveSubWindow(program)
                 break
         else:
-            settings_widget = self._viewer_settings_dock.add_viewer_settings_widget(viewer_cls)
-            viewer = viewer_cls(
+            program = program_cls(
                 parent=self,
                 app_config=self._app_config,
                 item=item,
-                settings_widget=settings_widget,
+                control_panel=self._add_program_control_panel(program_cls),
                 **kwargs,
             )
-            self.opened_viewer_signal.emit(viewer)
-            self.addSubWindow(viewer)
-        viewer.show()
+            program.item_changed_signal.connect(self._item_changed_handler)
+            self.opened_program_signal.emit(program)
+            self.addSubWindow(program)
+        program.show()
 
-    def sub_window_activated_handler(self, window: None | Viewer):
-        viewers: list[Viewer] = []
-        for viewer in self.subWindowList():
-            viewers.append(cast(Viewer, viewer))
-        self._viewer_settings_dock.update_viewers_list(viewers)
-        self._viewer_settings_dock.set_viewer_settings_widget(window)
+    def _add_program_control_panel(self, program_cls: type[ProgramWindow]) -> ProgramControlPanel | None:
+        if program_cls.control_panel_cls is None:
+            return None
+        return self._project_window.add_program_control_panel(program_cls.control_panel_cls)
+
+    def _sub_window_activated_handler(self, window: None | ProgramWindow):
+        programs_control_panels = self._project_window.programs_control_panels
+        grouped_programs: dict[type[ProgramControlPanel], list[ProgramWindow]] = {
+            k: [] for k in programs_control_panels.keys()
+        }
+        for w in self.subWindowList():
+            program = cast(ProgramWindow, w)
+            control_panel_cls = program.control_panel_cls
+            if control_panel_cls is None:
+                continue
+            grouped_programs[control_panel_cls].append(program)
+
+        for control_panel_cls, programs in grouped_programs.items():
+            if control_panel := programs_control_panels.get(control_panel_cls):
+                control_panel.set_opened_programs(programs)
+
+        if window is not None and window.control_panel_cls is not None:
+            if control_panel := programs_control_panels.get(window.control_panel_cls):
+                control_panel.set_active_program(window)
+
+    def _item_changed_handler(self, item_id: int, program_window_id: int, metainfo: dict[str, Any]):
+        for w in self.subWindowList():
+            program = cast(ProgramWindow, w)
+            if program.id != program_window_id and program.contains_item(item_id):
+                program.item_changed_event(item_id, metainfo)
