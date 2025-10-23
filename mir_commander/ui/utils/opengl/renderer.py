@@ -367,10 +367,10 @@ class Renderer:
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo)
 
-        # Set viewport
+        # Initialize projections, viewport, and WBOIT for new size
+        # TODO: replace with context manager
+        self._projection_manager.build_projections(width, height)
         glViewport(0, 0, width, height)
-
-        # Reinitialize WBOIT for new size
         self._wboit.init(width, height)
 
         # Render scene
@@ -388,7 +388,9 @@ class Renderer:
         glDeleteRenderbuffers(1, [rbo])
         glDeleteFramebuffers(1, [fbo])
 
-        # Restore WBOIT to original size
+        # Restore projection, viewport, and WBOIT to original size
+        self._projection_manager.build_projections(self._width, self._height)
+        glViewport(0, 0, self._width, self._height)
         self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
 
         # Convert to numpy array
