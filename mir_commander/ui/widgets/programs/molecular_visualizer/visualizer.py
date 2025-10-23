@@ -339,12 +339,12 @@ class Visualizer(OpenGLWidget):
 
         try:
             node_under_cursor = cast(BaseGraphicsNode, self.node_under_cursor())
-            node_under_cursor.set_under_cursor(True)
             if node_under_cursor != self._node_under_cursor:
                 if self._node_under_cursor:
                     self._node_under_cursor.set_under_cursor(False)
                 update_window = True
-            self._node_under_cursor = node_under_cursor
+                self._node_under_cursor = node_under_cursor
+                self._node_under_cursor.set_under_cursor(True)
 
             if text := node_under_cursor.get_text():
                 self._under_cursor_overlay.set_text(text)

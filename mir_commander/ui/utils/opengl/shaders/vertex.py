@@ -13,27 +13,6 @@ void main() {
 """
 
 
-PICKING = """
-#version 330 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 in_normal;
-
-uniform mat4 scene_matrix;
-uniform mat4 view_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 model_matrix;
-uniform vec4 color;
-
-out vec4 fragment_color;
-
-void main() {
-    gl_Position = projection_matrix * view_matrix * scene_matrix * model_matrix * vec4(position, 1.0);
-    fragment_color = color;
-}
-"""
-
-
 COMPUTE_POSITION_INSTANCED = """
 #version 330 core
 
@@ -113,6 +92,26 @@ void main() {
     gl_Position = projection_matrix * view_position;
 
     fragment_texcoord = vec2(in_texcoord.x, 1.0 - in_texcoord.y);
+    fragment_color = instance_color;
+}
+"""
+
+
+PICKING = """
+#version 330 core
+
+layout (location = 0) in vec3 position;
+layout (location = 3) in vec4 instance_color;
+layout (location = 4) in mat4 instance_model_matrix;
+
+uniform mat4 scene_matrix;
+uniform mat4 view_matrix;
+uniform mat4 projection_matrix;
+
+out vec4 fragment_color;
+
+void main() {
+    gl_Position = projection_matrix * view_matrix * scene_matrix * instance_model_matrix * vec4(position, 1.0);
     fragment_color = instance_color;
 }
 """

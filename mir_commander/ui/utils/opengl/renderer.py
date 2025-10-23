@@ -43,7 +43,6 @@ from OpenGL.GL import (
     glDepthFunc,
     glDepthMask,
     glDisable,
-    glDrawArrays,
     glDrawArraysInstanced,
     glEnable,
     glEnableVertexAttribArray,
@@ -57,7 +56,6 @@ from OpenGL.GL import (
     glRenderbufferStorage,
     glTexImage2D,
     glTexParameteri,
-    glUniform4f,
     glUniformMatrix4fv,
     glVertexAttribDivisor,
     glVertexAttribPointer,
@@ -85,7 +83,8 @@ class Renderer:
         self._picking_image = QImage()
         self._picking_image.fill(QColor(0, 0, 0, 0))
         self._update_picking_image = True
-        self._transformation_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
+        self._normal_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
+        self._picking_buffers: dict[str, int] = {"color": glGenBuffers(1), "model_matrix": glGenBuffers(1)}
         self._wboit = WBOIT()
 
         self._device_pixel_ratio = 1.0
@@ -114,6 +113,7 @@ class Renderer:
 
         if paint_mode == PaintMode.Picking:
             self._paint_picking(picking_rc)
+            picking_rc.clear_dirty()
         else:
             self._handle_text(text_rc)
 
@@ -131,7 +131,8 @@ class Renderer:
 
             self._update_picking_image = True
 
-        self._resource_manager.current_scene.root_node.clear_dirty()
+            for container in normal_containers.values():
+                container.clear_dirty()
 
     def _handle_text(self, text_rc: RenderingContainer[TextNode]):
         for _, nodes in text_rc.batches:
@@ -148,7 +149,7 @@ class Renderer:
 
         prev_model_name = ""
 
-        uniform_locations = self._setup_shader("", "picking")
+        self._setup_shader("", "picking")
 
         for group_id, nodes in rc.batches:
             _, _, model_name = cast(tuple[None, None, str], group_id)
@@ -156,11 +157,14 @@ class Renderer:
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
 
-            # Draw nodes
-            for node in nodes:
-                glUniform4f(uniform_locations.color, *node.picking_color)
-                glUniformMatrix4fv(uniform_locations.model_matrix, 1, False, node.transform.data())
-                glDrawArrays(GL_TRIANGLES, 0, triangles_count)
+            # Update buffers if needed
+            if rc._dirty.get(group_id, False):
+                self._update_picking_color_buffer(self._picking_buffers["color"], nodes)
+                self._update_model_matrix_buffer(self._picking_buffers["model_matrix"], nodes)
+            self._setup_color_attributes(self._picking_buffers["color"], 3)
+            self._setup_model_matrix_attributes(self._picking_buffers["model_matrix"], 4)
+
+            glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
 
     def _paint_normal(self, rc: RenderingContainer[Node]):
         prev_shader_name = ""
@@ -222,7 +226,7 @@ class Renderer:
             parent_local_position_buffer_id,
             parent_world_position_buffer_id,
             parent_parent_world_position_buffer_id,
-        ) = self._get_transformation_buffer(group_id)
+        ) = self._get_normal_buffer(group_id)
 
         # Update buffers if needed
         if rc._dirty.get(group_id, False):
@@ -241,9 +245,9 @@ class Renderer:
         self._setup_position_attributes(parent_world_position_buffer_id, 10)
         self._setup_position_attributes(parent_parent_world_position_buffer_id, 11)
 
-    def _get_transformation_buffer(self, key: Hashable) -> tuple[int, int, int, int, int, int]:
-        if key not in self._transformation_buffers:
-            self._transformation_buffers[key] = (
+    def _get_normal_buffer(self, key: Hashable) -> tuple[int, int, int, int, int, int]:
+        if key not in self._normal_buffers:
+            self._normal_buffers[key] = (
                 glGenBuffers(1),
                 glGenBuffers(1),
                 glGenBuffers(1),
@@ -251,7 +255,7 @@ class Renderer:
                 glGenBuffers(1),
                 glGenBuffers(1),
             )
-        return self._transformation_buffers[key]
+        return self._normal_buffers[key]
 
     def _update_model_matrix_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
@@ -274,6 +278,14 @@ class Renderer:
         color_data = []
         for node in nodes:
             color_data.extend(list(node.color))
+        color_array = np.array(color_data, dtype=np.float32)
+        glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
+
+    def _update_picking_color_buffer(self, buffer_id: int, nodes: set[Node]):
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
+        color_data = []
+        for node in nodes:
+            color_data.extend(list(node.picking_color))
         color_array = np.array(color_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, color_array.nbytes, color_array, GL_STATIC_DRAW)
 
@@ -456,5 +468,7 @@ class Renderer:
 
     def release(self):
         self._wboit.release()
-        for buffers in self._transformation_buffers.values():
+        for buffers in self._normal_buffers.values():
             glDeleteBuffers(1, list(buffers))
+        for buffer in self._picking_buffers.values():
+            glDeleteBuffers(1, [buffer])

@@ -29,12 +29,6 @@ class RootNode:
         self._text_container.clear()
         self._picking_container.clear()
 
-    def clear_dirty(self):
-        for container in self._normal_containers.values():
-            container.clear_dirty()
-        self._text_container.clear_dirty()
-        self._picking_container.clear_dirty()
-
     def notify_add_node(self, node: Node):
         if node.node_type == NodeType.CONTAINER or node.visible is False:
             return
