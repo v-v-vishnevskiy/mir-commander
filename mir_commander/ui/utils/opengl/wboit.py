@@ -1,6 +1,7 @@
 import logging
 
 from OpenGL.GL import (
+    GL_BACK,
     GL_BLEND,
     GL_COLOR,
     GL_COLOR_ATTACHMENT0,
@@ -36,6 +37,7 @@ from OpenGL.GL import (
     glBlendFunci,
     glClear,
     glClearBufferfv,
+    glCullFace,
     glDepthFunc,
     glDepthMask,
     glDisable,
@@ -106,9 +108,11 @@ class WBOIT:
 
     def prepare_opaque_stage(self):
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_CULL_FACE)
         glDepthFunc(GL_LESS)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
+        glCullFace(GL_BACK)
 
         self._opaque_fbo.bind()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

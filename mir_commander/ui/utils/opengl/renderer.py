@@ -6,9 +6,11 @@ import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
+    GL_BACK,
     GL_BLEND,
     GL_COLOR_ATTACHMENT0,
     GL_COLOR_BUFFER_BIT,
+    GL_CULL_FACE,
     GL_DEPTH24_STENCIL8,
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_STENCIL_ATTACHMENT,
@@ -36,6 +38,7 @@ from OpenGL.GL import (
     glBufferData,
     glClear,
     glClearColor,
+    glCullFace,
     glDeleteBuffers,
     glDeleteFramebuffers,
     glDeleteRenderbuffers,
@@ -142,6 +145,8 @@ class Renderer:
 
     def _paint_picking(self, rc: RenderingContainer[Node]):
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
         glDepthFunc(GL_LESS)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)
