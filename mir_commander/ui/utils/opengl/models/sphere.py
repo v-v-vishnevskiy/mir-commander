@@ -46,12 +46,3 @@ def get_faces(stacks: int, slices: int) -> np.ndarray:
     for i in range(slices):
         faces.extend([last_vertex, last_vertex - slices + i, last_vertex - slices + ((i + 1) % slices)])
     return np.array(faces, dtype=np.int32)
-
-
-def unwind_vertices(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
-    new_vertices: list[float] = []
-    for i in range(0, len(faces), 3):
-        for j in range(3):
-            idx = faces[i + j]
-            new_vertices.extend(vertices[idx * 3 : idx * 3 + 3])
-    return np.array(new_vertices, dtype=np.float32)

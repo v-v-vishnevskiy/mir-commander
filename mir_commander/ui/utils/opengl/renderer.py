@@ -354,13 +354,16 @@ class Renderer:
         glVertexAttribDivisor(index, 1)
 
     def _setup_uniforms(self, uniform_locations: UniformLocations):
-        view_matrix = self._resource_manager.current_camera.matrix.data()
-        scene_matrix = self._resource_manager.current_scene.transform.matrix.data()
-        projection_matrix = self._projection_manager.active_projection.matrix.data()
+        view_matrix = self._resource_manager.current_camera.matrix
+        scene_matrix = self._resource_manager.current_scene.transform.matrix
+        projection_matrix = self._projection_manager.active_projection.matrix
 
-        glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix)
-        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix)
-        glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix)
+        glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix.data())
+        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix.data())
+        glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix.data())
+        glUniformMatrix4fv(
+            uniform_locations.transform_matrix, 1, False, (projection_matrix * view_matrix * scene_matrix).data()
+        )
 
     def _get_node_depth(self, node: Node) -> float:
         point = QVector3D(0.0, 0.0, 0.0) * node.transform

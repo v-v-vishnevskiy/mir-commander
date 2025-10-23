@@ -20,7 +20,13 @@ from mir_commander.ui.utils.opengl.resource_manager import (
     VertexShader,
 )
 from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
-from mir_commander.ui.utils.opengl.utils import Color4f, compute_face_normals, compute_smooth_normals, normalize_color
+from mir_commander.ui.utils.opengl.utils import (
+    Color4f,
+    compute_face_normals,
+    compute_smooth_normals,
+    normalize_color,
+    unwind_vertices,
+)
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 from mir_commander.utils.message_channel import MessageChannel
@@ -296,7 +302,7 @@ class Visualizer(OpenGLWidget):
         stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
         tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices)
         faces = sphere.get_faces(stacks=stacks, slices=slices)
-        vertices = sphere.unwind_vertices(tmp_vertices, faces)
+        vertices = unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_smooth_normals(vertices)
         else:
@@ -311,7 +317,7 @@ class Visualizer(OpenGLWidget):
         slices = int(cone.min_slices * (mesh_quality * 2))
         tmp_vertices = cone.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, cap=True)
         faces = cone.get_faces(stacks=1, slices=slices, cap=True)
-        vertices = cone.unwind_vertices(tmp_vertices, faces)
+        vertices = unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_smooth_normals(vertices)
         else:
@@ -326,7 +332,7 @@ class Visualizer(OpenGLWidget):
         slices = int(cylinder.min_slices * (mesh_quality * 2))
         tmp_vertices = cylinder.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, caps=False)
         faces = cylinder.get_faces(stacks=1, slices=slices, caps=False)
-        vertices = cylinder.unwind_vertices(tmp_vertices, faces)
+        vertices = unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_smooth_normals(vertices)
         else:

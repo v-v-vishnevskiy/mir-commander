@@ -22,12 +22,13 @@ logger = logging.getLogger("OpenGL.Shader")
 
 
 class UniformLocations:
-    __slots__ = ("scene_matrix", "view_matrix", "projection_matrix")
+    __slots__ = ("scene_matrix", "view_matrix", "projection_matrix", "transform_matrix")
 
     def __init__(self):
         self.scene_matrix: GLuint | None = None
         self.view_matrix: GLuint | None = None
         self.projection_matrix: GLuint | None = None
+        self.transform_matrix: GLuint | None = None
 
 
 class Shader:
@@ -92,6 +93,7 @@ class ShaderProgram(Resource):
         self.uniform_locations.scene_matrix = glGetUniformLocation(self._program, "scene_matrix")
         self.uniform_locations.view_matrix = glGetUniformLocation(self._program, "view_matrix")
         self.uniform_locations.projection_matrix = glGetUniformLocation(self._program, "projection_matrix")
+        self.uniform_locations.transform_matrix = glGetUniformLocation(self._program, "transform_matrix")
 
         glUseProgram(0)
 

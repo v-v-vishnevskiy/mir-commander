@@ -67,44 +67,53 @@ def compute_smooth_normals(vertices: np.ndarray, tolerance: float = 1e-6) -> np.
     Compute smooth vertex normals by averaging face normals of adjacent triangles.
     Vertices within tolerance distance are considered the same vertex.
     """
-    vertex_normals_map: dict[tuple[float, float, float], list[QVector3D]] = {}
+    # Reshape vertices to (num_vertices, 3) for vectorized operations
+    vertices_reshaped = vertices.reshape(-1, 3)
+    num_triangles = len(vertices_reshaped) // 3
 
-    for i in range(0, len(vertices), 9):
-        v1 = QVector3D(*vertices[i : i + 3])
-        v2 = QVector3D(*vertices[i + 3 : i + 6])
-        v3 = QVector3D(*vertices[i + 6 : i + 9])
+    # Compute all face normals at once using vectorized operations
+    v1 = vertices_reshaped[0::3]
+    v2 = vertices_reshaped[1::3]
+    v3 = vertices_reshaped[2::3]
 
-        face_normal = QVector3D().normal(v1, v2, v3)
+    # Cross product to get face normals
+    edge1 = v2 - v1
+    edge2 = v3 - v1
+    face_normals = np.cross(edge1, edge2)
 
-        for vertex in [v1, v2, v3]:
-            key = _round_vertex(vertex, tolerance)
-            if key not in vertex_normals_map:
-                vertex_normals_map[key] = []
-            vertex_normals_map[key].append(face_normal)
+    # Normalize face normals
+    norms = np.linalg.norm(face_normals, axis=1, keepdims=True)
+    face_normals = np.divide(face_normals, norms, where=norms != 0)
 
-    normals: list[float] = []
-    for i in range(0, len(vertices), 3):
-        vertex = QVector3D(*vertices[i : i + 3])
-        key = _round_vertex(vertex, tolerance)
-
-        avg_normal = QVector3D(0, 0, 0)
-        for normal in vertex_normals_map[key]:
-            avg_normal += normal
-        avg_normal.normalize()
-
-        normals.extend([avg_normal.x(), avg_normal.y(), avg_normal.z()])
-
-    return np.array(normals, dtype=np.float32)
-
-
-def _round_vertex(vertex: QVector3D, tolerance: float) -> tuple[float, float, float]:
-    """Round vertex coordinates to merge nearby vertices."""
+    # Round vertices for grouping
     decimals = max(0, -int(np.log10(tolerance)))
-    return (
-        round(vertex.x(), decimals),
-        round(vertex.y(), decimals),
-        round(vertex.z(), decimals),
-    )
+    rounded_vertices = np.round(vertices_reshaped, decimals)
+
+    # Build mapping from unique vertices to their indices
+    unique_vertices, inverse_indices = np.unique(rounded_vertices, axis=0, return_inverse=True)
+
+    # Accumulate normals for each unique vertex
+    accumulated_normals = np.zeros((len(unique_vertices), 3), dtype=np.float32)
+    for tri_idx in range(num_triangles):
+        face_normal = face_normals[tri_idx]
+        for local_idx in range(3):
+            vertex_idx = tri_idx * 3 + local_idx
+            unique_idx = inverse_indices[vertex_idx]
+            accumulated_normals[unique_idx] += face_normal
+
+    # Normalize accumulated normals
+    norms = np.linalg.norm(accumulated_normals, axis=1, keepdims=True)
+    accumulated_normals = np.divide(accumulated_normals, norms, where=norms != 0)
+
+    # Map back to original vertex order
+    normals = accumulated_normals[inverse_indices]
+
+    return normals.reshape(-1).astype(np.float32)
+
+
+def unwind_vertices(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+    vertices_reshaped = vertices.reshape(-1, 3)
+    return vertices_reshaped[faces].reshape(-1).astype(np.float32)
 
 
 def crop_image_to_content(image: np.ndarray, bg_color: tuple[float, ...]) -> np.ndarray:
