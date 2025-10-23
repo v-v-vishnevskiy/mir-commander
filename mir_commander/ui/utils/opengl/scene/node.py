@@ -92,7 +92,7 @@ class Node:
 
         self._children: set[Self] = set()
         self.metadata: dict[str, Any] = {}
-        # self._root_node.notify_add_node(self)
+        self._root_node.notify_add_node(self)
 
     @property
     def id(self) -> int:

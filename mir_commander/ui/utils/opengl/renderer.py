@@ -6,11 +6,16 @@ import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
+    GL_BLEND,
     GL_COLOR_ATTACHMENT0,
+    GL_COLOR_BUFFER_BIT,
     GL_DEPTH24_STENCIL8,
+    GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_STENCIL_ATTACHMENT,
+    GL_DEPTH_TEST,
     GL_FLOAT,
     GL_FRAMEBUFFER,
+    GL_LESS,
     GL_LINEAR,
     GL_RENDERBUFFER,
     GL_RGB,
@@ -21,6 +26,7 @@ from OpenGL.GL import (
     GL_TEXTURE_MAG_FILTER,
     GL_TEXTURE_MIN_FILTER,
     GL_TRIANGLES,
+    GL_TRUE,
     GL_UNSIGNED_BYTE,
     glActiveTexture,
     glBindBuffer,
@@ -28,13 +34,18 @@ from OpenGL.GL import (
     glBindRenderbuffer,
     glBindTexture,
     glBufferData,
+    glClear,
     glClearColor,
     glDeleteBuffers,
     glDeleteFramebuffers,
     glDeleteRenderbuffers,
     glDeleteTextures,
+    glDepthFunc,
+    glDepthMask,
+    glDisable,
     glDrawArrays,
     glDrawArraysInstanced,
+    glEnable,
     glEnableVertexAttribArray,
     glFramebufferRenderbuffer,
     glFramebufferTexture2D,
@@ -129,6 +140,12 @@ class Renderer:
         text_rc.clear()
 
     def _paint_picking(self, rc: RenderingContainer[Node]):
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
+        glDepthMask(GL_TRUE)
+        glDisable(GL_BLEND)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
         prev_model_name = ""
 
         uniform_locations = self._setup_shader("", "picking")
@@ -416,7 +433,9 @@ class Renderer:
         if not self._update_picking_image:
             return self._picking_image
 
-        fbo = QOpenGLFramebufferObject(self._width, self._height, QOpenGLFramebufferObjectFormat())
+        fbo_format = QOpenGLFramebufferObjectFormat()
+        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
+        fbo = QOpenGLFramebufferObject(self._width, self._height, fbo_format)
         fbo.bind()
 
         glViewport(0, 0, self._width, self._height)

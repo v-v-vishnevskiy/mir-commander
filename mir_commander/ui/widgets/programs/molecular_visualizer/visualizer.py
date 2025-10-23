@@ -335,12 +335,15 @@ class Visualizer(OpenGLWidget):
         return VertexArrayObject(VAO_CYLINDER_RESOURCE_NAME, vertices, normals)
 
     def _handle_node_under_cursor(self, x: int, y: int):
-        if self._node_under_cursor is not None:
-            self._node_under_cursor.set_under_cursor(False)
+        update_window = False
 
         try:
             node_under_cursor = cast(BaseGraphicsNode, self.node_under_cursor())
             node_under_cursor.set_under_cursor(True)
+            if node_under_cursor != self._node_under_cursor:
+                if self._node_under_cursor:
+                    self._node_under_cursor.set_under_cursor(False)
+                update_window = True
             self._node_under_cursor = node_under_cursor
 
             if text := node_under_cursor.get_text():
@@ -353,11 +356,14 @@ class Visualizer(OpenGLWidget):
                 self._under_cursor_overlay.hide()
         except NodeNotFoundError:
             if self._node_under_cursor is not None:
+                update_window = True
                 self._node_under_cursor.set_under_cursor(False)
                 self._node_under_cursor = None
-            self._under_cursor_overlay.set_text("")
-            self._under_cursor_overlay.hide()
-        self.update()
+                self._under_cursor_overlay.set_text("")
+                self._under_cursor_overlay.hide()
+
+        if update_window:
+            self.update()
 
     def save_img_action_handler(self):
         dlg = SaveImageDialog(
