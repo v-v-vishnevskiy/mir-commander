@@ -4,6 +4,7 @@ from OpenGL.GL import (
     GL_FRAMEBUFFER,
     GL_FRAMEBUFFER_COMPLETE,
     GL_TEXTURE_2D,
+    GL_TEXTURE_2D_MULTISAMPLE,
     glBindFramebuffer,
     glCheckFramebufferStatus,
     glDeleteFramebuffers,
@@ -25,8 +26,9 @@ class Framebuffer(Resource):
     def bind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, self._framebuffer)
 
-    def attach_texture(self, texture: int, attachment: int):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, 0)
+    def attach_texture(self, texture: int, attachment: int, multisample: bool = False):
+        textarget = GL_TEXTURE_2D_MULTISAMPLE if multisample else GL_TEXTURE_2D
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, texture, 0)
 
     def unbind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, 0)

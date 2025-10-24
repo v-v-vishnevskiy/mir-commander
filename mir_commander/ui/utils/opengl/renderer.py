@@ -93,6 +93,7 @@ class Renderer:
         self._device_pixel_ratio = 1.0
         self._width = 1
         self._height = 1
+        self._samples = 4
 
     @property
     def background_color(self) -> Color4f:
@@ -107,7 +108,7 @@ class Renderer:
         self._height = height
 
         glViewport(0, 0, width, height)
-        self._wboit.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio))
+        self._wboit.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio), self._samples)
 
     def paint(self, paint_mode: PaintMode, framebuffer: int):
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
@@ -408,7 +409,7 @@ class Renderer:
         # TODO: replace with context manager
         self._projection_manager.build_projections(width, height)
         glViewport(0, 0, width, height)
-        self._wboit.init(width, height)
+        self._wboit.init(width, height, self._samples)
 
         # Render scene
         self.paint(PaintMode.Normal, fbo)
@@ -428,7 +429,9 @@ class Renderer:
         # Restore projection, viewport, and WBOIT to original size
         self._projection_manager.build_projections(self._width, self._height)
         glViewport(0, 0, self._width, self._height)
-        self._wboit.init(int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio))
+        self._wboit.init(
+            int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio), self._samples
+        )
 
         # Convert to numpy array
         opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, channels)

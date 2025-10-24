@@ -7,6 +7,7 @@ from OpenGL.GL import (
     GL_LINEAR_MIPMAP_LINEAR,
     GL_RGBA,
     GL_TEXTURE_2D,
+    GL_TEXTURE_2D_MULTISAMPLE,
     GL_TEXTURE_MAG_FILTER,
     GL_TEXTURE_MIN_FILTER,
     GL_TEXTURE_WRAP_S,
@@ -17,6 +18,7 @@ from OpenGL.GL import (
     glGenerateMipmap,
     glGenTextures,
     glTexImage2D,
+    glTexImage2DMultisample,
     glTexParameteri,
 )
 
@@ -29,6 +31,7 @@ class Texture2D(Resource):
     def __init__(self, name: str):
         super().__init__(name)
         self._texture = glGenTextures(1)
+        self._samples = 0
 
     @property
     def id(self) -> int:
@@ -44,26 +47,40 @@ class Texture2D(Resource):
         data: np.ndarray | None = None,
         setup_parameters: bool = True,
         use_mipmaps: bool = False,
+        samples: int = 0,
     ):
+        if self._samples != samples:
+            glDeleteTextures(1, [self._texture])
+            self._texture = glGenTextures(1)
+        self._samples = samples
         self.bind()
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data)
-        if use_mipmaps:
-            glGenerateMipmap(GL_TEXTURE_2D)
-        if setup_parameters:
+        if self._samples > 0:
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, self._samples, internal_format, width, height, True)
+        else:
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data)
             if use_mipmaps:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-            else:
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+                glGenerateMipmap(GL_TEXTURE_2D)
+            if setup_parameters:
+                if use_mipmaps:
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+                else:
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         self.unbind()
 
     def bind(self):
-        glBindTexture(GL_TEXTURE_2D, self._texture)
+        if self._samples > 0:
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, self._texture)
+        else:
+            glBindTexture(GL_TEXTURE_2D, self._texture)
 
     def unbind(self):
-        glBindTexture(GL_TEXTURE_2D, 0)
+        if self._samples > 0:
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0)
+        else:
+            glBindTexture(GL_TEXTURE_2D, 0)
 
     def release(self):
         logger.debug("Deleting resources: %s", self.name)
