@@ -43,10 +43,7 @@ def id_to_color(obj_id: int) -> Color4f:
     return (round(r, 4), round(g, 4), round(b, 4), 1.0)
 
 
-def color_to_id(color: QColor) -> int:
-    r = color.red()
-    g = color.green()
-    b = color.blue()
+def color_to_id(r: int, g: int, b: int) -> int:
     return b | (g << 8) | (r << 16)
 
 

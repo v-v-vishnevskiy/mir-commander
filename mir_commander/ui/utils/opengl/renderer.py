@@ -6,18 +6,11 @@ import numpy as np
 import OpenGL.error
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
-    GL_BACK,
-    GL_BLEND,
     GL_COLOR_ATTACHMENT0,
-    GL_COLOR_BUFFER_BIT,
-    GL_CULL_FACE,
     GL_DEPTH24_STENCIL8,
-    GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_STENCIL_ATTACHMENT,
-    GL_DEPTH_TEST,
     GL_FLOAT,
     GL_FRAMEBUFFER,
-    GL_LESS,
     GL_LINEAR,
     GL_RENDERBUFFER,
     GL_RGB,
@@ -28,7 +21,6 @@ from OpenGL.GL import (
     GL_TEXTURE_MAG_FILTER,
     GL_TEXTURE_MIN_FILTER,
     GL_TRIANGLES,
-    GL_TRUE,
     GL_UNSIGNED_BYTE,
     glActiveTexture,
     glBindBuffer,
@@ -36,18 +28,12 @@ from OpenGL.GL import (
     glBindRenderbuffer,
     glBindTexture,
     glBufferData,
-    glClear,
     glClearColor,
-    glCullFace,
     glDeleteBuffers,
     glDeleteFramebuffers,
     glDeleteRenderbuffers,
     glDeleteTextures,
-    glDepthFunc,
-    glDepthMask,
-    glDisable,
     glDrawArraysInstanced,
-    glEnable,
     glEnableVertexAttribArray,
     glFramebufferRenderbuffer,
     glFramebufferTexture2D,
@@ -64,8 +50,7 @@ from OpenGL.GL import (
     glVertexAttribPointer,
     glViewport,
 )
-from PySide6.QtGui import QColor, QImage, QVector3D
-from PySide6.QtOpenGL import QOpenGLFramebufferObject, QOpenGLFramebufferObjectFormat
+from PySide6.QtGui import QVector3D
 
 from .enums import PaintMode
 from .errors import Error
@@ -83,8 +68,7 @@ class Renderer:
         self._projection_manager = projection_manager
         self._resource_manager = resource_manager
         self._bg_color = (0.0, 0.0, 0.0, 1.0)
-        self._picking_image = QImage()
-        self._picking_image.fill(QColor(0, 0, 0, 0))
+        self._picking_image: np.ndarray = np.ndarray([], dtype=np.uint8)
         self._update_picking_image = True
         self._normal_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
         self._picking_buffers: dict[str, int] = {"color": glGenBuffers(1), "model_matrix": glGenBuffers(1)}
@@ -116,6 +100,7 @@ class Renderer:
         glClearColor(*self._bg_color)
 
         if paint_mode == PaintMode.Picking:
+            self._wboit.prepare_opaque_stage()
             self._paint_picking(picking_rc)
             picking_rc.clear_dirty()
         else:
@@ -131,12 +116,11 @@ class Renderer:
             if normal_containers[NodeType.CHAR]:
                 self._paint_normal(normal_containers[NodeType.CHAR])
 
-            self._wboit.finalize(framebuffer)
+        self._wboit.finalize(framebuffer)
+        self._update_picking_image = True
 
-            self._update_picking_image = True
-
-            for container in normal_containers.values():
-                container.clear_dirty()
+        for container in normal_containers.values():
+            container.clear_dirty()
 
     def _handle_text(self, text_rc: RenderingContainer[TextNode]):
         for _, nodes in text_rc.batches:
@@ -145,14 +129,6 @@ class Renderer:
         text_rc.clear()
 
     def _paint_picking(self, rc: RenderingContainer[Node]):
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
-        glDepthFunc(GL_LESS)
-        glDepthMask(GL_TRUE)
-        glDisable(GL_BLEND)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
         prev_model_name = ""
 
         self._setup_shader("", "picking")
@@ -371,25 +347,15 @@ class Renderer:
             uniform_locations.transform_matrix, 1, False, (projection_matrix * view_matrix * scene_matrix).data()
         )
 
-    def _get_node_depth(self, node: Node) -> float:
-        point = QVector3D(0.0, 0.0, 0.0) * node.transform
-        return self._resource_manager.current_camera.get_distance_to_point(point)
-
-    def _sort_by_depth(self, nodes: list[Node]) -> list[Node]:
-        return sorted(nodes, key=self._get_node_depth, reverse=True)
-
     def _render_to_image(
-        self, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
+        self, paint_mode: PaintMode, width: int, height: int, samples: int, crop_to_content: bool
     ) -> np.ndarray:
-        bg_color_bak = self._bg_color
-        bg_color = self._bg_color = bg_color if bg_color is not None else self._bg_color
-
         # Create framebuffer
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
-        format = GL_RGBA if bg_color[3] < 1.0 else GL_RGB
-        channels = 4 if bg_color[3] < 1.0 else 3
+        format = GL_RGBA if self.background_color[3] < 1.0 else GL_RGB
+        channels = 4 if self.background_color[3] < 1.0 else 3
 
         # Create texture for color attachment
         texture = glGenTextures(1)
@@ -409,13 +375,10 @@ class Renderer:
         # TODO: replace with context manager
         self._projection_manager.build_projections(width, height)
         glViewport(0, 0, width, height)
-        self._wboit.init(width, height, self._samples)
+        self._wboit.init(width, height, samples)
 
         # Render scene
-        self.paint(PaintMode.Normal, fbo)
-
-        # Restore background color
-        self._bg_color = bg_color_bak
+        self.paint(paint_mode, fbo)
 
         # Read pixels from framebuffer
         pixels = glReadPixels(0, 0, width, height, format, GL_UNSIGNED_BYTE)
@@ -440,39 +403,33 @@ class Renderer:
         image_data = np.flipud(opengl_image_data)
 
         if crop_to_content:
-            return crop_image_to_content(image_data, bg_color[0:channels])
+            return crop_image_to_content(image_data, self.background_color[0:channels])
         return image_data
 
     def render_to_image(
         self, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
     ) -> np.ndarray:
         try:
-            return self._render_to_image(width, height, bg_color, crop_to_content)
+            background_color_backup = self.background_color
+            if bg_color is not None:
+                self.set_background_color(bg_color)
+            samples = 0 if self.background_color[3] < 1.0 else self._samples
+            image = self._render_to_image(PaintMode.Normal, width, height, samples, crop_to_content)
+            self.set_background_color(background_color_backup)
+            return image
         except OpenGL.error.GLError as e:
             logger.error("Error rendering to image: %s", e)
             raise Error(f"Error rendering to image: {e}")
 
-    def picking_image(self) -> QImage:
+    def picking_image(self) -> np.ndarray:
         if not self._update_picking_image:
             return self._picking_image
 
-        fbo_format = QOpenGLFramebufferObjectFormat()
-        fbo_format.setAttachment(QOpenGLFramebufferObject.Attachment.CombinedDepthStencil)
-        fbo = QOpenGLFramebufferObject(self._width, self._height, fbo_format)
-        fbo.bind()
+        background_color_backup = self.background_color
+        self.set_background_color((0.0, 0.0, 0.0, 0.0))
+        self._picking_image = self._render_to_image(PaintMode.Picking, self._width, self._height, 0, False)
+        self.set_background_color(background_color_backup)
 
-        glViewport(0, 0, self._width, self._height)
-
-        bg_color_bak = self._bg_color
-        self._bg_color = (0.0, 0.0, 0.0, 1.0)
-
-        self.paint(PaintMode.Picking, fbo.handle())
-
-        self._bg_color = bg_color_bak
-
-        fbo.release()
-
-        self._picking_image = fbo.toImage()
         self._update_picking_image = False
 
         return self._picking_image
