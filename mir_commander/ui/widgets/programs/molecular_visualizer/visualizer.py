@@ -591,6 +591,10 @@ class Visualizer(OpenGLWidget):
             molecule.hide_labels_for_all_atoms()
         self.update()
 
+    def toggle_labels_visibility_for_selected_atoms(self):
+        self._molecules.toggle_labels_visibility_for_selected_atoms()
+        self.update()
+
     def atom_labels_show_for_selected_atoms(self):
         for molecule in self._molecules.children:
             molecule.show_labels_for_selected_atoms()
@@ -617,4 +621,8 @@ class Visualizer(OpenGLWidget):
         self.config.atom_label.offset = offset
         for molecule in self._molecules.children:
             molecule.set_label_offset_for_all_atoms(offset)
+        self.update()
+
+    def toggle_labels_visibility_for_all_atoms(self):
+        self._molecules.toggle_labels_visibility_for_all_atoms()
         self.update()

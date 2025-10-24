@@ -76,6 +76,20 @@ class Molecule(Node):
     def _selected_atoms(self) -> list[Atom]:
         return sorted((atom for atom in self.atom_items if atom.selected), key=lambda x: x.selection_update)
 
+    @property
+    def is_all_labels_visible_for_selected_atoms(self) -> bool:
+        for atom in self.atom_items:
+            if atom.selected and not atom.label.visible:
+                return False
+        return True
+
+    @property
+    def is_all_labels_visible(self) -> bool:
+        for atom in self.atom_items:
+            if not atom.label.visible:
+                return False
+        return True
+
     def _get_atom(self, atom_index: int) -> Atom:
         try:
             return self.atom_items[atom_index]

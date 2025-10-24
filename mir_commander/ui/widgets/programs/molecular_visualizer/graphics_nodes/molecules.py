@@ -57,7 +57,7 @@ class Molecules(Node):
             raise CalcError("No molecules found!")
 
         if len(self.children) == 1:
-            return getattr(self.children[0], calc_func)()
+            return getattr(next(iter(self.children)), calc_func)()
 
         output = []
         errors = 0
@@ -92,3 +92,31 @@ class Molecules(Node):
 
     def calc_all_parameters_selected_atoms(self) -> str:
         return self._calc_func("calc_all_parameters_selected_atoms")
+
+    def toggle_labels_visibility_for_selected_atoms(self):
+        all_visible = True
+        for molecule in self.children:
+            if not molecule.is_all_labels_visible_for_selected_atoms:
+                all_visible = False
+                break
+
+        if all_visible:
+            for molecule in self.children:
+                molecule.hide_labels_for_selected_atoms()
+        else:
+            for molecule in self.children:
+                molecule.show_labels_for_selected_atoms()
+
+    def toggle_labels_visibility_for_all_atoms(self):
+        all_visible = True
+        for molecule in self.children:
+            if not molecule.is_all_labels_visible:
+                all_visible = False
+                break
+
+        if all_visible:
+            for molecule in self.children:
+                molecule.hide_labels_for_all_atoms()
+        else:
+            for molecule in self.children:
+                molecule.show_labels_for_all_atoms()
