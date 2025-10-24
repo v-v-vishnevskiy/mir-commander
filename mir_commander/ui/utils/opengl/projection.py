@@ -1,4 +1,5 @@
 import logging
+import math
 from abc import ABC, abstractmethod
 
 from PySide6.QtGui import QMatrix4x4
@@ -19,6 +20,12 @@ class AbstractProjection(ABC):
         """Implementation specific projection matrix setup."""
         pass
 
+    @property
+    @abstractmethod
+    def frustum_planes(self) -> tuple[float, float, float, float, float, float]:
+        """Implementation specific frustum planes."""
+        pass
+
 
 class PerspectiveProjection(AbstractProjection):
     def __init__(self, fov: float = 45.0, near_plane: float = 0.1, far_plane: float = 1000.0):
@@ -26,11 +33,13 @@ class PerspectiveProjection(AbstractProjection):
         self._fov = fov
         self._near_plane = near_plane
         self._far_plane = far_plane
+        self._aspect = 1.0
 
     def setup_projection(self, width: int, height: int):
         """Setup perspective projection matrix."""
+        self._aspect = width / height
         self.matrix.setToIdentity()
-        self.matrix.perspective(self._fov, width / height, self._near_plane, self._far_plane)
+        self.matrix.perspective(self._fov, self._aspect, self._near_plane, self._far_plane)
 
     def get_fov(self):
         return self._fov
@@ -42,12 +51,28 @@ class PerspectiveProjection(AbstractProjection):
         self._near_plane = near_plane
         self._far_plane = far_plane
 
+    @property
+    def frustum_planes(self) -> tuple[float, float, float, float, float, float]:
+        half_fov_rad = math.radians(self._fov / 2.0)
+        tan_half_fov = math.tan(half_fov_rad)
+        top = self._near_plane * tan_half_fov
+        bottom = -top
+        right = top * self._aspect
+        left = -right
+        return left, right, bottom, top, self._near_plane, self._far_plane
+
 
 class OrthographicProjection(AbstractProjection):
     def __init__(self, view_bounds: float = 10.0, depth_factor: float = 10.0):
         super().__init__()
         self._view_bounds = view_bounds
         self._orthographic_depth_factor = depth_factor
+        self._left = -view_bounds
+        self._right = view_bounds
+        self._bottom = -view_bounds
+        self._top = view_bounds
+        self._near = -view_bounds * depth_factor
+        self._far = view_bounds * depth_factor
 
     def setup_projection(self, width: int, height: int):
         """Setup orthographic projection matrix with proper aspect ratio handling."""
@@ -55,28 +80,34 @@ class OrthographicProjection(AbstractProjection):
         # Handle aspect ratio to maintain proper proportions
         if width <= height:
             # Portrait or square viewport
-            left = -self._view_bounds
-            right = self._view_bounds
-            bottom = -self._view_bounds * (height / width)
-            top = self._view_bounds * (height / width)
+            self._left = -self._view_bounds
+            self._right = self._view_bounds
+            self._bottom = -self._view_bounds * (height / width)
+            self._top = self._view_bounds * (height / width)
         else:
             # Landscape viewport
-            left = -self._view_bounds * (width / height)
-            right = self._view_bounds * (width / height)
-            bottom = -self._view_bounds
-            top = self._view_bounds
+            self._left = -self._view_bounds * (width / height)
+            self._right = self._view_bounds * (width / height)
+            self._bottom = -self._view_bounds
+            self._top = self._view_bounds
 
         # Calculate depth range for near/far planes
         depth_range = self._view_bounds * self._orthographic_depth_factor
+        self._near = -depth_range
+        self._far = depth_range
 
         self.matrix.setToIdentity()
-        self.matrix.ortho(left, right, bottom, top, -depth_range, depth_range)
+        self.matrix.ortho(self._left, self._right, self._bottom, self._top, self._near, self._far)
 
     def set_view_bounds(self, value: float):
         self._view_bounds = value
 
     def set_depth_factor(self, value: float):
         self._orthographic_depth_factor = value
+
+    @property
+    def frustum_planes(self) -> tuple[float, float, float, float, float, float]:
+        return self._left, self._right, self._bottom, self._top, self._near, self._far
 
 
 class ProjectionManager:
@@ -97,6 +128,10 @@ class ProjectionManager:
         if self._projection_mode == ProjectionMode.Perspective:
             return self.perspective_projection
         return self.orthographic_projection
+
+    @property
+    def frustum_planes(self) -> tuple[float, float, float, float, float, float]:
+        return self.active_projection.frustum_planes
 
     def build_projections(self, width: int, height: int):
         self.perspective_projection.setup_projection(width, height)
