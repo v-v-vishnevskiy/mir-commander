@@ -72,7 +72,8 @@ class Renderer:
         self._update_picking_image = True
         self._normal_buffers: dict[Hashable, tuple[int, int, int, int, int, int]] = {}
         self._picking_buffers: dict[str, int] = {"color": glGenBuffers(1), "model_matrix": glGenBuffers(1)}
-        self._wboit = WBOIT()
+        self._wboit_msaa = WBOIT()
+        self._wboit_picking = WBOIT()
 
         self._device_pixel_ratio = 1.0
         self._width = 1
@@ -92,7 +93,8 @@ class Renderer:
         self._height = height
 
         glViewport(0, 0, width, height)
-        self._wboit.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio), self._samples)
+        self._wboit_msaa.init(int(width * device_pixel_ratio), int(height * device_pixel_ratio), self._samples)
+        self._wboit_picking.init(width, height, 0)
 
     def paint(self, paint_mode: PaintMode, framebuffer: int):
         normal_containers, text_rc, picking_rc = self._resource_manager.current_scene.containers
@@ -100,27 +102,32 @@ class Renderer:
         glClearColor(*self._bg_color)
 
         if paint_mode == PaintMode.Picking:
-            self._wboit.prepare_opaque_stage()
+            self._wboit_picking.setup()
+            self._wboit_picking.prepare_opaque_stage()
             self._paint_picking(picking_rc)
+            self._wboit_picking.finalize(framebuffer)
             picking_rc.clear_dirty()
         else:
+            self._wboit_msaa.setup()
+
             self._handle_text(text_rc)
 
-            self._wboit.prepare_opaque_stage()
+            self._wboit_msaa.prepare_opaque_stage()
             self._paint_normal(normal_containers[NodeType.OPAQUE])
 
-            self._wboit.prepare_transparent_stage()
+            self._wboit_msaa.prepare_transparent_stage()
             if normal_containers[NodeType.TRANSPARENT]:
                 self._paint_normal(normal_containers[NodeType.TRANSPARENT])
 
             if normal_containers[NodeType.CHAR]:
                 self._paint_normal(normal_containers[NodeType.CHAR])
 
-        self._wboit.finalize(framebuffer)
-        self._update_picking_image = True
+            self._wboit_msaa.finalize(framebuffer)
 
-        for container in normal_containers.values():
-            container.clear_dirty()
+            for container in normal_containers.values():
+                container.clear_dirty()
+
+            self._update_picking_image = True
 
     def _handle_text(self, text_rc: RenderingContainer[TextNode]):
         for _, nodes in text_rc.batches:
@@ -347,15 +354,14 @@ class Renderer:
             uniform_locations.transform_matrix, 1, False, (projection_matrix * view_matrix * scene_matrix).data()
         )
 
-    def _render_to_image(
-        self, paint_mode: PaintMode, width: int, height: int, samples: int, crop_to_content: bool
-    ) -> np.ndarray:
+    def _render_to_image(self, paint_mode: PaintMode, width: int, height: int, crop_to_content: bool) -> np.ndarray:
         # Create framebuffer
         fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
         format = GL_RGBA if self.background_color[3] < 1.0 else GL_RGB
         channels = 4 if self.background_color[3] < 1.0 else 3
+        samples = 0 if self.background_color[3] < 1.0 else self._samples
 
         # Create texture for color attachment
         texture = glGenTextures(1)
@@ -375,7 +381,8 @@ class Renderer:
         # TODO: replace with context manager
         self._projection_manager.build_projections(width, height)
         glViewport(0, 0, width, height)
-        self._wboit.init(width, height, samples)
+        if paint_mode == PaintMode.Normal:
+            self._wboit_msaa.init(width, height, samples)
 
         # Render scene
         self.paint(paint_mode, fbo)
@@ -392,9 +399,10 @@ class Renderer:
         # Restore projection, viewport, and WBOIT to original size
         self._projection_manager.build_projections(self._width, self._height)
         glViewport(0, 0, self._width, self._height)
-        self._wboit.init(
-            int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio), self._samples
-        )
+        if paint_mode == PaintMode.Normal:
+            self._wboit_msaa.init(
+                int(self._width * self._device_pixel_ratio), int(self._height * self._device_pixel_ratio), self._samples
+            )
 
         # Convert to numpy array
         opengl_image_data = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, channels)
@@ -413,8 +421,8 @@ class Renderer:
             background_color_backup = self.background_color
             if bg_color is not None:
                 self.set_background_color(bg_color)
-            samples = 0 if self.background_color[3] < 1.0 else self._samples
-            image = self._render_to_image(PaintMode.Normal, width, height, samples, crop_to_content)
+
+            image = self._render_to_image(PaintMode.Normal, width, height, crop_to_content)
             self.set_background_color(background_color_backup)
             return image
         except OpenGL.error.GLError as e:
@@ -426,8 +434,8 @@ class Renderer:
             return self._picking_image
 
         background_color_backup = self.background_color
-        self.set_background_color((0.0, 0.0, 0.0, 0.0))
-        self._picking_image = self._render_to_image(PaintMode.Picking, self._width, self._height, 0, False)
+        self.set_background_color((0.0, 0.0, 0.0, 1.0))
+        self._picking_image = self._render_to_image(PaintMode.Picking, self._width, self._height, False)
         self.set_background_color(background_color_backup)
 
         self._update_picking_image = False
@@ -435,7 +443,7 @@ class Renderer:
         return self._picking_image
 
     def release(self):
-        self._wboit.release()
+        self._wboit_msaa.release()
         for buffers in self._normal_buffers.values():
             glDeleteBuffers(1, list(buffers))
         for buffer in self._picking_buffers.values():

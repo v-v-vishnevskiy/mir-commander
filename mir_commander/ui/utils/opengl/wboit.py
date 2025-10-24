@@ -108,11 +108,6 @@ class WBOIT:
         self._width = width
         self._height = height
 
-        if samples > 0:
-            glEnable(GL_MULTISAMPLE)
-        else:
-            glDisable(GL_MULTISAMPLE)
-
         # Create multisampled textures for rendering
         self._opaque_texture.init(width, height, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, samples=samples)
         self._depth_texture.init(
@@ -152,6 +147,12 @@ class WBOIT:
             self._transparent_resolve_fbo.check_status()
             glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
             self._transparent_resolve_fbo.unbind()
+
+    def setup(self):
+        if self._samples > 0:
+            glEnable(GL_MULTISAMPLE)
+        else:
+            glDisable(GL_MULTISAMPLE)
 
     def prepare_opaque_stage(self):
         glEnable(GL_DEPTH_TEST)
