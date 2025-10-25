@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -21,18 +20,13 @@ class SpecialAtoms(BaseModel):
     atomic_color: dict[int, Color] = {-1: Color("#00FBFF"), -2: Color("#BB9451")}
 
 
-class AtomLabelType(Enum):
-    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 1
-    ELEMENT_SYMBOL = 2
-    INDEX_NUMBER = 3
-
-
 class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
     size: int = Field(default=10, ge=1, le=100)
     font: str = "default"
-    type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
     offset: float = Field(default=2.00, ge=1.01, le=5.0)
+    symbol_visible: bool = True
+    number_visible: bool = True
     visible: bool = False
 
 
@@ -307,7 +301,9 @@ class Keymap(BaseModel):
     save_image: str = "s"
     toggle_projection: str = "ctrl+p"
     toggle_selected: str = "b"
-    select_toggle_all: str = "a"
+    toggle_labels_visibility_for_all_atoms: str = "l"
+    toggle_labels_visibility_for_selected_atoms: str = "ctrl+l"
+    select_toggle_all: str = "ctrl+a"
     calc_auto_parameter: str = "p"
     cloak_toggle_h_atoms: str = "h"
     next_atomic_coordinates: str = "ctrl+right"

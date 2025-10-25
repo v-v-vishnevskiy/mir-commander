@@ -5,8 +5,6 @@ from PySide6.QtGui import QKeySequence
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import Action, Menu
 
-from .config import AtomLabelType
-
 if TYPE_CHECKING:
     from .program import MolecularVisualizer
 
@@ -63,54 +61,6 @@ class ContextMenu(Menu):
         menu = Menu(Menu.tr("Atom labels"))
         self.addMenu(menu)
 
-        show_for_selected_atoms_act = Action(Action.tr("Show for selected atoms"), self.parent())
-        show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
-        show_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_show_for_selected_atoms)
-        menu.addAction(show_for_selected_atoms_act)
-
-        hide_for_selected_atoms_act = Action(Action.tr("Hide for selected atoms"), self.parent())
-        hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
-        hide_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_hide_for_selected_atoms)
-        menu.addAction(hide_for_selected_atoms_act)
-
-        menu.addSeparator()
-
-        self.set_element_symbol_and_index_number_act = Action(
-            Action.tr("Set element symbol and index number"),
-            self.parent(),
-            checkable=True,
-            checked=self._config.atom_label.type == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER,
-        )
-        self.set_element_symbol_and_index_number_act.setStatusTip(
-            Action.tr("Show element symbol and index number as label")
-        )
-        self.set_element_symbol_and_index_number_act.triggered.connect(
-            self.labels_set_element_symbol_and_index_number_handler
-        )
-        menu.addAction(self.set_element_symbol_and_index_number_act)
-
-        self.set_element_symbol_act = Action(
-            Action.tr("Set element symbol"),
-            self.parent(),
-            checkable=True,
-            checked=self._config.atom_label.type == AtomLabelType.ELEMENT_SYMBOL,
-        )
-        self.set_element_symbol_act.setStatusTip(Action.tr("Show element symbol as label"))
-        self.set_element_symbol_act.triggered.connect(self.labels_set_element_symbol_handler)
-        menu.addAction(self.set_element_symbol_act)
-
-        self.set_index_number_act = Action(
-            Action.tr("Set index number"),
-            self.parent(),
-            checkable=True,
-            checked=self._config.atom_label.type == AtomLabelType.INDEX_NUMBER,
-        )
-        self.set_index_number_act.setStatusTip(Action.tr("Show index number as label"))
-        self.set_index_number_act.triggered.connect(self.labels_set_index_number_handler)
-        menu.addAction(self.set_index_number_act)
-
-        menu.addSeparator()
-
         show_all_act = Action(Action.tr("Show all"), self.parent())
         show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
         show_all_act.triggered.connect(self._visualizer.atom_labels_show_for_all_atoms)
@@ -120,6 +70,34 @@ class ContextMenu(Menu):
         hide_all_act.setStatusTip(Action.tr("Hide labels for all atoms"))
         hide_all_act.triggered.connect(self._visualizer.atom_labels_hide_for_all_atoms)
         menu.addAction(hide_all_act)
+
+        menu.addSeparator()
+
+        show_for_selected_atoms_act = Action(Action.tr("Show selected"), self.parent())
+        show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
+        show_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_show_for_selected_atoms)
+        menu.addAction(show_for_selected_atoms_act)
+
+        hide_for_selected_atoms_act = Action(Action.tr("Hide selected"), self.parent())
+        hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
+        hide_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_hide_for_selected_atoms)
+        menu.addAction(hide_for_selected_atoms_act)
+
+        menu.addSeparator()
+
+        toggle_all_act = Action(Action.tr("Toggle all"), self.parent())
+        toggle_all_act.setShortcut(QKeySequence(self._keymap.toggle_labels_visibility_for_all_atoms))
+        toggle_all_act.setStatusTip(Action.tr("Toggle labels for all atoms"))
+        toggle_all_act.triggered.connect(self._visualizer.toggle_labels_visibility_for_all_atoms)
+        self._visualizer.addAction(toggle_all_act)
+        menu.addAction(toggle_all_act)
+
+        toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
+        toggle_selected_act.setShortcut(QKeySequence(self._keymap.toggle_labels_visibility_for_selected_atoms))
+        toggle_selected_act.setStatusTip(Action.tr("Toggle labels for selected atoms"))
+        toggle_selected_act.triggered.connect(self._visualizer.toggle_labels_visibility_for_selected_atoms)
+        self._visualizer.addAction(toggle_selected_act)
+        menu.addAction(toggle_selected_act)
 
     def _init_bonds_menu(self):
         bonds_menu = Menu(Menu.tr("Bonds"))
@@ -277,18 +255,3 @@ class ContextMenu(Menu):
         prev_atomic_coordinates_act.triggered.connect(self._program.set_prev_atomic_coordinates)
         menu.addAction(prev_atomic_coordinates_act)
         self._program.addAction(prev_atomic_coordinates_act)
-
-    def labels_set_element_symbol_and_index_number_handler(self):
-        self.set_index_number_act.setChecked(False)
-        self.set_element_symbol_act.setChecked(False)
-        self._visualizer.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER)
-
-    def labels_set_element_symbol_handler(self):
-        self.set_element_symbol_and_index_number_act.setChecked(False)
-        self.set_index_number_act.setChecked(False)
-        self._visualizer.atom_labels_set_type(AtomLabelType.ELEMENT_SYMBOL)
-
-    def labels_set_index_number_handler(self):
-        self.set_element_symbol_and_index_number_act.setChecked(False)
-        self.set_element_symbol_act.setChecked(False)
-        self._visualizer.atom_labels_set_type(AtomLabelType.INDEX_NUMBER)

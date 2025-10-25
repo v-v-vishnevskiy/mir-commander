@@ -30,7 +30,6 @@ def add_slider(
     label = Label(text)
     if label_tooltip is not None:
         label.setToolTip(label_tooltip)
-    label.setAlignment(Qt.AlignmentFlag.AlignLeft)
     layout.addWidget(label, row, 0)
     layout.addWidget(slider, row, 1)
     layout.addWidget(double_spinbox, row, 2)

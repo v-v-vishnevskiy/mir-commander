@@ -33,7 +33,6 @@ from mir_commander.utils.message_channel import MessageChannel
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
-from .config import AtomLabelType
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
 from .control_panel import ControlPanel
 from .entities import VolumeCubeIsosurfaceGroup
@@ -255,9 +254,9 @@ class Visualizer(OpenGLWidget):
         Molecule(
             tree_item_id=tree_item_id,
             atomic_coordinates=data,
-            geom_bond_tolerance=self._config.geom_bond_tolerance,
+            geom_bond_tolerance=self.config.geom_bond_tolerance,
             style=self._style.current,
-            atom_label_config=self._config.atom_label,
+            atom_label_config=self.config.atom_label,
             parent=self._molecules,
         )
 
@@ -580,15 +579,23 @@ class Visualizer(OpenGLWidget):
             self.update()
 
     def atom_labels_show_for_all_atoms(self):
-        self._config.atom_label.visible = True
         for molecule in self._molecules.children:
             molecule.show_labels_for_all_atoms()
+        self.config.atom_label.visible = True
         self.update()
 
     def atom_labels_hide_for_all_atoms(self):
-        self._config.atom_label.visible = False
         for molecule in self._molecules.children:
             molecule.hide_labels_for_all_atoms()
+        self.config.atom_label.visible = False
+        self.update()
+
+    def toggle_labels_visibility_for_selected_atoms(self):
+        self._molecules.toggle_labels_visibility_for_selected_atoms()
+        self.update()
+
+    def toggle_labels_visibility_for_all_atoms(self):
+        self.config.atom_label.visible = self._molecules.toggle_labels_visibility_for_all_atoms()
         self.update()
 
     def atom_labels_show_for_selected_atoms(self):
@@ -601,20 +608,24 @@ class Visualizer(OpenGLWidget):
             molecule.hide_labels_for_selected_atoms()
         self.update()
 
-    def atom_labels_set_type(self, value: AtomLabelType):
-        self.config.atom_label.type = value
-        for molecule in self._molecules.children:
-            molecule.set_label_type_for_all_atoms(value)
+    def set_atom_symbol_visible(self, value: bool):
+        self._molecules.set_atom_symbol_visible(value)
+        self.config.atom_label.symbol_visible = value
+        self.update()
+
+    def set_atom_number_visible(self, value: bool):
+        self._molecules.set_atom_number_visible(value)
+        self.config.atom_label.number_visible = value
         self.update()
 
     def set_label_size_for_all_atoms(self, size: int):
-        self.config.atom_label.size = size
         for molecule in self._molecules.children:
             molecule.set_label_size_for_all_atoms(size)
+        self.config.atom_label.size = size
         self.update()
 
     def set_label_offset_for_all_atoms(self, offset: float):
-        self.config.atom_label.offset = offset
         for molecule in self._molecules.children:
             molecule.set_label_offset_for_all_atoms(offset)
+        self.config.atom_label.offset = offset
         self.update()

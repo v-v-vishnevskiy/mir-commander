@@ -20,11 +20,11 @@ class CoordinateAxes(QWidget):
 
         self._control_panel = parent
 
-        self.main_layout = VBoxLayout(self)
-        self.main_layout.addLayout(self._add_checkboxes())
-        self.main_layout.addLayout(self._add_sliders())
-        self.main_layout.addLayout(self._add_axes())
-        self.setLayout(self.main_layout)
+        layout = VBoxLayout()
+        layout.addLayout(self._add_checkboxes())
+        layout.addLayout(self._add_sliders())
+        layout.addLayout(self._add_axes())
+        self.setLayout(layout)
 
     def _add_checkboxes(self) -> GridLayout:
         layout = GridLayout()
