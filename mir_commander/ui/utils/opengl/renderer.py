@@ -422,12 +422,12 @@ class Renderer:
             if bg_color is not None:
                 self.set_background_color(bg_color)
 
-            image = self._render_to_image(PaintMode.Normal, width, height, crop_to_content)
-            self.set_background_color(background_color_backup)
-            return image
+            return self._render_to_image(PaintMode.Normal, width, height, crop_to_content)
         except OpenGL.error.GLError as e:
             logger.error("Error rendering to image: %s", e)
             raise Error(f"Error rendering to image: {e}")
+        finally:
+            self.set_background_color(background_color_backup)
 
     def picking_image(self) -> np.ndarray:
         if not self._update_picking_image:
@@ -435,12 +435,15 @@ class Renderer:
 
         background_color_backup = self.background_color
         self.set_background_color((0.0, 0.0, 0.0, 1.0))
-        self._picking_image = self._render_to_image(PaintMode.Picking, self._width, self._height, False)
-        self.set_background_color(background_color_backup)
-
-        self._update_picking_image = False
-
-        return self._picking_image
+        try:
+            self._picking_image = self._render_to_image(PaintMode.Picking, self._width, self._height, False)
+            self._update_picking_image = False
+            return self._picking_image
+        except OpenGL.error.GLError as e:
+            logger.error("Error rendering picking image: %s", e)
+            return np.ndarray([], dtype=np.uint8)
+        finally:
+            self.set_background_color(background_color_backup)
 
     def release(self):
         self._wboit_msaa.release()

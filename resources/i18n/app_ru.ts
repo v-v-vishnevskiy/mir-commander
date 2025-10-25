@@ -72,272 +72,290 @@
         <translation>Дочерние</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="56"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="54"/>
         <source>Toggle projection</source>
         <translation>Переключить проекцию</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="34"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="32"/>
         <source>Save image...</source>
         <translation>Сохранить изображение...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="66"/>
         <source>Show for selected atoms</source>
-        <translation>Показать для выделенных атомов</translation>
+        <translation type="vanished">Показать для выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="67"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="77"/>
         <source>Show labels for selected atoms</source>
         <translation>Показать подпись только для выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="71"/>
         <source>Hide for selected atoms</source>
-        <translation>Скрыть для выделенных атомов</translation>
+        <translation type="vanished">Скрыть для выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="72"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="82"/>
         <source>Hide labels for selected atoms</source>
         <translation>Скрыть подпись только для выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="79"/>
         <source>Set element symbol and index number</source>
-        <translation>Показывать символ и индекс</translation>
+        <translation type="vanished">Показывать символ и индекс</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="86"/>
         <source>Show element symbol and index number as label</source>
-        <translation>Показывать символ и индекс</translation>
+        <translation type="vanished">Показывать символ и индекс</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="93"/>
         <source>Set element symbol</source>
-        <translation>Показывать только символ</translation>
+        <translation type="vanished">Показывать только символ</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="98"/>
         <source>Show element symbol as label</source>
-        <translation>Показывать только символ</translation>
+        <translation type="vanished">Показывать только символ</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="103"/>
         <source>Set index number</source>
-        <translation>Показывать только индекс</translation>
+        <translation type="vanished">Показывать только индекс</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="108"/>
         <source>Show index number as label</source>
-        <translation>Показывать только индекс</translation>
+        <translation type="vanished">Показывать только индекс</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="114"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="64"/>
         <source>Show all</source>
         <translation>Показать всё</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="115"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="65"/>
         <source>Show labels for all atoms</source>
         <translation>Показать подпись у всех атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="119"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="69"/>
         <source>Hide all</source>
         <translation>Скрыть всё</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="120"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="70"/>
         <source>Hide labels for all atoms</source>
         <translation>Скрыть подпись у всех атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="128"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="106"/>
         <source>Add selected</source>
         <translation>Добавить выделенные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="129"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="107"/>
         <source>Add new bonds between selected atoms</source>
         <translation>Добавить новые связи между выделенными атомами</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="133"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="111"/>
         <source>Remove selected</source>
         <translation>Удалить выделенные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="134"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="112"/>
         <source>Remove existing bonds between selected atoms</source>
         <translation>Удалить связи между выделенными атомами</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="138"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="95"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="116"/>
         <source>Toggle selected</source>
         <translation>Переключить выделенные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="140"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="76"/>
+        <source>Show selected</source>
+        <translation>Показать выделенные</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="81"/>
+        <source>Hide selected</source>
+        <translation>Скрыть выделенные</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="88"/>
+        <source>Toggle all</source>
+        <translation>Переключить все</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="90"/>
+        <source>Toggle labels for all atoms</source>
+        <translation>Переключить подписи для всех атомов</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="97"/>
+        <source>Toggle labels for selected atoms</source>
+        <translation>Переключить подписи для выделенных атомов</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="118"/>
         <source>Add new or remove existing bonds between selected atoms</source>
         <translation>Добавить новые или удалить существующие связи между выделенными атомами</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="145"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="123"/>
         <source>Build dynamically...</source>
         <translation>Создать динамически...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="146"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="124"/>
         <source>Build bonds in dynamic mode by adjusting settings</source>
         <translation>Создать связи в динамическом режиме меняя настройки</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="150"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="128"/>
         <source>Rebuild all</source>
         <translation>Пересоздать все</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="151"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="129"/>
         <source>Remove all current bonds and automatically create a new set of bonds</source>
         <translation>Удалить все связи и создать заново</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="155"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="133"/>
         <source>Rebuild default</source>
         <translation>Пересоздать по умолчанию</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="156"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="134"/>
         <source>Rebuild bonds automatically using default settings</source>
         <translation>Пересоздать связи используя настройки по умолчанию</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="164"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="142"/>
         <source>Select all atoms</source>
         <translation>Выделить все атомы</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="168"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="146"/>
         <source>Unselect all atoms</source>
         <translation>Снять выделение со всех атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="172"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="150"/>
         <source>Toggle all atoms</source>
         <translation>Переключить выделение всех атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="182"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="160"/>
         <source>Interatomic distance</source>
         <translation>Межатомное расстояние</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="183"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="161"/>
         <source>Distance between last two selected atoms a1-a2</source>
         <translation>Расстояние между двумя выделенными атомами а1-а2</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="187"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="165"/>
         <source>Interatomic angle</source>
         <translation>Межатомный угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="190"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="168"/>
         <source>Angle between two lines formed by last three selected atoms a1-a2-a3</source>
         <translation>Угол между двумя линиями образованными тремя выделенными атомами а1-а2-а3</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="194"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="172"/>
         <source>Torsion angle</source>
         <translation>Торсионный угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="200"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="178"/>
         <source>Dihedral angle between two planes (a1-a2-a3) and (a2-a3-a4) defined on the basis of last four selected atoms</source>
         <translation>Двугранный угол между плоскостями (а1-а2-а3) и (а2-а3-а4) образованными на основе последних четерёх выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="204"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="182"/>
         <source>Out-of-plane angle</source>
         <translation>Угол выхода из плоскости</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="209"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="187"/>
         <source>Angle between the vector (a1-a2) and plane (a3-a2-a4) defined on the basis of last four selected atoms</source>
         <translation>Угол между вектором (а1-а2) и плоскостью (а3-а2-а4) образованными на основе последних четерёх выделенных атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="213"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="191"/>
         <source>Auto parameter</source>
         <translation>Автоматический параметр</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="217"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="195"/>
         <source>Interatomic distance, angle or torsion angle if two, three or four atoms are selected</source>
         <translation>Межатомное расстояние, угол или торсионный угол если выделено два, три или четыре атома, соответственно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="222"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="200"/>
         <source>Selected fragments</source>
         <translation>Выделенные фрагменты</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="225"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="203"/>
         <source>Calculate all geometric parameters for fragments with selected atoms</source>
         <translation>Все геометрические параметры для фрагментов с выделенными атомами</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="233"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="211"/>
         <source>Cloak all selected</source>
         <translation>Скрыть все выделенные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="237"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="215"/>
         <source>Cloak all not selected</source>
         <translation>Скрыть все не выделенные</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="241"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="219"/>
         <source>Cloak all H atoms</source>
         <translation>Скрыть все атомы H</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="245"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="223"/>
         <source>Cloak not selected H atoms</source>
         <translation>Скрыть не выделенные атомы H</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="249"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="227"/>
         <source>Toggle all H atoms</source>
         <translation>Переключить все атомы H</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="255"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="233"/>
         <source>Cloak atoms by type...</source>
         <translation>Скрыть атомы по типу...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="261"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="239"/>
         <source>Uncloak all</source>
         <translation>Показать всё</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="269"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="247"/>
         <source>Next</source>
         <translation>Следующий</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="275"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="253"/>
         <source>Previous</source>
         <translation>Предыдущий</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="42"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="40"/>
         <source>Next style</source>
         <translation>Следующий стиль</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="48"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="46"/>
         <source>Previous style</source>
         <translation>Предыдущий стиль</translation>
     </message>
@@ -410,6 +428,16 @@
         <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/coordinate_axes.py" line="44"/>
         <source>Center</source>
         <translation>Центрировать</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="27"/>
+        <source>Symbol</source>
+        <translation>Символ</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="34"/>
+        <source>Number</source>
+        <translation>Номер</translation>
     </message>
 </context>
 <context>
@@ -492,14 +520,24 @@
         <translation>Порог распознавания связи:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="25"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="23"/>
+        <source>Show:</source>
+        <translation>Показать:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="44"/>
         <source>Size:</source>
         <translation>Размер:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="38"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="57"/>
         <source>Offset:</source>
         <translation>Смещение:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="67"/>
+        <source>Toggle:</source>
+        <translation>Переключить:</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/coordinate_axes.py" line="61"/>
@@ -577,6 +615,11 @@
         <translation>Координатные оси</translation>
     </message>
     <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/control_panel.py" line="28"/>
+        <source>Atom labels</source>
+        <translation>Подписи атомов</translation>
+    </message>
+    <message>
         <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/control_panel.py" line="29"/>
         <source>Cubes and surfaces</source>
         <translation>Кубы и поверхности</translation>
@@ -586,9 +629,8 @@
         <translation type="vanished">Координатные оси</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/control_panel.py" line="28"/>
         <source>Labels</source>
-        <translation>Подписи</translation>
+        <translation type="vanished">Подписи</translation>
     </message>
     <message>
         <source>Cubes and Surfaces</source>
@@ -662,32 +704,32 @@
         <translation>Показать структуры</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="63"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="61"/>
         <source>Atom labels</source>
         <translation>Подписи атомов</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="125"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="103"/>
         <source>Bonds</source>
         <translation>Связи</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="161"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="139"/>
         <source>Selection</source>
         <translation>Выделить</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="179"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="157"/>
         <source>Calculate</source>
         <translation>Вычислить</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="230"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="208"/>
         <source>Cloaking</source>
         <translation>Видимость</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="266"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/context_menu.py" line="244"/>
         <source>Coordinates set</source>
         <translation>Набор координат</translation>
     </message>
@@ -829,6 +871,16 @@
         <source>Reset</source>
         <translation>Сбросить</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="71"/>
+        <source>All</source>
+        <translation>Все</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="77"/>
+        <source>Selected</source>
+        <translation>Выделенные</translation>
+    </message>
 </context>
 <context>
     <name>RecentProjectsDialog</name>
@@ -927,7 +979,7 @@
 <context>
     <name>TR</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="404"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="415"/>
         <source>Image saved</source>
         <translation>Изображение сохранено</translation>
     </message>
@@ -958,7 +1010,7 @@
         <translation type="vanished">Визуализатор молекулярной структуры</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/cartesian_editor/program.py" line="414"/>
+        <location filename="../../mir_commander/ui/widgets/programs/cartesian_editor/program.py" line="415"/>
         <source>Cartesian editor</source>
         <translation>Редактор декартовых координат</translation>
     </message>
@@ -978,94 +1030,94 @@
 <context>
     <name>Visualizer</name>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="374"/>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="416"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="385"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="427"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="376"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="387"/>
         <source>The file already exists:</source>
         <translation>Файл уже существует:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="377"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="388"/>
         <source>Do you want to overwrite it?</source>
         <translation>Вы хотите его перезаписать?</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="391"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="402"/>
         <source>Error image rendering</source>
         <translation>Ошибка создания изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="392"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="403"/>
         <source>Cannot create image.</source>
         <translation>Невозможно создать изображение.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="417"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="428"/>
         <source>Could not save image:</source>
         <translation>Изображение не было сохранено:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="409"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="420"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>Путь к файлу не существует или защищен от записи.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="411"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="422"/>
         <source>The output format could not be determined.</source>
         <translation>Не удалось определить выходной формат.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="414"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="425"/>
         <source>Error saving image</source>
         <translation>Ошибка сохранения изображения</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="484"/>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="492"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="495"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="503"/>
         <source>Cloak atoms by type</source>
         <translation>Скрыть атомы по типу</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="484"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="495"/>
         <source>Enter element symbol:</source>
         <translation>Введите символ элемента:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="493"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="504"/>
         <source>Invalid element symbol!</source>
         <translation>Некорректный символ элемента!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="502"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="513"/>
         <source>Auto geometrical parameter</source>
         <translation>Автоматический геометрический параметр</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="509"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="520"/>
         <source>Interatomic distance</source>
         <translation>Межатомное расстояние</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="515"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="526"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="521"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="532"/>
         <source>Torsion angle</source>
         <translation>Торсионный угол</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="527"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="538"/>
         <source>Out-of-plane angle</source>
         <translation>Угол выхода из плоскости</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="533"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/visualizer.py" line="544"/>
         <source>All parameters</source>
         <translation>Все параметры</translation>
     </message>

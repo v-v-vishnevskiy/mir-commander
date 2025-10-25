@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QCheckBox, QWidget
+from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import GridLayout, HBoxLayout, Label, PushButton
+from mir_commander.ui.utils.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
 
 from .utils import add_slider
 
@@ -19,17 +19,23 @@ class Labels(QWidget):
 
         layout = GridLayout()
 
-        self._symbol_visible_checkbox = QCheckBox()
+        layout.addWidget(Label(Label.tr("Show:"), self), 0, 0)
+
+        checkbox_layout = HBoxLayout()
+
+        self._symbol_visible_checkbox = CheckBox(CheckBox.tr("Symbol"))
         self._symbol_visible_checkbox.setChecked(True)
         self._symbol_visible_checkbox.toggled.connect(self._symbol_visible_checkbox_handler)
-        layout.addWidget(Label(Label.tr("Show symbol:"), self), 0, 0)
-        layout.addWidget(self._symbol_visible_checkbox, 0, 1)
+        checkbox_layout.addWidget(self._symbol_visible_checkbox)
 
-        self._number_visible_checkbox = QCheckBox()
+        checkbox_layout.addSpacing(5)
+
+        self._number_visible_checkbox = CheckBox(CheckBox.tr("Number"))
         self._number_visible_checkbox.setChecked(True)
         self._number_visible_checkbox.toggled.connect(self._number_visible_checkbox_handler)
-        layout.addWidget(Label(Label.tr("Show number:"), self), 1, 0)
-        layout.addWidget(self._number_visible_checkbox, 1, 1)
+        checkbox_layout.addWidget(self._number_visible_checkbox)
+
+        layout.addLayout(checkbox_layout, 0, 1)
 
         self._size_slider, self._size_double_spinbox = add_slider(
             layout=layout,
@@ -57,17 +63,21 @@ class Labels(QWidget):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        hbox_layout = HBoxLayout()
-        self._toggle_all_button = PushButton(PushButton.tr("Toggle all"))
+        layout.addWidget(Label(Label.tr("Toggle:"), self), 4, 0)
+
+        toggle_layout = HBoxLayout()
+
+        self._toggle_all_button = PushButton(PushButton.tr("All"))
         self._toggle_all_button.clicked.connect(self._toggle_all_button_clicked_handler)
-        hbox_layout.addWidget(self._toggle_all_button)
+        toggle_layout.addWidget(self._toggle_all_button)
 
-        hbox_layout.addSpacing(5)
+        toggle_layout.addSpacing(5)
 
-        self._toggle_selected_button = PushButton(PushButton.tr("Toggle for selected"))
+        self._toggle_selected_button = PushButton(PushButton.tr("Selected"))
         self._toggle_selected_button.clicked.connect(self._toggle_selected_button_clicked_handler)
-        hbox_layout.addWidget(self._toggle_selected_button)
-        layout.addLayout(hbox_layout, 4, 0, 1, 3)
+        toggle_layout.addWidget(self._toggle_selected_button)
+
+        layout.addLayout(toggle_layout, 4, 1, 1, 2)
 
         self.setLayout(layout)
 

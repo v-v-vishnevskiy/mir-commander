@@ -25,7 +25,7 @@ class ControlPanel(ProgramControlPanel["MolecularVisualizer"]):
 
         self.layout.add_widget(Label.tr("View"), self.view)
         self.layout.add_widget(Label.tr("Coordinate axes"), self.coordinate_axes)
-        self.layout.add_widget(Label.tr("Labels"), self.labels)
+        self.layout.add_widget(Label.tr("Atom labels"), self.labels)
         self.layout.add_widget(Label.tr("Cubes and surfaces"), self.volume_cube, False)
         self.layout.add_widget(Label.tr("Image"), self.image, False)
         self.layout.addStretch()

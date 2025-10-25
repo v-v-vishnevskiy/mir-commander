@@ -61,18 +61,6 @@ class ContextMenu(Menu):
         menu = Menu(Menu.tr("Atom labels"))
         self.addMenu(menu)
 
-        show_for_selected_atoms_act = Action(Action.tr("Show for selected"), self.parent())
-        show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
-        show_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_show_for_selected_atoms)
-        menu.addAction(show_for_selected_atoms_act)
-
-        hide_for_selected_atoms_act = Action(Action.tr("Hide for selected"), self.parent())
-        hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
-        hide_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_hide_for_selected_atoms)
-        menu.addAction(hide_for_selected_atoms_act)
-
-        menu.addSeparator()
-
         show_all_act = Action(Action.tr("Show all"), self.parent())
         show_all_act.setStatusTip(Action.tr("Show labels for all atoms"))
         show_all_act.triggered.connect(self._visualizer.atom_labels_show_for_all_atoms)
@@ -85,12 +73,17 @@ class ContextMenu(Menu):
 
         menu.addSeparator()
 
-        toggle_selected_act = Action(Action.tr("Toggle for selected"), self.parent())
-        toggle_selected_act.setShortcut(QKeySequence(self._keymap.toggle_labels_visibility_for_selected_atoms))
-        toggle_selected_act.setStatusTip(Action.tr("Toggle labels for selected atoms"))
-        toggle_selected_act.triggered.connect(self._visualizer.toggle_labels_visibility_for_selected_atoms)
-        self._visualizer.addAction(toggle_selected_act)
-        menu.addAction(toggle_selected_act)
+        show_for_selected_atoms_act = Action(Action.tr("Show selected"), self.parent())
+        show_for_selected_atoms_act.setStatusTip(Action.tr("Show labels for selected atoms"))
+        show_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_show_for_selected_atoms)
+        menu.addAction(show_for_selected_atoms_act)
+
+        hide_for_selected_atoms_act = Action(Action.tr("Hide selected"), self.parent())
+        hide_for_selected_atoms_act.setStatusTip(Action.tr("Hide labels for selected atoms"))
+        hide_for_selected_atoms_act.triggered.connect(self._visualizer.atom_labels_hide_for_selected_atoms)
+        menu.addAction(hide_for_selected_atoms_act)
+
+        menu.addSeparator()
 
         toggle_all_act = Action(Action.tr("Toggle all"), self.parent())
         toggle_all_act.setShortcut(QKeySequence(self._keymap.toggle_labels_visibility_for_all_atoms))
@@ -98,6 +91,13 @@ class ContextMenu(Menu):
         toggle_all_act.triggered.connect(self._visualizer.toggle_labels_visibility_for_all_atoms)
         self._visualizer.addAction(toggle_all_act)
         menu.addAction(toggle_all_act)
+
+        toggle_selected_act = Action(Action.tr("Toggle selected"), self.parent())
+        toggle_selected_act.setShortcut(QKeySequence(self._keymap.toggle_labels_visibility_for_selected_atoms))
+        toggle_selected_act.setStatusTip(Action.tr("Toggle labels for selected atoms"))
+        toggle_selected_act.triggered.connect(self._visualizer.toggle_labels_visibility_for_selected_atoms)
+        self._visualizer.addAction(toggle_selected_act)
+        menu.addAction(toggle_selected_act)
 
     def _init_bonds_menu(self):
         bonds_menu = Menu(Menu.tr("Bonds"))

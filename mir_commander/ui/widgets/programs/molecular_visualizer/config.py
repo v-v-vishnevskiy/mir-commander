@@ -303,7 +303,7 @@ class Keymap(BaseModel):
     toggle_selected: str = "b"
     toggle_labels_visibility_for_all_atoms: str = "l"
     toggle_labels_visibility_for_selected_atoms: str = "ctrl+l"
-    select_toggle_all: str = "a"
+    select_toggle_all: str = "ctrl+a"
     calc_auto_parameter: str = "p"
     cloak_toggle_h_atoms: str = "h"
     next_atomic_coordinates: str = "ctrl+right"
