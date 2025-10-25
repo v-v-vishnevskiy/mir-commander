@@ -7,7 +7,7 @@ from mir_commander.ui.utils.opengl.scene import Node, NodeType
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils.chem import atomic_number_to_symbol
 
-from ...config import AtomLabelConfig, AtomLabelType, SelectedAtom
+from ...config import AtomLabelConfig, SelectedAtom
 from .bounding_sphere import BoundingSphere
 from .label import Label
 from .sphere import Sphere
@@ -42,11 +42,9 @@ class Atom(Node):
         self._label_config = label_config
         self._sphere = Sphere(radius, color, parent=self)
         self._bounding_sphere: None | BoundingSphere = None
-        self._label: None | Label = None
+        self._label = Label(self._label_config, self.element_symbol, self._index + 1, parent=self)
+        self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
         self._selection_update = 0.0
-
-        if self._label_config.visible:
-            self.label  # force creation of the label if it is visible
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.add(bond)
@@ -102,10 +100,6 @@ class Atom(Node):
 
     @property
     def label(self) -> Label:
-        if self._label is None:
-            self._label = Label(self._label_config, parent=self)
-            self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
-            self.set_label_type(self._label_config.type)
         return self._label
 
     def remove(self):
@@ -124,8 +118,7 @@ class Atom(Node):
             return
 
         self._index = value
-        if self._label is not None:
-            self.set_label_type(self._label_config.type)
+        self._label.set_number(value + 1)
 
     def set_atomic_number(self, value: int):
         if self.atomic_num == value:
@@ -133,9 +126,7 @@ class Atom(Node):
 
         self.atomic_num = value
 
-        if self._label is not None:
-            self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
-            self.set_label_type(self._label_config.type)
+        self._label.set_symbol(atomic_number_to_symbol(value))
 
     def set_color(self, color: Color4f):
         self._sphere.set_color(color)
@@ -156,13 +147,11 @@ class Atom(Node):
     def set_label_visible(self, value: bool):
         self.label.set_visible(value)
 
-    def set_label_type(self, value: AtomLabelType):
-        if value == AtomLabelType.INDEX_NUMBER:
-            self.label.set_text(f"{self._index + 1}")
-        elif value == AtomLabelType.ELEMENT_SYMBOL:
-            self.label.set_text(f"{self.element_symbol}")
-        elif value == AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER:
-            self.label.set_text(f"{self.element_symbol}{self._index + 1}")
+    def set_symbol_visible(self, value: bool):
+        self.label.set_symbol_visible(value)
+
+    def set_number_visible(self, value: bool):
+        self.label.set_number_visible(value)
 
     def set_selected_atom_config(self, config: SelectedAtom):
         self.bounding_sphere.set_config(config)

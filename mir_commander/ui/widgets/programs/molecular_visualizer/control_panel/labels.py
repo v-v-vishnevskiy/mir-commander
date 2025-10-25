@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QCheckBox, QWidget
 
-from mir_commander.ui.utils.widget import GridLayout, Label, VBoxLayout
+from mir_commander.ui.utils.widget import GridLayout, Label
 
 from .utils import add_slider
 
@@ -17,11 +17,23 @@ class Labels(QWidget):
 
         self._control_panel = parent
 
-        sliders_layout = GridLayout()
+        layout = GridLayout()
+
+        self._symbol_visible_checkbox = QCheckBox()
+        self._symbol_visible_checkbox.setChecked(True)
+        self._symbol_visible_checkbox.toggled.connect(self._symbol_visible_checkbox_handler)
+        layout.addWidget(Label(Label.tr("Show symbol:"), self), 0, 0)
+        layout.addWidget(self._symbol_visible_checkbox, 0, 1)
+
+        self._number_visible_checkbox = QCheckBox()
+        self._number_visible_checkbox.setChecked(True)
+        self._number_visible_checkbox.toggled.connect(self._number_visible_checkbox_handler)
+        layout.addWidget(Label(Label.tr("Show number:"), self), 1, 0)
+        layout.addWidget(self._number_visible_checkbox, 1, 1)
 
         self._size_slider, self._size_double_spinbox = add_slider(
-            layout=sliders_layout,
-            row=0,
+            layout=layout,
+            row=2,
             text=Label.tr("Size:"),
             min_value=1,
             max_value=100,
@@ -33,8 +45,8 @@ class Labels(QWidget):
         self._size_double_spinbox.valueChanged.connect(self._size_double_spinbox_value_changed_handler)
 
         self._offset_slider, self._offset_double_spinbox = add_slider(
-            layout=sliders_layout,
-            row=1,
+            layout=layout,
+            row=3,
             text=Label.tr("Offset:"),
             min_value=1.01,
             max_value=5.0,
@@ -45,9 +57,15 @@ class Labels(QWidget):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        main_layout = VBoxLayout()
-        main_layout.addLayout(sliders_layout)
-        self.setLayout(main_layout)
+        self.setLayout(layout)
+
+    def _symbol_visible_checkbox_handler(self, value: bool):
+        for viewer in self._control_panel.opened_programs:
+            viewer.visualizer.set_atom_symbol_visible(value)
+
+    def _number_visible_checkbox_handler(self, value: bool):
+        for viewer in self._control_panel.opened_programs:
+            viewer.visualizer.set_atom_number_visible(value)
 
     def _size_slider_value_changed_handler(self, i: int):
         self._size_double_spinbox.setValue(i)
@@ -72,3 +90,6 @@ class Labels(QWidget):
 
         self._offset_slider.setValue(int(visualizer.config.atom_label.offset * 100))
         self._offset_double_spinbox.setValue(visualizer.config.atom_label.offset)
+
+        self._symbol_visible_checkbox.setChecked(visualizer.config.atom_label.symbol_visible)
+        self._number_visible_checkbox.setChecked(visualizer.config.atom_label.number_visible)

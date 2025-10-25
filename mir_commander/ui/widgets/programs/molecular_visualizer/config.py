@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -21,18 +20,13 @@ class SpecialAtoms(BaseModel):
     atomic_color: dict[int, Color] = {-1: Color("#00FBFF"), -2: Color("#BB9451")}
 
 
-class AtomLabelType(Enum):
-    ELEMENT_SYMBOL_AND_INDEX_NUMBER = 1
-    ELEMENT_SYMBOL = 2
-    INDEX_NUMBER = 3
-
-
 class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
     size: int = Field(default=10, ge=1, le=100)
     font: str = "default"
-    type: AtomLabelType = AtomLabelType.ELEMENT_SYMBOL_AND_INDEX_NUMBER
     offset: float = Field(default=2.00, ge=1.01, le=5.0)
+    symbol_visible: bool = True
+    number_visible: bool = True
     visible: bool = False
 
 

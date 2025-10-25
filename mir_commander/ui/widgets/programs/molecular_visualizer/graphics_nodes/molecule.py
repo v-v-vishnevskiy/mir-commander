@@ -13,7 +13,7 @@ from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
-from ..config import AtomLabelConfig, AtomLabelType, Style
+from ..config import AtomLabelConfig, Style
 from ..errors import CalcError
 from ..utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane, InteratomicTorsion
 from .atom.atom import Atom
@@ -239,9 +239,13 @@ class Molecule(Node):
         self._apply_atoms_style()
         self._apply_bonds_style()
 
-    def set_label_type_for_all_atoms(self, value: AtomLabelType):
+    def set_atom_symbol_visible(self, value: bool):
         for atom in self.atom_items:
-            atom.set_label_type(value)
+            atom.set_symbol_visible(value)
+
+    def set_atom_number_visible(self, value: bool):
+        for atom in self.atom_items:
+            atom.set_number_visible(value)
 
     def set_label_size_for_all_atoms(self, size: int):
         for atom in self.atom_items:

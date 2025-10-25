@@ -93,6 +93,14 @@ class Molecules(Node):
     def calc_all_parameters_selected_atoms(self) -> str:
         return self._calc_func("calc_all_parameters_selected_atoms")
 
+    def set_atom_symbol_visible(self, value: bool):
+        for molecule in self.children:
+            molecule.set_atom_symbol_visible(value)
+
+    def set_atom_number_visible(self, value: bool):
+        for molecule in self.children:
+            molecule.set_atom_number_visible(value)
+
     def toggle_labels_visibility_for_selected_atoms(self):
         all_visible = True
         for molecule in self.children:
@@ -107,7 +115,7 @@ class Molecules(Node):
             for molecule in self.children:
                 molecule.show_labels_for_selected_atoms()
 
-    def toggle_labels_visibility_for_all_atoms(self):
+    def toggle_labels_visibility_for_all_atoms(self) -> bool:
         all_visible = True
         for molecule in self.children:
             if not molecule.is_all_labels_visible:
@@ -120,3 +128,5 @@ class Molecules(Node):
         else:
             for molecule in self.children:
                 molecule.show_labels_for_all_atoms()
+
+        return not all_visible  # return True if all labels are set visible, False otherwise
