@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QCheckBox, QWidget
 
-from mir_commander.ui.utils.widget import GridLayout, Label
+from mir_commander.ui.utils.widget import GridLayout, HBoxLayout, Label, PushButton
 
 from .utils import add_slider
 
@@ -57,6 +57,18 @@ class Labels(QWidget):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
+        hbox_layout = HBoxLayout()
+        self._toggle_all_button = PushButton(PushButton.tr("Toggle all"))
+        self._toggle_all_button.clicked.connect(self._toggle_all_button_clicked_handler)
+        hbox_layout.addWidget(self._toggle_all_button)
+
+        hbox_layout.addSpacing(5)
+
+        self._toggle_selected_button = PushButton(PushButton.tr("Toggle for selected"))
+        self._toggle_selected_button.clicked.connect(self._toggle_selected_button_clicked_handler)
+        hbox_layout.addWidget(self._toggle_selected_button)
+        layout.addLayout(hbox_layout, 4, 0, 1, 3)
+
         self.setLayout(layout)
 
     def _symbol_visible_checkbox_handler(self, value: bool):
@@ -82,6 +94,14 @@ class Labels(QWidget):
 
     def _offset_double_spinbox_value_changed_handler(self, value: float):
         self._offset_slider.setValue(int(value * 100))
+
+    def _toggle_all_button_clicked_handler(self):
+        for viewer in self._control_panel.opened_programs:
+            viewer.visualizer.toggle_labels_visibility_for_all_atoms()
+
+    def _toggle_selected_button_clicked_handler(self):
+        for viewer in self._control_panel.opened_programs:
+            viewer.visualizer.toggle_labels_visibility_for_selected_atoms()
 
     def update_values(self, program: "MolecularVisualizer"):
         visualizer = program.visualizer

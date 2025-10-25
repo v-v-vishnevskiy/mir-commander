@@ -28,7 +28,7 @@ class View(QWidget):
         reset_button = PushButton(PushButton.tr("Reset"))
         reset_button.clicked.connect(self._reset_button_clicked_handler)
 
-        layout = VBoxLayout(self)
+        layout = VBoxLayout()
         layout.addLayout(self._add_translations())
         layout.addWidget(reset_button)
         self.setLayout(layout)
