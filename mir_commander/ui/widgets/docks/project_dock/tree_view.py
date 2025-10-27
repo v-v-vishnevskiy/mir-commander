@@ -6,7 +6,7 @@ from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
 from mir_commander.core import models
-from mir_commander.core.parsers.consts import babushka_priehala
+from mir_commander.core.file_importers.consts import babushka_priehala
 from mir_commander.ui.utils.program import ProgramWindow
 
 from .config import TreeConfig
@@ -54,6 +54,9 @@ class TreeView(QTreeView):
 
     def import_file(self, item: TreeItem):
         self._project_window.import_file(item)
+
+    def export_item(self, item: TreeItem):
+        self._project_window.export_item(item)
 
     def add_item(self, item: models.Item, parent: TreeItem | None = None):
         parent_item = parent if parent is not None else self._model.invisibleRootItem()

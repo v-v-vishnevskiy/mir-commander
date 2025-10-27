@@ -1,10 +1,10 @@
 import logging
 import logging.config
 
-from .consts import DIR
+from mir_commander.utils.consts import DIR
 
 
-def init_logging():
+def startup():
     logging.config.dictConfig(
         {
             "version": 1,
@@ -33,3 +33,4 @@ def init_logging():
             "root": {"level": "DEBUG", "handlers": ["console", "file"]},
         }
     )
+    logging.getLogger("cclib").setLevel(logging.CRITICAL)

@@ -6,5 +6,13 @@ class LoadProjectError(CoreError):
     pass
 
 
-class LoadFileError(CoreError):
+class FileManagerError(CoreError):
+    pass
+
+
+class FileExporterNotFoundError(FileManagerError):
+    pass
+
+
+class FileImporterNotFoundError(FileManagerError):
     pass

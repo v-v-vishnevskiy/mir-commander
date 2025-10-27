@@ -5,7 +5,7 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.core import create_temporary_project, load_project
+from mir_commander.core import FileManager, Project
 from mir_commander.core.errors import LoadProjectError
 from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
 from mir_commander.utils.consts import DIR
@@ -14,17 +14,19 @@ from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
 from .recent_projects.recent_projects_dialog import RecentProjectsDialog
 
-logger = logging.getLogger("Application")
+logger = logging.getLogger("UI.Application")
 
 
 class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, file_manager: FileManager, *args, **kwargs):
         self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
         self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
+
+        self._file_manager = file_manager
 
         self.register_resources()
 
@@ -134,17 +136,14 @@ class Application(QApplication):
             self._recent_projects_dialog.add_recent(project_window.project)
 
     def open_project(self, path: Path) -> int:
-        logger.info("Loading project: %s", path)
         try:
-            project = load_project(path)
+            project = Project(path=path, file_manager=self._file_manager, temporary=False)
         except LoadProjectError as e:
             logger.error(str(e))
             self._error.setText(e.__class__.__name__)
             self._error.setInformativeText(str(e))
             self._error.show()
             return self.exec()
-
-        logger.info("Loading project completed")
 
         project_window = ProjectWindow(
             app_config=self.config,
@@ -157,7 +156,10 @@ class Application(QApplication):
 
     def open_temporary_project(self, files: list[Path]) -> int:
         logger.info("Creating temporary project from files ...")
-        project, messages = create_temporary_project(files)
+
+        project = Project(path=Path(), file_manager=self._file_manager, temporary=True)
+        messages: list[str] = []
+        project.import_files(files, messages)
 
         project_window = ProjectWindow(
             app_config=self.config,

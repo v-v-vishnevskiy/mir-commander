@@ -75,6 +75,11 @@ class TreeItem(QStandardItem):
         )
         result.addAction(import_file_action)
 
+        export_item_action = Action(
+            text=Action.tr("Export..."), parent=result, triggered=lambda: tree_view.export_item(self)
+        )
+        result.addAction(export_item_action)
+
         if self.default_program:
 
             def trigger(viewer: type[QWidget]) -> Callable[[], None]:
