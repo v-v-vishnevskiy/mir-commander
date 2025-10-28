@@ -10,8 +10,8 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidge
 
 from mir_commander import __version__
 from mir_commander.core import Project
-from mir_commander.plugin_system.file_exporter import ExportFileError
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.item_exporter import ExportItemError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
@@ -320,13 +320,15 @@ class ProjectWindow(QMainWindow):
         dialog = ExportItemDialog(item, self.project._file_manager, parent=self)
 
         if dialog.exec() == Dialog.DialogCode.Accepted:
-            params = dialog.get_params()
+            path, exporter_name, format_settings = dialog.get_params()
             try:
-                self.project.export_item(item=item.core_item, path=params[0], nested=params[1], exporter_id=params[2])
+                self.project.export_item(
+                    item=item.core_item, exporter_name=exporter_name, path=path, format_settings=format_settings
+                )
                 self.status_bar.showMessage(self.tr("Item exported successfully"), 3000)
-            except ExportFileError as e:
-                logger.error("Failed to export item %s: %s", params[0], e)
-                self.append_to_console(self.tr("Error exporting item {}: {}").format(params[0], e))
+            except ExportItemError as e:
+                logger.error("Failed to export item: %s", e)
+                self.append_to_console(self.tr("Failed to export item: {}").format(e))
                 self.status_bar.showMessage(self.tr("Failed to export item"), 5000)
 
     @Slot()

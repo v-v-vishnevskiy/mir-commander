@@ -11,10 +11,10 @@ logger = base_logging.getLogger("Main")
 
 
 def run():
-    logging.startup()
-
     if not DIR.HOME_CONFIG.exists():
         DIR.HOME_CONFIG.mkdir(parents=True, exist_ok=True)
+
+    logging.startup()
 
     logger.debug("Starting Mir Commander ...")
 

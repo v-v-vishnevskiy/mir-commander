@@ -17,7 +17,7 @@ class CCLibImporter(BaseImporter):
         return "CCLib"
 
     def get_extensions(self) -> list[str]:
-        return ["log"]
+        return ["*"]
 
     def read(self, path: Path, logs: list) -> Item:
         """

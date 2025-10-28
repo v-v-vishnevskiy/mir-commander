@@ -10,7 +10,7 @@ class FileManagerError(CoreError):
     pass
 
 
-class FileExporterNotFoundError(FileManagerError):
+class ItemExporterNotFoundError(FileManagerError):
     pass
 
 

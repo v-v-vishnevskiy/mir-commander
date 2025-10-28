@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Any
 
 from .config import ProjectConfig
 from .errors import LoadProjectError
@@ -56,8 +57,10 @@ class Project:
         self.save()
         return imported_item
 
-    def export_item(self, item: Item, path: Path, nested: bool, exporter_id: str):
-        self._file_manager.export_item(item, path, nested, exporter_id)
+    def export_item(self, item: Item, exporter_name: str, path: Path, format_settings: dict[str, Any]):
+        self._file_manager.export_item(
+            item=item, exporter_name=exporter_name, path=path, format_settings=format_settings
+        )
 
     def save(self):
         if not self.is_temporary:
