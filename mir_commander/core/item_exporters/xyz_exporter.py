@@ -38,6 +38,6 @@ class XYZExporter(ItemExporter):
                     x = item.data.x[i]
                     y = item.data.y[i]
                     z = item.data.z[i]
-                    f.write(f"{symbol:<6} {x:>20.15f} {y:>20.15f} {z:>20.15f}\n")
+                    f.write(f"{symbol:<6} {x:>20.14f} {y:>20.14f} {z:>20.14f}\n")
         else:
             raise ExportItemError("Only atomic coordinates are supported")
