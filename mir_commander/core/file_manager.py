@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from mir_commander.plugin_system.file_importer import FileImporter, ImportFileError
 from mir_commander.plugin_system.item_exporter import ExportItemError, ItemExporter
@@ -25,17 +25,45 @@ class FormatSettingsDefaultProperty(BaseModel):
 
 class FormatSettingsDefaultLiteral(BaseModel):
     type: Literal["literal"]
-    value: str | int | float | bool | list[str | int | float]
+    value: str | int | float | bool | list[str]
 
 
-class FormatSettingsValidator(BaseModel):
+class BaseFormatSettings(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     id: str = Field(min_length=1)
     label: str = Field(min_length=1)
-    type: Literal["text", "number", "list", "bool"]
     default: Annotated[FormatSettingsDefaultProperty | FormatSettingsDefaultLiteral, Field(discriminator="type")]
     required: bool
+
+
+class BoolTypeFormatSettings(BaseFormatSettings):
+    type: Literal["bool"]
+
+
+class TextTypeFormatSettings(BaseFormatSettings):
+    type: Literal["text"]
+
+
+class NumberTypeFormatSettings(BaseFormatSettings):
+    type: Literal["number"]
+    min: int
+    max: int
+    step: int
+
+
+class ListTypeFormatSettings(BaseFormatSettings):
+    type: Literal["list"]
+    items: list[str] = Field(min_length=1)
+
+
+FormatSettingsValidator = Annotated[
+    BoolTypeFormatSettings | TextTypeFormatSettings | NumberTypeFormatSettings | ListTypeFormatSettings,
+    Field(discriminator="type"),
+]
+
+
+format_settings_validator_adaptor = TypeAdapter[BaseFormatSettings](FormatSettingsValidator)
 
 
 class FileManager:
@@ -47,7 +75,7 @@ class FileManager:
         errors = []
         for i, config in enumerate(item_exporter.get_settings_config()):
             try:
-                FormatSettingsValidator.model_validate(config)
+                format_settings_validator_adaptor.validate_python(config)
             except ValidationError as e:
                 errs = []
                 for error in e.errors(include_url=False, include_context=False, include_input=False):
