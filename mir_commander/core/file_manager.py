@@ -5,15 +5,37 @@ Be careful when developing this tool. Test it more thoroughly.
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from mir_commander.plugin_system.file_importer import FileImporter, ImportFileError
 from mir_commander.plugin_system.item_exporter import ExportItemError, ItemExporter
 
-from .errors import FileImporterNotFoundError, ItemExporterNotFoundError
+from .errors import FileImporterNotFoundError, ItemExporterNotFoundError, ItemExporterRegistrationError
 from .models import Item
 
 logger = logging.getLogger("Core.FileManager")
+
+
+class FormatSettingsDefaultProperty(BaseModel):
+    type: Literal["property"]
+    value: Literal["item.name"]
+
+
+class FormatSettingsDefaultLiteral(BaseModel):
+    type: Literal["literal"]
+    value: str | int | float | bool | list[str | int | float]
+
+
+class FormatSettingsValidator(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    type: Literal["text", "number", "list", "bool"]
+    default: Annotated[FormatSettingsDefaultProperty | FormatSettingsDefaultLiteral, Field(discriminator="type")]
+    required: bool
 
 
 class FileManager:
@@ -21,11 +43,29 @@ class FileManager:
         self._file_importers: list[FileImporter] = []
         self._item_exporters: list[ItemExporter] = []
 
-    def _get_importer_id(self, file_importer: FileImporter) -> str:
-        return file_importer.__class__.__name__
+    def _validate_item_exporter_settings_config(self, item_exporter: ItemExporter):
+        errors = []
+        for i, config in enumerate(item_exporter.get_settings_config()):
+            try:
+                FormatSettingsValidator.model_validate(config)
+            except ValidationError as e:
+                errs = []
+                for error in e.errors(include_url=False, include_context=False, include_input=False):
+                    if loc := error.get("loc", tuple[str | int, ...]()):
+                        field = f".{'.'.join(map(str, loc))}"
+                    else:
+                        field = ""
+                    if error.get("type") == "model_type":
+                        message = "Input should be a valid dictionary"
+                    else:
+                        message = error.get("msg", "Unknown error")
+                    errs.append(f"`{i}{field}` -> {message}")
+                errors.append("; ".join(errs))
 
-    def _get_exporter_id(self, file_exporter: ItemExporter) -> str:
-        return file_exporter.__class__.__name__
+        if len(errors) > 0:
+            raise ItemExporterRegistrationError(f"Invalid settings config: {'; '.join(errors)}")
+
+        # TODO: validate other properties of item_exporter
 
     def _get_file_importers_by_extension(self, extension: str) -> list[FileImporter]:
         specific = []
@@ -55,7 +95,7 @@ class FileManager:
         self._file_importers.append(file_importer)
 
     def register_item_exporter(self, item_exporter: ItemExporter):
-        # TODO: validate file_exporter
+        self._validate_item_exporter_settings_config(item_exporter)
         logger.debug("%s exporter registered", item_exporter.get_name())
         self._item_exporters.append(item_exporter)
 

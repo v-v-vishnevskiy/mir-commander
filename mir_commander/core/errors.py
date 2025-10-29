@@ -16,3 +16,11 @@ class ItemExporterNotFoundError(FileManagerError):
 
 class FileImporterNotFoundError(FileManagerError):
     pass
+
+
+class FileImporterRegistrationError(FileManagerError):
+    pass
+
+
+class ItemExporterRegistrationError(FileManagerError):
+    pass
