@@ -1,9 +1,4 @@
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
-
 from .utils import BaseProjectNode
-
-
-class AtomicCoordinatesGroupData(ProjectNodeDataPlugin): ...
 
 
 class AtomicCoordinatesGroupNode(BaseProjectNode):
@@ -16,8 +11,8 @@ class AtomicCoordinatesGroupNode(BaseProjectNode):
     def get_icon_path(self) -> str:
         return ":/icons/project_nodes/atomic_coordinates_group.png"
 
-    def get_model_class(self) -> type[AtomicCoordinatesGroupData]:
-        return AtomicCoordinatesGroupData
+    def get_model_class(self) -> None:
+        return None
 
     def get_default_program_name(self) -> str:
         return "molecular_visualizer"

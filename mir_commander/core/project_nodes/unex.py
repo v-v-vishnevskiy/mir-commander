@@ -1,9 +1,4 @@
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
-
 from .utils import BaseProjectNode
-
-
-class UnexData(ProjectNodeDataPlugin): ...
 
 
 class UnexNode(BaseProjectNode):
@@ -16,8 +11,8 @@ class UnexNode(BaseProjectNode):
     def get_icon_path(self) -> str:
         return ":/icons/project_nodes/unex.png"
 
-    def get_model_class(self) -> type[UnexData]:
-        return UnexData
+    def get_model_class(self) -> None:
+        return None
 
     def get_default_program_name(self) -> None | str:
         return None
