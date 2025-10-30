@@ -27,3 +27,7 @@ class ProjectNodeSchemaV1(BaseModel):
     data: Any = Field(default=None, description="Node-specific data, validated by ProjectNodeDataPlugin")
     nodes: list[Self] = Field(default_factory=list, description="Nested nodes of the node")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+    @property
+    def full_name(self) -> list[str]:
+        return []

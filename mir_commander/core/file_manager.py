@@ -20,7 +20,7 @@ logger = logging.getLogger("Core.FileManager")
 
 class FormatSettingsDefaultProperty(BaseModel):
     type: Literal["property"]
-    value: Literal["node.name"]
+    value: Literal["node.name", "node.full_name"]
 
 
 class FormatSettingsDefaultLiteral(BaseModel):

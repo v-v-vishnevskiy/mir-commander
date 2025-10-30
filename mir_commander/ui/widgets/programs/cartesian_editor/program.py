@@ -429,8 +429,8 @@ class CartesianEditor(ProgramWindow):
         central_widget.setLayout(layout)
         self.setWidget(central_widget)
 
-        self.setMinimumSize(350, 300)
-        self.resize(350, 300)
+        self.setMinimumSize(400, 300)
+        self.resize(400, 300)
 
     @property
     def decimals(self) -> int:

@@ -29,7 +29,7 @@ class ExportFileDialog(Dialog):
         self._format_settings_widgets: dict[str, QWidget] = {}
 
         self.setWindowTitle(self.tr("Export: {}").format(node.name))
-        self.setFixedWidth(450)
+        self.setFixedWidth(500)
 
         main_layout = VBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
@@ -129,6 +129,8 @@ class ExportFileDialog(Dialog):
             property_path = default["value"]
             if property_path == "node.name":
                 return self._node.name
+            elif property_path == "node.full_name":
+                return "/".join(self._node.full_name)
             return None
         elif default["type"] == "literal":
             return default["value"]

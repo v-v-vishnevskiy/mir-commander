@@ -21,7 +21,7 @@ class XYZExporter(BaseExporter):
                 "id": "title",
                 "label": "Title",
                 "type": "text",
-                "default": {"type": "property", "value": "node.name"},
+                "default": {"type": "property", "value": "node.full_name"},
                 "required": False,
             }
         ]
@@ -30,8 +30,8 @@ class XYZExporter(BaseExporter):
         return ["xyz"]
 
     def write(self, node: ProjectNodeSchemaV1, path: Path, format_settings: dict[str, Any]):
-        if node.type != "atomic_coordinates":
-            raise ExportFileError("Only atomic coordinates are supported")
+        if node.type not in self.get_supported_node_types():
+            raise ExportFileError(f"Node type {node.type} is not supported")
 
         title = format_settings.get("title", node.name)
         atomic_num: list[int] = node.data.atomic_num
