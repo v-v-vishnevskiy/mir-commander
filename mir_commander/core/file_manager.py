@@ -130,8 +130,11 @@ class FileManager:
     def get_importers(self) -> list[FileImporterPlugin]:
         return self._importers[:]
 
-    def get_exporters(self) -> list[FileExporterPlugin]:
-        return self._exporters[:]
+    def get_exporters(self, type_name: str = "") -> list[FileExporterPlugin]:
+        if type_name == "":
+            return self._exporters[:]
+        else:
+            return [exporter for exporter in self._exporters if type_name in exporter.get_supported_node_types()]
 
     def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchemaV1:
         if importer_name != "":

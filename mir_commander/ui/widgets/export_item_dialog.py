@@ -38,7 +38,7 @@ class ExportFileDialog(Dialog):
 
         format_path_layout.addWidget(Label(Label.tr("Format:")), 0, 0)
         self._format_combo_box = ComboBox()
-        exporters = sorted(file_manager.get_exporters(), key=lambda x: x.get_name())
+        exporters = sorted(file_manager.get_exporters(node.type), key=lambda x: x.get_name())
         for exporter in exporters:
             self._format_combo_box.addItem(exporter.get_name(), userData=exporter)
         self._set_proper_format()
