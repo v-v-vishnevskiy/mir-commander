@@ -701,7 +701,7 @@
     <message>
         <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="48"/>
         <source>Save to:</source>
-        <translation>Сохранить как:</translation>
+        <translation>Сохранить в:</translation>
     </message>
 </context>
 <context>

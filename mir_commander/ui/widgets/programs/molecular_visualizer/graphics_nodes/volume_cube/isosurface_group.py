@@ -1,4 +1,5 @@
 import math
+from copy import copy
 
 import numpy as np
 
@@ -48,6 +49,6 @@ class IsosurfaceGroup(Node):
         isosurface.set_model(model_name)
 
     def remove(self):
-        for isosurface in self.children:
+        for isosurface in copy(self.children):
             isosurface.remove()
         super().remove()
