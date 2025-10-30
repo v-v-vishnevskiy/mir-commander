@@ -40,13 +40,17 @@ class ProjectNode(ProjectNodeSchemaV1):
     @classmethod
     def model_validate(cls, *args, **kwargs) -> Self:
         node = super().model_validate(*args, **kwargs)
+        cls._setup_parent_references(node)
+        return node
 
-        # Replace the list with NodeList
+    @classmethod
+    def _setup_parent_references(cls, node: "ProjectNode") -> None:
+        """Recursively setup parent references for all nested nodes."""
         nodes_data = node.nodes[:]
         node.nodes = NodeList(node)
         for child_node in nodes_data:
             node.nodes.append(child_node)
-        return node
+            cls._setup_parent_references(child_node)
 
     @field_validator("name", "type", mode="before")
     @classmethod
