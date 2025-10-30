@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
 from mir_commander.utils import consts
 
-from ..models import AtomicCoordinates, Item, VolumeCube
 from .consts import babushka_priehala
 from .utils import BaseImporter
 
@@ -23,7 +23,7 @@ class GaussianCubeImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["cube"]
 
-    def read(self, path: Path, logs: list) -> Item:
+    def read(self, path: Path, logs: list) -> Node:
         """
         Import data from Gaussian cube file in format:
         Comment line 1
@@ -48,7 +48,11 @@ class GaussianCubeImporter(BaseImporter):
 
         logs.append("Gaussian cube format.")
 
-        vcub = VolumeCube()
+        comment_1 = ""
+        comment_2 = ""
+        box_origin: list[float] = []
+        steps_number: list[int] = []
+        steps_size: list[list[float]] = []
 
         dset_ids = False
 
@@ -58,8 +62,8 @@ class GaussianCubeImporter(BaseImporter):
         atom_coord_z = []
 
         with path.open("r") as f:
-            vcub.comment1 = f.readline()
-            vcub.comment2 = f.readline()
+            comment_1 = f.readline()
+            comment_2 = f.readline()
             data = f.readline().split()
 
             if int(data[0]) > 0:
@@ -72,19 +76,19 @@ class GaussianCubeImporter(BaseImporter):
                 dset_ids = True
 
             natm = abs(int(data[0]))
-            vcub.box_origin = [float(x) for x in data[1:]]
+            box_origin = [float(x) for x in data[1:]]
 
             nx, xvec = self._parse_nx(f.readline())
-            vcub.steps_number.append(nx)
-            vcub.steps_size.append(xvec)
+            steps_number.append(nx)
+            steps_size.append(xvec)
 
             nx, xvec = self._parse_nx(f.readline())
-            vcub.steps_number.append(nx)
-            vcub.steps_size.append(xvec)
+            steps_number.append(nx)
+            steps_size.append(xvec)
 
             nx, xvec = self._parse_nx(f.readline())
-            vcub.steps_number.append(nx)
-            vcub.steps_size.append(xvec)
+            steps_number.append(nx)
+            steps_size.append(xvec)
 
             for _ in range(natm):
                 d = f.readline().split()
@@ -100,23 +104,27 @@ class GaussianCubeImporter(BaseImporter):
 
             rest_data = f.read()
 
-        vcub.cube_data = np.array([float(x) for x in rest_data.split()]).reshape(
-            [vcub.steps_number[0], vcub.steps_number[1], vcub.steps_number[2]]
+        result = Node(
+            name=path.name,
+            type="volume_cube",
+            data=dict(
+                comment1=comment_1,
+                comment2=comment_2,
+                box_origin=box_origin,
+                steps_number=steps_number,
+                steps_size=steps_size,
+                cube_data=np.array([float(x) for x in rest_data.split()]).reshape(steps_number),
+            ),
+            metadata={babushka_priehala: True},
         )
-
-        result = Item(name=path.name, data=vcub, metadata={"type": "volume_cube", babushka_priehala: True})
 
         # Add the set of Cartesian coordinates directly to the cube
-        at_coord_item = Item(
+        at_coord_item = Node(
             name="CubeMol",
-            data=AtomicCoordinates(
-                atomic_num=atom_atomic_num,
-                x=atom_coord_x,
-                y=atom_coord_y,
-                z=atom_coord_z,
-            ),
+            type="atomic_coordinates",
+            data=dict[str, list](atomic_num=atom_atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
             metadata={babushka_priehala: False},
         )
-        result.items.append(at_coord_item)
+        result.nodes.append(at_coord_item)
 
         return result

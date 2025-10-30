@@ -6,8 +6,8 @@ from pathlib import Path
 from periodictable import elements
 
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
 
-from ..models import AtomicCoordinates, Item, Molecule, Unex
 from .consts import babushka_priehala
 from .utils import BaseImporter
 
@@ -43,15 +43,13 @@ class UnexImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["log"]
 
-    def read(self, path: Path, logs: list) -> Item:
+    def read(self, path: Path, logs: list) -> Node:
         """
         Import data from UNEX file, build and populate a respective tree of items.
         Also return a list of flagged items.
         Additionally return a list of messages, which can be printed later.
         """
         version = self._get_version(path)
-
-        result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
 
         # UNEX 1.x
         if version < 2000000:
@@ -61,17 +59,17 @@ class UnexImporter(BaseImporter):
             result = self._load_unex2x(path, logs)
 
         # Currently it is assumed that top-level items are molecules
-        for item in result.items:
+        for node in result.nodes:
             # Currently it is assumed that molecules may contain only sets of Cartesian coordinates
-            if item.items:
-                item.items[-1].metadata[babushka_priehala] = True
+            if node.nodes:
+                node.nodes[-1].metadata[babushka_priehala] = True
 
         return result
 
-    def _load_unex1x(self, path: Path, logs: list) -> Item:
-        result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
+    def _load_unex1x(self, path: Path, logs: list) -> Node:
+        result = Node(name=path.name, type="unex")
 
-        molecules: dict[str, Item] = {}
+        molecules: dict[str, Node] = {}
         mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
         with path.open("r") as input_file:
@@ -83,9 +81,9 @@ class UnexImporter(BaseImporter):
                     if molecule_name in molecules:
                         molecule = molecules[molecule_name]
                     else:
-                        molecule = Item(name=molecule_name, data=Molecule())
+                        molecule = Node(name=molecule_name, type="molecule")
                         molecules[molecule_name] = molecule
-                        result.items.append(molecule)
+                        result.nodes.append(molecule)
 
                     mol_cart_set_number[molecule_name] += 1
 
@@ -109,23 +107,19 @@ class UnexImporter(BaseImporter):
                         atom_coord_z.append(float(line_items[6]))
 
                     # Add the set of Cartesian coordinates directly to the molecule
-                    at_coord_data = Item(
+                    at_coord_data = Node(
                         name=f"Set#{mol_cart_set_number[molecule_name]}",
-                        data=AtomicCoordinates(
-                            atomic_num=atomic_num,
-                            x=atom_coord_x,
-                            y=atom_coord_y,
-                            z=atom_coord_z,
-                        ),
+                        type="atomic_coordinates",
+                        data=dict[str, list](atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
                     )
-                    molecule.items.append(at_coord_data)
+                    molecule.nodes.append(at_coord_data)
 
         return result
 
-    def _load_unex2x(self, path: Path, logs: list) -> Item:
-        result = Item(name=path.name, data=Unex(), metadata={"type": "unex"})
+    def _load_unex2x(self, path: Path, logs: list) -> Node:
+        result = Node(name=path.name, type="unex")
 
-        molecules: dict[str, Item] = {}
+        molecules: dict[str, Node] = {}
         mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
 
         with path.open("r") as input_file:
@@ -138,9 +132,9 @@ class UnexImporter(BaseImporter):
                     if molecule_name in molecules:
                         molecule = molecules[molecule_name]
                     else:
-                        molecule = Item(name=molecule_name, data=Molecule())
+                        molecule = Node(name=molecule_name, type="molecule")
                         molecules[molecule_name] = molecule
-                        result.items.append(molecule)
+                        result.nodes.append(molecule)
 
                     mol_cart_set_number[molecule_name] += 1
 
@@ -203,15 +197,11 @@ class UnexImporter(BaseImporter):
                             atom_coord_z.append(float(line_items[3]))
 
                     # Add the set of Cartesian coordinates directly to the molecule
-                    at_coord_data = Item(
+                    at_coord_data = Node(
                         name=f"Set#{mol_cart_set_number[molecule_name]}",
-                        data=AtomicCoordinates(
-                            atomic_num=atomic_num,
-                            x=atom_coord_x,
-                            y=atom_coord_y,
-                            z=atom_coord_z,
-                        ),
+                        type="atomic_coordinates",
+                        data=dict[str, list](atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
                     )
-                    molecule.items.append(at_coord_data)
+                    molecule.nodes.append(at_coord_data)
 
         return result

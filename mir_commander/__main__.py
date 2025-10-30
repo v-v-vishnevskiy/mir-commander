@@ -3,7 +3,7 @@ import logging as base_logging
 import sys
 from pathlib import Path
 
-from mir_commander.startup import file_manager, logging
+from mir_commander.startup import file_manager, logging, project_nodes
 from mir_commander.ui.application import Application
 from mir_commander.utils.consts import DIR
 
@@ -18,7 +18,8 @@ def run():
 
     logger.debug("Starting Mir Commander ...")
 
-    filemanager = file_manager.startup()
+    file_manager.startup()
+    project_nodes.startup()
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(
@@ -27,7 +28,7 @@ def run():
     parser.add_argument("-p", "--project", type=Path, help="Path to project directory")
     args = parser.parse_args()
 
-    app = Application(filemanager, [])
+    app = Application([])
     app.fix_palette()
 
     if args.files:

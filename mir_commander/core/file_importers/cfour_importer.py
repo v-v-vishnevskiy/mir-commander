@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
 from mir_commander.utils import consts
 
-from ..models import AtomicCoordinates, Item, Molecule
 from .consts import babushka_priehala
 from .utils import BaseImporter
 
@@ -22,7 +22,7 @@ class CFourImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["log"]
 
-    def read(self, path: Path, logs: list) -> Item:
+    def read(self, path: Path, logs: list) -> Node:
         """
         Import data from Cfour log file, build and populate a respective tree of items.
         Also return a list of flagged items.
@@ -33,11 +33,11 @@ class CFourImporter(BaseImporter):
 
         logs.append("Cfour format.")
 
-        result = Item(name=path.name, data=Molecule(), metadata={"type": "cfour"})
+        result = Node(name=path.name, type="molecule")
 
         cart_set_number = 0
         with path.open("r") as input_file:
-            for line_number, line in enumerate[str](input_file):
+            for _, line in enumerate[str](input_file):
                 if "Z-matrix   Atomic            Coordinates (in bohr)" in line:
                     cart_set_number += 1
                     # Skip header of the table (2 lines)
@@ -62,18 +62,14 @@ class CFourImporter(BaseImporter):
                         atom_coord_y.append(float(line_items[3]) * consts.BOHR2ANGSTROM)
                         atom_coord_z.append(float(line_items[4]) * consts.BOHR2ANGSTROM)
 
-                    at_coord_item = Item(
+                    at_coord_node = Node(
                         name=f"Set#{cart_set_number}",
-                        data=AtomicCoordinates(
-                            atomic_num=atomic_num,
-                            x=atom_coord_x,
-                            y=atom_coord_y,
-                            z=atom_coord_z,
-                        ),
+                        type="atomic_coordinates",
+                        data=dict[str, list](atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
                     )
-                    result.items.append(at_coord_item)
+                    result.nodes.append(at_coord_node)
 
-        if result.items:
-            result.items[-1].metadata[babushka_priehala] = True
+        if result.nodes:
+            result.nodes[-1].metadata[babushka_priehala] = True
 
         return result

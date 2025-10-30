@@ -9,18 +9,18 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
-from mir_commander.plugin_system.file_importer import FileImporter, ImportFileError
-from mir_commander.plugin_system.item_exporter import ExportItemError, ItemExporter
+from mir_commander.plugin_system.file_exporter import ExportFileError, FileExporterPlugin
+from mir_commander.plugin_system.file_importer import FileImporterPlugin, ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema
 
-from .errors import FileImporterNotFoundError, ItemExporterNotFoundError, ItemExporterRegistrationError
-from .models import Item
+from .errors import FileExporterNotFoundError, FileExporterRegistrationError, FileImporterNotFoundError
 
 logger = logging.getLogger("Core.FileManager")
 
 
 class FormatSettingsDefaultProperty(BaseModel):
     type: Literal["property"]
-    value: Literal["item.name"]
+    value: Literal["node.name"]
 
 
 class FormatSettingsDefaultLiteral(BaseModel):
@@ -68,12 +68,12 @@ format_settings_validator_adaptor = TypeAdapter[BaseFormatSettings](FormatSettin
 
 class FileManager:
     def __init__(self):
-        self._file_importers: list[FileImporter] = []
-        self._item_exporters: list[ItemExporter] = []
+        self._importers: list[FileImporterPlugin] = []
+        self._exporters: list[FileExporterPlugin] = []
 
-    def _validate_item_exporter_settings_config(self, item_exporter: ItemExporter):
+    def _validate_exporter_settings_config(self, exporter: FileExporterPlugin):
         errors = []
-        for i, config in enumerate(item_exporter.get_settings_config()):
+        for i, config in enumerate(exporter.get_settings_config()):
             try:
                 format_settings_validator_adaptor.validate_python(config)
             except ValidationError as e:
@@ -91,72 +91,75 @@ class FileManager:
                 errors.append("; ".join(errs))
 
         if len(errors) > 0:
-            raise ItemExporterRegistrationError(f"Invalid settings config: {'; '.join(errors)}")
+            raise FileExporterRegistrationError(f"Invalid settings config: {'; '.join(errors)}")
 
-        # TODO: validate other properties of item_exporter
+        # TODO: validate other properties of exporter
 
-    def _get_file_importers_by_extension(self, extension: str) -> list[FileImporter]:
+    def _get_importers_by_extension(self, extension: str) -> list[FileImporterPlugin]:
         specific = []
         universal = []
-        for file_importer in self._file_importers:
-            if extension in file_importer.get_extensions():
-                specific.append(file_importer)
-            elif "*" in file_importer.get_extensions():
-                universal.append(file_importer)
+        for importer in self._importers:
+            if extension in importer.get_extensions():
+                specific.append(importer)
+            elif "*" in importer.get_extensions():
+                universal.append(importer)
         return specific + universal
 
-    def _get_file_importer_by_name(self, name: str) -> FileImporter:
-        for file_importer in self._file_importers:
-            if name == file_importer.get_name():
-                return file_importer
+    def _get_importer_by_name(self, name: str) -> FileImporterPlugin:
+        for importer in self._importers:
+            if name == importer.get_name():
+                return importer
         raise FileImporterNotFoundError()
 
-    def _get_item_exporter_by_name(self, name: str) -> ItemExporter:
-        for item_exporter in self._item_exporters:
-            if name == item_exporter.get_name():
-                return item_exporter
-        raise ItemExporterNotFoundError()
+    def _get_exporter_by_name(self, name: str) -> FileExporterPlugin:
+        for exporter in self._exporters:
+            if name == exporter.get_name():
+                return exporter
+        raise FileExporterNotFoundError()
 
-    def register_file_importer(self, file_importer: FileImporter):
-        # TODO: validate file_importer
-        logger.debug("%s importer registered", file_importer.get_name())
-        self._file_importers.append(file_importer)
+    def register_importer(self, importer: FileImporterPlugin):
+        # TODO: validate importer
+        logger.debug("`%s` importer registered", importer.get_name())
+        self._importers.append(importer)
 
-    def register_item_exporter(self, item_exporter: ItemExporter):
-        self._validate_item_exporter_settings_config(item_exporter)
-        logger.debug("%s exporter registered", item_exporter.get_name())
-        self._item_exporters.append(item_exporter)
+    def register_exporter(self, exporter: FileExporterPlugin):
+        self._validate_exporter_settings_config(exporter)
+        logger.debug("`%s` exporter registered", exporter.get_name())
+        self._exporters.append(exporter)
 
-    def get_file_importers(self) -> list[FileImporter]:
-        return self._file_importers[:]
+    def get_importers(self) -> list[FileImporterPlugin]:
+        return self._importers[:]
 
-    def get_item_exporters(self) -> list[ItemExporter]:
-        return self._item_exporters[:]
+    def get_exporters(self) -> list[FileExporterPlugin]:
+        return self._exporters[:]
 
-    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> Item:
+    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchema:
         if importer_name != "":
-            return self._get_file_importer_by_name(importer_name).read(path, logs)
+            return self._get_importer_by_name(importer_name).read(path, logs)
 
         file_extension = path.suffix.lstrip(".")
-        file_importers = self._get_file_importers_by_extension(file_extension)
+        importers = self._get_importers_by_extension(file_extension)
 
-        if len(file_importers) == 0:
+        if len(importers) == 0:
             raise FileImporterNotFoundError()
 
-        for file_importer in file_importers:
+        for importer in importers:
             try:
-                return file_importer.read(path, logs)
+                return importer.read(path, logs)
             except ImportFileError as e:
-                logger.error("Can't import file with %s: %s", file_importer.__class__.__name__, e)
+                logger.error("Can't import file with %s: %s", importer.__class__.__name__, e)
             except Exception as e:
-                logger.error('%s(name="%s") error: %s', file_importer.__class__.__name__, file_importer.get_name(), e)
+                logger.error("%s error: %s - %s", importer.__class__.__name__, e.__class__.__name__, e)
         raise ImportFileError()
 
-    def export_item(self, item: Item, exporter_name: str, path: Path, format_settings: dict[str, Any]):
-        exporter = self._get_item_exporter_by_name(exporter_name)
+    def export_file(self, node: ProjectNodeSchema, exporter_name: str, path: Path, format_settings: dict[str, Any]):
+        exporter = self._get_exporter_by_name(exporter_name)
         try:
-            exporter.write(item, path, format_settings)
-        except ExportItemError as e:
+            exporter.write(node, path, format_settings)
+        except ExportFileError as e:
             raise e
         except Exception as e:
-            raise ExportItemError(f"Unexpected exporter error - {e}")
+            raise ExportFileError(f"Unexpected exporter error - {e}")
+
+
+file_manager = FileManager()

@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from mir_commander.core.models import Item
+from .project_node import ProjectNodeSchema
 
 
 class ImportFileError(Exception):
     pass
 
 
-class FileImporter(ABC):
+class FileImporterPlugin(ABC):
     @abstractmethod
     def get_name(self) -> str: ...
 
@@ -16,4 +16,4 @@ class FileImporter(ABC):
     def get_extensions(self) -> list[str]: ...
 
     @abstractmethod
-    def read(self, path: Path, logs: list) -> Item: ...
+    def read(self, path: Path, logs: list) -> ProjectNodeSchema: ...

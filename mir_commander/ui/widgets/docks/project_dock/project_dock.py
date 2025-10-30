@@ -22,7 +22,7 @@ class ProjectDock(BaseDock):
         super().__init__(self.tr("Project"), parent)
         self.project_window = parent
 
-        self.tree = TreeView(self, project.data, config.tree)
+        self.tree = TreeView(self, project.nodes, config.tree)
         self.tree.load_data()
         self.setMinimumWidth(200)
         self.setWidget(self.tree)

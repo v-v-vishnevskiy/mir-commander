@@ -5,28 +5,27 @@ from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
-from mir_commander.core import models
 from mir_commander.core.file_importers.consts import babushka_priehala
+from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.utils.program import ProgramWindow
 
 from .config import TreeConfig
-from .items import AtomicCoordinates, AtomicCoordinatesGroup, Container, Molecule, TreeItem, Unex, VolumeCube
+from .items import TreeItem
 
 if TYPE_CHECKING:
     from .project_dock import ProjectDock
 
-logger = logging.getLogger("ProjectDock.TreeView")
+logger = logging.getLogger("UI.ProjectDock.TreeView")
 
 
 class TreeView(QTreeView):
     view_item = Signal(QStandardItem, ProgramWindow.__class__, dict)  # type: ignore[arg-type]
 
-    def __init__(self, parent: "ProjectDock", data: models.Data, config: TreeConfig):
+    def __init__(self, parent: "ProjectDock", nodes: list[ProjectNode], config: TreeConfig):
         super().__init__(parent)
 
         self._project_window = parent.project_window
-
-        self._data = data
+        self._nodes = nodes
         self._model = QStandardItemModel()
 
         icon_size = config.icon_size
@@ -56,28 +55,17 @@ class TreeView(QTreeView):
         self._project_window.import_file(item)
 
     def export_item(self, item: TreeItem):
-        self._project_window.export_item(item)
+        self._project_window.export_file(item.project_node)
 
-    def add_item(self, item: models.Item, parent: TreeItem | None = None):
+    def _add_item(self, node: ProjectNode, parent: TreeItem | None = None):
         parent_item = parent if parent is not None else self._model.invisibleRootItem()
-        if type(item.data) is models.AtomicCoordinates:
-            parent_item.appendRow(AtomicCoordinates(item))
-        elif type(item.data) is models.AtomicCoordinatesGroup:
-            parent_item.appendRow(AtomicCoordinatesGroup(item))
-        elif type(item.data) is models.Molecule:
-            parent_item.appendRow(Molecule(item))
-        elif type(item.data) is models.Unex:
-            parent_item.appendRow(Unex(item))
-        elif type(item.data) is models.VolumeCube:
-            parent_item.appendRow(VolumeCube(item))
-        else:
-            parent_item.appendRow(Container(item))
+        parent_item.appendRow(TreeItem(node))
 
     def load_data(self):
         logger.debug("Loading data ...")
         self._model.clear()
-        for item in self._data.items:
-            self.add_item(item)
+        for node in self._nodes:
+            self._add_item(node)
 
     def expand_top_items(self):
         logger.debug("Expanding top items ...")
@@ -92,7 +80,7 @@ class TreeView(QTreeView):
             self._view_babushka(cast(TreeItem, root_item.child(i)))
 
     def _view_babushka(self, item: TreeItem):
-        data = item.core_item
+        data = item.project_node
         if data is not None and data.metadata.pop(babushka_priehala, False):
             if item.default_program:
                 self.view_item.emit(item, item.default_program, {})

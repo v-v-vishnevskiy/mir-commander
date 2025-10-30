@@ -6,8 +6,8 @@ import numpy as np
 from cclib.io import ccread
 
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
 
-from ..models import AtomicCoordinates, AtomicCoordinatesGroup, Item, Molecule
 from .consts import babushka_priehala
 from .utils import BaseImporter
 
@@ -19,7 +19,7 @@ class CCLibImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["*"]
 
-    def read(self, path: Path, logs: list) -> Item:
+    def read(self, path: Path, logs: list) -> Node:
         """
         Import data from file using cclib, build and populate a respective tree of items.
         Here also is implemented logic on how to visualize by default the imported items.
@@ -44,13 +44,13 @@ class CCLibImporter(BaseImporter):
         if hasattr(data, "metadata"):
             logs.append(pprint.pformat(data.metadata, compact=True))
 
-        molecule = Molecule(n_atoms=data.natom, atomic_num=data.atomnos)
-        result = Item(name=path.name, data=molecule, metadata={"type": "cclib"})
+        molecule = dict(n_atoms=data.natom, atomic_num=data.atomnos)
+        result = Node(name=path.name, type="molecule", data=molecule)
 
         if hasattr(data, "charge"):
-            molecule.charge = data.charge
+            molecule["charge"] = data.charge
         if hasattr(data, "mult"):
-            molecule.multiplicity = data.mult
+            molecule["multiplicity"] = data.mult
 
         # If we have coordinates of atoms.
         # This is actually expected to be always true
@@ -75,28 +75,29 @@ class CCLibImporter(BaseImporter):
                 xyz_title = "Final coordinates"
 
             # Add a set of representative Cartesian coordinates directly to the molecule
-            at_coord_item = Item(
+            at_coord_item = Node(
                 name=xyz_title,
-                data=AtomicCoordinates(
-                    atomic_num=molecule.atomic_num,
+                type="atomic_coordinates",
+                data=dict(
+                    atomic_num=molecule["atomic_num"],
                     x=data.atomcoords[xyz_idx][:, 0],
                     y=data.atomcoords[xyz_idx][:, 1],
                     z=data.atomcoords[xyz_idx][:, 2],
                 ),
                 metadata={babushka_priehala: True},
             )
-            result.items.append(at_coord_item)
+            result.nodes.append(at_coord_item)
 
             # If we have multiple sets of coordinates
             if cshape[0] > 1:
                 # If this was an optimization
                 if hasattr(data, "optstatus"):
-                    optcg_item = Item(name="Optimization", data=AtomicCoordinatesGroup())
-                    result.items.append(optcg_item)
+                    optcg_item = Node(name="Optimization", type="atomic_coordinates_group")
+                    result.nodes.append(optcg_item)
                     # Adding sets of atomic coordinates to the group
                     for i in range(0, cshape[0]):
-                        atcoods_data = AtomicCoordinates(
-                            atomic_num=molecule.atomic_num,
+                        atcoods_data = dict[str, list](
+                            atomic_num=molecule["atomic_num"],
                             x=data.atomcoords[i][:, 0],
                             y=data.atomcoords[i][:, 1],
                             z=data.atomcoords[i][:, 2],
@@ -108,37 +109,45 @@ class CCLibImporter(BaseImporter):
                             csname += ", done"
                         if data.optstatus[i] & data.OPT_UNCONVERGED:
                             csname += ", unconverged"
-                        optcg_item.items.append(Item(name=csname, data=atcoods_data))
+                        optcg_item.nodes.append(Node(name=csname, type="atomic_coordinates", data=atcoods_data))
                 # Otherwise this is an undefined set of coordinates
                 else:
-                    molcg_item = Item(name="Coordinates", data=AtomicCoordinatesGroup())
-                    result.items.append(molcg_item)
+                    molcg_item = Node(name="Coordinates", type="atomic_coordinates_group")
+                    result.nodes.append(molcg_item)
                     # Adding sets of atomic coordinates to the group
                     for i in range(0, cshape[0]):
-                        atcoods_data = AtomicCoordinates(
-                            atomic_num=molecule.atomic_num,
-                            x=data.atomcoords[i][:, 0],
-                            y=data.atomcoords[i][:, 1],
-                            z=data.atomcoords[i][:, 2],
+                        molcg_item.nodes.append(
+                            Node(
+                                name="Set {}".format(i + 1),
+                                type="atomic_coordinates",
+                                data=dict[str, list](
+                                    atomic_num=molecule["atomic_num"],
+                                    x=data.atomcoords[i][:, 0],
+                                    y=data.atomcoords[i][:, 1],
+                                    z=data.atomcoords[i][:, 2],
+                                ),
+                            )
                         )
-                        csname = "Set {}".format(i + 1)
-                        molcg_item.items.append(Item(name=csname, data=atcoods_data))
 
         # If there was an energy scan along some geometrical parameter(s)
         if hasattr(data, "scancoords"):
             cshape = np.shape(data.scancoords)  # Number of structure sets is in cshape[0]
             if cshape[0] > 0:
-                scancg_item = Item(name="Scan", data=AtomicCoordinatesGroup())
-                result.items.append(scancg_item)
+                scancg_item = Node(name="Scan", type="atomic_coordinates_group")
+                result.nodes.append(scancg_item)
                 # Adding sets of atomic coordinates to the group
                 for i in range(0, cshape[0]):
-                    atcoods_data = AtomicCoordinates(
-                        atomic_num=molecule.atomic_num,
-                        x=data.scancoords[i][:, 0],
-                        y=data.scancoords[i][:, 1],
-                        z=data.scancoords[i][:, 2],
+                    scancg_item.nodes.append(
+                        Node(
+                            name="Step {}".format(i + 1),
+                            type="atomic_coordinates",
+                            data=dict[str, list](
+                                atomic_num=molecule["atomic_num"],
+                                x=data.scancoords[i][:, 0],
+                                y=data.scancoords[i][:, 1],
+                                z=data.scancoords[i][:, 2],
+                            ),
+                        )
                     )
-                    csname = "Step {}".format(i + 1)
-                    scancg_item.items.append(Item(name=csname, data=atcoods_data))
 
         return result

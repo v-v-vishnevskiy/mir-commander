@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 from PIL import Image, ImageCms
 from PySide6.QtGui import QContextMenuEvent
 
-from mir_commander.core.models import AtomicCoordinates, VolumeCube
+from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
+from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
 from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Translator
@@ -48,10 +49,10 @@ class MolecularVisualizer(ProgramWindow):
         )
         self.visualizer.message_channel.connect(self.long_msg_signal.emit)
 
-        match self.item.core_item.data:
-            case VolumeCube():
+        match self.item.project_node.data:
+            case VolumeCubeData():
                 self._volume_cube_items.append(self.item)
-                self.visualizer.set_volume_cube(self.item.core_item.data)
+                self.visualizer.set_volume_cube(self.item.project_node.data)
 
         self._molecule_index = 0
         self._draw_item = self.item
@@ -90,12 +91,12 @@ class MolecularVisualizer(ProgramWindow):
 
         index = max(0, index)
         last_item = parent
-        if not parent.hasChildren() and isinstance(parent.core_item.data, AtomicCoordinates):
+        if not parent.hasChildren() and parent.project_node.type == "atomic_coordinates":
             return True, 0, last_item
         else:
             for i in range(parent.rowCount()):
                 item = parent.child(i)
-                if isinstance(item.core_item.data, AtomicCoordinates):
+                if item.project_node.type == "atomic_coordinates":
                     last_item = item
                     counter += 1
                     if index == counter:
@@ -110,10 +111,10 @@ class MolecularVisualizer(ProgramWindow):
         _, self._molecule_index, self._draw_item = self._atomic_coordinates_item(self._molecule_index, self.item)
         self._atomic_coordinates_items = [self._draw_item]
 
-    def _get_draw_item_atomic_coordinates(self) -> list[tuple[int, AtomicCoordinates]]:
-        match self._draw_item.core_item.data:
-            case AtomicCoordinates():
-                return [(self._draw_item.id, self._draw_item.core_item.data)]
+    def _get_draw_item_atomic_coordinates(self) -> list[tuple[int, AtomicCoordinatesData]]:
+        match self._draw_item.project_node.data:
+            case AtomicCoordinatesData():
+                return [(self._draw_item.id, self._draw_item.project_node.data)]
             case _:
                 return []
 
@@ -147,11 +148,11 @@ class MolecularVisualizer(ProgramWindow):
             return False
 
     def item_changed_event(self, item_id: int, action: None | ItemChangedAction):
-        data = self._get_item(item_id).core_item.data  # already has updated data
-        match data:
-            case AtomicCoordinates():
+        project_node = self._get_item(item_id).project_node
+        match project_node.data:
+            case AtomicCoordinatesData():
                 if action is None:
-                    self.visualizer.set_atomic_coordinates([(item_id, data)])
+                    self.visualizer.set_atomic_coordinates([(item_id, project_node.data)])
                 else:
                     match action:
                         case AtomicCoordinatesAddAtomAction():

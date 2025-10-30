@@ -1,9 +1,7 @@
-from typing import Literal
-
-from pydantic import BaseModel, Field
+from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin, ProjectNodePlugin
 
 
-class AtomicCoordinates(BaseModel):
+class AtomicCoordinatesData(ProjectNodeDataPlugin):
     """
     Class of atomic positions defined as Cartesian coordinates.
 
@@ -16,23 +14,27 @@ class AtomicCoordinates(BaseModel):
     Note, in a similar manner we may design a class for Z-matrices, etc.
     """
 
-    data_type: Literal["atomic_coordinates"] = "atomic_coordinates"
-
     atomic_num: list[int] = []
     x: list[float] = []  # Cartesian coordinates X [A]
     y: list[float] = []  # Cartesian coordinates Y [A]
     z: list[float] = []  # Cartesian coordinates Z [A]
 
 
-class AtomicCoordinatesGroup(BaseModel):
-    data_type: Literal["atomic_coordinates_group"] = "atomic_coordinates_group"
+class AtomicCoordinatesNode(ProjectNodePlugin):
+    def get_type(self) -> str:
+        return "atomic_coordinates"
 
+    def get_name(self) -> str:
+        return "Atomic Coordinates"
 
-class Molecule(BaseModel):
-    data_type: Literal["molecule"] = "molecule"
+    def get_icon_path(self) -> str:
+        return ":/icons/project_nodes/atomic_coordinates.png"
 
-    n_atoms: int = 0
-    atomic_num: list[int] = []
-    charge: int = 0
-    multiplicity: int = 1
-    contribution: float = Field(default=0.0, description="Contribution in mixtures in fraction of unit [0, 1]")
+    def get_model_class(self) -> type[AtomicCoordinatesData]:
+        return AtomicCoordinatesData
+
+    def get_default_program_name(self) -> str:
+        return "molecular_visualizer"
+
+    def get_program_names(self) -> list[str]:
+        return ["cartesian_editor"]

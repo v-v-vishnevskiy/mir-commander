@@ -2,14 +2,14 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
-from mir_commander.core.models import Item
+from .project_node import ProjectNodeSchema
 
 
-class ExportItemError(Exception):
+class ExportFileError(Exception):
     pass
 
 
-class ItemExporter(ABC):
+class FileExporterPlugin(ABC):
     @abstractmethod
     def get_name(self) -> str: ...
 
@@ -20,6 +20,4 @@ class ItemExporter(ABC):
     def get_settings_config(self) -> list[dict[str, Any]]: ...
 
     @abstractmethod
-    def write(self, item: Item, path: Path, format_settings: dict[str, Any]): ...
-
-    # TODO: add protection for modifying item data. Item must be immutable.
+    def write(self, node: ProjectNodeSchema, path: Path, format_settings: dict[str, Any]): ...

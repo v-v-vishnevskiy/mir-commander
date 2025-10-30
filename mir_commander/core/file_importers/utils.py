@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from mir_commander.plugin_system.file_importer import FileImporter
+from mir_commander.plugin_system.file_importer import FileImporterPlugin
 
 
-class BaseImporter(FileImporter):
+class BaseImporter(FileImporterPlugin):
     def load_lines(self, path: Path, n: int) -> list[str]:
         lines = []
         with path.open("r") as input_file:

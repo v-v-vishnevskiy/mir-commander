@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>project_nodes/atomic_coordinates_group.png</file>
+    <file>project_nodes/atomic_coordinates.png</file>
+    <file>project_nodes/default.png</file>
+    <file>project_nodes/folder.png</file>
+    <file>project_nodes/molecule.png</file>
+    <file>project_nodes/unex.png</file>
+    <file>project_nodes/volume_cube.png</file>
+  </qresource>
+</RCC>

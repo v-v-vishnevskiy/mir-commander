@@ -5,7 +5,7 @@ from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from mir_commander.core import FileManager, Project
+from mir_commander.core import Project
 from mir_commander.core.errors import LoadProjectError
 from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
 from mir_commander.utils.consts import DIR
@@ -20,15 +20,13 @@ logger = logging.getLogger("UI.Application")
 class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
-    def __init__(self, file_manager: FileManager, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         super().__init__(*args, **kwargs)
         self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
-        self._file_manager = file_manager
-
-        self.register_resources()
+        self._register_resources()
 
         self.apply_callbacks = ApplyCallbacks()
         self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
@@ -103,7 +101,7 @@ class Application(QApplication):
             palette.setColor(QPalette.ColorRole.WindowText, QColor(238, 238, 236))
             self.setPalette(palette)
 
-    def register_resources(self):
+    def _register_resources(self):
         for file in DIR.ICONS.glob("*.rcc"):
             QResource.registerResource(str(file))
 
@@ -137,7 +135,7 @@ class Application(QApplication):
 
     def open_project(self, path: Path) -> int:
         try:
-            project = Project(path=path, file_manager=self._file_manager, temporary=False)
+            project = Project(path=path, temporary=False)
         except LoadProjectError as e:
             logger.error(str(e))
             self._error.setText(e.__class__.__name__)
@@ -157,7 +155,7 @@ class Application(QApplication):
     def open_temporary_project(self, files: list[Path]) -> int:
         logger.info("Creating temporary project from files ...")
 
-        project = Project(path=Path(), file_manager=self._file_manager, temporary=True)
+        project = Project(path=Path(), temporary=True)
         messages: list[str] = []
         project.import_files(files, messages)
 

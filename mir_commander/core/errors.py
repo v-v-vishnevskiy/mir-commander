@@ -10,7 +10,7 @@ class FileManagerError(CoreError):
     pass
 
 
-class ItemExporterNotFoundError(FileManagerError):
+class FileExporterNotFoundError(FileManagerError):
     pass
 
 
@@ -22,5 +22,13 @@ class FileImporterRegistrationError(FileManagerError):
     pass
 
 
-class ItemExporterRegistrationError(FileManagerError):
+class FileExporterRegistrationError(FileManagerError):
+    pass
+
+
+class ProjectNodeRegistrationError(CoreError):
+    pass
+
+
+class ProjectNodeNotFoundError(CoreError):
     pass

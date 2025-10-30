@@ -10,8 +10,10 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidge
 
 from mir_commander import __version__
 from mir_commander.core import Project
+from mir_commander.core.project_node import ProjectNode
+from mir_commander.plugin_system.file_exporter import ExportFileError
 from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.item_exporter import ExportItemError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
@@ -21,7 +23,7 @@ from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
 from .widgets.docks.project_dock.items import TreeItem
 from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.export_item_dialog import ExportItemDialog
+from .widgets.export_item_dialog import ExportFileDialog
 from .widgets.settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("ProjectWindow")
@@ -299,9 +301,9 @@ class ProjectWindow(QMainWindow):
             try:
                 logs: list[str] = []
                 imported_item = self.project.import_file(
-                    file_path, logs, parent.core_item if parent is not None else None
+                    file_path, logs, parent.project_node if parent is not None else None
                 )
-                self.docks.project.tree.add_item(imported_item, parent)
+                self.docks.project.tree._add_item(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")
@@ -316,20 +318,23 @@ class ProjectWindow(QMainWindow):
                 )
                 self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
 
-    def export_item(self, item: TreeItem):
-        dialog = ExportItemDialog(item, self.project._file_manager, parent=self)
+    def export_file(self, node: ProjectNode):
+        dialog = ExportFileDialog(node, parent=self)
 
         if dialog.exec() == Dialog.DialogCode.Accepted:
             path, exporter_name, format_settings = dialog.get_params()
             try:
-                self.project.export_item(
-                    item=item.core_item, exporter_name=exporter_name, path=path, format_settings=format_settings
+                self.project.export_file(
+                    node=ProjectNodeSchema(**node.model_dump(mode="python")),
+                    exporter_name=exporter_name,
+                    path=path,
+                    format_settings=format_settings,
                 )
-                self.status_bar.showMessage(self.tr("Item exported successfully"), 3000)
-            except ExportItemError as e:
-                logger.error("Failed to export item: %s", e)
-                self.append_to_console(self.tr("Failed to export item: {}").format(e))
-                self.status_bar.showMessage(self.tr("Failed to export item"), 5000)
+                self.status_bar.showMessage(self.tr("File exported successfully"), 3000)
+            except ExportFileError as e:
+                logger.error("Failed to export file: %s", e)
+                self.append_to_console(self.tr("Failed to export file: {}").format(e))
+                self.status_bar.showMessage(self.tr("Failed to export file"), 5000)
 
     @Slot()
     def update_window_menu(self):

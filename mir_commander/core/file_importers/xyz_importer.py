@@ -5,8 +5,8 @@ from pathlib import Path
 from periodictable import elements
 
 from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
 
-from ..models import AtomicCoordinates, Item, Molecule
 from .consts import babushka_priehala
 from .utils import BaseImporter
 
@@ -41,19 +41,14 @@ class XYZImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["xyz"]
 
-    def read(self, path: Path, logs: list) -> Item:
-        """
-        Import data from XYZ file, build and populate a respective tree of items.
-        """
-
+    def read(self, path: Path, logs: list) -> Node:
         self._validate(path)
 
         logs.append("XYZ format.")
 
-        result = Item(name=path.name, data=Molecule(), metadata={"type": "xyz"})
+        result = Node(name=path.name, type="molecule")
 
         state = ParserState.INIT
-        at_coord_item = None
         with path.open("r") as input_file:
             for line_number, line in enumerate(input_file):
                 if state == ParserState.INIT:
@@ -109,20 +104,21 @@ class XYZImporter(BaseImporter):
 
                     if num_read_cards == num_atoms:
                         # Add the set of Cartesian coordinates directly to the molecule
-                        at_coord_item = Item(
+                        at_coord_item = Node(
                             name=title,
-                            data=AtomicCoordinates(
+                            type="atomic_coordinates",
+                            data=dict[str, list](
                                 atomic_num=atom_atomic_num,
                                 x=atom_coord_x,
                                 y=atom_coord_y,
                                 z=atom_coord_z,
                             ),
                         )
-                        result.items.append(at_coord_item)
+                        result.nodes.append(at_coord_item)
 
                         state = ParserState.INIT
 
-        if result.items:
-            result.items[-1].metadata[babushka_priehala] = True
+        if result.nodes:
+            result.nodes[-1].metadata[babushka_priehala] = True
 
         return result

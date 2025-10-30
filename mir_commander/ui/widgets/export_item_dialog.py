@@ -3,9 +3,9 @@ from typing import Any, cast
 
 from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit, QWidget
 
-from mir_commander.core import FileManager
-from mir_commander.core.models.molecule import AtomicCoordinates
-from mir_commander.plugin_system.item_exporter import ItemExporter
+from mir_commander.core.file_manager import file_manager
+from mir_commander.core.project_node import ProjectNode
+from mir_commander.plugin_system.file_exporter import FileExporterPlugin
 from mir_commander.ui.utils.widget import (
     CheckBox,
     ComboBox,
@@ -18,19 +18,17 @@ from mir_commander.ui.utils.widget import (
     SpinBox,
     VBoxLayout,
 )
-from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 from mir_commander.utils.text import sanitize_filename
 
 
-class ExportItemDialog(Dialog):
-    def __init__(self, item: TreeItem, file_manager: FileManager, *args, **kwargs):
+class ExportFileDialog(Dialog):
+    def __init__(self, node: ProjectNode, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._item = item
-        self._file_manager = file_manager
+        self._node = node
         self._format_settings_widgets: dict[str, QWidget] = {}
 
-        self.setWindowTitle(self.tr("Export: {}").format(item.text()))
+        self.setWindowTitle(self.tr("Export: {}").format(node.name))
         self.setFixedWidth(450)
 
         main_layout = VBoxLayout()
@@ -40,7 +38,7 @@ class ExportItemDialog(Dialog):
 
         format_path_layout.addWidget(Label(Label.tr("Format:")), 0, 0)
         self._format_combo_box = ComboBox()
-        exporters = sorted(file_manager.get_item_exporters(), key=lambda x: x.get_name())
+        exporters = sorted(file_manager.get_exporters(), key=lambda x: x.get_name())
         for exporter in exporters:
             self._format_combo_box.addItem(exporter.get_name(), userData=exporter)
         self._set_proper_format()
@@ -49,7 +47,7 @@ class ExportItemDialog(Dialog):
 
         format_path_layout.addWidget(Label(Label.tr("Save to:")), 1, 0)
         self._file_name_editbox = QLineEdit()
-        self._file_name_editbox.setText(str(Path.cwd() / sanitize_filename(item.text())) + ".log")
+        self._file_name_editbox.setText(str(Path.cwd() / sanitize_filename(node.name)) + ".log")
         format_path_layout.addWidget(self._file_name_editbox, 1, 1)
         choose_pb = PushButton(PushButton.tr("Browse..."))
         choose_pb.clicked.connect(self._choose_pb_handler)
@@ -86,7 +84,7 @@ class ExportItemDialog(Dialog):
         self._update()
 
     def _set_proper_format(self):
-        if not isinstance(self._item.core_item.data, AtomicCoordinates):
+        if self._node.type != "atomic_coordinates":
             self._format_combo_box.setCurrentIndex(0)
             return
 
@@ -99,7 +97,7 @@ class ExportItemDialog(Dialog):
 
         widget_container = self._format_settings_widgets[exporter_name]
         layout = cast(GridLayout, widget_container.layout())
-        exporter = cast(ItemExporter, self._format_combo_box.currentData())
+        exporter = cast(FileExporterPlugin, self._format_combo_box.currentData())
         settings: dict[str, Any] = {}
 
         for i, config in enumerate(exporter.get_settings_config()):
@@ -129,8 +127,8 @@ class ExportItemDialog(Dialog):
 
         if default["type"] == "property":
             property_path = default["value"]
-            if property_path == "item.name":
-                return self._item.text()
+            if property_path == "node.name":
+                return self._node.name
             return None
         elif default["type"] == "literal":
             return default["value"]
@@ -169,9 +167,10 @@ class ExportItemDialog(Dialog):
             widget.setChecked(bool(default_value))
         return widget
 
-    def _create_format_settings_widget(self, exporter: ItemExporter) -> QWidget:
+    def _create_format_settings_widget(self, exporter: FileExporterPlugin) -> QWidget:
         container = QWidget()
         layout = GridLayout()
+        layout.setContentsMargins(10, 10, 10, 10)
 
         for i, config in enumerate(exporter.get_settings_config()):
             default_value = self._get_default_value(config)
@@ -186,7 +185,7 @@ class ExportItemDialog(Dialog):
         return container
 
     def _update(self):
-        item_exporter = cast(ItemExporter, self._format_combo_box.currentData())
+        item_exporter = cast(FileExporterPlugin, self._format_combo_box.currentData())
         text = self._file_name_editbox.text()
         if suffix := Path(text).suffix:
             self._file_name_editbox.setText(text.replace(suffix, "." + item_exporter.get_extensions()[0]))
