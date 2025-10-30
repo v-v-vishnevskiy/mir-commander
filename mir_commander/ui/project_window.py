@@ -13,7 +13,6 @@ from mir_commander.core import Project
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.plugin_system.file_exporter import ExportFileError
 from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node import ProjectNodeSchema
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
@@ -325,7 +324,7 @@ class ProjectWindow(QMainWindow):
             path, exporter_name, format_settings = dialog.get_params()
             try:
                 self.project.export_file(
-                    node=ProjectNodeSchema(**node.model_dump(mode="python")),
+                    node=node,
                     exporter_name=exporter_name,
                     path=path,
                     format_settings=format_settings,

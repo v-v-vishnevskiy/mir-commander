@@ -1,12 +1,11 @@
 import logging
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
 
 from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node import ProjectNodeSchema
+from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
 
 from .config import ProjectConfig
 from .errors import LoadProjectError
@@ -49,9 +48,9 @@ class Project:
             raise LoadProjectError(f"Invalid path: {self.path}")
         logger.info("Loading project completed")
 
-    def _convert_raw_node(self, raw_node: ProjectNodeSchema) -> ProjectNode:
+    def _convert_raw_node(self, raw_node: ProjectNodeSchemaV1) -> ProjectNode:
         try:
-            node = ProjectNode.model_validate(asdict(raw_node))
+            node = ProjectNode.model_validate(raw_node)
             self._convert_raw_data(node)
             return node
         except ValidationError as e:
@@ -84,7 +83,7 @@ class Project:
         self.save()
         return project_node
 
-    def export_file(self, node: ProjectNodeSchema, exporter_name: str, path: Path, format_settings: dict[str, Any]):
+    def export_file(self, node: ProjectNodeSchemaV1, exporter_name: str, path: Path, format_settings: dict[str, Any]):
         file_manager.export_file(node=node, exporter_name=exporter_name, path=path, format_settings=format_settings)
 
     def save(self):

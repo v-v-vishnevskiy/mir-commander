@@ -4,6 +4,7 @@ from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.core.errors import ProjectNodeNotFoundError
+from mir_commander.core.file_manager import file_manager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.core.project_node_registry import project_node_registry
 from mir_commander.ui.utils.program import ProgramWindow
@@ -81,10 +82,13 @@ class TreeItem(QStandardItem):
         )
         result.addAction(import_file_action)
 
-        export_item_action = Action(
-            text=Action.tr("Export..."), parent=result, triggered=lambda: tree_view.export_item(self)
-        )
-        result.addAction(export_item_action)
+        for exporter in file_manager.get_exporters():
+            if self.project_node.type in exporter.get_supported_node_types():
+                export_item_action = Action(
+                    text=Action.tr("Export..."), parent=result, triggered=lambda: tree_view.export_item(self)
+                )
+                result.addAction(export_item_action)
+                break
 
         if self.default_program:
 

@@ -1,17 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Self
 
 from pydantic import BaseModel
 
-
-@dataclass
-class ProjectNodeSchema:
-    name: str
-    type: str
-    data: Any = field(default=None)
-    nodes: list[Self] = field(default_factory=list)
-    metadata: dict[str, Any] = field(default_factory=dict)
+from .metadata import Metadata
 
 
 class ProjectNodeDataPlugin(BaseModel): ...
@@ -35,3 +26,6 @@ class ProjectNodePlugin(ABC):
 
     @abstractmethod
     def get_program_names(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_metadata(self) -> Metadata: ...

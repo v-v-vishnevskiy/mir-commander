@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from mir_commander.plugin_system.file_exporter import ExportFileError, FileExporterPlugin
 from mir_commander.plugin_system.file_importer import FileImporterPlugin, ImportFileError
-from mir_commander.plugin_system.project_node import ProjectNodeSchema
+from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
 
 from .errors import FileExporterNotFoundError, FileExporterRegistrationError, FileImporterNotFoundError
 
@@ -133,7 +133,7 @@ class FileManager:
     def get_exporters(self) -> list[FileExporterPlugin]:
         return self._exporters[:]
 
-    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchema:
+    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchemaV1:
         if importer_name != "":
             return self._get_importer_by_name(importer_name).read(path, logs)
 
@@ -152,7 +152,7 @@ class FileManager:
                 logger.error("%s error: %s - %s", importer.__class__.__name__, e.__class__.__name__, e)
         raise ImportFileError()
 
-    def export_file(self, node: ProjectNodeSchema, exporter_name: str, path: Path, format_settings: dict[str, Any]):
+    def export_file(self, node: ProjectNodeSchemaV1, exporter_name: str, path: Path, format_settings: dict[str, Any]):
         exporter = self._get_exporter_by_name(exporter_name)
         try:
             exporter.write(node, path, format_settings)

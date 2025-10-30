@@ -5,7 +5,7 @@ from pathlib import Path
 from periodictable import elements
 
 from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
+from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 
 from .consts import babushka_priehala
 from .utils import BaseImporter
@@ -41,7 +41,7 @@ class XYZImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["xyz"]
 
-    def read(self, path: Path, logs: list) -> Node:
+    def read(self, path: Path, logs: list[str]) -> Node:
         self._validate(path)
 
         logs.append("XYZ format.")

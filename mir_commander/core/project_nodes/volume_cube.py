@@ -1,7 +1,9 @@
 import numpy as np
 from numpydantic import NDArray, Shape
 
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin, ProjectNodePlugin
+from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
+
+from .utils import BaseProjectNode
 
 
 class VolumeCubeData(ProjectNodeDataPlugin):
@@ -17,7 +19,7 @@ class VolumeCubeData(ProjectNodeDataPlugin):
     cube_data: NDArray[Shape["* x, * y, * z"], np.float64] = None  # noqa: F722
 
 
-class VolumeCubeNode(ProjectNodePlugin):
+class VolumeCubeNode(BaseProjectNode):
     def get_type(self) -> str:
         return "volume_cube"
 

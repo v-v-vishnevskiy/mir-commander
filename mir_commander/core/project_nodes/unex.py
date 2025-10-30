@@ -1,10 +1,12 @@
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin, ProjectNodePlugin
+from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
+
+from .utils import BaseProjectNode
 
 
 class UnexData(ProjectNodeDataPlugin): ...
 
 
-class UnexNode(ProjectNodePlugin):
+class UnexNode(BaseProjectNode):
     def get_type(self) -> str:
         return "unex"
 

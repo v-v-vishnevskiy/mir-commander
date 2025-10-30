@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 
 from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node import ProjectNodeSchema as Node
+from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils import consts
 
 from .consts import babushka_priehala
@@ -23,7 +23,7 @@ class GaussianCubeImporter(BaseImporter):
     def get_extensions(self) -> list[str]:
         return ["cube"]
 
-    def read(self, path: Path, logs: list) -> Node:
+    def read(self, path: Path, logs: list[str]) -> Node:
         """
         Import data from Gaussian cube file in format:
         Comment line 1

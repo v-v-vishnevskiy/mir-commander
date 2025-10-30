@@ -1,20 +1,16 @@
-from typing import Any, Self
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, field_validator
+
+from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
 
 ProjectNodeData = Any
 
 
-class ProjectNode(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
+class ProjectNode(ProjectNodeSchemaV1):
+    model_config = ConfigDict(extra="forbid", strict=True, from_attributes=True)
 
-    name: str = Field(min_length=1, max_length=255)
-    type: str = Field(min_length=1, max_length=255)
-    data: ProjectNodeData = None
-    nodes: list[Self] = []
-    metadata: dict[str, Any] = {}
-
-    @field_validator("name")
+    @field_validator("name", "type", mode="before")
     @classmethod
-    def _strip_name(cls, v: str) -> str:
+    def _strip_name_and_type(cls, v: str) -> str:
         return v.strip()

@@ -1,4 +1,6 @@
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin, ProjectNodePlugin
+from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
+
+from .utils import BaseProjectNode
 
 
 class AtomicCoordinatesData(ProjectNodeDataPlugin):
@@ -20,7 +22,7 @@ class AtomicCoordinatesData(ProjectNodeDataPlugin):
     z: list[float] = []  # Cartesian coordinates Z [A]
 
 
-class AtomicCoordinatesNode(ProjectNodePlugin):
+class AtomicCoordinatesNode(BaseProjectNode):
     def get_type(self) -> str:
         return "atomic_coordinates"
 

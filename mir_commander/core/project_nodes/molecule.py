@@ -1,6 +1,8 @@
 from pydantic import Field
 
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin, ProjectNodePlugin
+from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
+
+from .utils import BaseProjectNode
 
 
 class MoleculeData(ProjectNodeDataPlugin):
@@ -11,7 +13,7 @@ class MoleculeData(ProjectNodeDataPlugin):
     contribution: float = Field(default=0.0, description="Contribution in mixtures in fraction of unit [0, 1]")
 
 
-class MoleculeNode(ProjectNodePlugin):
+class MoleculeNode(BaseProjectNode):
     def get_type(self) -> str:
         return "molecule"
 
