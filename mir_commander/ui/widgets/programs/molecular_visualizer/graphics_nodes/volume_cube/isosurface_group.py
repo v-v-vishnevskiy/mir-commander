@@ -21,6 +21,7 @@ class IsosurfaceGroup(Node):
         color_1: Color4f,
         color_2: Color4f,
         inverse: bool,
+        unique_id: int,
         resource_manager: ResourceManager,
         *args,
         **kwargs,
@@ -30,18 +31,29 @@ class IsosurfaceGroup(Node):
         super().__init__(*args, **kwargs)
 
         self._value = math.fabs(value)
+        self._unique_id = unique_id
         self._resource_manager = resource_manager
 
-        self._add_isosurfaces(cube_data, math.fabs(value), color_1, value < 0)
+        self._add_isosurfaces(cube_data, math.fabs(value), color_1, value < 0, self._unique_id + 1)
         if inverse and value != 0.0:
-            self._add_isosurfaces(cube_data, math.fabs(value), color_2, value > 0)
+            self._add_isosurfaces(cube_data, math.fabs(value), color_2, value > 0, self._unique_id + 2)
 
     @property
     def value(self) -> float:
         return self._value
 
-    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f, inverted: bool):
-        isosurface = Isosurface(parent=self, inverted=inverted, color=color, resource_manager=self._resource_manager)
+    @property
+    def unique_id(self) -> int:
+        return self._unique_id
+
+    def _add_isosurfaces(self, cube_data: np.ndarray, value: float, color: Color4f, inverted: bool, unique_id: int):
+        isosurface = Isosurface(
+            parent=self,
+            inverted=inverted,
+            color=color,
+            resource_manager=self._resource_manager,
+            unique_id=unique_id,
+        )
         vertices, normals = marching_cubes.isosurface(cube_data, value, -1.0 if inverted else 1.0)
         model_name = f"isosurface_{isosurface.id}"
         vao = VertexArrayObject(model_name, vertices, normals)

@@ -7,7 +7,7 @@ from mir_commander.ui.utils.opengl.utils import Color4f
 from mir_commander.utils import consts
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup
-from ...errors import EmptyScalarFieldError, SurfaceNotFoundError
+from ...errors import EmptyScalarFieldError
 from .isosurface_group import IsosurfaceGroup
 
 
@@ -41,7 +41,7 @@ class VolumeCube(Node):
         self._volume_cube = volume_cube
 
     def add_isosurface(
-        self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool
+        self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool, unique_id: int
     ) -> VolumeCubeIsosurfaceGroup:
         if self.is_empty_scalar_field:
             raise EmptyScalarFieldError()
@@ -54,20 +54,19 @@ class VolumeCube(Node):
             color_1=color_1,
             color_2=color_2,
             inverse=inverse,
+            unique_id=unique_id,
         )
         return self._group_node_to_entity(group)
 
-    def remove_isosurface_group(self, id: int):
-        try:
-            self.get_isosurface_group(id).remove()
-        except SurfaceNotFoundError:
-            pass
-
-    def get_isosurface_group(self, id: int) -> IsosurfaceGroup:
+    def remove_isosurface(self, id: int):
         for group in self.children:
-            if group.id == id:
-                return group
-        raise SurfaceNotFoundError()
+            if group.unique_id == id:
+                group.remove()
+                return
+            for isosurface in group.children:
+                if isosurface.unique_id == id:
+                    isosurface.remove()
+                    return
 
     @property
     def isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
@@ -75,11 +74,14 @@ class VolumeCube(Node):
 
     def _group_node_to_entity(self, group: IsosurfaceGroup) -> VolumeCubeIsosurfaceGroup:
         return VolumeCubeIsosurfaceGroup(
-            id=group.id,
+            id=group.unique_id,
             value=group.value,
             isosurfaces=[
                 VolumeCubeIsosurface(
-                    id=isosurface.id, inverted=isosurface.inverted, color=isosurface.color, visible=isosurface.visible
+                    id=isosurface.unique_id,
+                    inverted=isosurface.inverted,
+                    color=isosurface.color,
+                    visible=isosurface.visible,
                 )
                 for isosurface in group.children
             ],

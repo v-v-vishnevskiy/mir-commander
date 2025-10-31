@@ -266,10 +266,10 @@ class Visualizer(OpenGLWidget):
         self.update()
 
     def add_volume_cube_isosurface(
-        self, value: float, color_1: Color4f, color_2: Color4f = (1.0, 1.0, 1.0, 0.2), inverse: bool = False
+        self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool, unique_id: int
     ):
         self.makeCurrent()
-        result = self._volume_cube.add_isosurface(value, color_1, color_2, inverse)
+        result = self._volume_cube.add_isosurface(value, color_1, color_2, inverse, unique_id)
         self.update()
         return result
 
@@ -427,6 +427,11 @@ class Visualizer(OpenGLWidget):
                             self.tr("Save image"),
                             self.tr("Could not save image:") + f"\n{dlg.img_file_path}\n" + message,
                         )
+
+    def remove_volume_cube_isosurface(self, id: int):
+        self.makeCurrent()
+        self._volume_cube.remove_isosurface(id)
+        self.update()
 
     def set_next_style(self):
         if self._style.set_next_style():

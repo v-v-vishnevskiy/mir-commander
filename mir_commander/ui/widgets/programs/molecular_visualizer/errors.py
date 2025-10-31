@@ -8,7 +8,3 @@ class CalcError(Error):
 
 class EmptyScalarFieldError(Error):
     pass
-
-
-class SurfaceNotFoundError(Error):
-    pass

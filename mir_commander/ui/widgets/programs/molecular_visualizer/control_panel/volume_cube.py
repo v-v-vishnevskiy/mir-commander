@@ -1,3 +1,4 @@
+from time import monotonic_ns
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QResizeEvent, QStandardItem, QStandardItemModel
@@ -53,7 +54,7 @@ class DeleteButton(QPushButton):
 
     def clicked_handler(self):
         for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.remove_node(self._id)
+            viewer.visualizer.remove_volume_cube_isosurface(self._id)
         self._control_panel.volume_cube.refresh_values()
 
 
@@ -234,6 +235,8 @@ class VolumeCube(QWidget):
     def add_button_clicked_handler(self):
         value = self._value.value()
 
+        unique_id = monotonic_ns()
+
         for viewer in self._control_panel.opened_programs:
             try:
                 viewer.visualizer.add_volume_cube_isosurface(
@@ -241,6 +244,7 @@ class VolumeCube(QWidget):
                     qcolor_to_color4f(self._color_button_1.color),
                     qcolor_to_color4f(self._color_button_2.color),
                     self._inverse_checkbox.isChecked(),
+                    unique_id,
                 )
             except EmptyScalarFieldError:
                 pass
