@@ -1,8 +1,8 @@
 from time import monotonic_ns
 from typing import TYPE_CHECKING
 
-from PySide6.QtGui import QColor, QIcon, QMouseEvent, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QDoubleSpinBox, QFrame, QPushButton, QWidget
+from PySide6.QtGui import QColor, QIcon, QResizeEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QAbstractItemView, QDoubleSpinBox, QPushButton, QWidget
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.utils.widget import (
@@ -151,40 +151,6 @@ class IsosurfacesTreeView(TreeView):
         super().resizeEvent(event)
 
 
-class ColorButtonNewIsosurface(QFrame):
-    def __init__(self, color: QColor):
-        super().__init__()
-        self.setFixedSize(20, 20)
-        self._color = color
-        self.set_color(self._color)
-
-    @property
-    def color(self) -> QColor:
-        return self._color
-
-    def set_color(self, color: QColor):
-        self._color = color
-        self.set_style_sheet(color, self.isEnabled())
-
-    def set_style_sheet(self, color: QColor, enabled: bool):
-        color = color if enabled else QColor(128, 128, 128, a=128)
-        border_color = "black" if enabled else "gray"
-        self.setStyleSheet(
-            f"QFrame {{ border: 1px solid {border_color}; background-color: {color.name(QColor.NameFormat.HexArgb)}; }}"
-        )
-
-    def setEnabled(self, enabled: bool):
-        super().setEnabled(enabled)
-        self.set_style_sheet(self._color, enabled)
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-        )
-        if color.isValid():
-            self.set_color(color)
-
-
 class VolumeCube(QWidget):
     def __init__(self, parent: "ControlPanel"):
         super().__init__(parent=parent)
@@ -200,8 +166,8 @@ class VolumeCube(QWidget):
         # Value layout
         value_layout = GridLayout()
 
-        self._color_button_1 = ColorButtonNewIsosurface(color=QColor(255, 0, 0, a=200))
-        self._color_button_2 = ColorButtonNewIsosurface(color=QColor(0, 0, 255, a=200))
+        self._color_button_1 = ColorButton(color=QColor(255, 0, 0, a=200))
+        self._color_button_2 = ColorButton(color=QColor(0, 0, 255, a=200))
         self._color_button_2.setEnabled(False)
 
         add_button = PushButton(PushButton.tr("Add"))
