@@ -20,5 +20,9 @@ resources/i18n/*.qm
 resources/icons/*.rcc
 /*.png
 /*.jpg
+/*.xyz
+/*.log
+/*.cube
+/*.mol
 *.pyproject*
 mircmd

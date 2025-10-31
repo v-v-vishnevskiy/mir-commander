@@ -6,5 +6,29 @@ class LoadProjectError(CoreError):
     pass
 
 
-class LoadFileError(CoreError):
+class FileManagerError(CoreError):
+    pass
+
+
+class FileExporterNotFoundError(FileManagerError):
+    pass
+
+
+class FileImporterNotFoundError(FileManagerError):
+    pass
+
+
+class FileImporterRegistrationError(FileManagerError):
+    pass
+
+
+class FileExporterRegistrationError(FileManagerError):
+    pass
+
+
+class ProjectNodeRegistrationError(CoreError):
+    pass
+
+
+class ProjectNodeNotFoundError(CoreError):
     pass

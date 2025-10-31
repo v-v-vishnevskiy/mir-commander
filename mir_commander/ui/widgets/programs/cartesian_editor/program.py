@@ -5,7 +5,7 @@ from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
-from mir_commander.core.models import AtomicCoordinates
+from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import StandardItem, TableView, Translator, VBoxLayout
 from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
@@ -159,7 +159,7 @@ class AtomicCoordinatesTableView(TableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setVisible(False)
 
-        self._raw_data = AtomicCoordinates()
+        self._raw_data = AtomicCoordinatesData()
 
         self._init_new_atom_row()
 
@@ -314,7 +314,7 @@ class AtomicCoordinatesTableView(TableView):
         )
         self.setIndexWidget(self._model.indexFromItem(self._new_atom_plus_item), self._plus_button)
 
-    def load_data(self, atomic_coordinates: AtomicCoordinates):
+    def load_data(self, atomic_coordinates: AtomicCoordinatesData):
         self._raw_data = atomic_coordinates
 
         with QSignalBlocker(self._model):
@@ -422,15 +422,15 @@ class CartesianEditor(ProgramWindow):
 
         layout.addWidget(self._atomic_coordinates_table_view, stretch=1)
 
-        match self.item.core_item.data:
-            case AtomicCoordinates():
-                self._atomic_coordinates_table_view.load_data(self.item.core_item.data)
+        match self.item.project_node.data:
+            case AtomicCoordinatesData():
+                self._atomic_coordinates_table_view.load_data(self.item.project_node.data)
 
         central_widget.setLayout(layout)
         self.setWidget(central_widget)
 
-        self.setMinimumSize(350, 300)
-        self.resize(350, 300)
+        self.setMinimumSize(400, 300)
+        self.resize(400, 300)
 
     @property
     def decimals(self) -> int:

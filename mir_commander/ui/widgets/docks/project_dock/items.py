@@ -3,7 +3,10 @@ from typing import TYPE_CHECKING, Callable
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.core import models
+from mir_commander.core.errors import ProjectNodeNotFoundError
+from mir_commander.core.file_manager import file_manager
+from mir_commander.core.project_node import ProjectNode
+from mir_commander.core.project_node_registry import project_node_registry
 from mir_commander.ui.utils.program import ProgramWindow
 from mir_commander.ui.utils.widget import Action, Menu
 from mir_commander.ui.widgets.programs.cartesian_editor.program import CartesianEditor
@@ -16,24 +19,39 @@ if TYPE_CHECKING:
 class TreeItem(QStandardItem):
     _id_counter = 0
 
-    default_program: type[ProgramWindow] | None = None
-    programs: list[type[ProgramWindow]] = []
     child: Callable[..., "TreeItem"]
 
-    def __init__(self, item: models.Item):
+    def __init__(self, node: ProjectNode):
         TreeItem._id_counter += 1
         self._id = TreeItem._id_counter
 
-        super().__init__(item.name)
+        super().__init__(node.name)
 
-        self._core_item = item
+        self._project_node = node
+
+        self.default_program: type[ProgramWindow] | None = None
+        self.programs: list[type[ProgramWindow]] = []
+
+        try:
+            project_node = project_node_registry.get(node.type)
+            icon_path = project_node.get_icon_path()
+            name = project_node.get_default_program_name()
+            if name == "molecular_visualizer":
+                self.default_program = MolecularVisualizer
+            elif name == "cartesian_editor":
+                self.default_program = CartesianEditor
+            names = project_node.get_program_names()
+            for name in names:
+                if name == "molecular_visualizer":
+                    self.programs.append(MolecularVisualizer)
+                elif name == "cartesian_editor":
+                    self.programs.append(CartesianEditor)
+        except ProjectNodeNotFoundError:
+            icon_path = ":/icons/items/project-node.png"
 
         self.setEditable(False)
-        self._set_icon()
+        self.setIcon(QIcon(icon_path))
         self._load_data()
-
-    def _set_icon(self):
-        self.setIcon(QIcon(f":/icons/items/{self.__class__.__name__.lower()}.png"))
 
     @property
     def id(self) -> int:
@@ -49,23 +67,12 @@ class TreeItem(QStandardItem):
             return part
 
     @property
-    def core_item(self) -> models.Item:
-        return self._core_item
+    def project_node(self) -> ProjectNode:
+        return self._project_node
 
     def _load_data(self):
-        for item in self._core_item.items:
-            if type(item.data) is models.AtomicCoordinates:
-                self.appendRow(AtomicCoordinates(item))
-            elif type(item.data) is models.AtomicCoordinatesGroup:
-                self.appendRow(AtomicCoordinatesGroup(item))
-            elif type(item.data) is models.Molecule:
-                self.appendRow(Molecule(item))
-            elif type(item.data) is models.Unex:
-                self.appendRow(Unex(item))
-            elif type(item.data) is models.VolumeCube:
-                self.appendRow(VolumeCube(item))
-            else:
-                self.appendRow(Container(item))
+        for node in self._project_node.nodes:
+            self.appendRow(TreeItem(node))
 
     def build_context_menu(self, tree_view: "TreeView") -> Menu | None:
         result = Menu()
@@ -74,6 +81,14 @@ class TreeItem(QStandardItem):
             text=Action.tr("Import File"), parent=result, triggered=lambda: tree_view.import_file(self)
         )
         result.addAction(import_file_action)
+
+        for exporter in file_manager.get_exporters():
+            if self.project_node.type in exporter.get_supported_node_types():
+                export_item_action = Action(
+                    text=Action.tr("Export..."), parent=result, triggered=lambda: tree_view.export_item(self)
+                )
+                result.addAction(export_item_action)
+                break
 
         if self.default_program:
 
@@ -109,38 +124,3 @@ class TreeItem(QStandardItem):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self._id}, name={self.text()})"
-
-
-class Container(TreeItem):
-    def _set_icon(self):
-        self.setIcon(QIcon(":/icons/items/folder.png"))
-
-
-class Molecule(TreeItem):
-    pass
-
-
-class Unex(TreeItem):
-    pass
-
-
-class VolumeCube(TreeItem):
-    default_program = MolecularVisualizer
-
-    def _set_icon(self):
-        self.setIcon(QIcon(":/icons/items/volume-cube.png"))
-
-
-class AtomicCoordinatesGroup(TreeItem):
-    default_program = MolecularVisualizer
-
-    def _set_icon(self):
-        self.setIcon(QIcon(":/icons/items/coordinates-folder.png"))
-
-
-class AtomicCoordinates(TreeItem):
-    default_program = MolecularVisualizer
-    programs = [CartesianEditor]
-
-    def _set_icon(self):
-        self.setIcon(QIcon(":/icons/items/coordinates.png"))

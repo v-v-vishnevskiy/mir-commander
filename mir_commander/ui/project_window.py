@@ -10,16 +10,19 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidge
 
 from mir_commander import __version__
 from mir_commander.core import Project
-from mir_commander.core.errors import LoadFileError
+from mir_commander.core.project_node import ProjectNode
+from mir_commander.plugin_system.file_exporter import ExportFileError
+from mir_commander.plugin_system.file_importer import ImportFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
 from .utils.program import ProgramControlPanel, ProgramWindow
-from .utils.widget import Action, Menu, StatusBar
+from .utils.widget import Action, Dialog, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
 from .widgets.docks.project_dock.items import TreeItem
 from .widgets.docks.project_dock.project_dock import ProjectDock
+from .widgets.export_item_dialog import ExportFileDialog
 from .widgets.settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("ProjectWindow")
@@ -297,9 +300,9 @@ class ProjectWindow(QMainWindow):
             try:
                 logs: list[str] = []
                 imported_item = self.project.import_file(
-                    file_path, logs, parent.core_item if parent is not None else None
+                    file_path, logs, parent.project_node if parent is not None else None
                 )
-                self.docks.project.tree.add_item(imported_item, parent)
+                self.docks.project.tree._add_item(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")
@@ -307,12 +310,30 @@ class ProjectWindow(QMainWindow):
                     self.append_to_console(log)
 
                 self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
-            except LoadFileError as e:
+            except ImportFileError as e:
                 logger.error("Failed to import file %s: %s", file_path, e)
                 self.append_to_console(
                     self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e)
                 )
                 self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
+
+    def export_file(self, node: ProjectNode):
+        dialog = ExportFileDialog(node, parent=self)
+
+        if dialog.exec() == Dialog.DialogCode.Accepted:
+            path, exporter_name, format_settings = dialog.get_params()
+            try:
+                self.project.export_file(
+                    node=node,
+                    exporter_name=exporter_name,
+                    path=path,
+                    format_settings=format_settings,
+                )
+                self.status_bar.showMessage(self.tr("File exported successfully"), 3000)
+            except ExportFileError as e:
+                logger.error("Failed to export file: %s", e)
+                self.append_to_console(self.tr("Failed to export file: {}").format(e))
+                self.status_bar.showMessage(self.tr("Failed to export file"), 5000)
 
     @Slot()
     def update_window_menu(self):

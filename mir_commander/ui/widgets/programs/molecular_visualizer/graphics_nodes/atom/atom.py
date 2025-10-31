@@ -43,8 +43,9 @@ class Atom(Node):
         self._sphere = Sphere(radius, color, parent=self)
         self._bounding_sphere: None | BoundingSphere = None
         self._label = Label(self._label_config, self.element_symbol, self._index + 1, parent=self)
-        self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
         self._selection_update = 0.0
+
+        self._update_label_position()
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.add(bond)
@@ -102,6 +103,9 @@ class Atom(Node):
     def label(self) -> Label:
         return self._label
 
+    def _update_label_position(self):
+        self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
+
     def remove(self):
         self.remove_all_bonds()
         super().remove()
@@ -133,6 +137,7 @@ class Atom(Node):
 
     def set_radius(self, radius: float):
         self._sphere.set_radius(radius)
+        self._update_label_position()
 
     def set_selected(self, value: bool):
         self._selection_update = monotonic()
@@ -169,8 +174,8 @@ class Atom(Node):
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
-            f"element_symbol={self.element_symbol}, "
-            f"index_num={self._index + 1}, "
+            f"symbol={self.element_symbol}, "
+            f"index={self._index + 1}, "
             f"selected={self.selected}, "
             f"cloaked={self.cloaked}"
             ")"

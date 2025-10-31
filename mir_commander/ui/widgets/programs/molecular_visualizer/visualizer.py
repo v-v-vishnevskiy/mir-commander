@@ -6,8 +6,8 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
-from mir_commander.core.models import AtomicCoordinates
-from mir_commander.core.models import VolumeCube as CoreVolumeCube
+from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
+from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
 from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.utils.opengl.keymap import Keymap
@@ -180,14 +180,14 @@ class Visualizer(OpenGLWidget):
         self._get_axis_by_name(axis).set_text(text)
         self.update()
 
-    def set_atomic_coordinates(self, atomic_coordinates: list[tuple[int, AtomicCoordinates]]):
+    def set_atomic_coordinates(self, atomic_coordinates: list[tuple[int, AtomicCoordinatesData]]):
         self._molecules.clear()
         for tree_item_id, data in atomic_coordinates:
             self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
 
-    def add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
+    def add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinatesData):
         self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
@@ -250,7 +250,7 @@ class Visualizer(OpenGLWidget):
             return self._coordinate_axes.z
         raise ValueError(f"Invalid axis name: {name}")
 
-    def _add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
+    def _add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinatesData):
         Molecule(
             tree_item_id=tree_item_id,
             atomic_coordinates=data,
@@ -260,7 +260,7 @@ class Visualizer(OpenGLWidget):
             parent=self._molecules,
         )
 
-    def set_volume_cube(self, volume_cube: CoreVolumeCube):
+    def set_volume_cube(self, volume_cube: VolumeCubeData):
         self.makeCurrent()
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()

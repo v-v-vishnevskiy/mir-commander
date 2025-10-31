@@ -12,62 +12,67 @@
 <context>
     <name>Action</name>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="163"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="166"/>
         <source>Close Project</source>
         <translation>Close Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="168"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="171"/>
         <source>Settings...</source>
         <translation>Settings...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="182"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="185"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="189"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="192"/>
         <source>About</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="202"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="205"/>
         <source>Cl&amp;ose</source>
         <translation>Cl&amp;ose</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="209"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="212"/>
         <source>Close &amp;All</source>
         <translation>Close &amp;All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="216"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="219"/>
         <source>&amp;Tile</source>
         <translation>&amp;Tile</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="220"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="223"/>
         <source>&amp;Cascade</source>
         <translation>&amp;Cascade</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="227"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="230"/>
         <source>Ne&amp;xt</source>
         <translation>Ne&amp;xt</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="235"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="238"/>
         <source>Pre&amp;vious</source>
         <translation>Pre&amp;vious</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="101"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="88"/>
+        <source>Export...</source>
+        <translation>Export...</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="116"/>
         <source>VS_All</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="94"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="109"/>
         <source>VS_Child</source>
         <translation>Child</translation>
     </message>
@@ -360,12 +365,12 @@
         <translation>Previous style</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="195"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="198"/>
         <source>Import File...</source>
         <translation>Import File...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="74"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="81"/>
         <source>Import File</source>
         <translation>Import File</translation>
     </message>
@@ -426,12 +431,12 @@
         <translation>Center</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="27"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="26"/>
         <source>Symbol</source>
         <translation>Symbol</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="34"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="33"/>
         <source>Number</source>
         <translation>Number</translation>
     </message>
@@ -466,11 +471,24 @@
     </message>
 </context>
 <context>
+    <name>ExportFileDialog</name>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="31"/>
+        <source>Export: {}</source>
+        <translation>Export: {}</translation>
+    </message>
+</context>
+<context>
     <name>GroupBox</name>
     <message>
         <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/save_image_dialog.py" line="29"/>
         <source>Options</source>
         <translation>Options</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="58"/>
+        <source>Format settings</source>
+        <translation>Format settings</translation>
     </message>
 </context>
 <context>
@@ -516,22 +534,22 @@
         <translation>Threshold for bond detection:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="23"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="22"/>
         <source>Show:</source>
         <translation>Show:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="44"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="43"/>
         <source>Size:</source>
         <translation>Size:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="57"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="56"/>
         <source>Offset:</source>
         <translation>Offset:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="67"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="66"/>
         <source>Toggle:</source>
         <translation>Toggle:</translation>
     </message>
@@ -671,31 +689,41 @@
         <source>Decimals:</source>
         <translation>Decimals:</translation>
     </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="39"/>
+        <source>Format:</source>
+        <translation>Format:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="48"/>
+        <source>Save to:</source>
+        <translation>Save to:</translation>
+    </message>
 </context>
 <context>
     <name>Menu</name>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="136"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="139"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="145"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="148"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="152"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="155"/>
         <source>&amp;Window</source>
         <translation>&amp;Window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="158"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="161"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="91"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="106"/>
         <source>View Structures</source>
         <translation>View Structures</translation>
     </message>
@@ -730,7 +758,7 @@
         <translation>Coordinates set</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="83"/>
+        <location filename="../../mir_commander/ui/widgets/docks/project_dock/items.py" line="98"/>
         <source>Open With</source>
         <translation>Open With</translation>
     </message>
@@ -753,64 +781,79 @@
 <context>
     <name>ProjectWindow</name>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="77"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="80"/>
         <source>Started {name} {version}</source>
         <translation>Started {name} {version}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="204"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="207"/>
         <source>Close the active window</source>
         <translation>Close the active window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="211"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="214"/>
         <source>Close all the windows</source>
         <translation>Close all the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="216"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="219"/>
         <source>Tile the windows</source>
         <translation>Tile the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="222"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="225"/>
         <source>Cascade the windows</source>
         <translation>Cascade the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="230"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="233"/>
         <source>Move the focus to the next window</source>
         <translation>Move the focus to the next window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="238"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="241"/>
         <source>Move the focus to the previous window</source>
         <translation>Move the focus to the previous window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="291"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="294"/>
         <source>Import File</source>
         <translation>Import File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="293"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="296"/>
         <source>All files (*)</source>
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="309"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="312"/>
         <source>File imported successfully</source>
         <translation>File imported successfully</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="313"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="316"/>
         <source>Error importing file {file_path}: {e}</source>
         <translation>Error importing file {file_path}: {e}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="315"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="318"/>
         <source>Failed to import file</source>
         <translation>Failed to import file</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/project_window.py" line="332"/>
+        <source>File exported successfully</source>
+        <translation>File exported successfully</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/project_window.py" line="335"/>
+        <source>Failed to export file: {}</source>
+        <translation>Failed to export file: {}</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/project_window.py" line="336"/>
+        <source>Failed to export file</source>
+        <translation>Failed to export file</translation>
     </message>
 </context>
 <context>
@@ -823,6 +866,7 @@
     <message>
         <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="71"/>
         <location filename="../../mir_commander/ui/widgets/settings/settings_dialog.py" line="78"/>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="65"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
@@ -868,14 +912,24 @@
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="71"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="70"/>
         <source>All</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="77"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/control_panel/labels.py" line="76"/>
         <source>Selected</source>
         <translation>Selected</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="52"/>
+        <source>Browse...</source>
+        <translation>Browse...</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/widgets/export_item_dialog.py" line="64"/>
+        <source>Export</source>
+        <translation>Export</translation>
     </message>
 </context>
 <context>
@@ -967,7 +1021,7 @@
 <context>
     <name>StatusBar</name>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="82"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="85"/>
         <source>Ready</source>
         <translation>Ready</translation>
     </message>
@@ -1011,7 +1065,7 @@
         <translation>Cartesian editor</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/program.py" line="33"/>
+        <location filename="../../mir_commander/ui/widgets/programs/molecular_visualizer/program.py" line="34"/>
         <source>Molecular visualizer</source>
         <translation>Molecular visualizer</translation>
     </message>
