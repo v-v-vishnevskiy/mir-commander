@@ -276,6 +276,16 @@ class Visualizer(OpenGLWidget):
     def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
         return self._volume_cube.isosurface_groups
 
+    def set_volume_cube_isosurface_visible(self, id: int, visible: bool, **kwargs):
+        self.makeCurrent()
+        self._volume_cube.set_isosurface_visible(id, visible, **kwargs)
+        self.update()
+
+    def remove_volume_cube_isosurface(self, id: int):
+        self.makeCurrent()
+        self._volume_cube.remove_isosurface(id)
+        self.update()
+
     def is_empty_volume_cube_scalar_field(self) -> bool:
         return self._volume_cube.is_empty_scalar_field
 
@@ -427,11 +437,6 @@ class Visualizer(OpenGLWidget):
                             self.tr("Save image"),
                             self.tr("Could not save image:") + f"\n{dlg.img_file_path}\n" + message,
                         )
-
-    def remove_volume_cube_isosurface(self, id: int):
-        self.makeCurrent()
-        self._volume_cube.remove_isosurface(id)
-        self.update()
 
     def set_next_style(self):
         if self._style.set_next_style():

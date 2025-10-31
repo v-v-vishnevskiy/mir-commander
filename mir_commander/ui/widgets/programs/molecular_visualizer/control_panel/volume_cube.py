@@ -40,7 +40,7 @@ class VisibilityButton(QPushButton):
             kwargs["apply_to_parents"] = True
 
         for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_node_visible(self._id, self._visible, **kwargs)
+            viewer.visualizer.set_volume_cube_isosurface_visible(self._id, self._visible, **kwargs)
         self._control_panel.volume_cube.refresh_values()
 
 

@@ -58,6 +58,16 @@ class VolumeCube(Node):
         )
         return self._group_node_to_entity(group)
 
+    def set_isosurface_visible(self, id: int, visible: bool, **kwargs):
+        for group in self.children:
+            if group.unique_id == id:
+                group.set_visible(visible, **kwargs)
+                return
+            for isosurface in group.children:
+                if isosurface.unique_id == id:
+                    isosurface.set_visible(visible, **kwargs)
+                    return
+
     def remove_isosurface(self, id: int):
         for group in self.children:
             if group.unique_id == id:
