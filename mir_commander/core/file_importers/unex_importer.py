@@ -5,7 +5,7 @@ from pathlib import Path
 
 from periodictable import elements
 
-from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 
 from .consts import babushka_priehala
@@ -34,8 +34,8 @@ class UnexImporter(BaseImporter):
             if re_result is not None:
                 groups = re_result.groups()
                 return 1000000 * int(groups[0]) + 10000 * int(groups[1]) + int(groups[2])
-            raise ImportFileError("Invalid file format")
-        raise ImportFileError("Invalid file format")
+            raise InvalidFormatError()
+        raise InvalidFormatError()
 
     def get_name(self) -> str:
         return "UNEX v1 and v2 file format"

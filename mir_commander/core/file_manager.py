@@ -10,7 +10,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from mir_commander.plugin_system.file_exporter import ExportFileError, FileExporterPlugin
-from mir_commander.plugin_system.file_importer import FileImporterPlugin, ImportFileError
+from mir_commander.plugin_system.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
 
 from .errors import FileExporterNotFoundError, FileExporterRegistrationError, FileImporterNotFoundError
@@ -149,6 +149,8 @@ class FileManager:
         for importer in importers:
             try:
                 return importer.read(path, logs)
+            except InvalidFormatError:
+                continue
             except ImportFileError as e:
                 logger.error("Can't import file with %s: %s", importer.__class__.__name__, e)
             except Exception as e:

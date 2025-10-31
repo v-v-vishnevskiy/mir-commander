@@ -4,7 +4,7 @@ from pathlib import Path
 
 from periodictable import elements
 
-from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 
 from .consts import babushka_priehala
@@ -28,12 +28,12 @@ class XYZImporter(BaseImporter):
         try:
             numat = int(lines[0].strip())
         except ValueError:
-            raise ImportFileError("Invalid file format")
+            raise InvalidFormatError()
 
         # in XYZ format second line is comment, it may be anything, even empty
         for line in lines[2 : numat + 2]:
             if not card_validator.match(line.strip()):
-                raise ImportFileError("Invalid file format")
+                raise InvalidFormatError()
 
     def get_name(self) -> str:
         return "XYZ"

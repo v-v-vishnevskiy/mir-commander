@@ -9,6 +9,10 @@ class ImportFileError(Exception):
     pass
 
 
+class InvalidFormatError(ImportFileError):
+    pass
+
+
 class FileImporterPlugin(ABC):
     """
     Base class for file importer plugins.

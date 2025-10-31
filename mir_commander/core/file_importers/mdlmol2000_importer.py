@@ -3,7 +3,7 @@ from pathlib import Path
 
 from periodictable import elements
 
-from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 
 from .consts import babushka_priehala
@@ -21,7 +21,7 @@ class MDLMolV2000Importer(BaseImporter):
     def _validate(self, path: Path):
         lines = self.load_lines(path, 4)
         if " V2000" not in lines[3]:
-            raise ImportFileError("Invalid file format")
+            raise InvalidFormatError()
 
     def get_name(self) -> str:
         return "MDL Mol V2000"

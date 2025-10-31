@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mir_commander.plugin_system.file_importer import ImportFileError
+from mir_commander.plugin_system.file_importer import InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils import consts
 
@@ -14,7 +14,7 @@ class CFourImporter(BaseImporter):
         for line in lines[1:]:
             if "<<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>" in line:
                 return
-        raise ImportFileError("Invalid file format")
+        raise InvalidFormatError()
 
     def get_name(self) -> str:
         return "CFOUR"
