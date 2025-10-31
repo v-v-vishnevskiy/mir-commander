@@ -20,10 +20,11 @@ class CoordinateAxes(QWidget):
 
         self._control_panel = parent
 
+        self._layouts: list[GridLayout] = [self._add_checkboxes(), self._add_sliders(), self._add_axes()]
+
         layout = VBoxLayout()
-        layout.addLayout(self._add_checkboxes())
-        layout.addLayout(self._add_sliders())
-        layout.addLayout(self._add_axes())
+        for item in self._layouts:
+            layout.addLayout(item)
         self.setLayout(layout)
 
     def _add_checkboxes(self) -> GridLayout:
@@ -137,6 +138,7 @@ class CoordinateAxes(QWidget):
         return axis_color_button, label_color_button, line_edit
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
+        self._enable_controls(value)
         for viewer in self._control_panel.opened_programs:
             viewer.visualizer.set_coordinate_axes_visible(value)
 
@@ -192,6 +194,16 @@ class CoordinateAxes(QWidget):
         for viewer in self._control_panel.opened_programs:
             viewer.visualizer.coordinate_axes_adjust_length()
 
+    def _enable_controls(self, enabled: bool):
+        for layout in self._layouts:
+            for i in range(layout.rowCount()):
+                for j in range(layout.columnCount()):
+                    item = layout.itemAtPosition(i, j)
+                    if item is not None:
+                        item.widget().setEnabled(enabled)
+
+        self._visibility_checkbox.setEnabled(True)
+
     def update_values(self, program: "MolecularVisualizer"):
         coordinate_axes = program.visualizer.coordinate_axes
 
@@ -220,3 +232,5 @@ class CoordinateAxes(QWidget):
         self._x_line_edit.setText(coordinate_axes.x.label_text)
         self._y_line_edit.setText(coordinate_axes.y.label_text)
         self._z_line_edit.setText(coordinate_axes.z.label_text)
+
+        self._enable_controls(coordinate_axes.visible)

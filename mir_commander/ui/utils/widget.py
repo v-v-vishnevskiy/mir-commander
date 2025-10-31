@@ -163,8 +163,16 @@ class ColorButton(QPushButton):
         return self._color
 
     def _set_style_sheet(self, color: QColor):
-        color_name = color.name(QColor.NameFormat.HexArgb)
-        self.setStyleSheet(f"QPushButton {{ border: 1px solid black; margin: 1px;background-color: {color_name}; }}")
+        enabled = self.isEnabled()
+        color_name = color.name(QColor.NameFormat.HexArgb) if enabled else "gray"
+        border_color = "black" if enabled else "gray"
+        self.setStyleSheet(
+            f"QPushButton {{ border: 1px solid {border_color}; margin: 1px;background-color: {color_name}; }}"
+        )
+
+    def setEnabled(self, enabled: bool):
+        super().setEnabled(enabled)
+        self._set_style_sheet(self._color)
 
     def set_color(self, color: QColor):
         self._color = color
