@@ -68,6 +68,16 @@ class VolumeCube(Node):
                     isosurface.set_visible(visible, **kwargs)
                     return
 
+    def set_isosurface_color(self, id: int, color: Color4f):
+        for group in self.children:
+            if group.unique_id == id:
+                group.set_color(color)
+                return
+            for isosurface in group.children:
+                if isosurface.unique_id == id:
+                    isosurface.set_color(color)
+                    return
+
     def remove_isosurface(self, id: int):
         for group in self.children:
             if group.unique_id == id:

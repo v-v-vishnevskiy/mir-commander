@@ -94,8 +94,8 @@ class IsosurfacesTreeView(TreeView):
         group_delete_item = QStandardItem()
         root_item.appendRow([group_text_item, group_color_item, group_visibility_item, group_delete_item])
 
-        def color_changed_handler(node_id: int):
-            return lambda color: self._color_changed_handler(color, node_id)
+        def color_changed_handler(id: int):
+            return lambda color: self._color_changed_handler(id, color)
 
         if len(group.isosurfaces) > 1:
             for isosurface in group.isosurfaces:
@@ -132,9 +132,9 @@ class IsosurfacesTreeView(TreeView):
         d = DeleteButton(self._control_panel, group.id)
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
 
-    def _color_changed_handler(self, color: QColor, node_id: int):
+    def _color_changed_handler(self, id: int, color: QColor):
         for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_node_color_by_id(node_id, qcolor_to_color4f(color))
+            viewer.visualizer.set_volume_cube_isosurface_color(id, qcolor_to_color4f(color))
         self._control_panel.volume_cube.refresh_values()
 
     def load(self, groups: list[VolumeCubeIsosurfaceGroup]):

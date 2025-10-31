@@ -281,6 +281,11 @@ class Visualizer(OpenGLWidget):
         self._volume_cube.set_isosurface_visible(id, visible, **kwargs)
         self.update()
 
+    def set_volume_cube_isosurface_color(self, id: int, color: Color4f):
+        self.makeCurrent()
+        self._volume_cube.set_isosurface_color(id, color)
+        self.update()
+
     def remove_volume_cube_isosurface(self, id: int):
         self.makeCurrent()
         self._volume_cube.remove_isosurface(id)
