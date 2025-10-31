@@ -26,7 +26,7 @@ from .visualizer import Visualizer
 if TYPE_CHECKING:
     from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
 
-logger = logging.getLogger("Program.MolecularVisualizer")
+logger = logging.getLogger("UI.Programs.MolecularVisualizer")
 
 
 class MolecularVisualizer(ProgramWindow):

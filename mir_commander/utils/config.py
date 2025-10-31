@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from .errors import ConfigError
 
-logger = logging.getLogger("Config")
+logger = logging.getLogger("Utils.Config")
 
 
 class BaseConfig(BaseModel, abc.ABC):

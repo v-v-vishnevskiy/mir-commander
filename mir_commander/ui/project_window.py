@@ -25,7 +25,7 @@ from .widgets.docks.project_dock.project_dock import ProjectDock
 from .widgets.export_item_dialog import ExportFileDialog
 from .widgets.settings.settings_dialog import SettingsDialog
 
-logger = logging.getLogger("ProjectWindow")
+logger = logging.getLogger("UI.ProjectWindow")
 
 
 @dataclass
