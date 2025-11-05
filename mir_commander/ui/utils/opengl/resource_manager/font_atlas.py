@@ -22,7 +22,7 @@ def create_font_atlas(
     file: str,
     font_size: int = 124,
     atlas_size: int = 1024,
-    chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?-+=/\\|#()[]{}*&$%^@~",
+    chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?–-+±=/\\|#()[]{}<>*&$%^@~§'\"`",
 ) -> tuple[np.ndarray, FontAtlas]:
     """
     Create a font atlas from a font file
@@ -73,5 +73,7 @@ def create_font_atlas(
         )
 
         x += char_width + width_padding
+
+    atlas.save(f"font_atlas_{name}.png")
 
     return np.array(atlas), atlas_info

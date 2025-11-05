@@ -83,7 +83,13 @@ class TextNode(Node):
 
         x_offset = 0.0
         for i, char in enumerate(self._text):
-            char_info = font_atlas.chars[char]
+            try:
+                char_info = font_atlas.chars[char]
+            except KeyError:
+                char = "?"
+                char_info = font_atlas.chars[char]
+                child = children[i]
+                child.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
             half_width = char_info.width / char_info.height
             x = half_width + x_offset
             children[i].set_position(QVector3D(x, 0.0, 0.0))
