@@ -2,10 +2,10 @@ import re
 from enum import Enum
 from pathlib import Path
 
-from periodictable import elements
 
 from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
+from mir_commander.utils.chem import symbol_to_atomic_number
 
 from .consts import babushka_priehala
 from .utils import BaseImporter
@@ -85,7 +85,7 @@ class XYZImporter(BaseImporter):
                             elif line_items[0] == "Q":
                                 atomic_num = -2
                             else:
-                                atomic_num = elements.symbol(line_items[0]).number
+                                atomic_num = symbol_to_atomic_number(line_items[0])
                         except ValueError:
                             raise ImportFileError(f"Invalid atom at line {line_number + 1}.")
                     try:

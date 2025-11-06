@@ -3,10 +3,9 @@ from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 
-from periodictable import elements
-
 from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
+from mir_commander.utils.chem import symbol_to_atomic_number
 
 from .consts import babushka_priehala
 from .utils import BaseImporter
@@ -187,7 +186,7 @@ class UnexImporter(BaseImporter):
                                 if line_items[0] == "X":
                                     at_num = -1
                                 else:
-                                    at_num = elements.symbol(line_items[0]).number
+                                    at_num = symbol_to_atomic_number(line_items[0])
                             except ValueError:
                                 raise ImportFileError(f"Invalid atom symbol {line_items[0]}")
 
