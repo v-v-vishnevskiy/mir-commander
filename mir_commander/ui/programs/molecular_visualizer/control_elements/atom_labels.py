@@ -1,21 +1,20 @@
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QWidget
-
+from mir_commander.ui.utils.program_control_panel import ControlComponent
 from mir_commander.ui.utils.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
 
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularVisualizer
-    from .control_panel import ControlPanel
+    from ..control_panel import ControlPanel
+    from ..program import Program
 
 
-class Labels(QWidget):
-    def __init__(self, parent: "ControlPanel"):
-        super().__init__(parent=parent)
+class AtomLabels(ControlComponent["Program"]):
+    def __init__(self, control_panel: "ControlPanel"):
+        super().__init__()
 
-        self._control_panel = parent
+        self._control_panel = control_panel
 
         layout = GridLayout()
 
@@ -82,44 +81,37 @@ class Labels(QWidget):
         self.setLayout(layout)
 
     def _symbol_visible_checkbox_handler(self, value: bool):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_atom_symbol_visible(value)
+        self._control_panel.update_program_signal.emit("atom_labels.set_symbol_visible", {"value": value})
 
     def _number_visible_checkbox_handler(self, value: bool):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_atom_number_visible(value)
+        self._control_panel.update_program_signal.emit("atom_labels.set_number_visible", {"value": value})
 
     def _size_slider_value_changed_handler(self, i: int):
         self._size_double_spinbox.setValue(i)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_label_size_for_all_atoms(size=i)
+        self._control_panel.update_program_signal.emit("atom_labels.set_size", {"value": i})
 
     def _size_double_spinbox_value_changed_handler(self, value: int):
         self._size_slider.setValue(value)
 
     def _offset_slider_value_changed_handler(self, i: int):
         self._offset_double_spinbox.setValue(i / 100)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_label_offset_for_all_atoms(offset=i / 100)
+        self._control_panel.update_program_signal.emit("atom_labels.set_offset", {"value": i / 100})
 
     def _offset_double_spinbox_value_changed_handler(self, value: float):
         self._offset_slider.setValue(int(value * 100))
 
     def _toggle_all_button_clicked_handler(self):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.toggle_labels_visibility_for_all_atoms()
+        self._control_panel.update_program_signal.emit("atom_labels.toggle_visibility_for_all_atoms", {})
 
     def _toggle_selected_button_clicked_handler(self):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.toggle_labels_visibility_for_selected_atoms()
+        self._control_panel.update_program_signal.emit("atom_labels.toggle_visibility_for_selected_atoms", {})
 
-    def update_values(self, program: "MolecularVisualizer"):
-        visualizer = program.visualizer
-        self._size_slider.setValue(visualizer.config.atom_label.size)
-        self._size_double_spinbox.setValue(visualizer.config.atom_label.size)
+    def update_values(self, program: "Program"):
+        self._size_slider.setValue(program.config.atom_label.size)
+        self._size_double_spinbox.setValue(program.config.atom_label.size)
 
-        self._offset_slider.setValue(int(visualizer.config.atom_label.offset * 100))
-        self._offset_double_spinbox.setValue(visualizer.config.atom_label.offset)
+        self._offset_slider.setValue(int(program.config.atom_label.offset * 100))
+        self._offset_double_spinbox.setValue(program.config.atom_label.offset)
 
-        self._symbol_visible_checkbox.setChecked(visualizer.config.atom_label.symbol_visible)
-        self._number_visible_checkbox.setChecked(visualizer.config.atom_label.number_visible)
+        self._symbol_visible_checkbox.setChecked(program.config.atom_label.symbol_visible)
+        self._number_visible_checkbox.setChecked(program.config.atom_label.number_visible)

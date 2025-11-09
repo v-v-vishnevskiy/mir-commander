@@ -4,8 +4,8 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
 from .config import ProjectConfig
 from .errors import LoadProjectError
@@ -58,8 +58,9 @@ class Project:
 
     def _convert_raw_data(self, node: ProjectNode):
         if node.data is not None:
-            project_node_plugin = project_node_registry.get(node.type)
-            node.data = project_node_plugin.get_model_class().model_validate(node.data)
+            model_class = project_node_registry.get(node.type).get_model_class()
+            if model_class is not None:
+                node.data = model_class.model_validate(node.data)
         for child_node in node.nodes:
             self._convert_raw_data(child_node)
 
@@ -73,7 +74,7 @@ class Project:
                 logs.append(f"Failed to import file {file}: {e}")
         return nodes
 
-    def import_file(self, path: Path, logs: list[str], parent: ProjectNode | None = None) -> ProjectNode:
+    def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchemaV1 | None = None) -> ProjectNode:
         raw_node = file_manager.import_file(path, logs)
         project_node = self._convert_raw_node(raw_node)
         if parent is not None:

@@ -1,14 +1,14 @@
 import logging
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, cast
 
 from PIL import Image, ImageCms
 from PySide6.QtCore import QPoint
-from PySide6.QtGui import QVector3D
+from PySide6.QtGui import QContextMenuEvent, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
+from mir_commander.api.program import MessageChannel
 from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
 from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
-from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.utils.opengl.keymap import Keymap
 from mir_commander.ui.utils.opengl.models import cone, cylinder, sphere
@@ -29,38 +29,32 @@ from mir_commander.ui.utils.opengl.utils import (
 )
 from mir_commander.ui.utils.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
-from mir_commander.utils.message_channel import MessageChannel
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
+from .config import Config
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
-from .control_panel import ControlPanel
+from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
-from .errors import CalcError
+from .errors import CalcError, EmptyScalarFieldError
 from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
 if TYPE_CHECKING:
-    from .program import MolecularVisualizer
+    from .program import Program
 
-logger = logging.getLogger("MoleculeStructureViewer.Visualizer")
+logger = logging.getLogger("UI.Programs.MolecularVisualizer")
 
 
 class Visualizer(OpenGLWidget):
-    parent: Callable[[], "MolecularVisualizer"]  # type: ignore[assignment]
+    def __init__(self, program: "Program", title: str, config: Config, *args, **kwargs):
+        super().__init__(*args, **kwargs | dict(keymap=Keymap(config.keymap.model_dump())))
 
-    def __init__(self, title: str, app_config: AppConfig, control_panel: ControlPanel | None, *args, **kwargs):
-        kwargs["keymap"] = Keymap(app_config.project_window.widgets.programs.molecular_visualizer.keymap.model_dump())
-        super().__init__(*args, **kwargs)
-
+        self._program = program
         self._title = title
-        self._app_config = app_config
-        self._control_panel = control_panel
-        self._config = app_config.project_window.widgets.programs.molecular_visualizer
-        self.config = self._config.model_copy(deep=True)
-
-        self._style = Style(self._config)
+        self._config = config
+        self._style = Style(config)
 
         self._node_under_cursor: BaseGraphicsNode | None = None
 
@@ -74,8 +68,7 @@ class Visualizer(OpenGLWidget):
             config=self._style.current.under_cursor_text_overlay,
         )
         self._under_cursor_overlay.hide()
-
-        self.message_channel = MessageChannel()
+        self._context_menu = ContextMenu(visualizer=self, config=self._config, parent=self)
 
     def init_actions(self):
         super().init_actions()
@@ -114,6 +107,9 @@ class Visualizer(OpenGLWidget):
         self.resource_manager.current_camera.reset_to_default()
         self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * max_radius / fov_factor))
 
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        self._context_menu.exec(event.globalPos())
+
     @property
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
@@ -123,15 +119,15 @@ class Visualizer(OpenGLWidget):
             return
         self._coordinate_axes.set_position(self._molecules.center)
 
-    def scale_scene(self, value: float):
-        super().scale_scene(value)
-        if self.hasFocus() and self._control_panel is not None:
-            self._control_panel.view.update_values(self.parent())
+    def scale_scene(self, factor: float):
+        super().scale_scene(factor)
+        if self.hasFocus():
+            self._program.update_control_panel_signal.emit()
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
-        if self.hasFocus() and self._control_panel is not None:
-            self._control_panel.view.update_values(self.parent())
+        if self.hasFocus():
+            self._program.update_control_panel_signal.emit()
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
@@ -254,9 +250,9 @@ class Visualizer(OpenGLWidget):
         Molecule(
             tree_item_id=tree_item_id,
             atomic_coordinates=data,
-            geom_bond_tolerance=self.config.geom_bond_tolerance,
+            geom_bond_tolerance=self._config.geom_bond_tolerance,
             style=self._style.current,
-            atom_label_config=self.config.atom_label,
+            atom_label_config=self._config.atom_label,
             parent=self._molecules,
         )
 
@@ -268,10 +264,13 @@ class Visualizer(OpenGLWidget):
     def add_volume_cube_isosurface(
         self, value: float, color_1: Color4f, color_2: Color4f, inverse: bool, unique_id: int
     ):
-        self.makeCurrent()
-        result = self._volume_cube.add_isosurface(value, color_1, color_2, inverse, unique_id)
-        self.update()
-        return result
+        try:
+            self.makeCurrent()
+            self._volume_cube.add_isosurface(value, color_1, color_2, inverse, unique_id)
+            self._program.update_control_panel_signal.emit()
+            self.update()
+        except EmptyScalarFieldError:
+            logger.error("Failed to add volume cube isosurface: empty scalar field")
 
     def get_volume_cube_isosurface_groups(self) -> list[VolumeCubeIsosurfaceGroup]:
         return self._volume_cube.isosurface_groups
@@ -279,16 +278,19 @@ class Visualizer(OpenGLWidget):
     def set_volume_cube_isosurface_visible(self, id: int, visible: bool, **kwargs):
         self.makeCurrent()
         self._volume_cube.set_isosurface_visible(id, visible, **kwargs)
+        self._program.update_control_panel_signal.emit()
         self.update()
 
     def set_volume_cube_isosurface_color(self, id: int, color: Color4f):
         self.makeCurrent()
         self._volume_cube.set_isosurface_color(id, color)
+        self._program.update_control_panel_signal.emit()
         self.update()
 
     def remove_volume_cube_isosurface(self, id: int):
         self.makeCurrent()
         self._volume_cube.remove_isosurface(id)
+        self._program.update_control_panel_signal.emit()
         self.update()
 
     def is_empty_volume_cube_scalar_field(self) -> bool:
@@ -427,7 +429,7 @@ class Visualizer(OpenGLWidget):
                         Image.fromarray(image).save(
                             str(dlg.img_file_path), icc_profile=ImageCms.ImageCmsProfile(profile).tobytes()
                         )
-                        self.parent().short_msg_signal.emit(TR.tr("Image saved"))
+                        self._program.send_message_signal.emit(MessageChannel.STATUS, TR.tr("Image saved"))
                     except Exception as e:
                         logger.error("Could not save image: %s", e)
                         if isinstance(e, OSError):
@@ -522,7 +524,7 @@ class Visualizer(OpenGLWidget):
 
     def calc_auto_lastsel_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_auto_lastsel_atoms())
+            self._program.send_message_signal.emit(MessageChannel.CONSOLE, self._molecules.calc_auto_lastsel_atoms())
         except CalcError as e:
             QMessageBox.critical(
                 self, self.tr("Auto geometrical parameter"), str(e), buttons=QMessageBox.StandardButton.Ok
@@ -530,31 +532,37 @@ class Visualizer(OpenGLWidget):
 
     def calc_distance_last2sel_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_distance_last2sel_atoms())
+            self._program.send_message_signal.emit(
+                MessageChannel.CONSOLE, self._molecules.calc_distance_last2sel_atoms()
+            )
         except CalcError as e:
             QMessageBox.critical(self, self.tr("Interatomic distance"), str(e), buttons=QMessageBox.StandardButton.Ok)
 
     def calc_angle_last3sel_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_angle_last3sel_atoms())
+            self._program.send_message_signal.emit(MessageChannel.CONSOLE, self._molecules.calc_angle_last3sel_atoms())
         except CalcError as e:
             QMessageBox.critical(self, self.tr("Angle"), str(e), buttons=QMessageBox.StandardButton.Ok)
 
     def calc_torsion_last4sel_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_torsion_last4sel_atoms())
+            self._program.send_message_signal.emit(
+                MessageChannel.CONSOLE, self._molecules.calc_torsion_last4sel_atoms()
+            )
         except CalcError as e:
             QMessageBox.critical(self, self.tr("Torsion angle"), str(e), buttons=QMessageBox.StandardButton.Ok)
 
     def calc_oop_last4sel_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_oop_last4sel_atoms())
+            self._program.send_message_signal.emit(MessageChannel.CONSOLE, self._molecules.calc_oop_last4sel_atoms())
         except CalcError as e:
             QMessageBox.critical(self, self.tr("Out-of-plane angle"), str(e), buttons=QMessageBox.StandardButton.Ok)
 
     def calc_all_parameters_selected_atoms(self):
         try:
-            self.message_channel.send(self._molecules.calc_all_parameters_selected_atoms())
+            self._program.send_message_signal.emit(
+                MessageChannel.CONSOLE, self._molecules.calc_all_parameters_selected_atoms()
+            )
         except CalcError as e:
             QMessageBox.critical(self, self.tr("All parameters"), str(e), buttons=QMessageBox.StandardButton.Ok)
 
@@ -579,7 +587,7 @@ class Visualizer(OpenGLWidget):
         self.update()
 
     def rebuild_bonds_default(self):
-        self.rebuild_bonds(self.config.geom_bond_tolerance)
+        self.rebuild_bonds(self._config.geom_bond_tolerance)
 
     def rebuild_bonds_dynamic(self):
         current_tol = []
@@ -587,7 +595,7 @@ class Visualizer(OpenGLWidget):
             current_tol.append(molecule._geom_bond_tolerance)
 
         # TODO: get current geom bond tolerance from molecules
-        dlg = BuildBondsDialog(self.config.geom_bond_tolerance, self)
+        dlg = BuildBondsDialog(self._config.geom_bond_tolerance, self)
         if not dlg.exec():
             for i, molecule in enumerate(self._molecules.children):
                 molecule.set_geom_bond_tolerance(current_tol[i])
@@ -596,13 +604,13 @@ class Visualizer(OpenGLWidget):
     def atom_labels_show_for_all_atoms(self):
         for molecule in self._molecules.children:
             molecule.show_labels_for_all_atoms()
-        self.config.atom_label.visible = True
+        self._config.atom_label.visible = True
         self.update()
 
     def atom_labels_hide_for_all_atoms(self):
         for molecule in self._molecules.children:
             molecule.hide_labels_for_all_atoms()
-        self.config.atom_label.visible = False
+        self._config.atom_label.visible = False
         self.update()
 
     def toggle_labels_visibility_for_selected_atoms(self):
@@ -610,7 +618,7 @@ class Visualizer(OpenGLWidget):
         self.update()
 
     def toggle_labels_visibility_for_all_atoms(self):
-        self.config.atom_label.visible = self._molecules.toggle_labels_visibility_for_all_atoms()
+        self._config.atom_label.visible = self._molecules.toggle_labels_visibility_for_all_atoms()
         self.update()
 
     def atom_labels_show_for_selected_atoms(self):
@@ -625,22 +633,22 @@ class Visualizer(OpenGLWidget):
 
     def set_atom_symbol_visible(self, value: bool):
         self._molecules.set_atom_symbol_visible(value)
-        self.config.atom_label.symbol_visible = value
+        self._config.atom_label.symbol_visible = value
         self.update()
 
     def set_atom_number_visible(self, value: bool):
         self._molecules.set_atom_number_visible(value)
-        self.config.atom_label.number_visible = value
+        self._config.atom_label.number_visible = value
         self.update()
 
-    def set_label_size_for_all_atoms(self, size: int):
+    def set_label_size_for_all_atoms(self, value: int):
         for molecule in self._molecules.children:
-            molecule.set_label_size_for_all_atoms(size)
-        self.config.atom_label.size = size
+            molecule.set_label_size_for_all_atoms(value)
+        self._config.atom_label.size = value
         self.update()
 
-    def set_label_offset_for_all_atoms(self, offset: float):
+    def set_label_offset_for_all_atoms(self, value: float):
         for molecule in self._molecules.children:
-            molecule.set_label_offset_for_all_atoms(offset)
-        self.config.atom_label.offset = offset
+            molecule.set_label_offset_for_all_atoms(value)
+        self._config.atom_label.offset = value
         self.update()

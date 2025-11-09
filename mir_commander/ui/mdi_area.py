@@ -1,75 +1,153 @@
+import logging
+from collections import defaultdict
 from typing import TYPE_CHECKING, Any, cast
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QMdiArea
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
-from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.program import ProgramControlPanel, ProgramWindow
-from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
+from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, UINode
+
+from .errors import UndefinedProgramError
+from .program_manager import program_manager
+from .utils.program_control_panel import ProgramControlPanelDock
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow
 
 
-class MdiArea(QMdiArea):
-    opened_program_signal = Signal(ProgramWindow)
+logger = logging.getLogger("UI.MdiArea")
 
-    def __init__(self, project_window: "ProjectWindow", app_config: AppConfig, *args, **kwargs):
+
+class _MdiProgramWindow(QMdiSubWindow):
+    _id_counter = 0
+
+    _opened_programs = defaultdict[str, int](int)
+
+    def __init__(
+        self,
+        program_name: str,
+        node: UINode,
+        config: ProgramConfig,
+        program_control_panel_dock: None | ProgramControlPanelDock,
+        parent: QWidget,
+        kwargs: dict[str, Any],
+    ):
+        super().__init__(parent=parent)
+
+        _MdiProgramWindow._id_counter += 1
+        self._id = _MdiProgramWindow._id_counter
+
+        self._name = program_name
+
+        self.program = program_manager.get_program_class(program_name)(node=node, config=config, **kwargs)
+        self.program_control_panel_dock = program_control_panel_dock
+
+        self.setWidget(self.program.get_widget())
+        self.setWindowIcon(self.program.get_icon())
+        self.setWindowTitle(self.program.get_title())
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
+        self.resize(config.window_size.width, config.window_size.height)
+
+        _MdiProgramWindow._opened_programs[self._name] += 1
+        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._name] == 1:
+            self.program_control_panel_dock.restore_visibility()
+            self.program_control_panel_dock.toggleViewAction().setVisible(True)
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def update_title(self):
+        self.setWindowIcon(self.program.get_icon())
+        self.setWindowTitle(self.program.get_title())
+
+    def closeEvent(self, event: QCloseEvent):
+        _MdiProgramWindow._opened_programs[self._name] -= 1
+        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._name] == 0:
+            self.program_control_panel_dock.hide()
+            self.program_control_panel_dock.toggleViewAction().setVisible(False)
+        super().closeEvent(event)
+
+
+class MdiArea(QMdiArea):
+    program_send_message_signal = Signal(MessageChannel, str)
+
+    def __init__(self, project_window: "ProjectWindow", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._project_window = project_window
-        self._app_config = app_config
 
+        self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         self.subWindowActivated.connect(self._sub_window_activated_handler)
 
-    def open_program(self, item: TreeItem, program_cls: type[ProgramWindow], kwargs: dict[str, Any]):
-        for program in self.subWindowList():
-            # checking if program for this item already opened
-            if isinstance(program, program_cls) and program.item == item:
-                self.setActiveSubWindow(program)
-                break
-        else:
-            program = program_cls(
+    def _sub_window_activated_handler(self, window: None | _MdiProgramWindow):
+        if window is None:
+            return
+
+        if window.program_control_panel_dock is not None:
+            window.program_control_panel_dock.control_panel.update_event(window.program)
+
+    def _node_changed_handler(self, node_id: int, window_id: int, action: NodeChangedAction):
+        for window in cast(list[_MdiProgramWindow], self.subWindowList()):
+            if window.id != window_id:
+                window.program.node_changed_event(node_id, action)
+
+    def _update_control_panel_handler(self):
+        w = self.currentSubWindow()
+        if w is None:
+            return
+
+        window = cast(_MdiProgramWindow, w)
+        if window.program_control_panel_dock is not None:
+            window.program_control_panel_dock.control_panel.update_event(window.program)
+
+    def _update_window_title_handler(self, title: str):
+        w = self.currentSubWindow()
+        if w is None:
+            return
+
+        cast(_MdiProgramWindow, w).update_title()
+
+    def open_program(self, node: UINode, program_name: str, kwargs: dict[str, Any]):
+        for window in cast(list[_MdiProgramWindow], self.subWindowList()):
+            # checking if program for this node already opened
+            if window.name == program_name and window.program.node == node:
+                self.setActiveSubWindow(window)
+                window.show()
+                return
+
+        try:
+            window = _MdiProgramWindow(
+                program_name=program_name,
+                node=node,
+                config=program_manager.get_config_class(program_name)(),
+                program_control_panel_dock=self._project_window.add_program_control_panel(program_name),
                 parent=self,
-                app_config=self._app_config,
-                item=item,
-                control_panel=self._add_program_control_panel(program_cls),
-                **kwargs,
+                kwargs=kwargs,
             )
-            program.item_changed_signal.connect(self._item_changed_handler)
-            self.opened_program_signal.emit(program)
-            self.addSubWindow(program)
-        program.show()
+            self.addSubWindow(window)
+            window.program.node_changed_signal.connect(
+                lambda node_id, action: self._node_changed_handler(node_id, window.id, action)
+            )
+            window.program.send_message_signal.connect(self.program_send_message_signal.emit)
+            window.program.update_control_panel_signal.connect(self._update_control_panel_handler)
+            window.program.update_window_title_signal.connect(self._update_window_title_handler)
+            window.show()
+        except UndefinedProgramError:
+            logger.error("Program `%s` is not registered", program_name)
 
-    def _add_program_control_panel(self, program_cls: type[ProgramWindow]) -> ProgramControlPanel | None:
-        if program_cls.control_panel_cls is None:
-            return None
-        return self._project_window.add_program_control_panel(program_cls.control_panel_cls)
-
-    def _sub_window_activated_handler(self, window: None | ProgramWindow):
-        programs_control_panels = self._project_window.programs_control_panels
-        grouped_programs: dict[type[ProgramControlPanel], list[ProgramWindow]] = {
-            k: [] for k in programs_control_panels.keys()
-        }
-        for w in self.subWindowList():
-            program = cast(ProgramWindow, w)
-            control_panel_cls = program.control_panel_cls
-            if control_panel_cls is None:
-                continue
-            grouped_programs[control_panel_cls].append(program)
-
-        for control_panel_cls, programs in grouped_programs.items():
-            if control_panel := programs_control_panels.get(control_panel_cls):
-                control_panel.set_opened_programs(programs)
-
-        if window is not None and window.control_panel_cls is not None:
-            if control_panel := programs_control_panels.get(window.control_panel_cls):
-                control_panel.set_active_program(window)
-
-    def _item_changed_handler(self, item_id: int, program_window_id: int, metainfo: dict[str, Any]):
-        for w in self.subWindowList():
-            program = cast(ProgramWindow, w)
-            if program.id != program_window_id and program.contains_item(item_id):
-                program.item_changed_event(item_id, metainfo)
+    def update_program_event(self, program_name: str, apply_for_all: bool, key: str, data: dict[str, Any]):
+        windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
+        for window in reversed(cast(list[_MdiProgramWindow], windows)):
+            if window.name == program_name:
+                window.program.update_control_panel_event(key, data)
+                if apply_for_all is False:
+                    break

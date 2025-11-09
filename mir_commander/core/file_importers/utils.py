@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from mir_commander.plugin_system.file_importer import FileImporterPlugin
-from mir_commander.plugin_system.metadata import Metadata
+from mir_commander.api.file_importer import FileImporterPlugin
+from mir_commander.api.metadata import Metadata
 
 
 class BaseImporter(FileImporterPlugin):
@@ -20,7 +20,7 @@ class BaseImporter(FileImporterPlugin):
             version=(1, 0, 0),
             description="Core importer",
             author="Mir Commander",
-            email="info@mircmd.com",
+            email="support@mircmd.com",
             url="https://mircmd.com",
             license="MirCommander",
         )

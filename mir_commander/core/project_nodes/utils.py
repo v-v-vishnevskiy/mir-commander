@@ -1,5 +1,5 @@
-from mir_commander.plugin_system.metadata import Metadata
-from mir_commander.plugin_system.project_node import ProjectNodePlugin
+from mir_commander.api.metadata import Metadata
+from mir_commander.api.project_node import ProjectNodePlugin
 
 
 class BaseProjectNode(ProjectNodePlugin):
@@ -9,7 +9,7 @@ class BaseProjectNode(ProjectNodePlugin):
             version=(1, 0, 0),
             description="Core project node",
             author="Mir Commander",
-            email="info@mircmd.com",
+            email="support@mircmd.com",
             url="https://mircmd.com",
             license="MirCommander",
         )

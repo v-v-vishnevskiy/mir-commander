@@ -2,22 +2,20 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QKeySequence
 
-from mir_commander.ui.config import AppConfig
 from mir_commander.ui.utils.widget import Action, Menu
 
+from .config import Config
+
 if TYPE_CHECKING:
-    from .program import MolecularVisualizer
+    from .visualizer import Visualizer
 
 
 class ContextMenu(Menu):
-    def __init__(self, parent: "MolecularVisualizer", app_config: AppConfig):
-        super().__init__(parent=parent)
+    def __init__(self, visualizer: "Visualizer", config: Config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self._program = parent
-        self._visualizer = parent.visualizer
-        self._app_config = app_config
-        self._config = app_config.project_window.widgets.programs.molecular_visualizer
-        self._keymap = self._config.keymap
+        self._visualizer = visualizer
+        self._keymap = config.keymap
 
         self._init_atom_labels_menu()
         self._init_bonds_menu()
@@ -246,12 +244,12 @@ class ContextMenu(Menu):
 
         next_atomic_coordinates_act = Action(Action.tr("Next"), self.parent())
         next_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.next_atomic_coordinates))
-        next_atomic_coordinates_act.triggered.connect(self._program.set_next_atomic_coordinates)
+        next_atomic_coordinates_act.triggered.connect(self._visualizer._program.set_next_atomic_coordinates)
         menu.addAction(next_atomic_coordinates_act)
-        self._program.addAction(next_atomic_coordinates_act)
+        self._visualizer.addAction(next_atomic_coordinates_act)
 
         prev_atomic_coordinates_act = Action(Action.tr("Previous"), self.parent())
         prev_atomic_coordinates_act.setShortcut(QKeySequence(self._keymap.prev_atomic_coordinates))
-        prev_atomic_coordinates_act.triggered.connect(self._program.set_prev_atomic_coordinates)
+        prev_atomic_coordinates_act.triggered.connect(self._visualizer._program.set_prev_atomic_coordinates)
         menu.addAction(prev_atomic_coordinates_act)
-        self._program.addAction(prev_atomic_coordinates_act)
+        self._visualizer.addAction(prev_atomic_coordinates_act)

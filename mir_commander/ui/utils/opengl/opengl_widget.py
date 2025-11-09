@@ -4,7 +4,6 @@ import numpy as np
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QWidget
 
 from mir_commander.utils.consts import DIR
 
@@ -29,12 +28,12 @@ from .resource_manager.font_atlas import create_font_atlas
 from .scene import Node, Scene
 from .utils import Color4f, color_to_id
 
-logger = logging.getLogger("OpenGLWidget")
+logger = logging.getLogger("UI.Utils.OpenGLWidget")
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, parent: QWidget, keymap: None | Keymap = None):
-        super().__init__(parent)
+    def __init__(self, keymap: None | Keymap = None):
+        super().__init__()
 
         self._cursor_pos: QPoint = QPoint(0, 0)
         self._click_and_move_mode = ClickAndMoveMode.Rotation

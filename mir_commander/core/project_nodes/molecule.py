@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from mir_commander.plugin_system.project_node import ProjectNodeDataPlugin
+from mir_commander.api.project_node import ProjectNodeDataPlugin
 
 from .utils import BaseProjectNode
 

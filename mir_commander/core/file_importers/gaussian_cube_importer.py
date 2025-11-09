@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
-from mir_commander.plugin_system.file_importer import ImportFileError
-from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
+from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils import consts
 
 from .consts import babushka_priehala

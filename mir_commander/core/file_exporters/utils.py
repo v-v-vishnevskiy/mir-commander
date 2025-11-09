@@ -1,5 +1,5 @@
-from mir_commander.plugin_system.file_exporter import FileExporterPlugin
-from mir_commander.plugin_system.metadata import Metadata
+from mir_commander.api.file_exporter import FileExporterPlugin
+from mir_commander.api.metadata import Metadata
 
 
 class BaseExporter(FileExporterPlugin):
@@ -9,7 +9,7 @@ class BaseExporter(FileExporterPlugin):
             version=(1, 0, 0),
             description="Core exporter",
             author="Mir Commander",
-            email="info@mircmd.com",
+            email="support@mircmd.com",
             url="https://mircmd.com",
             license="MirCommander",
         )

@@ -3,8 +3,8 @@ from enum import Enum
 from pathlib import Path
 
 
-from mir_commander.plugin_system.file_importer import ImportFileError, InvalidFormatError
-from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1 as Node
+from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
+from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
 
 from .consts import babushka_priehala

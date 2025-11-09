@@ -1,24 +1,24 @@
 from bisect import bisect
-from typing import Callable, cast
+from typing import Any, Callable, cast
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
+from mir_commander.api.program import NodeChangedAction
 from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
-from mir_commander.ui.utils.program import ProgramWindow
-from mir_commander.ui.utils.widget import StandardItem, TableView, Translator, VBoxLayout
-from mir_commander.ui.widgets.docks.project_dock.item_changed_actions import (
+from mir_commander.ui.utils.program import Program as BaseProgram
+from mir_commander.ui.utils.widget import StandardItem, TableView
+from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
+
+from ..node_changed_actions import (
     AtomicCoordinatesAddAtomAction,
     AtomicCoordinatesNewPositionAction,
     AtomicCoordinatesNewSymbolAction,
     AtomicCoordinatesRemoveAtomsAction,
     AtomicCoordinatesSwapAtomsIndicesAction,
-    ItemChangedAction,
 )
-from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
-
-from .control_panel import ControlPanel
+from .config import Config
 
 
 class TableItem(StandardItem):
@@ -135,10 +135,10 @@ class FloatItemZ(FloatItem): ...
 
 
 class AtomicCoordinatesTableView(TableView):
-    def __init__(self, cartesian_editor: "CartesianEditor", decimals: int = 6, *args, **kwargs):
+    def __init__(self, program: "Program", decimals: int = 6, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._cartesian_editor = cartesian_editor
+        self._program = program
         self._decimals = decimals
 
         self._all_symbols = all_symbols()
@@ -218,16 +218,16 @@ class AtomicCoordinatesTableView(TableView):
             match item:
                 case SymbolItem():
                     self._raw_data.atomic_num[idx] = item.atomic_number
-                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewSymbolAction(idx))
+                    self._program.send_node_changed_event(AtomicCoordinatesNewSymbolAction(idx))
                 case FloatItemX():
                     self._raw_data.x[idx] = item.value
-                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
                 case FloatItemY():
                     self._raw_data.y[idx] = item.value
-                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
                 case FloatItemZ():
                     self._raw_data.z[idx] = item.value
-                    self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
                 case TagItem():
                     self._apply_new_tag(item)
 
@@ -257,7 +257,7 @@ class AtomicCoordinatesTableView(TableView):
         data.y[index_1], data.y[index_2] = data.y[index_2], data.y[index_1]
         data.z[index_1], data.z[index_2] = data.z[index_2], data.z[index_1]
 
-        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesSwapAtomsIndicesAction(index_1, index_2))
+        self._program.send_node_changed_event(AtomicCoordinatesSwapAtomsIndicesAction(index_1, index_2))
 
     def _is_valid_values_for_new_atom_row(self) -> bool:
         return (
@@ -289,7 +289,7 @@ class AtomicCoordinatesTableView(TableView):
         with QSignalBlocker(self._model):
             self._reset_new_atom_row()
 
-        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesAddAtomAction())
+        self._program.send_node_changed_event(AtomicCoordinatesAddAtomAction())
 
     def _add_atom_row(self, tag: int, symbol: str, x: float, y: float, z: float, append: bool = True):
         tag_item = TagItem(tag, self._model.rowCount, index=tag - 1)
@@ -393,7 +393,7 @@ class AtomicCoordinatesTableView(TableView):
                         self._get_item(row, column).set_index(new_index)
             self.viewport().update()
 
-        self._cartesian_editor.send_item_changed_signal(AtomicCoordinatesRemoveAtomsAction(indices_to_delete))
+        self._program.send_node_changed_event(AtomicCoordinatesRemoveAtomsAction(indices_to_delete))
 
     def _restore_last_valid_selected_item(self):
         selected_indexes = self.selectionModel().selectedRows()
@@ -407,37 +407,32 @@ class AtomicCoordinatesTableView(TableView):
             self.viewport().update()
 
 
-class CartesianEditor(ProgramWindow):
-    control_panel_cls = ControlPanel
-    control_panel: ControlPanel
-    name = Translator.tr("Cartesian editor")
+class Program(BaseProgram):
+    config: Config
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        central_widget = QWidget()
-        layout = VBoxLayout()
+        self._widget = AtomicCoordinatesTableView(program=self, decimals=self.config.decimals)
 
-        self._atomic_coordinates_table_view = AtomicCoordinatesTableView(self)
-
-        layout.addWidget(self._atomic_coordinates_table_view, stretch=1)
-
-        match self.item.project_node.data:
+        match self.node.project_node.data:
             case AtomicCoordinatesData():
-                self._atomic_coordinates_table_view.load_data(self.item.project_node.data)
-
-        central_widget.setLayout(layout)
-        self.setWidget(central_widget)
-
-        self.setMinimumSize(400, 300)
-        self.resize(400, 300)
+                self._widget.load_data(self.node.project_node.data)
 
     @property
     def decimals(self) -> int:
-        return self._atomic_coordinates_table_view.decimals
+        return self._widget.decimals
 
-    def set_decimals(self, value: int):
-        self._atomic_coordinates_table_view.set_decimals(value)
-
-    def item_changed_event(self, item_id: int, action: None | ItemChangedAction):
+    def node_changed_event(self, node_id: int, action: NodeChangedAction):
         pass
+
+    def update_control_panel_event(self, key: str, data: dict[str, Any]):
+        match key:
+            case "general.set_decimals":
+                self._widget.set_decimals(**data)
+
+    def get_widget(self) -> QWidget:
+        return self._widget
+
+    def send_node_changed_event(self, action: NodeChangedAction):
+        self.node_changed_signal.emit(self.node.id, action)

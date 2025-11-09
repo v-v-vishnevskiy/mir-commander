@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any
 
-from mir_commander.plugin_system.file_exporter import ExportFileError
-from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.file_exporter import ExportFileError
+from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 from mir_commander.utils.chem import atomic_number_to_symbol
 
 from .utils import BaseExporter

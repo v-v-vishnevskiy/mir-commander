@@ -1,0 +1,118 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Generic, TypeVar
+
+from pydantic import BaseModel, Field
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtGui import QIcon, QStandardItem
+from PySide6.QtWidgets import QWidget
+
+from .metadata import Metadata
+from .project_node_schema import ProjectNodeSchemaV1
+
+
+class WindowSizeConfig(BaseModel):
+    min_width: int = Field(default=50, ge=50, description="Minimum width")
+    min_height: int = Field(default=50, ge=50, description="Minimum height")
+    width: int = Field(default=300, ge=50, description="Width")
+    height: int = Field(default=300, ge=50, description="Height")
+
+
+class ProgramConfig(BaseModel):
+    window_size: WindowSizeConfig = WindowSizeConfig()
+
+
+@dataclass
+class NodeChangedAction: ...
+
+
+class UINode(QStandardItem):
+    @property
+    def id(self) -> int:
+        raise NotImplementedError
+
+    @property
+    def project_node(self) -> ProjectNodeSchemaV1:
+        raise NotImplementedError
+
+
+class MessageChannel(Enum):
+    CONSOLE = "console"
+    STATUS = "status"
+
+
+class Program(QObject):
+    send_message_signal = Signal(MessageChannel, str)
+    node_changed_signal = Signal(int, NodeChangedAction)
+    update_control_panel_signal = Signal()
+    update_window_title_signal = Signal(str)
+
+    def __init__(self, node: UINode, config: ProgramConfig):
+        super().__init__()
+        self.node = node
+        self.config = config
+
+    def node_changed_event(self, node_id: int, action: NodeChangedAction):
+        raise NotImplementedError
+
+    def update_control_panel_event(self, key: str, data: dict[str, Any]):
+        raise NotImplementedError
+
+    def get_title(self) -> str:
+        raise NotImplementedError
+
+    def get_icon(self) -> QIcon:
+        raise NotImplementedError
+
+    def get_widget(self) -> QWidget:
+        raise NotImplementedError
+
+
+T_WIDGET = TypeVar("T_WIDGET", bound=QWidget)
+
+
+@dataclass
+class ControlElement(Generic[T_WIDGET]):
+    title: str
+    widget: T_WIDGET
+    visible: bool = True
+
+
+T_PROGRAM = TypeVar("T_PROGRAM", bound=Program)
+
+
+class ControlPanel(Generic[T_PROGRAM], QObject):
+    update_program_signal = Signal(str, dict)
+
+    def allows_apply_for_all(self) -> bool:
+        raise NotImplementedError
+
+    def get_control_elements(self) -> list[ControlElement]:
+        raise NotImplementedError
+
+    def update_event(self, program: T_PROGRAM):
+        raise NotImplementedError
+
+
+class ProgramPlugin(ABC):
+    @abstractmethod
+    def get_metadata(self) -> Metadata: ...
+
+    @abstractmethod
+    def get_name(self) -> str: ...
+
+    @abstractmethod
+    def get_config_class(self) -> type[ProgramConfig]: ...
+
+    @abstractmethod
+    def get_program_class(self) -> type[Program]: ...
+
+    @abstractmethod
+    def get_control_panel_class(self) -> None | type[ControlPanel]: ...
+
+    @abstractmethod
+    def get_supported_node_types(self) -> list[str]: ...
+
+    @abstractmethod
+    def is_default_for_node_type(self) -> list[str]: ...

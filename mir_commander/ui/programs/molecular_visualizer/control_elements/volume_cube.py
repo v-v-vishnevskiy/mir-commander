@@ -2,9 +2,10 @@ from time import monotonic_ns
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QIcon, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QAbstractItemView, QDoubleSpinBox, QPushButton, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QDoubleSpinBox, QPushButton
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.utils.program_control_panel import ControlComponent
 from mir_commander.ui.utils.widget import (
     CheckBox,
     ColorButton,
@@ -16,11 +17,10 @@ from mir_commander.ui.utils.widget import (
 )
 
 from ..entities import VolumeCubeIsosurfaceGroup
-from ..errors import EmptyScalarFieldError
 
 if TYPE_CHECKING:
-    from ..program import MolecularVisualizer
-    from .control_panel import ControlPanel
+    from ..control_panel import ControlPanel
+    from ..program import Program
 
 
 class VisibilityButton(QPushButton):
@@ -31,17 +31,15 @@ class VisibilityButton(QPushButton):
         self._control_panel = control_panel
         self.setStyleSheet("QPushButton { border: none; }")
         self.setIcon(QIcon(":/icons/general/eye.png" if visible else ":/icons/general/square.png"))
-        self.clicked.connect(self.clicked_handler)
+        self.clicked.connect(self._clicked_handler)
 
-    def clicked_handler(self):
+    def _clicked_handler(self):
         self._visible = not self._visible
-        kwargs = {"apply_to_children": True}
+        data = {"id": self._id, "visible": self._visible, "apply_to_children": True}
         if self._visible:
-            kwargs["apply_to_parents"] = True
+            data["apply_to_parents"] = True
 
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_volume_cube_isosurface_visible(self._id, self._visible, **kwargs)
-        self._control_panel.volume_cube.refresh_values()
+        self._control_panel.update_program_signal.emit("volume_cube.set_isosurface_visible", data)
 
 
 class DeleteButton(QPushButton):
@@ -50,12 +48,10 @@ class DeleteButton(QPushButton):
         self._id = id
         self._control_panel = control_panel
         self.setStyleSheet("QPushButton { border: none; }")
-        self.clicked.connect(self.clicked_handler)
+        self.clicked.connect(self._clicked_handler)
 
-    def clicked_handler(self):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.remove_volume_cube_isosurface(self._id)
-        self._control_panel.volume_cube.refresh_values()
+    def _clicked_handler(self):
+        self._control_panel.update_program_signal.emit("volume_cube.remove_isosurface", {"id": self._id})
 
 
 class IsosurfacesTreeView(TreeView):
@@ -133,9 +129,9 @@ class IsosurfacesTreeView(TreeView):
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
 
     def _color_changed_handler(self, id: int, color: QColor):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_volume_cube_isosurface_color(id, qcolor_to_color4f(color))
-        self._control_panel.volume_cube.refresh_values()
+        self._control_panel.update_program_signal.emit(
+            "volume_cube.set_isosurface_color", {"id": id, "color": qcolor_to_color4f(color)}
+        )
 
     def load(self, groups: list[VolumeCubeIsosurfaceGroup]):
         self._model.clear()
@@ -151,11 +147,11 @@ class IsosurfacesTreeView(TreeView):
         super().resizeEvent(event)
 
 
-class VolumeCube(QWidget):
-    def __init__(self, parent: "ControlPanel"):
-        super().__init__(parent=parent)
+class VolumeCube(ControlComponent):
+    def __init__(self, control_panel: "ControlPanel"):
+        super().__init__()
 
-        self._control_panel = parent
+        self._control_panel = control_panel
 
         self._value = QDoubleSpinBox()
         self._value.setRange(-1000.0, 1000.0)
@@ -190,32 +186,21 @@ class VolumeCube(QWidget):
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
 
-    def refresh_values(self):
-        if self._control_panel.last_active_program is not None:
-            self.update_values(self._control_panel.last_active_program)
-
-    def update_values(self, program: "MolecularVisualizer"):
+    def update_values(self, program: "Program"):
         self._isosurfaces_tree_view.load(program.visualizer.get_volume_cube_isosurface_groups())
         self.setDisabled(program.visualizer.is_empty_volume_cube_scalar_field())
 
     def add_button_clicked_handler(self):
-        value = self._value.value()
-
-        unique_id = monotonic_ns()
-
-        for viewer in self._control_panel.opened_programs:
-            try:
-                viewer.visualizer.add_volume_cube_isosurface(
-                    value,
-                    qcolor_to_color4f(self._color_button_1.color),
-                    qcolor_to_color4f(self._color_button_2.color),
-                    self._inverse_checkbox.isChecked(),
-                    unique_id,
-                )
-            except EmptyScalarFieldError:
-                pass
-
-        self.refresh_values()
+        self._control_panel.update_program_signal.emit(
+            "volume_cube.add_isosurface",
+            {
+                "value": self._value.value(),
+                "color_1": qcolor_to_color4f(self._color_button_1.color),
+                "color_2": qcolor_to_color4f(self._color_button_2.color),
+                "inverse": self._inverse_checkbox.isChecked(),
+                "unique_id": monotonic_ns(),
+            },
+        )
 
     def _inverse_checkbox_toggled_handler(self, checked: bool):
         self._color_button_2.setEnabled(checked)

@@ -2,22 +2,23 @@ import contextlib
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QSignalBlocker
-from PySide6.QtWidgets import QDoubleSpinBox, QSlider, QWidget
+from PySide6.QtWidgets import QDoubleSpinBox, QSlider
 
+from mir_commander.ui.utils.program_control_panel import ControlComponent
 from mir_commander.ui.utils.widget import GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularVisualizer
-    from .control_panel import ControlPanel
+    from ..control_panel import ControlPanel
+    from ..program import Program
 
 
-class View(QWidget):
-    def __init__(self, parent: "ControlPanel"):
-        super().__init__(parent=parent)
+class View(ControlComponent):
+    def __init__(self, control_panel: "ControlPanel"):
+        super().__init__()
 
-        self._control_panel = parent
+        self._control_panel = control_panel
 
         self._axis_prev_value: dict[str, float] = {}
         self._scale_prev_value: float = 0.0
@@ -100,8 +101,7 @@ class View(QWidget):
         self._rotation_slider[axis].setValue(int(value * 10))
 
         data = {key: value.value() - self._axis_prev_value[key] for key, value in self._rotation_double_spinbox.items()}
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.rotate_scene(**data)
+        self._control_panel.update_program_signal.emit("view.rotate_scene", data)
         self._axis_prev_value[axis] = value
 
     def _scale_slider_value_changed_handler(self, i: int):
@@ -111,8 +111,7 @@ class View(QWidget):
         self._scale_slider.setValue(int(value * 100))
         v = value / self._scale_prev_value
 
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.scale_scene(v)
+        self._control_panel.update_program_signal.emit("view.scale_scene", {"factor": v})
         self._scale_prev_value = value
 
     def _reset_button_clicked_handler(self):
@@ -130,11 +129,10 @@ class View(QWidget):
             self._scale_slider.setValue(100)
             self._scale_double_spinbox.setValue(1.0)
 
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_scene_rotation(0, 0, 0)
-            viewer.visualizer.set_scene_scale(1.0)
+        self._control_panel.update_program_signal.emit("view.set_scene_rotation", {"pitch": 0, "yaw": 0, "roll": 0})
+        self._control_panel.update_program_signal.emit("view.set_scene_scale", {"factor": 1.0})
 
-    def update_values(self, program: "MolecularVisualizer"):
+    def update_values(self, program: "Program"):
         values = {axis: value for axis, value in zip(self._axis_order, program.visualizer.scene_rotation)}
 
         with contextlib.ExitStack() as stack:

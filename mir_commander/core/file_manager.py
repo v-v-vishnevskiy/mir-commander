@@ -9,9 +9,9 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
-from mir_commander.plugin_system.file_exporter import ExportFileError, FileExporterPlugin
-from mir_commander.plugin_system.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
-from mir_commander.plugin_system.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.file_exporter import ExportFileError, FileExporterPlugin
+from mir_commander.api.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
+from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
 from .errors import FileExporterNotFoundError, FileExporterRegistrationError, FileImporterNotFoundError
 

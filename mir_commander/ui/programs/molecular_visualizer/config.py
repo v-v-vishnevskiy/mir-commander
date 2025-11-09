@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
+from mir_commander.api.program import ProgramConfig, WindowSizeConfig
 from mir_commander.ui.utils.opengl.config import ProjectionConfig, TextOverlayConfig
 
 
@@ -324,11 +325,10 @@ class Quality(BaseModel):
     smooth: bool = True
 
 
-class MolecularVisualizerConfig(BaseModel):
+class Config(ProgramConfig):
     keymap: Keymap = Keymap()
     geom_bond_tolerance: float = 0.15
-    size: tuple[int, int] = (500, 500)
-    min_size: tuple[int, int] = (150, 150)
+    window_size: WindowSizeConfig = WindowSizeConfig(min_width=150, min_height=150, width=500, height=500)
     quality: Quality = Quality()
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(

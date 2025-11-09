@@ -9,18 +9,19 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
 
 from mir_commander import __version__
+from mir_commander.api.file_exporter import ExportFileError
+from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.program import MessageChannel, UINode
 from mir_commander.core import Project
 from mir_commander.core.project_node import ProjectNode
-from mir_commander.plugin_system.file_exporter import ExportFileError
-from mir_commander.plugin_system.file_importer import ImportFileError
 
 from .config import AppConfig, ApplyCallbacks
 from .mdi_area import MdiArea
-from .utils.program import ProgramControlPanel, ProgramWindow
+from .program_manager import program_manager
+from .utils.program_control_panel import ProgramControlPanelDock
 from .utils.widget import Action, Dialog, Menu, StatusBar
 from .widgets.about import About
 from .widgets.docks.console_dock import ConsoleDock
-from .widgets.docks.project_dock.items import TreeItem
 from .widgets.docks.project_dock.project_dock import ProjectDock
 from .widgets.export_item_dialog import ExportFileDialog
 from .widgets.settings.settings_dialog import SettingsDialog
@@ -48,7 +49,7 @@ class ProjectWindow(QMainWindow):
         logger.debug("Initializing main window ...")
         super().__init__(None)
 
-        self._programs_control_panels: dict[type[ProgramControlPanel], ProgramControlPanel] = {}
+        self._programs_control_panels: dict[str, ProgramControlPanelDock] = {}
 
         self.project = project
         self.app_config = app_config
@@ -89,23 +90,27 @@ class ProjectWindow(QMainWindow):
             self.docks.project.tree.view_babushka()
 
     @property
-    def programs_control_panels(self) -> dict[type[ProgramControlPanel], ProgramControlPanel]:
+    def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
         return self._programs_control_panels
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
 
     def setup_mdi_area(self):
-        def opened_program_slot(program: ProgramWindow):
-            program.short_msg_signal.connect(self.status_bar.showMessage)
-            program.long_msg_signal.connect(self.docks.console.append)
+        def program_send_message_handler(message_channel: MessageChannel, message: str):
+            if message_channel == MessageChannel.CONSOLE:
+                self.append_to_console(message)
+            elif message_channel == MessageChannel.STATUS:
+                self.status_bar.showMessage(message, 10000)
+            else:
+                logger.error("Unknown message channel: %s", message_channel)
 
-        self.mdi_area = MdiArea(self, app_config=self.app_config, parent=self)
+        self.mdi_area = MdiArea(project_window=self, parent=self)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.opened_program_signal.connect(opened_program_slot)
+        self.mdi_area.program_send_message_signal.connect(program_send_message_handler)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks.project.tree.view_item.connect(self.mdi_area.open_program)
+        self.docks.project.tree.open_item.connect(self.mdi_area.open_program)
 
     def setup_docks(self):
         self.setTabPosition(Qt.DockWidgetArea.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -281,14 +286,30 @@ class ProjectWindow(QMainWindow):
         if window:
             self.mdi_area.setActiveSubWindow(window)
 
-    def add_program_control_panel(self, control_panel_cls: type[ProgramControlPanel]) -> ProgramControlPanel:
-        if control_panel_cls not in self._programs_control_panels:
-            self._programs_control_panels[control_panel_cls] = control_panel_cls(parent=self)
-            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self._programs_control_panels[control_panel_cls])
-            self._view_menu.addAction(self._programs_control_panels[control_panel_cls].toggleViewAction())
-        return self._programs_control_panels[control_panel_cls]
+    def add_program_control_panel(self, program_name: str) -> None | ProgramControlPanelDock:
+        if program_name not in self._programs_control_panels:
+            program = program_manager.get_program(program_name)
+            control_panel_cls = program.get_control_panel_class()
+            if control_panel_cls is None:
+                return None
+            title = program.get_metadata().name
+            control_panel = control_panel_cls()
+            program_control_panel_dock = ProgramControlPanelDock(
+                control_panel=control_panel,
+                title=title,
+                parent=self,
+            )
+            control_panel.update_program_signal.connect(
+                lambda key, data: self.mdi_area.update_program_event(
+                    program_name, program_control_panel_dock.apply_for_all, key, data
+                )
+            )
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, program_control_panel_dock)
+            self._view_menu.addAction(program_control_panel_dock.toggleViewAction())
+            self._programs_control_panels[program_name] = program_control_panel_dock
+        return self._programs_control_panels[program_name]
 
-    def import_file(self, parent: TreeItem | None = None):
+    def import_file(self, parent: UINode | None = None):
         """Import a file into the current project."""
 
         dialog = QFileDialog(self, self.tr("Import File"))
@@ -302,7 +323,7 @@ class ProjectWindow(QMainWindow):
                 imported_item = self.project.import_file(
                     file_path, logs, parent.project_node if parent is not None else None
                 )
-                self.docks.project.tree._add_item(imported_item, parent)
+                self.docks.project.add_node(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")

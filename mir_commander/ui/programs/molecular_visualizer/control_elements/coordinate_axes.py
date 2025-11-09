@@ -2,23 +2,24 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QLineEdit, QWidget
+from PySide6.QtWidgets import QLineEdit
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.utils.program_control_panel import ControlComponent
 from mir_commander.ui.utils.widget import CheckBox, ColorButton, GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularVisualizer
-    from .control_panel import ControlPanel
+    from ..control_panel import ControlPanel
+    from ..program import Program
 
 
-class CoordinateAxes(QWidget):
-    def __init__(self, parent: "ControlPanel"):
-        super().__init__(parent=parent)
+class CoordinateAxes(ControlComponent):
+    def __init__(self, control_panel: "ControlPanel"):
+        super().__init__()
 
-        self._control_panel = parent
+        self._control_panel = control_panel
 
         self._layouts: list[GridLayout] = [self._add_checkboxes(), self._add_sliders(), self._add_axes()]
 
@@ -139,60 +140,53 @@ class CoordinateAxes(QWidget):
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         self._enable_controls(value)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_visible(value)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_visible", {"value": value})
 
     def _labels_visibility_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_labels_visible(value)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_labels_visible", {"value": value})
 
     def _both_directions_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_both_directions(value)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_both_directions", {"value": value})
 
     def _center_checkbox_toggled_handler(self, value: bool):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_center(value)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_to_center", {"value": value})
 
     def _length_slider_value_changed_handler(self, i: int):
         self._length_double_spinbox.setValue(i / 100)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_length(i / 100)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_length", {"value": i / 100})
 
     def _length_double_spinbox_value_changed_handler(self, value: float):
         self._length_slider.setValue(int(value * 100))
 
     def _thickness_slider_value_changed_handler(self, i: int):
         self._thickness_double_spinbox.setValue(i / 100)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_thickness(i / 100)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_thickness", {"value": i / 100})
 
     def _thickness_double_spinbox_value_changed_handler(self, value: float):
         self._thickness_slider.setValue(int(value * 100))
 
     def _font_size_slider_value_changed_handler(self, i: int):
         self._font_size_double_spinbox.setValue(i)
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axes_font_size(i)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_font_size", {"value": i})
 
     def _font_size_double_spinbox_value_changed_handler(self, value: int):
         self._font_size_slider.setValue(value)
 
     def _axis_label_color_changed_handler(self, axis: str, color: QColor):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axis_label_color(axis, qcolor_to_color4f(color))
+        self._control_panel.update_program_signal.emit(
+            "coordinate_axes.set_label_color", {"axis": axis, "color": qcolor_to_color4f(color)}
+        )
 
     def _axis_color_changed_handler(self, axis: str, color: QColor):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axis_color(axis, qcolor_to_color4f(color))
+        self._control_panel.update_program_signal.emit(
+            "coordinate_axes.set_color", {"axis": axis, "color": qcolor_to_color4f(color)}
+        )
 
     def _axis_text_changed_handler(self, axis: str, text: str):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.set_coordinate_axis_text(axis, text)
+        self._control_panel.update_program_signal.emit("coordinate_axes.set_text", {"axis": axis, "text": text})
 
     def _adjust_labels_length_button_clicked_handler(self):
-        for viewer in self._control_panel.opened_programs:
-            viewer.visualizer.coordinate_axes_adjust_length()
+        self._control_panel.update_program_signal.emit("coordinate_axes.adjust_length", {})
 
     def _enable_controls(self, enabled: bool):
         for layout in self._layouts:
@@ -204,7 +198,7 @@ class CoordinateAxes(QWidget):
 
         self._visibility_checkbox.setEnabled(True)
 
-    def update_values(self, program: "MolecularVisualizer"):
+    def update_values(self, program: "Program"):
         coordinate_axes = program.visualizer.coordinate_axes
 
         self._visibility_checkbox.setChecked(coordinate_axes.visible)

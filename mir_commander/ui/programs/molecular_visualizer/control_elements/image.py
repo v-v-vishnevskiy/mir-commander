@@ -4,27 +4,31 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QImageWriter
-from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinBox, QWidget
+from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinBox
 
 from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.utils.program_control_panel import ControlComponent
 from mir_commander.ui.utils.widget import TR, ColorButton, GridLayout, Label, PushButton, VBoxLayout
 
 from .utils import add_slider
 
 if TYPE_CHECKING:
-    from ..program import MolecularVisualizer
-    from .control_panel import ControlPanel
+    from ..control_panel import ControlPanel
+    from ..program import Program
 
 logger = logging.getLogger("MoleculeStructureViewer.ControlPanel.Image")
 
 
-class Image(QWidget):
+class Image(ControlComponent):
     _file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
 
-    def __init__(self, parent: "ControlPanel"):
-        super().__init__(parent=parent)
+    def __init__(self, control_panel: "ControlPanel"):
+        super().__init__()
 
-        self._control_panel = parent
+        self._control_panel = control_panel
+
+        self._width = 500
+        self._height = 500
 
         params_layout = GridLayout()
 
@@ -102,39 +106,28 @@ class Image(QWidget):
         value = re.sub(self._file_name_sanitize_re, "", value)
         return value
 
-    def _get_images_sizes(self, scale_factor: float) -> tuple[int, int]:
-        sizes: list[tuple[int, int]] = []
-        for viewer in self._control_panel.opened_programs:
-            sizes.append(
-                (
-                    int(viewer.size().width() * viewer.devicePixelRatio() * scale_factor),
-                    int(viewer.size().height() * viewer.devicePixelRatio() * scale_factor),
-                )
-            )
-
-        sizes.sort(key=lambda x: x[1])
-        return sizes[0][0], sizes[0][1]
-
     def _save_image_button_clicked_handler(self):
         i_value = self._i_param.value()
         bg_color = qcolor_to_color4f(self._bg_color_button.color)
         crop_to_content = self._crop_to_content_checkbox.isChecked()
         file_path = self._file_path.text()
-        width, height = self._get_images_sizes(self._scale_double_spinbox.value())
+        scale_factor = self._scale_double_spinbox.value()
 
-        for i, viewer in enumerate(self._control_panel.opened_programs):
-            filename = file_path.replace("%i", str(i + i_value).zfill(6)).replace(
-                "%n", self._sanitize_filename(viewer.item_name)
-            )
-            try:
-                viewer.save_image(filename, width, height, bg_color, crop_to_content)
-                viewer.long_msg_signal.emit(TR.tr("{} saved successfully").format(filename))
-            except Exception as e:
-                txt = TR.tr("Error saving image {}").format(filename)
-                logger.error(f"{txt}: {e}")
-                viewer.long_msg_signal.emit(txt)
+        filename = file_path.replace("%i", str(i_value).zfill(6))
+        self._control_panel.update_program_signal.emit(
+            "image.save",
+            {
+                "filename": filename,
+                "width": int(self._width * scale_factor),
+                "height": int(self._height * scale_factor),
+                "bg_color": bg_color,
+                "crop_to_content": crop_to_content,
+            },
+        )
 
-    def update_values(self, program: "MolecularVisualizer"):
+    def update_values(self, program: "Program"):
+        self._width = int(program.visualizer.size().width() * program.visualizer.devicePixelRatio())
+        self._height = int(program.visualizer.size().height() * program.visualizer.devicePixelRatio())
         if self._bg_color_inited is False:
             self._bg_color_inited = True
             color = *program.visualizer.background_color[:3], 0.0

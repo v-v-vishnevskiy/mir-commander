@@ -1,6 +1,6 @@
 import logging
 
-from mir_commander.plugin_system.project_node import ProjectNodePlugin
+from mir_commander.api.project_node import ProjectNodePlugin
 
 from .errors import ProjectNodeNotFoundError, ProjectNodeRegistrationError
 

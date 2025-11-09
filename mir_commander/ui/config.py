@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from mir_commander.utils.config import BaseConfig
 
 from .widgets.docks.config import DocksConfig
-from .widgets.programs.config import ProgramsConfig
 from .widgets.settings.config import SettingsConfig
 
 
@@ -16,7 +15,6 @@ class Toolbars(BaseModel):
 class Widgets(BaseModel):
     toolbars: Toolbars = Toolbars()
     docks: DocksConfig = DocksConfig()
-    programs: ProgramsConfig = ProgramsConfig()
 
 
 class MenuFileHotkeys(BaseModel):

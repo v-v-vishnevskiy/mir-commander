@@ -1,8 +1,8 @@
-from .config import MolecularVisualizerConfig
+from .config import Config
 
 
 class Style:
-    def __init__(self, config: MolecularVisualizerConfig):
+    def __init__(self, config: Config):
         self._styles = config.styles
         self.current = config.get_current_style()
 
