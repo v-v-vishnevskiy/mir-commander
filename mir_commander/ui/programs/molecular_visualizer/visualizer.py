@@ -9,25 +9,25 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 from mir_commander.api.program import MessageChannel
 from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
 from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
-from mir_commander.ui.utils.opengl.errors import Error, NodeNotFoundError, NodeParentError
-from mir_commander.ui.utils.opengl.keymap import Keymap
-from mir_commander.ui.utils.opengl.models import cone, cylinder, sphere
-from mir_commander.ui.utils.opengl.opengl_widget import OpenGLWidget
-from mir_commander.ui.utils.opengl.resource_manager import (
+from mir_commander.ui.sdk.opengl.errors import Error, NodeNotFoundError, NodeParentError
+from mir_commander.ui.sdk.opengl.keymap import Keymap
+from mir_commander.ui.sdk.opengl.models import cone, cylinder, sphere
+from mir_commander.ui.sdk.opengl.opengl_widget import OpenGLWidget
+from mir_commander.ui.sdk.opengl.resource_manager import (
     FragmentShader,
     ShaderProgram,
     VertexArrayObject,
     VertexShader,
 )
-from mir_commander.ui.utils.opengl.text_overlay import TextOverlay
-from mir_commander.ui.utils.opengl.utils import (
+from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
+from mir_commander.ui.sdk.opengl.utils import (
     Color4f,
     compute_face_normals,
     compute_smooth_normals,
     normalize_color,
     unwind_vertices,
 )
-from mir_commander.ui.utils.widget import TR
+from mir_commander.ui.sdk.widget import TR
 from mir_commander.utils.chem import symbol_to_atomic_number
 
 from . import shaders

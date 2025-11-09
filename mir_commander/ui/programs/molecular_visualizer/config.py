@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
 from mir_commander.api.program import ProgramConfig, WindowSizeConfig
-from mir_commander.ui.utils.opengl.config import ProjectionConfig, TextOverlayConfig
+from mir_commander.ui.sdk.opengl.config import ProjectionConfig, TextOverlayConfig
 
 
 class Background(BaseModel):

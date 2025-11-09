@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QColor, QIcon, QResizeEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QAbstractItemView, QDoubleSpinBox, QPushButton
 
-from mir_commander.ui.utils.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.utils.program_control_panel import ControlComponent
-from mir_commander.ui.utils.widget import (
+from mir_commander.ui.sdk.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.sdk.program_control_panel import ControlComponent
+from mir_commander.ui.sdk.widget import (
     CheckBox,
     ColorButton,
     GridLayout,

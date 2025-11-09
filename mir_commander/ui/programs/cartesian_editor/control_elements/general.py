@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QSpinBox
 
-from mir_commander.ui.utils.program_control_panel import ControlComponent
-from mir_commander.ui.utils.widget import GridLayout, Label
+from mir_commander.ui.sdk.program_control_panel import ControlComponent
+from mir_commander.ui.sdk.widget import GridLayout, Label
 
 if TYPE_CHECKING:
     from ..control_panel import ControlPanel

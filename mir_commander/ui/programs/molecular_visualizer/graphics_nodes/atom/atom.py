@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.scene import Node, NodeType
+from mir_commander.ui.sdk.opengl.utils import Color4f
 from mir_commander.utils.chem import atomic_number_to_symbol
 
 from ...config import AtomLabelConfig, SelectedAtom

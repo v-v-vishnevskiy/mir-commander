@@ -2,8 +2,8 @@ from typing import Literal
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.resource_manager.font_atlas import FontAtlas
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.resource_manager.font_atlas import FontAtlas
+from mir_commander.ui.sdk.opengl.utils import Color4f
 
 from .node import Node, NodeType
 

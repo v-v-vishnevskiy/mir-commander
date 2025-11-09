@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
 
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.widget import ComboBox, Label
+from mir_commander.ui.sdk.widget import ComboBox, Label
 
 from .base import BasePage
 

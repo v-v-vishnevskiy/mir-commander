@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QKeySequence
 
-from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.sdk.widget import Action, Menu
 
 from .config import Config
 

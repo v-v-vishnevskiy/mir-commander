@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.utils import Color4f
 
 
 @dataclass

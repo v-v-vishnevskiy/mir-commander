@@ -1,9 +1,9 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
-from mir_commander.ui.utils.opengl.resource_manager import ResourceManager
-from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager
+from mir_commander.ui.sdk.opengl.scene import Node, NodeType
+from mir_commander.ui.sdk.opengl.utils import Color4f
 from mir_commander.utils import consts
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup

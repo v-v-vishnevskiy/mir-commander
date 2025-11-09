@@ -3,10 +3,12 @@ from typing import Any, cast
 
 from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit, QWidget
 
+from mir_commander.api.file_exporter import FileExporterPlugin
 from mir_commander.core.file_manager import file_manager
 from mir_commander.core.project_node import ProjectNode
-from mir_commander.api.file_exporter import FileExporterPlugin
-from mir_commander.ui.utils.widget import (
+from mir_commander.utils.text import sanitize_filename
+
+from .sdk.widget import (
     CheckBox,
     ComboBox,
     Dialog,
@@ -18,7 +20,6 @@ from mir_commander.ui.utils.widget import (
     SpinBox,
     VBoxLayout,
 )
-from mir_commander.utils.text import sanitize_filename
 
 
 class ExportFileDialog(Dialog):

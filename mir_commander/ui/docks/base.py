@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.ui.utils.widget import DockWidget
+from mir_commander.ui.sdk.widget import DockWidget
 
 
 class BaseDock(DockWidget):

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QVBoxLayout
 
-from mir_commander.ui.utils.widget import Label
+from mir_commander.ui.sdk.widget import Label
 
 from .base import BasePage
 

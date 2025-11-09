@@ -1,4 +1,4 @@
-from mir_commander.ui.utils.opengl.resource_manager.base import Resource
+from mir_commander.ui.sdk.opengl.resource_manager.base import Resource
 
 from .node import Node, NodeType
 from .rendering_container import RenderingContainer

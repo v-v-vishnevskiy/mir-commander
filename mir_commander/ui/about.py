@@ -3,7 +3,8 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
 from mir_commander import __version__
-from mir_commander.ui.utils.widget import Dialog, Label
+
+from .sdk.widget import Dialog, Label
 
 
 class About(Dialog):

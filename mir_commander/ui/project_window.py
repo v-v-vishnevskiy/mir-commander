@@ -15,16 +15,16 @@ from mir_commander.api.program import MessageChannel, UINode
 from mir_commander.core import Project
 from mir_commander.core.project_node import ProjectNode
 
+from .about import About
 from .config import AppConfig, ApplyCallbacks
+from .docks.console_dock import ConsoleDock
+from .docks.project_dock.project_dock import ProjectDock
+from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
 from .program_manager import program_manager
-from .utils.program_control_panel import ProgramControlPanelDock
-from .utils.widget import Action, Dialog, Menu, StatusBar
-from .widgets.about import About
-from .widgets.docks.console_dock import ConsoleDock
-from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.export_item_dialog import ExportFileDialog
-from .widgets.settings.settings_dialog import SettingsDialog
+from .settings.settings_dialog import SettingsDialog
+from .sdk.program_control_panel import ProgramControlPanelDock
+from .sdk.widget import Action, Dialog, Menu, StatusBar
 
 logger = logging.getLogger("UI.ProjectWindow")
 

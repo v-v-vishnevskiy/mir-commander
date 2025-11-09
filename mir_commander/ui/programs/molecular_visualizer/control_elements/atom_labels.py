@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from mir_commander.ui.utils.program_control_panel import ControlComponent
-from mir_commander.ui.utils.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
+from mir_commander.ui.sdk.program_control_panel import ControlComponent
+from mir_commander.ui.sdk.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
 
 from .utils import add_slider
 

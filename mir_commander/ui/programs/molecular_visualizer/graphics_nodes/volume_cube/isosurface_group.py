@@ -3,10 +3,10 @@ from copy import copy
 
 import numpy as np
 
-from mir_commander.ui.utils.opengl.models import marching_cubes
-from mir_commander.ui.utils.opengl.resource_manager import ResourceManager, VertexArrayObject
-from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.models import marching_cubes
+from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager, VertexArrayObject
+from mir_commander.ui.sdk.opengl.scene import Node, NodeType
+from mir_commander.ui.sdk.opengl.utils import Color4f
 
 from .isosurface import Isosurface
 

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.core import Project
 from mir_commander.core.errors import LoadProjectError
-from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
+from mir_commander.ui.sdk.opengl.opengl_info import OpenGLInfo
 from mir_commander.utils.consts import DIR
 
 from .config import AppConfig, ApplyCallbacks

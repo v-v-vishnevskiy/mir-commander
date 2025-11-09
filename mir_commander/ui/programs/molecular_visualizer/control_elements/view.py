@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QDoubleSpinBox, QSlider
 
-from mir_commander.ui.utils.program_control_panel import ControlComponent
-from mir_commander.ui.utils.widget import GridLayout, Label, PushButton, TrString, VBoxLayout
+from mir_commander.ui.sdk.program_control_panel import ControlComponent
+from mir_commander.ui.sdk.widget import GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from .utils import add_slider
 

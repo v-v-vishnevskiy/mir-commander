@@ -15,9 +15,9 @@ from mir_commander.ui.programs.node_changed_actions import (
     AtomicCoordinatesRemoveAtomsAction,
     AtomicCoordinatesSwapAtomsIndicesAction,
 )
-from mir_commander.ui.utils.opengl.utils import Color4f
-from mir_commander.ui.utils.program import Program as BaseProgram
-from mir_commander.ui.utils.widget import TR
+from mir_commander.ui.sdk.opengl.utils import Color4f
+from mir_commander.ui.sdk.program import Program as BaseProgram
+from mir_commander.ui.sdk.widget import TR
 from mir_commander.utils.text import sanitize_filename
 
 from .config import Config

@@ -1,6 +1,6 @@
 from typing import Generic, Hashable, TypeVar
 
-from mir_commander.ui.utils.opengl.errors import NodeNotFoundError
+from mir_commander.ui.sdk.opengl.errors import NodeNotFoundError
 
 from .node import Node
 

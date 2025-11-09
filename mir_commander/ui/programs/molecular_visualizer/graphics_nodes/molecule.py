@@ -8,8 +8,8 @@ from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
 from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
-from mir_commander.ui.utils.opengl.scene import Node, NodeType
-from mir_commander.ui.utils.opengl.utils import Color4f, normalize_color
+from mir_commander.ui.sdk.opengl.scene import Node, NodeType
+from mir_commander.ui.sdk.opengl.utils import Color4f, normalize_color
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
 from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 

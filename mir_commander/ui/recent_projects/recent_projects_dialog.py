@@ -4,10 +4,10 @@ from PySide6.QtCore import QDir, QModelIndex, Qt, Signal, Slot
 from PySide6.QtGui import QMouseEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout, QWidget
 
+from mir_commander.ui.sdk.widget import Dialog as BaseDialog
+from mir_commander.ui.sdk.widget import PushButton
 from mir_commander.utils.consts import DIR
 
-from ..utils.widget import Dialog as BaseDialog
-from ..utils.widget import PushButton
 from .config import ProjectConfig, RecentProjectsConfig
 
 

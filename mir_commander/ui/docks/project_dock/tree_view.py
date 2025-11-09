@@ -10,7 +10,7 @@ from mir_commander.core.file_importers.consts import babushka_priehala
 from mir_commander.core.file_manager import file_manager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.program_manager import program_manager
-from mir_commander.ui.utils.widget import Action, Menu
+from mir_commander.ui.sdk.widget import Action, Menu
 
 from .config import TreeConfig
 from .items import TreeItem

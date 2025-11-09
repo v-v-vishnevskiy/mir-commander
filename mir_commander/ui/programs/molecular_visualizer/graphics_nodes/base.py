@@ -1,4 +1,4 @@
-from mir_commander.ui.utils.opengl.scene import Node
+from mir_commander.ui.sdk.opengl.scene import Node
 
 
 class BaseGraphicsNode(Node):

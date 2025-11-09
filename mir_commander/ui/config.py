@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 from mir_commander.utils.config import BaseConfig
 
-from .widgets.docks.config import DocksConfig
-from .widgets.settings.config import SettingsConfig
+from .docks.config import DocksConfig
+from .settings.config import SettingsConfig
 
 
 class Toolbars(BaseModel):

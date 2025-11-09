@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QDialogButtonBox, QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
 
-from mir_commander.ui.utils.widget import Dialog, Label
+from mir_commander.ui.sdk.widget import Dialog, Label
 
 if TYPE_CHECKING:
     from .visualizer import Visualizer

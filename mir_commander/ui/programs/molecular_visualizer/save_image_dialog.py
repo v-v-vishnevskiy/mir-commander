@@ -5,7 +5,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QImageWriter
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
 
-from mir_commander.ui.utils.widget import CheckBox, Dialog, GroupBox, Label, PushButton, SpinBox
+from mir_commander.ui.sdk.widget import CheckBox, Dialog, GroupBox, Label, PushButton, SpinBox
 
 
 class SaveImageDialog(Dialog):

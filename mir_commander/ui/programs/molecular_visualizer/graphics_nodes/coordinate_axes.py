@@ -1,7 +1,7 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.utils.opengl.scene import Node, NodeType, TextNode
-from mir_commander.ui.utils.opengl.utils import Color4f
+from mir_commander.ui.sdk.opengl.scene import Node, NodeType, TextNode
+from mir_commander.ui.sdk.opengl.utils import Color4f
 
 from .cone import Cone
 from .cylinder import Cylinder

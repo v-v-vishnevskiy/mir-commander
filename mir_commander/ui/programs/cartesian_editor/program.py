@@ -7,8 +7,8 @@ from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
 from mir_commander.api.program import NodeChangedAction
 from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
-from mir_commander.ui.utils.program import Program as BaseProgram
-from mir_commander.ui.utils.widget import StandardItem, TableView
+from mir_commander.ui.sdk.program import Program as BaseProgram
+from mir_commander.ui.sdk.widget import StandardItem, TableView
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
 
 from ..node_changed_actions import (

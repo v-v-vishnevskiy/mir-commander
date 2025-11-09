@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBo
 
 from mir_commander.core.config import ProjectConfig
 from mir_commander.ui.config import AppConfig, ApplyCallbacks
-from mir_commander.ui.utils.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
+from mir_commander.ui.sdk.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
 
 from .base import BasePage
 from .general_page import General

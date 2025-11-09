@@ -1,4 +1,4 @@
-from mir_commander.ui.utils.opengl.scene import Scene
+from mir_commander.ui.sdk.opengl.scene import Scene
 
 from .camera import Camera
 from .font_atlas import FontAtlas

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider
 
-from mir_commander.ui.utils.widget import Label, TrString
+from mir_commander.ui.sdk.widget import Label, TrString
 
 
 def add_slider(

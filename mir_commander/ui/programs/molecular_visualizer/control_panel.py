@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING
 
 from mir_commander.api.program import ControlElement
 from mir_commander.api.program import ControlPanel as ControlPanelApi
-from mir_commander.ui.utils.program_control_panel import ControlComponent
-from mir_commander.ui.utils.widget import Label
+from mir_commander.ui.sdk.program_control_panel import ControlComponent
+from mir_commander.ui.sdk.widget import Label
 
 from .control_elements.atom_labels import AtomLabels
 from .control_elements.coordinate_axes import CoordinateAxes
