@@ -5,6 +5,7 @@ from pathlib import Path
 
 from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
+from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
 
@@ -64,7 +65,7 @@ class UnexImporter(BaseImporter):
         for node in result.nodes:
             # Currently it is assumed that molecules may contain only sets of Cartesian coordinates
             if node.nodes:
-                node.nodes[-1].auto_open = True
+                node.nodes[-1].actions.append(ActionType.AUTO_OPEN)
 
         return result
 

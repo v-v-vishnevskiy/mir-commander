@@ -5,6 +5,7 @@ import numpy as np
 from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.data_structures.volume_cube import VolumeCube
 from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils import consts
 
@@ -119,7 +120,7 @@ class GaussianCubeImporter(BaseImporter):
                 steps_size=steps_size,
                 cube_data=np.array([float(x) for x in rest_data.split()]).reshape(steps_number),
             ),
-            auto_open=True,
+            actions=[ActionType.AUTO_OPEN],
         )
 
         # Add the set of Cartesian coordinates directly to the cube

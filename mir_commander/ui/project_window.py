@@ -87,7 +87,8 @@ class ProjectWindow(QMainWindow):
 
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
-            self.docks.project.tree.open_auto_open_nodes()
+            if self.app_config.import_files.open_nodes_in_temporary_project:
+                self.docks.project.tree.open_auto_open_nodes(self.app_config.import_files.programs)
 
     @property
     def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
@@ -331,6 +332,8 @@ class ProjectWindow(QMainWindow):
                     self.append_to_console(log)
 
                 self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
+                if self.app_config.import_files.open_nodes_in_current_project:
+                    self.docks.project.tree.open_auto_open_nodes(self.app_config.import_files.programs)
             except ImportFileError as e:
                 logger.error("Failed to import file %s: %s", file_path, e)
                 self.append_to_console(

@@ -8,6 +8,7 @@ from cclib.io import ccread
 from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 
 from .utils import BaseImporter
@@ -88,7 +89,7 @@ class CCLibImporter(BaseImporter):
                     y=data.atomcoords[xyz_idx][:, 1],
                     z=data.atomcoords[xyz_idx][:, 2],
                 ),
-                auto_open=True,
+                actions=[ActionType.AUTO_OPEN],
             )
             result.nodes.append(at_coord_item)
 

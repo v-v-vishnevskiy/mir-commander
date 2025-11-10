@@ -33,15 +33,21 @@ class ProjectWindowConfig(BaseModel):
     widgets: Widgets = Widgets()
 
 
-class OpenGLConfig(BaseModel):
-    antialiasing: bool = True
+class ImportFilesConfig(BaseModel):
+    open_nodes_in_temporary_project: bool = True
+    open_nodes_in_current_project: bool = False
+    programs: list[str] = Field(
+        default_factory=list,
+        description="List of programs to open the node with."
+        "If empty, the node will be opened with the default program.",
+    )
 
 
 class AppConfig(BaseConfig):
     language: Literal["system", "en", "ru"] = "system"
-    opengl: OpenGLConfig = OpenGLConfig()
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
+    import_files: ImportFilesConfig = ImportFilesConfig()
 
 
 class ApplyCallbacks(BaseModel):

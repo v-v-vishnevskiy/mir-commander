@@ -14,7 +14,7 @@ from .program import (
     WindowSizeConfig,
 )
 from .project_node import ProjectNodePlugin
-from .project_node_schema import AutoOpenConfig, ProjectNodeSchemaV1
+from .project_node_schema import ActionType, ProjectNodeSchemaV1
 
 __all__ = [
     # Core plugin interfaces
@@ -25,7 +25,7 @@ __all__ = [
     # Registration
     "PluginRegistry",
     # Data structures
-    "AutoOpenConfig",
+    "ActionType",
     "Metadata",
     "ProjectNodeSchemaV1",
     # Program API

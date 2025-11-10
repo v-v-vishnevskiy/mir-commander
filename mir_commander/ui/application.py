@@ -55,11 +55,6 @@ class Application(QApplication):
             version = (2, 1)
 
         sf = QSurfaceFormat()
-        if self.config.opengl.antialiasing:
-            sf.setSamples(16)
-        else:
-            sf.setSamples(0)
-
         sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         sf.setVersion(*version)
         sf.setColorSpace(QSurfaceFormat.ColorSpace.sRGBColorSpace)

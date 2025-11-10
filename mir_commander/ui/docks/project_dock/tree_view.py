@@ -6,6 +6,7 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
 from mir_commander.api.program import UINode
+from mir_commander.api.project_node_schema import ActionType
 from mir_commander.core.file_manager import file_manager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.program_manager import program_manager
@@ -124,27 +125,24 @@ class TreeView(QTreeView):
         for i in range(root_item.rowCount()):
             self.setExpanded(self._model.indexFromItem(root_item.child(i)), True)
 
-    def open_auto_open_nodes(self):
+    def open_auto_open_nodes(self, programs: list[str]):
         """Open nodes marked for auto-opening after import."""
         root_item = self._model.invisibleRootItem()
         for i in range(root_item.rowCount()):
-            self._open_auto_open_nodes(cast(TreeItem, root_item.child(i)))
+            self._open_auto_open_nodes(cast(TreeItem, root_item.child(i)), programs)
 
-    def _open_auto_open_nodes(self, item: TreeItem):
+    def _open_auto_open_nodes(self, item: TreeItem, programs: list[str]):
         """Recursively open nodes marked with auto_open flag."""
         node = item.project_node
-        if node is not None and node.auto_open:
-            # Handle bool: open with default program
-            if isinstance(node.auto_open, bool) and node.auto_open:
+        if node is not None and ActionType.AUTO_OPEN in node.actions:
+            node.actions.remove(ActionType.AUTO_OPEN)
+            if len(programs) < 1:
                 if item.default_program:
                     self.open_item.emit(item, item.default_program, {})
-            # Handle list of AutoOpenConfig: open in multiple programs
-            elif isinstance(node.auto_open, list):
-                for config in node.auto_open:
-                    self.open_item.emit(item, config.program, config.params)
-
-            # Reset auto_open flag after opening to prevent reopening on next load
-            node.auto_open = False
+            else:
+                for program in programs:
+                    if program in item.programs:
+                        self.open_item.emit(item, program, {})
 
         for i in range(item.rowCount()):
-            self._open_auto_open_nodes(cast(TreeItem, item.child(i)))
+            self._open_auto_open_nodes(cast(TreeItem, item.child(i)), programs)
