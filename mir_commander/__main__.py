@@ -2,8 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import logging
-from .plugins_loader import load_from_directory
+from .core import logging, plugins_loader
 from .ui.application import Application
 from .utils.consts import DIR
 
@@ -22,10 +21,10 @@ def run():
     logger.debug("Starting Mir Commander ...")
 
     logger.debug("Loading built-in plugins ...")
-    load_from_directory(DIR.INTERNAL_PLUGINS)
+    plugins_loader.load_from_directory(DIR.INTERNAL_PLUGINS)
 
     logger.debug("Loading external plugins ...")
-    load_from_directory(DIR.HOME_PLUGINS)
+    plugins_loader.load_from_directory(DIR.HOME_PLUGINS)
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(
