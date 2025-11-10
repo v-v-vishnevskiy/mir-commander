@@ -11,9 +11,6 @@ class UnexNode(BaseProjectNode):
     def get_icon_path(self) -> str:
         return ":/icons/project_nodes/unex.png"
 
-    def get_model_class(self) -> None:
-        return None
-
     def get_default_program_name(self) -> None | str:
         return None
 

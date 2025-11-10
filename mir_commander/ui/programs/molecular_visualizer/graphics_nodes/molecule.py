@@ -7,7 +7,7 @@ import numpy as np
 from pydantic_extra_types.color import Color
 from PySide6.QtGui import QVector3D
 
-from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
+from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.ui.sdk.opengl.scene import Node, NodeType
 from mir_commander.ui.sdk.opengl.utils import Color4f, normalize_color
 from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
@@ -26,7 +26,7 @@ class Molecule(Node):
     def __init__(
         self,
         tree_item_id: int,
-        atomic_coordinates: AtomicCoordinatesData,
+        atomic_coordinates: AtomicCoordinates,
         geom_bond_tolerance: float,
         style: Style,
         atom_label_config: AtomLabelConfig,

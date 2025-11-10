@@ -5,9 +5,8 @@ from PIL import Image, ImageCms
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget
 
+from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel, NodeChangedAction, UINode
-from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
-from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
 from mir_commander.ui.programs.node_changed_actions import (
     AtomicCoordinatesAddAtomAction,
     AtomicCoordinatesNewPositionAction,
@@ -40,7 +39,7 @@ class Program(BaseProgram):
         self.visualizer = Visualizer(program=self, title=self.node.text(), config=self.config)
 
         match self.node.project_node.data:
-            case VolumeCubeData():
+            case VolumeCube():
                 self._volume_cube_nodes.append(self.node)
                 self.visualizer.set_volume_cube(self.node.project_node.data)
 
@@ -93,9 +92,9 @@ class Program(BaseProgram):
         _, self._molecule_index, self._draw_node = self._atomic_coordinates_node(self._molecule_index, self.node)
         self._atomic_coordinates_nodes = [self._draw_node]
 
-    def _get_draw_node_atomic_coordinates(self) -> list[tuple[int, AtomicCoordinatesData]]:
+    def _get_draw_node_atomic_coordinates(self) -> list[tuple[int, AtomicCoordinates]]:
         match self._draw_node.project_node.data:
-            case AtomicCoordinatesData():
+            case AtomicCoordinates():
                 return [(self._draw_node.id, self._draw_node.project_node.data)]
             case _:
                 return []
@@ -199,7 +198,7 @@ class Program(BaseProgram):
             return
 
         match data:
-            case AtomicCoordinatesData():
+            case AtomicCoordinates():
                 match action:
                     case AtomicCoordinatesAddAtomAction():
                         self.visualizer.build_molecule(node_id)

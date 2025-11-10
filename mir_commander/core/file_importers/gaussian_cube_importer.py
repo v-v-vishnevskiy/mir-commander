@@ -2,6 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
+from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
+from mir_commander.api.data_structures.volume_cube import VolumeCube
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils import consts
@@ -107,7 +109,7 @@ class GaussianCubeImporter(BaseImporter):
         result = Node(
             name=path.name,
             type="volume_cube",
-            data=dict(
+            data=VolumeCube(
                 comment1=comment_1,
                 comment2=comment_2,
                 box_origin=box_origin,
@@ -122,7 +124,7 @@ class GaussianCubeImporter(BaseImporter):
         at_coord_item = Node(
             name="CubeMol",
             type="atomic_coordinates",
-            data=dict[str, list](atomic_num=atom_atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
+            data=AtomicCoordinates(atomic_num=atom_atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
             metadata={babushka_priehala: False},
         )
         result.nodes.append(at_coord_item)

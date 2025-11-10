@@ -6,9 +6,8 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QContextMenuEvent, QVector3D
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
+from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel
-from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
-from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
 from mir_commander.ui.sdk.opengl.errors import Error, NodeNotFoundError, NodeParentError
 from mir_commander.ui.sdk.opengl.keymap import Keymap
 from mir_commander.ui.sdk.opengl.models import cone, cylinder, sphere
@@ -37,7 +36,8 @@ from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHE
 from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError, EmptyScalarFieldError
-from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules, VolumeCube
+from .graphics_nodes import Axis, BaseGraphicsNode, CoordinateAxes, Molecule, Molecules
+from .graphics_nodes import VolumeCube as VolumeCubeGraphicsNode
 from .save_image_dialog import SaveImageDialog
 from .style import Style
 
@@ -61,7 +61,7 @@ class Visualizer(OpenGLWidget):
         self._main_node = self.resource_manager.current_scene.main_node
         self._coordinate_axes = CoordinateAxes(parent=self._main_node)
         self._molecules = Molecules(parent=self._main_node)
-        self._volume_cube = VolumeCube(parent=self._main_node, resource_manager=self.resource_manager)
+        self._volume_cube = VolumeCubeGraphicsNode(parent=self._main_node, resource_manager=self.resource_manager)
 
         self._under_cursor_overlay = TextOverlay(
             parent=self,
@@ -176,14 +176,14 @@ class Visualizer(OpenGLWidget):
         self._get_axis_by_name(axis).set_text(text)
         self.update()
 
-    def set_atomic_coordinates(self, atomic_coordinates: list[tuple[int, AtomicCoordinatesData]]):
+    def set_atomic_coordinates(self, atomic_coordinates: list[tuple[int, AtomicCoordinates]]):
         self._molecules.clear()
         for tree_item_id, data in atomic_coordinates:
             self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
 
-    def add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinatesData):
+    def add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
         self._add_atomic_coordinates(tree_item_id, data)
         self._main_node.set_position(-self._molecules.center)
         self.update()
@@ -246,7 +246,7 @@ class Visualizer(OpenGLWidget):
             return self._coordinate_axes.z
         raise ValueError(f"Invalid axis name: {name}")
 
-    def _add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinatesData):
+    def _add_atomic_coordinates(self, tree_item_id: int, data: AtomicCoordinates):
         Molecule(
             tree_item_id=tree_item_id,
             atomic_coordinates=data,
@@ -256,7 +256,7 @@ class Visualizer(OpenGLWidget):
             parent=self._molecules,
         )
 
-    def set_volume_cube(self, volume_cube: VolumeCubeData):
+    def set_volume_cube(self, volume_cube: VolumeCube):
         self.makeCurrent()
         self._volume_cube.set_volume_cube(volume_cube)
         self.update()

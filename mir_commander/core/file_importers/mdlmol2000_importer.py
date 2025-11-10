@@ -1,6 +1,8 @@
 from enum import Enum
 from pathlib import Path
 
+from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
+from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -38,7 +40,7 @@ class MDLMolV2000Importer(BaseImporter):
 
         logs.append("MDL Molfile V2000.")
 
-        result = Node(name=path.name, type="molecule")
+        result = Node(name=path.name, data=Molecule(), type="molecule")
 
         title = ""
 
@@ -111,7 +113,7 @@ class MDLMolV2000Importer(BaseImporter):
                         at_coord_item = Node(
                             name=title,
                             type="atomic_coordinates",
-                            data=dict[str, list](
+                            data=AtomicCoordinates(
                                 atomic_num=atom_atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z
                             ),
                         )

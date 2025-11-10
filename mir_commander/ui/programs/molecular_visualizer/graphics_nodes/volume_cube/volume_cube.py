@@ -1,6 +1,6 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.core.project_nodes.volume_cube import VolumeCubeData
+from mir_commander.api.data_structures import VolumeCube as VolumeCubeDataStructure
 from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager
 from mir_commander.ui.sdk.opengl.scene import Node, NodeType
 from mir_commander.ui.sdk.opengl.utils import Color4f
@@ -15,7 +15,11 @@ class VolumeCube(Node):
     children: list[IsosurfaceGroup]  # type: ignore[assignment]
 
     def __init__(
-        self, resource_manager: ResourceManager, volume_cube: VolumeCubeData = VolumeCubeData(), *args, **kwargs
+        self,
+        resource_manager: ResourceManager,
+        volume_cube: VolumeCubeDataStructure = VolumeCubeDataStructure(),
+        *args,
+        **kwargs,
     ):
         kwargs["node_type"] = NodeType.CONTAINER
         kwargs["visible"] = True
@@ -29,7 +33,7 @@ class VolumeCube(Node):
     def is_empty_scalar_field(self) -> bool:
         return self._volume_cube.cube_data is None or self._volume_cube.cube_data.size == 0
 
-    def set_volume_cube(self, volume_cube: VolumeCubeData):
+    def set_volume_cube(self, volume_cube: VolumeCubeDataStructure):
         position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
         self.set_position(position * consts.BOHR2ANGSTROM)
 

@@ -11,9 +11,6 @@ class AtomicCoordinatesGroupNode(BaseProjectNode):
     def get_icon_path(self) -> str:
         return ":/icons/project_nodes/atomic_coordinates_group.png"
 
-    def get_model_class(self) -> None:
-        return None
-
     def get_default_program_name(self) -> str:
         return "molecular_visualizer"
 

@@ -1,11 +1,6 @@
 from abc import ABC, abstractmethod
 
-from pydantic import BaseModel
-
 from .metadata import Metadata
-
-
-class ProjectNodeDataPlugin(BaseModel): ...
 
 
 class ProjectNodePlugin(ABC):
@@ -20,6 +15,3 @@ class ProjectNodePlugin(ABC):
 
     @abstractmethod
     def get_icon_path(self) -> str: ...
-
-    @abstractmethod
-    def get_model_class(self) -> None | type[ProjectNodeDataPlugin]: ...

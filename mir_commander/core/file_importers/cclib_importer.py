@@ -5,6 +5,8 @@ import cclib
 import numpy as np
 from cclib.io import ccread
 
+from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
+from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 
@@ -44,13 +46,13 @@ class CCLibImporter(BaseImporter):
         if hasattr(data, "metadata"):
             logs.append(pprint.pformat(data.metadata, compact=True))
 
-        molecule = dict(n_atoms=data.natom, atomic_num=data.atomnos)
+        molecule = Molecule(n_atoms=data.natom, atomic_num=data.atomnos)
         result = Node(name=path.name, type="molecule", data=molecule)
 
         if hasattr(data, "charge"):
-            molecule["charge"] = data.charge
+            molecule.charge = data.charge
         if hasattr(data, "mult"):
-            molecule["multiplicity"] = data.mult
+            molecule.multiplicity = data.mult
 
         # If we have coordinates of atoms.
         # This is actually expected to be always true
@@ -78,8 +80,8 @@ class CCLibImporter(BaseImporter):
             at_coord_item = Node(
                 name=xyz_title,
                 type="atomic_coordinates",
-                data=dict(
-                    atomic_num=molecule["atomic_num"],
+                data=AtomicCoordinates(
+                    atomic_num=molecule.atomic_num[:],
                     x=data.atomcoords[xyz_idx][:, 0],
                     y=data.atomcoords[xyz_idx][:, 1],
                     z=data.atomcoords[xyz_idx][:, 2],
@@ -96,20 +98,25 @@ class CCLibImporter(BaseImporter):
                     result.nodes.append(optcg_item)
                     # Adding sets of atomic coordinates to the group
                     for i in range(0, cshape[0]):
-                        atcoods_data = dict[str, list](
-                            atomic_num=molecule["atomic_num"],
-                            x=data.atomcoords[i][:, 0],
-                            y=data.atomcoords[i][:, 1],
-                            z=data.atomcoords[i][:, 2],
-                        )
-                        csname = "Step {}".format(i + 1)
+                        csname = f"Step {i + 1}"
                         if data.optstatus[i] & data.OPT_NEW:
                             csname += ", new"
                         if data.optstatus[i] & data.OPT_DONE:
                             csname += ", done"
                         if data.optstatus[i] & data.OPT_UNCONVERGED:
                             csname += ", unconverged"
-                        optcg_item.nodes.append(Node(name=csname, type="atomic_coordinates", data=atcoods_data))
+                        optcg_item.nodes.append(
+                            Node(
+                                name=csname,
+                                type="atomic_coordinates",
+                                data=AtomicCoordinates(
+                                    atomic_num=molecule.atomic_num[:],
+                                    x=data.atomcoords[i][:, 0],
+                                    y=data.atomcoords[i][:, 1],
+                                    z=data.atomcoords[i][:, 2],
+                                ),
+                            )
+                        )
                 # Otherwise this is an undefined set of coordinates
                 else:
                     molcg_item = Node(name="Coordinates", type="atomic_coordinates_group")
@@ -120,8 +127,8 @@ class CCLibImporter(BaseImporter):
                             Node(
                                 name="Set {}".format(i + 1),
                                 type="atomic_coordinates",
-                                data=dict[str, list](
-                                    atomic_num=molecule["atomic_num"],
+                                data=AtomicCoordinates(
+                                    atomic_num=molecule.atomic_num[:],
                                     x=data.atomcoords[i][:, 0],
                                     y=data.atomcoords[i][:, 1],
                                     z=data.atomcoords[i][:, 2],
@@ -141,8 +148,8 @@ class CCLibImporter(BaseImporter):
                         Node(
                             name="Step {}".format(i + 1),
                             type="atomic_coordinates",
-                            data=dict[str, list](
-                                atomic_num=molecule["atomic_num"],
+                            data=AtomicCoordinates(
+                                atomic_num=molecule.atomic_num[:],
                                 x=data.scancoords[i][:, 0],
                                 y=data.scancoords[i][:, 1],
                                 z=data.scancoords[i][:, 2],

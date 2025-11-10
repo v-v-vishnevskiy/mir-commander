@@ -6,7 +6,7 @@ from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
 from mir_commander.api.program import NodeChangedAction
-from mir_commander.core.project_nodes.atomic_coordinates import AtomicCoordinatesData
+from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.ui.sdk.program import Program as BaseProgram
 from mir_commander.ui.sdk.widget import StandardItem, TableView
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
@@ -159,7 +159,7 @@ class AtomicCoordinatesTableView(TableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setVisible(False)
 
-        self._raw_data = AtomicCoordinatesData()
+        self._raw_data = AtomicCoordinates()
 
         self._init_new_atom_row()
 
@@ -314,7 +314,7 @@ class AtomicCoordinatesTableView(TableView):
         )
         self.setIndexWidget(self._model.indexFromItem(self._new_atom_plus_item), self._plus_button)
 
-    def load_data(self, atomic_coordinates: AtomicCoordinatesData):
+    def load_data(self, atomic_coordinates: AtomicCoordinates):
         self._raw_data = atomic_coordinates
 
         with QSignalBlocker(self._model):
@@ -416,7 +416,7 @@ class Program(BaseProgram):
         self._widget = AtomicCoordinatesTableView(program=self, decimals=self.config.decimals)
 
         match self.node.project_node.data:
-            case AtomicCoordinatesData():
+            case AtomicCoordinates():
                 self._widget.load_data(self.node.project_node.data)
 
     @property

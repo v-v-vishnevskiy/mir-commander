@@ -11,7 +11,6 @@ from .config import ProjectConfig
 from .errors import LoadProjectError
 from .file_manager import file_manager
 from .project_node import ProjectNode
-from .project_node_registry import project_node_registry
 
 logger = logging.getLogger("Core.Project")
 
@@ -50,19 +49,9 @@ class Project:
 
     def _convert_raw_node(self, raw_node: ProjectNodeSchemaV1) -> ProjectNode:
         try:
-            node = ProjectNode.model_validate(raw_node)
-            self._convert_raw_data(node)
-            return node
+            return ProjectNode.model_validate(raw_node)
         except ValidationError as e:
             raise ImportFileError(f"FileImporter returned invalid data: {e}")
-
-    def _convert_raw_data(self, node: ProjectNode):
-        if node.data is not None:
-            model_class = project_node_registry.get(node.type).get_model_class()
-            if model_class is not None:
-                node.data = model_class.model_validate(node.data)
-        for child_node in node.nodes:
-            self._convert_raw_data(child_node)
 
     def import_files(self, files: list[Path], logs: list[str], parent: ProjectNode | None = None) -> list[ProjectNode]:
         nodes = []

@@ -3,6 +3,7 @@ from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 
+from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
@@ -109,7 +110,7 @@ class UnexImporter(BaseImporter):
                     at_coord_data = Node(
                         name=f"Set#{mol_cart_set_number[molecule_name]}",
                         type="atomic_coordinates",
-                        data=dict[str, list](atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
+                        data=AtomicCoordinates(atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
                     )
                     molecule.nodes.append(at_coord_data)
 
@@ -199,7 +200,7 @@ class UnexImporter(BaseImporter):
                     at_coord_data = Node(
                         name=f"Set#{mol_cart_set_number[molecule_name]}",
                         type="atomic_coordinates",
-                        data=dict[str, list](atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
+                        data=AtomicCoordinates(atomic_num=atomic_num, x=atom_coord_x, y=atom_coord_y, z=atom_coord_z),
                     )
                     molecule.nodes.append(at_coord_data)
 

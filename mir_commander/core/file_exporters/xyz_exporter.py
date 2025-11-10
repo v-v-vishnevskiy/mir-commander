@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 
+from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.file_exporter import ExportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 from mir_commander.utils.chem import atomic_number_to_symbol
@@ -32,6 +33,9 @@ class XYZExporter(BaseExporter):
     def write(self, node: ProjectNodeSchemaV1, path: Path, format_settings: dict[str, Any]):
         if node.type not in self.get_supported_node_types():
             raise ExportFileError(f"Node type {node.type} is not supported")
+
+        if not isinstance(node.data, AtomicCoordinates):
+            raise ExportFileError("Invalid node data")
 
         title = format_settings.get("title", node.name)
         atomic_num: list[int] = node.data.atomic_num
