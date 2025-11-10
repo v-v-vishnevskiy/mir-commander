@@ -33,21 +33,48 @@ class ProjectWindowConfig(BaseModel):
     widgets: Widgets = Widgets()
 
 
-class ImportFilesConfig(BaseModel):
-    open_nodes_in_temporary_project: bool = True
-    open_nodes_in_current_project: bool = False
+class NodeTypeImportConfig(BaseModel):
+    """Configuration for importing a specific node type."""
+
+    open_nodes_on_startup: bool = True
+    open_nodes_on_import: bool = False
     programs: list[str] = Field(
         default_factory=list,
-        description="List of programs to open the node with."
-        "If empty, the node will be opened with the default program.",
+        description="List of programs to open the node with. If empty list, will open with the default program.",
     )
+
+
+class ImportFileRulesConfig(NodeTypeImportConfig):
+    node_types: dict[str, NodeTypeImportConfig] = Field(
+        default_factory=dict,
+        description="Per-node-type import configuration. "
+        "Keys are node type identifiers (e.g., 'atomic_coordinates', 'molecule'). ",
+    )
+
+    def get_open_on_startup(self, node_type: str) -> bool:
+        """Get open_nodes_in_temporary_project setting for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].open_nodes_on_startup
+        return self.open_nodes_on_startup
+
+    def get_open_on_import(self, node_type: str) -> bool:
+        """Get open_nodes_in_current_project setting for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].open_nodes_on_import
+        return self.open_nodes_on_import
+
+    def get_programs(self, node_type: str) -> list[str]:
+        """Get programs list for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].programs
+        return self.programs
 
 
 class AppConfig(BaseConfig):
     language: Literal["system", "en", "ru"] = "system"
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
-    import_files: ImportFilesConfig = ImportFilesConfig()
+    import_file_rules: ImportFileRulesConfig = ImportFileRulesConfig()
 
 
 class ApplyCallbacks(BaseModel):
