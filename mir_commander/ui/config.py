@@ -38,9 +38,9 @@ class NodeTypeImportConfig(BaseModel):
 
     open_nodes_on_startup: bool = True
     open_nodes_on_import: bool = False
-    programs: list[str] = Field(
+    programs_ids: list[str] = Field(
         default_factory=list,
-        description="List of programs to open the node with. If empty list, will open with the default program.",
+        description="List of program ids to open the node with. If empty list, will open with the default program.",
     )
 
 
@@ -66,8 +66,8 @@ class ImportFileRulesConfig(NodeTypeImportConfig):
     def get_programs(self, node_type: str) -> list[str]:
         """Get programs list for a specific node type."""
         if node_type in self.node_types:
-            return self.node_types[node_type].programs
-        return self.programs
+            return self.node_types[node_type].programs_ids
+        return self.programs_ids
 
 
 class AppConfig(BaseConfig):
