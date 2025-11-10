@@ -101,7 +101,7 @@ class View(ControlComponent):
         self._rotation_slider[axis].setValue(int(value * 10))
 
         data = {key: value.value() - self._axis_prev_value[key] for key, value in self._rotation_double_spinbox.items()}
-        self._control_panel.update_program_signal.emit("view.rotate_scene", data)
+        self._control_panel.program_action_signal.emit("view.rotate_scene", data)
         self._axis_prev_value[axis] = value
 
     def _scale_slider_value_changed_handler(self, i: int):
@@ -111,7 +111,7 @@ class View(ControlComponent):
         self._scale_slider.setValue(int(value * 100))
         v = value / self._scale_prev_value
 
-        self._control_panel.update_program_signal.emit("view.scale_scene", {"factor": v})
+        self._control_panel.program_action_signal.emit("view.scale_scene", {"factor": v})
         self._scale_prev_value = value
 
     def _reset_button_clicked_handler(self):
@@ -129,8 +129,8 @@ class View(ControlComponent):
             self._scale_slider.setValue(100)
             self._scale_double_spinbox.setValue(1.0)
 
-        self._control_panel.update_program_signal.emit("view.set_scene_rotation", {"pitch": 0, "yaw": 0, "roll": 0})
-        self._control_panel.update_program_signal.emit("view.set_scene_scale", {"factor": 1.0})
+        self._control_panel.program_action_signal.emit("view.set_scene_rotation", {"pitch": 0, "yaw": 0, "roll": 0})
+        self._control_panel.program_action_signal.emit("view.set_scene_scale", {"factor": 1.0})
 
     def update_values(self, program: "Program"):
         values = {axis: value for axis, value in zip(self._axis_order, program.visualizer.scene_rotation)}

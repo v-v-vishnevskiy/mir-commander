@@ -287,28 +287,29 @@ class ProjectWindow(QMainWindow):
         if window:
             self.mdi_area.setActiveSubWindow(window)
 
-    def add_program_control_panel(self, program_name: str) -> None | ProgramControlPanelDock:
-        if program_name not in self._programs_control_panels:
-            program = program_manager.get_program(program_name)
+    def add_program_control_panel(self, program_id: str) -> None | ProgramControlPanelDock:
+        if program_id not in self._programs_control_panels:
+            program = program_manager.get_program(program_id)
             control_panel_cls = program.get_control_panel_class()
             if control_panel_cls is None:
                 return None
             title = program.get_metadata().name
             control_panel = control_panel_cls()
             program_control_panel_dock = ProgramControlPanelDock(
+                program_id=program_id,
                 control_panel=control_panel,
                 title=title,
                 parent=self,
             )
-            control_panel.update_program_signal.connect(
+            control_panel.program_action_signal.connect(
                 lambda key, data: self.mdi_area.update_program_event(
-                    program_name, program_control_panel_dock.apply_for_all, key, data
+                    program_id, program_control_panel_dock.apply_for_all, key, data
                 )
             )
             self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, program_control_panel_dock)
             self._view_menu.addAction(program_control_panel_dock.toggleViewAction())
-            self._programs_control_panels[program_name] = program_control_panel_dock
-        return self._programs_control_panels[program_name]
+            self._programs_control_panels[program_id] = program_control_panel_dock
+        return self._programs_control_panels[program_id]
 
     def import_file(self, parent: UINode | None = None):
         """Import a file into the current project."""

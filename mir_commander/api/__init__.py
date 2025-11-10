@@ -3,7 +3,7 @@ from .file_importer import FileImporterPlugin, ImportFileError, InvalidFormatErr
 from .metadata import Metadata
 from .plugin_registry import PluginRegistry
 from .program import (
-    ControlElement,
+    ControlBlock,
     ControlPanel,
     MessageChannel,
     NodeChangedAction,
@@ -29,7 +29,7 @@ __all__ = [
     "Metadata",
     "ProjectNodeSchemaV1",
     # Program API
-    "ControlElement",
+    "ControlBlock",
     "ControlPanel",
     "MessageChannel",
     "NodeChangedAction",

@@ -1,4 +1,25 @@
+from ..program import NodeChangedAction
 from .base_data_structure import BaseDataStructure
+
+
+class AddAtomAction(NodeChangedAction): ...
+
+
+class NewSymbolAction(NodeChangedAction):
+    index: int
+
+
+class NewPositionAction(NodeChangedAction):
+    index: int
+
+
+class RemoveAtomsAction(NodeChangedAction):
+    indices: list[int]
+
+
+class SwapAtomsIndicesAction(NodeChangedAction):
+    index_1: int
+    index_2: int
 
 
 class AtomicCoordinates(BaseDataStructure):

@@ -8,9 +8,9 @@ from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, UINode
 
+from .docks.program_control_panel import ProgramControlPanelDock
 from .errors import UndefinedProgramError
 from .program_manager import program_manager
-from .docks.program_control_panel import ProgramControlPanelDock
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow
@@ -144,10 +144,12 @@ class MdiArea(QMdiArea):
         except UndefinedProgramError:
             logger.error("Program `%s` is not registered", program_name)
 
-    def update_program_event(self, program_name: str, apply_for_all: bool, key: str, data: dict[str, Any]):
+    def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
         windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
+        i = 0
         for window in reversed(cast(list[_MdiProgramWindow], windows)):
-            if window.name == program_name:
-                window.program.update_control_panel_event(key, data)
+            if window.name == program_id:
+                window.program.action_event(key, data, i)
+                i += 1
                 if apply_for_all is False:
                     break

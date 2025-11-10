@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 from mir_commander.api.file_exporter import FileExporterPlugin
 from mir_commander.api.metadata import Metadata
+from mir_commander.api.plugin import PluginDependency
 
 
 class BaseExporter(FileExporterPlugin):
@@ -21,3 +22,6 @@ class BaseExporter(FileExporterPlugin):
             url="https://mircmd.com",
             license="MirCommander",
         )
+
+    def get_dependencies(self) -> list[PluginDependency]:
+        return []

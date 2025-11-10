@@ -3,6 +3,7 @@ from pathlib import Path
 
 from mir_commander.api.file_importer import FileImporterPlugin
 from mir_commander.api.metadata import Metadata
+from mir_commander.api.plugin import PluginDependency
 
 
 class BaseImporter(FileImporterPlugin):
@@ -31,3 +32,6 @@ class BaseImporter(FileImporterPlugin):
             url="https://mircmd.com",
             license="MirCommander",
         )
+
+    def get_dependencies(self) -> list[PluginDependency]:
+        return []

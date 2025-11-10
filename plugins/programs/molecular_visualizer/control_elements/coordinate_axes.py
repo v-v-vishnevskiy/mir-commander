@@ -140,53 +140,53 @@ class CoordinateAxes(ControlComponent):
 
     def _visibility_checkbox_toggled_handler(self, value: bool):
         self._enable_controls(value)
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_visible", {"value": value})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_visible", {"value": value})
 
     def _labels_visibility_checkbox_toggled_handler(self, value: bool):
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_labels_visible", {"value": value})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_labels_visible", {"value": value})
 
     def _both_directions_checkbox_toggled_handler(self, value: bool):
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_both_directions", {"value": value})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_both_directions", {"value": value})
 
     def _center_checkbox_toggled_handler(self, value: bool):
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_to_center", {"value": value})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_to_center", {"value": value})
 
     def _length_slider_value_changed_handler(self, i: int):
         self._length_double_spinbox.setValue(i / 100)
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_length", {"value": i / 100})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_length", {"value": i / 100})
 
     def _length_double_spinbox_value_changed_handler(self, value: float):
         self._length_slider.setValue(int(value * 100))
 
     def _thickness_slider_value_changed_handler(self, i: int):
         self._thickness_double_spinbox.setValue(i / 100)
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_thickness", {"value": i / 100})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_thickness", {"value": i / 100})
 
     def _thickness_double_spinbox_value_changed_handler(self, value: float):
         self._thickness_slider.setValue(int(value * 100))
 
     def _font_size_slider_value_changed_handler(self, i: int):
         self._font_size_double_spinbox.setValue(i)
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_font_size", {"value": i})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_font_size", {"value": i})
 
     def _font_size_double_spinbox_value_changed_handler(self, value: int):
         self._font_size_slider.setValue(value)
 
     def _axis_label_color_changed_handler(self, axis: str, color: QColor):
-        self._control_panel.update_program_signal.emit(
+        self._control_panel.program_action_signal.emit(
             "coordinate_axes.set_label_color", {"axis": axis, "color": qcolor_to_color4f(color)}
         )
 
     def _axis_color_changed_handler(self, axis: str, color: QColor):
-        self._control_panel.update_program_signal.emit(
+        self._control_panel.program_action_signal.emit(
             "coordinate_axes.set_color", {"axis": axis, "color": qcolor_to_color4f(color)}
         )
 
     def _axis_text_changed_handler(self, axis: str, text: str):
-        self._control_panel.update_program_signal.emit("coordinate_axes.set_text", {"axis": axis, "text": text})
+        self._control_panel.program_action_signal.emit("coordinate_axes.set_text", {"axis": axis, "text": text})
 
     def _adjust_labels_length_button_clicked_handler(self):
-        self._control_panel.update_program_signal.emit("coordinate_axes.adjust_length", {})
+        self._control_panel.program_action_signal.emit("coordinate_axes.adjust_length", {})
 
     def _enable_controls(self, enabled: bool):
         for layout in self._layouts:

@@ -44,7 +44,7 @@ from .style import Style
 if TYPE_CHECKING:
     from .program import Program
 
-logger = logging.getLogger("UI.Programs.MolecularVisualizer")
+logger = logging.getLogger("Programs.MolecularVisualizer")
 
 
 class Visualizer(OpenGLWidget):

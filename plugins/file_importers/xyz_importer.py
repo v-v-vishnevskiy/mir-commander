@@ -124,6 +124,6 @@ class XYZImporter(BaseImporter):
 
         # Mark the last imported coordinates for auto-opening
         if result.nodes:
-            result.nodes[-1].actions.append(ActionType.AUTO_OPEN)
+            result.nodes[-1].actions.append(ActionType.OPEN)
 
         return result

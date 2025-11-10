@@ -1,4 +1,5 @@
 from mir_commander.api.metadata import Metadata
+from mir_commander.api.plugin import PluginDependency
 from mir_commander.api.program import ProgramPlugin
 
 from .config import Config
@@ -35,3 +36,6 @@ class MolecularVisualizer(ProgramPlugin):
 
     def is_default_for_node_type(self) -> list[str]:
         return ["atomic_coordinates", "volume_cube"]
+
+    def get_dependencies(self) -> list[PluginDependency]:
+        return []

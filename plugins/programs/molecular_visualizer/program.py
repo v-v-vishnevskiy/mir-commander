@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any, cast
 
 from PIL import Image, ImageCms
@@ -6,23 +7,23 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
+from mir_commander.api.data_structures.atomic_coordinates import (
+    AddAtomAction,
+    NewPositionAction,
+    NewSymbolAction,
+    RemoveAtomsAction,
+    SwapAtomsIndicesAction,
+)
 from mir_commander.api.program import MessageChannel, NodeChangedAction, UINode
 from mir_commander.ui.sdk.opengl.utils import Color4f
 from mir_commander.ui.sdk.widget import TR
 from mir_commander.utils.text import sanitize_filename
 
-from ..node_changed_actions import (
-    AtomicCoordinatesAddAtomAction,
-    AtomicCoordinatesNewPositionAction,
-    AtomicCoordinatesNewSymbolAction,
-    AtomicCoordinatesRemoveAtomsAction,
-    AtomicCoordinatesSwapAtomsIndicesAction,
-)
 from ..program import BaseProgram
 from .config import Config
 from .visualizer import Visualizer
 
-logger = logging.getLogger("UI.Programs.MolecularVisualizer")
+logger = logging.getLogger("Programs.MolecularVisualizer")
 
 
 class Program(BaseProgram):
@@ -115,16 +116,30 @@ class Program(BaseProgram):
             self.visualizer.set_atomic_coordinates(self._get_draw_node_atomic_coordinates())
 
     def save_image(
-        self, filename: str, width: int, height: int, bg_color: Color4f | None = None, crop_to_content: bool = False
+        self,
+        t_filename: str,
+        width: int,
+        height: int,
+        bg_color: Color4f | None = None,
+        crop_to_content: bool = False,
+        i_param: int = 0,
+        rewrite: bool = True,
+        instance_index: int = 0,
     ):
-        filename = filename.replace("%n", sanitize_filename(self._node_full_name))
+        t_filename = t_filename.replace("%n", sanitize_filename(self._node_full_name))
+        t_filename = t_filename.replace("%i", str(i_param + instance_index).zfill(6))
+
+        if rewrite is False and Path(t_filename).exists():
+            self.send_message_signal.emit(MessageChannel.CONSOLE, TR.tr("File already exists: {}").format(t_filename))
+            return
+
         try:
             image = self.visualizer.render_to_image(width, height, bg_color, crop_to_content)
             profile = ImageCms.createProfile("sRGB")
-            Image.fromarray(image).save(filename, icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
-            self.send_message_signal.emit(MessageChannel.CONSOLE, TR.tr("{} saved successfully").format(filename))
+            Image.fromarray(image).save(t_filename, icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
+            self.send_message_signal.emit(MessageChannel.CONSOLE, TR.tr("{} saved successfully").format(t_filename))
         except Exception as e:
-            txt = TR.tr("Error saving image {}").format(filename)
+            txt = TR.tr("Error saving image {}").format(t_filename)
             logger.error(f"{txt}: {e}")
             self.send_message_signal.emit(MessageChannel.CONSOLE, txt)
 
@@ -134,8 +149,8 @@ class Program(BaseProgram):
     def get_icon(self) -> QIcon:
         return self._draw_node.icon()
 
-    def update_control_panel_event(self, key: str, data: dict[str, Any]):
-        match key:
+    def action_event(self, action: str, data: dict[str, Any], instance_index: int):
+        match action:
             case "view.rotate_scene":
                 self.visualizer.rotate_scene(**data)
             case "view.scale_scene":
@@ -165,7 +180,7 @@ class Program(BaseProgram):
             case "volume_cube.remove_isosurface":
                 self.visualizer.remove_volume_cube_isosurface(**data)
             case "image.save":
-                self.save_image(**data)
+                self.save_image(**data | {"instance_index": instance_index})
             case "coordinate_axes.set_visible":
                 self.visualizer.set_coordinate_axes_visible(**data)
             case "coordinate_axes.set_labels_visible":
@@ -189,7 +204,7 @@ class Program(BaseProgram):
             case "coordinate_axes.adjust_length":
                 self.visualizer.coordinate_axes_adjust_length(**data)
             case _:
-                logger.error("Unknown key: %s", key)
+                logger.error("Unknown key: %s", action)
 
     def node_changed_event(self, node_id: int, action: NodeChangedAction):
         try:
@@ -200,16 +215,16 @@ class Program(BaseProgram):
         match data:
             case AtomicCoordinates():
                 match action:
-                    case AtomicCoordinatesAddAtomAction():
+                    case AddAtomAction():
                         self.visualizer.build_molecule(node_id)
-                    case AtomicCoordinatesNewSymbolAction():
-                        self.visualizer.update_atomic_number(node_id, action.atom_index)
-                    case AtomicCoordinatesNewPositionAction():
-                        self.visualizer.update_atom_position(node_id, action.atom_index)
-                    case AtomicCoordinatesRemoveAtomsAction():
-                        self.visualizer.remove_atoms(node_id, action.atom_indices)
-                    case AtomicCoordinatesSwapAtomsIndicesAction():
-                        self.visualizer.swap_atoms_indices(node_id, action.atom_index_1, action.atom_index_2)
+                    case NewSymbolAction():
+                        self.visualizer.update_atomic_number(node_id, action.index)
+                    case NewPositionAction():
+                        self.visualizer.update_atom_position(node_id, action.index)
+                    case RemoveAtomsAction():
+                        self.visualizer.remove_atoms(node_id, action.indices)
+                    case SwapAtomsIndicesAction():
+                        self.visualizer.swap_atoms_indices(node_id, action.index_1, action.index_2)
                     case _:
                         logger.warning("Unknown action: %s", action)
 

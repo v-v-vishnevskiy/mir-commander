@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from .plugin import Plugin
+from .plugin import Plugin, PluginDependency
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -23,8 +23,7 @@ class ProgramConfig(BaseModel):
     window_size: WindowSizeConfig = WindowSizeConfig()
 
 
-@dataclass
-class NodeChangedAction: ...
+class NodeChangedAction(BaseModel): ...
 
 
 class UINode(QStandardItem):
@@ -56,7 +55,7 @@ class Program(QObject):
     def node_changed_event(self, node_id: int, action: NodeChangedAction):
         raise NotImplementedError
 
-    def update_control_panel_event(self, key: str, data: dict[str, Any]):
+    def action_event(self, action: str, data: dict[str, Any], instance_index: int):
         raise NotImplementedError
 
     def get_title(self) -> str:
@@ -73,22 +72,22 @@ T_WIDGET = TypeVar("T_WIDGET", bound=QWidget)
 
 
 @dataclass
-class ControlElement(Generic[T_WIDGET]):
+class ControlBlock(Generic[T_WIDGET]):
     title: str
     widget: T_WIDGET
-    visible: bool = True
+    expanded: bool = Field(default=True, description="Whether the block is expanded by default")
 
 
 T_PROGRAM = TypeVar("T_PROGRAM", bound=Program)
 
 
 class ControlPanel(Generic[T_PROGRAM], QObject):
-    update_program_signal = Signal(str, dict)
+    program_action_signal = Signal(str, dict)
 
     def allows_apply_for_all(self) -> bool:
         raise NotImplementedError
 
-    def get_control_elements(self) -> list[ControlElement]:
+    def get_blocks(self) -> list[ControlBlock]:
         raise NotImplementedError
 
     def update_event(self, program: T_PROGRAM):
@@ -113,3 +112,6 @@ class ProgramPlugin(Plugin):
 
     @abstractmethod
     def is_default_for_node_type(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_dependencies(self) -> list[PluginDependency]: ...

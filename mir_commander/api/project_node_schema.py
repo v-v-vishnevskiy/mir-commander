@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ActionType(Enum):
-    AUTO_OPEN = "auto_open"
+    OPEN = "open"
 
 
 class ProjectNodeSchemaV1(BaseModel):

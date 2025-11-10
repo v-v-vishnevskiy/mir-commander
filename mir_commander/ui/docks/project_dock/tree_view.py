@@ -134,8 +134,8 @@ class TreeView(QTreeView):
     def _open_auto_open_nodes(self, item: TreeItem, programs: list[str]):
         """Recursively open nodes marked with auto_open flag."""
         node = item.project_node
-        if node is not None and ActionType.AUTO_OPEN in node.actions:
-            node.actions.remove(ActionType.AUTO_OPEN)
+        if node is not None and ActionType.OPEN in node.actions:
+            node.actions.remove(ActionType.OPEN)
             if len(programs) < 1:
                 if item.default_program:
                     self.open_item.emit(item, item.default_program, {})

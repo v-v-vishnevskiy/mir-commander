@@ -89,7 +89,7 @@ class CCLibImporter(BaseImporter):
                     y=data.atomcoords[xyz_idx][:, 1],
                     z=data.atomcoords[xyz_idx][:, 2],
                 ),
-                actions=[ActionType.AUTO_OPEN],
+                actions=[ActionType.OPEN],
             )
             result.nodes.append(at_coord_item)
 

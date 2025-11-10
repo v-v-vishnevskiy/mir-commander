@@ -120,7 +120,7 @@ class GaussianCubeImporter(BaseImporter):
                 steps_size=steps_size,
                 cube_data=np.array([float(x) for x in rest_data.split()]).reshape(steps_number),
             ),
-            actions=[ActionType.AUTO_OPEN],
+            actions=[ActionType.OPEN],
         )
 
         # Add the set of Cartesian coordinates directly to the cube

@@ -20,6 +20,9 @@ class BaseDock(DockWidget):
             | Qt.DockWidgetArea.RightDockWidgetArea
         )
 
-        self.setObjectName(f"Dock.{self.__class__.__name__}")
+        self.setObjectName(f"Dock.{self._get_name()}")
 
         self.setContentsMargins(0, 0, 0, 0)
+
+    def _get_name(self) -> str:
+        return self.__class__.__name__

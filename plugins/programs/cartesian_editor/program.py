@@ -6,17 +6,17 @@ from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItemModel
 from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
 
 from mir_commander.api.data_structures import AtomicCoordinates
+from mir_commander.api.data_structures.atomic_coordinates import (
+    AddAtomAction,
+    NewPositionAction,
+    NewSymbolAction,
+    RemoveAtomsAction,
+    SwapAtomsIndicesAction,
+)
 from mir_commander.api.program import NodeChangedAction
 from mir_commander.ui.sdk.widget import StandardItem, TableView
 from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
 
-from ..node_changed_actions import (
-    AtomicCoordinatesAddAtomAction,
-    AtomicCoordinatesNewPositionAction,
-    AtomicCoordinatesNewSymbolAction,
-    AtomicCoordinatesRemoveAtomsAction,
-    AtomicCoordinatesSwapAtomsIndicesAction,
-)
 from ..program import BaseProgram
 from .config import Config
 
@@ -218,16 +218,16 @@ class AtomicCoordinatesTableView(TableView):
             match item:
                 case SymbolItem():
                     self._raw_data.atomic_num[idx] = item.atomic_number
-                    self._program.send_node_changed_event(AtomicCoordinatesNewSymbolAction(idx))
+                    self._program.node_changed(NewSymbolAction(index=idx))
                 case FloatItemX():
                     self._raw_data.x[idx] = item.value
-                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.node_changed(NewPositionAction(index=idx))
                 case FloatItemY():
                     self._raw_data.y[idx] = item.value
-                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.node_changed(NewPositionAction(index=idx))
                 case FloatItemZ():
                     self._raw_data.z[idx] = item.value
-                    self._program.send_node_changed_event(AtomicCoordinatesNewPositionAction(idx))
+                    self._program.node_changed(NewPositionAction(index=idx))
                 case TagItem():
                     self._apply_new_tag(item)
 
@@ -257,7 +257,7 @@ class AtomicCoordinatesTableView(TableView):
         data.y[index_1], data.y[index_2] = data.y[index_2], data.y[index_1]
         data.z[index_1], data.z[index_2] = data.z[index_2], data.z[index_1]
 
-        self._program.send_node_changed_event(AtomicCoordinatesSwapAtomsIndicesAction(index_1, index_2))
+        self._program.node_changed(SwapAtomsIndicesAction(index_1=index_1, index_2=index_2))
 
     def _is_valid_values_for_new_atom_row(self) -> bool:
         return (
@@ -289,7 +289,7 @@ class AtomicCoordinatesTableView(TableView):
         with QSignalBlocker(self._model):
             self._reset_new_atom_row()
 
-        self._program.send_node_changed_event(AtomicCoordinatesAddAtomAction())
+        self._program.node_changed(AddAtomAction())
 
     def _add_atom_row(self, tag: int, symbol: str, x: float, y: float, z: float, append: bool = True):
         tag_item = TagItem(tag, self._model.rowCount, index=tag - 1)
@@ -393,7 +393,7 @@ class AtomicCoordinatesTableView(TableView):
                         self._get_item(row, column).set_index(new_index)
             self.viewport().update()
 
-        self._program.send_node_changed_event(AtomicCoordinatesRemoveAtomsAction(indices_to_delete))
+        self._program.node_changed(RemoveAtomsAction(indices=indices_to_delete))
 
     def _restore_last_valid_selected_item(self):
         selected_indexes = self.selectionModel().selectedRows()
@@ -426,13 +426,13 @@ class Program(BaseProgram):
     def node_changed_event(self, node_id: int, action: NodeChangedAction):
         pass
 
-    def update_control_panel_event(self, key: str, data: dict[str, Any]):
-        match key:
-            case "general.set_decimals":
+    def action_event(self, action: str, data: dict[str, Any], instance_index: int):
+        match action:
+            case "set_decimals":
                 self._widget.set_decimals(**data)
 
     def get_widget(self) -> QWidget:
         return self._widget
 
-    def send_node_changed_event(self, action: NodeChangedAction):
+    def node_changed(self, action: NodeChangedAction):
         self.node_changed_signal.emit(self.node.id, action)

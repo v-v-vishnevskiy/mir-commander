@@ -113,15 +113,15 @@ class Image(ControlComponent):
         file_path = self._file_path.text()
         scale_factor = self._scale_double_spinbox.value()
 
-        filename = file_path.replace("%i", str(i_value).zfill(6))
-        self._control_panel.update_program_signal.emit(
+        self._control_panel.program_action_signal.emit(
             "image.save",
             {
-                "filename": filename,
+                "t_filename": file_path,
                 "width": int(self._width * scale_factor),
                 "height": int(self._height * scale_factor),
                 "bg_color": bg_color,
                 "crop_to_content": crop_to_content,
+                "i_param": i_value,
             },
         )
 

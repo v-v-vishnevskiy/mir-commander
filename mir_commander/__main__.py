@@ -14,9 +14,8 @@ def run():
     if not DIR.HOME_CONFIG.exists():
         DIR.HOME_CONFIG.mkdir(parents=True, exist_ok=True)
 
-    # TODO: will be enabled later
-    # if not DIR.HOME_PLUGINS.exists():
-    #     DIR.HOME_PLUGINS.mkdir(parents=True, exist_ok=True)
+    if not DIR.HOME_PLUGINS.exists():
+        DIR.HOME_PLUGINS.mkdir(parents=True, exist_ok=True)
 
     logging.setup()
 
@@ -25,9 +24,8 @@ def run():
     logger.debug("Loading built-in plugins ...")
     load_from_directory(DIR.INTERNAL_PLUGINS)
 
-    # TODO: will be enabled later
-    # logger.debug("Loading external plugins ...")
-    # load_from_directory(DIR.HOME_PLUGINS)
+    logger.debug("Loading external plugins ...")
+    load_from_directory(DIR.HOME_PLUGINS)
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(

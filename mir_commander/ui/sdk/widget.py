@@ -436,19 +436,19 @@ class _GroupHeaderWidget(QFrame):
         self._apply_style()
 
     def _apply_style(self):
-        if self._parent.visible:
+        if self._parent.expanded:
             self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-down.png); }")
         else:
             self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-right.png); }")
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        self._parent.toggle_visibility()
+        self._parent.toggle_expand()
         self._apply_style()
         event.accept()
 
 
 class _GroupLayoutWidget(VBoxLayout):
-    def __init__(self, title: str, widget: QWidget, visible: bool, *args, **kwargs):
+    def __init__(self, title: str, widget: QWidget, expanded: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._scroll_area = QScrollArea()
@@ -458,7 +458,7 @@ class _GroupLayoutWidget(VBoxLayout):
         self._scroll_area.setWidget(widget)
         self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
 
-        self._visible = visible
+        self._expanded = expanded
         self._widget = widget
         self._widget.setContentsMargins(5, 5, 5, 10)
         self._widget_height = self._widget_current_height = self._widget.sizeHint().height()
@@ -470,7 +470,7 @@ class _GroupLayoutWidget(VBoxLayout):
         self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
         self.addWidget(self._scroll_area)
 
-        if self._visible:
+        if self._expanded:
             self._scroll_area.setMinimumHeight(widget.sizeHint().height())
             self._scroll_area.setMaximumHeight(widget.sizeHint().height())
         else:
@@ -478,13 +478,13 @@ class _GroupLayoutWidget(VBoxLayout):
             self._scroll_area.setMaximumHeight(0)
 
     @property
-    def visible(self) -> bool:
-        return self._visible
+    def expanded(self) -> bool:
+        return self._expanded
 
-    def toggle_visibility(self):
-        self._visible = not self._visible
+    def toggle_expand(self):
+        self._expanded = not self._expanded
 
-        if self._visible:
+        if self._expanded:
             # Expand the group
             self._animation_min.setStartValue(0)
             self._animation_max.setStartValue(0)
@@ -504,5 +504,5 @@ class _GroupLayoutWidget(VBoxLayout):
 
 
 class GroupVBoxLayout(VBoxLayout):
-    def add_widget(self, title: str, widget: QWidget, visible: bool = True, *args, **kwargs):
-        super().addLayout(_GroupLayoutWidget(title, widget, visible), *args, **kwargs)
+    def add_widget(self, title: str, widget: QWidget, expanded: bool = True, *args, **kwargs):
+        super().addLayout(_GroupLayoutWidget(title, widget, expanded), *args, **kwargs)

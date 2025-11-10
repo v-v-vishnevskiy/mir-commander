@@ -65,7 +65,7 @@ class UnexImporter(BaseImporter):
         for node in result.nodes:
             # Currently it is assumed that molecules may contain only sets of Cartesian coordinates
             if node.nodes:
-                node.nodes[-1].actions.append(ActionType.AUTO_OPEN)
+                node.nodes[-1].actions.append(ActionType.OPEN)
 
         return result
 

@@ -39,7 +39,7 @@ class VisibilityButton(QPushButton):
         if self._visible:
             data["apply_to_parents"] = True
 
-        self._control_panel.update_program_signal.emit("volume_cube.set_isosurface_visible", data)
+        self._control_panel.program_action_signal.emit("volume_cube.set_isosurface_visible", data)
 
 
 class DeleteButton(QPushButton):
@@ -51,7 +51,7 @@ class DeleteButton(QPushButton):
         self.clicked.connect(self._clicked_handler)
 
     def _clicked_handler(self):
-        self._control_panel.update_program_signal.emit("volume_cube.remove_isosurface", {"id": self._id})
+        self._control_panel.program_action_signal.emit("volume_cube.remove_isosurface", {"id": self._id})
 
 
 class IsosurfacesTreeView(TreeView):
@@ -129,7 +129,7 @@ class IsosurfacesTreeView(TreeView):
         self.setIndexWidget(self._model.indexFromItem(group_delete_item), d)
 
     def _color_changed_handler(self, id: int, color: QColor):
-        self._control_panel.update_program_signal.emit(
+        self._control_panel.program_action_signal.emit(
             "volume_cube.set_isosurface_color", {"id": id, "color": qcolor_to_color4f(color)}
         )
 
@@ -191,7 +191,7 @@ class VolumeCube(ControlComponent):
         self.setDisabled(program.visualizer.is_empty_volume_cube_scalar_field())
 
     def add_button_clicked_handler(self):
-        self._control_panel.update_program_signal.emit(
+        self._control_panel.program_action_signal.emit(
             "volume_cube.add_isosurface",
             {
                 "value": self._value.value(),

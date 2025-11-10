@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
 from mir_commander.api.metadata import Metadata
+from mir_commander.api.plugin import PluginDependency
 from mir_commander.api.project_node import ProjectNodePlugin as BaseProjectNodePlugin
 
 
@@ -21,3 +22,6 @@ class ProjectNodePlugin(BaseProjectNodePlugin):
             url="https://mircmd.com",
             license="MirCommander",
         )
+
+    def get_dependencies(self) -> list[PluginDependency]:
+        return []

@@ -81,30 +81,30 @@ class AtomLabels(ControlComponent["Program"]):
         self.setLayout(layout)
 
     def _symbol_visible_checkbox_handler(self, value: bool):
-        self._control_panel.update_program_signal.emit("atom_labels.set_symbol_visible", {"value": value})
+        self._control_panel.program_action_signal.emit("atom_labels.set_symbol_visible", {"value": value})
 
     def _number_visible_checkbox_handler(self, value: bool):
-        self._control_panel.update_program_signal.emit("atom_labels.set_number_visible", {"value": value})
+        self._control_panel.program_action_signal.emit("atom_labels.set_number_visible", {"value": value})
 
     def _size_slider_value_changed_handler(self, i: int):
         self._size_double_spinbox.setValue(i)
-        self._control_panel.update_program_signal.emit("atom_labels.set_size", {"value": i})
+        self._control_panel.program_action_signal.emit("atom_labels.set_size", {"value": i})
 
     def _size_double_spinbox_value_changed_handler(self, value: int):
         self._size_slider.setValue(value)
 
     def _offset_slider_value_changed_handler(self, i: int):
         self._offset_double_spinbox.setValue(i / 100)
-        self._control_panel.update_program_signal.emit("atom_labels.set_offset", {"value": i / 100})
+        self._control_panel.program_action_signal.emit("atom_labels.set_offset", {"value": i / 100})
 
     def _offset_double_spinbox_value_changed_handler(self, value: float):
         self._offset_slider.setValue(int(value * 100))
 
     def _toggle_all_button_clicked_handler(self):
-        self._control_panel.update_program_signal.emit("atom_labels.toggle_visibility_for_all_atoms", {})
+        self._control_panel.program_action_signal.emit("atom_labels.toggle_visibility_for_all_atoms", {})
 
     def _toggle_selected_button_clicked_handler(self):
-        self._control_panel.update_program_signal.emit("atom_labels.toggle_visibility_for_selected_atoms", {})
+        self._control_panel.program_action_signal.emit("atom_labels.toggle_visibility_for_selected_atoms", {})
 
     def update_values(self, program: "Program"):
         self._size_slider.setValue(program.config.atom_label.size)

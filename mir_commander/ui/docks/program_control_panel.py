@@ -3,14 +3,16 @@ from typing import Callable
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QScrollArea, QSizePolicy, QWidget
 
-from mir_commander.api.program import ControlElement, ControlPanel
-from mir_commander.ui.sdk.widget import CheckBox, DockWidget, GroupVBoxLayout
+from mir_commander.api.program import ControlBlock, ControlPanel
+from mir_commander.ui.sdk.widget import CheckBox, GroupVBoxLayout
+
+from .base import BaseDock
 
 
-class _ControlComponents(QWidget):
+class _Container(QWidget):
     def __init__(
         self,
-        elements: list[ControlElement],
+        blocks: list[ControlBlock],
         allows_apply_for_all: bool,
         apply_for_all_value: bool,
         apply_for_all_handler: Callable[[bool], None],
@@ -33,21 +35,23 @@ class _ControlComponents(QWidget):
             self.group_layout.addWidget(_apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
             self.group_layout.addSpacing(10)
 
-        for control_element in elements:
-            self.group_layout.add_widget(control_element.title, control_element.widget, control_element.visible)
+        for item in blocks:
+            self.group_layout.add_widget(item.title, item.widget, item.expanded)
         self.group_layout.addStretch(1)
 
         self.setLayout(self.group_layout)
 
 
-class ProgramControlPanelDock(DockWidget):
+class ProgramControlPanelDock(BaseDock):
     """
     The program's control panel dock widget.
 
     A single instance of this class is used for showing widgets with settings for the program.
     """
 
-    def __init__(self, control_panel: ControlPanel, *args, **kwargs):
+    def __init__(self, program_id: str, control_panel: ControlPanel, *args, **kwargs):
+        self._program_id = program_id
+
         super().__init__(*args, **kwargs)
 
         self.control_panel = control_panel
@@ -61,8 +65,8 @@ class ProgramControlPanelDock(DockWidget):
         self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        self._container = _ControlComponents(
-            control_panel.get_control_elements(),
+        self._container = _Container(
+            control_panel.get_blocks(),
             control_panel.allows_apply_for_all(),
             self._apply_for_all,
             self._apply_for_all_handler,
@@ -78,6 +82,9 @@ class ProgramControlPanelDock(DockWidget):
 
     def _apply_for_all_handler(self, checked: bool):
         self._apply_for_all = checked
+
+    def _get_name(self) -> str:
+        return f"{self.__class__.__name__}.{self._program_id}"
 
     @property
     def apply_for_all(self) -> bool:
