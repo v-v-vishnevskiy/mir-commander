@@ -2,9 +2,10 @@ import logging
 
 import numpy as np
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.consts import DIR
 from mir_commander.core.graphics.camera import Camera
 from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
@@ -144,7 +145,7 @@ class OpenGLWidget(QOpenGLWidget):
         return self.resource_manager.current_scene.transform.rotation_angles
 
     def get_scene_scale(self) -> float:
-        return self.resource_manager.current_scene.transform.get_scale().x()
+        return self.resource_manager.current_scene.transform.get_scale().x
 
     def resizeGL(self, w: int, h: int):
         self.makeCurrent()
@@ -215,11 +216,11 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.update()
 
-    def set_scene_position(self, point: QVector3D):
+    def set_scene_position(self, point: Vector3D):
         self.resource_manager.current_scene.transform.set_position(point)
         self.update()
 
-    def set_scene_translate(self, vector: QVector3D):
+    def set_scene_translate(self, vector: Vector3D):
         self.resource_manager.current_scene.transform.translate(vector)
         self.update()
 
@@ -242,14 +243,14 @@ class OpenGLWidget(QOpenGLWidget):
         if factor == 1.0 or factor == 0.0:
             return
 
-        self.resource_manager.current_scene.transform.scale(QVector3D(factor, factor, factor))
+        self.resource_manager.current_scene.transform.scale(Vector3D(factor, factor, factor))
         self.update()
 
     def set_scene_scale(self, factor: float):
         if factor == 0.0:
             return
 
-        self.resource_manager.current_scene.transform.set_scale(QVector3D(factor, factor, factor))
+        self.resource_manager.current_scene.transform.set_scale(Vector3D(factor, factor, factor))
         self.update()
 
     def new_cursor_position(self, x: int, y: int):

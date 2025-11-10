@@ -2,7 +2,9 @@ from ctypes import c_void_p
 
 import numpy as np
 from pydantic_extra_types.color import Color
-from PySide6.QtGui import QColor, QVector3D
+from PySide6.QtGui import QColor
+
+from mir_commander.core.algebra import Vector3D
 
 Color4f = tuple[float, float, float, float]
 null = c_void_p(0)
@@ -50,12 +52,11 @@ def color_to_id(r: int, g: int, b: int) -> int:
 def compute_face_normals(vertices: np.ndarray) -> np.ndarray:
     normals: list[float] = []
     for i in range(0, len(vertices), 9):
-        normal = QVector3D().normal(
-            QVector3D(*vertices[i : i + 3]),
-            QVector3D(*vertices[i + 3 : i + 6]),
-            QVector3D(*vertices[i + 6 : i + 9]),
+        normal = Vector3D(*vertices[i : i + 3]).normal(
+            Vector3D(*vertices[i + 3 : i + 6]),
+            Vector3D(*vertices[i + 6 : i + 9]),
         )
-        normals.extend([normal.x(), normal.y(), normal.z()] * 3)
+        normals.extend([normal.x, normal.y, normal.z] * 3)
     return np.array(normals, dtype=np.float32)
 
 

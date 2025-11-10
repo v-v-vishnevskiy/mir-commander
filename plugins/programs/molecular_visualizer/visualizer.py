@@ -3,11 +3,12 @@ from typing import TYPE_CHECKING, cast
 
 from PIL import Image, ImageCms
 from PySide6.QtCore import QPoint
-from PySide6.QtGui import QContextMenuEvent, QVector3D
+from PySide6.QtGui import QContextMenuEvent
 from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
 from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import symbol_to_atomic_number
 from mir_commander.core.graphics.mesh import cone, cylinder, sphere
 from mir_commander.core.graphics.opengl.errors import RendererError
@@ -101,7 +102,7 @@ class Visualizer(OpenGLWidget):
         self.set_projection_mode(self._style.current.projection.mode)
 
         self.resource_manager.current_camera.reset_to_default()
-        self.resource_manager.current_camera.set_position(QVector3D(0, 0, 3 * max_radius / fov_factor))
+        self.resource_manager.current_camera.set_position(Vector3D(0, 0, 3 * max_radius / fov_factor))
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())
@@ -157,7 +158,7 @@ class Visualizer(OpenGLWidget):
         if value:
             self._coordinate_axes.set_position(self._molecules.center)
         else:
-            self._coordinate_axes.set_position(QVector3D(0.0, 0.0, 0.0))
+            self._coordinate_axes.set_position(Vector3D(0.0, 0.0, 0.0))
         self.update()
 
     def set_coordinate_axis_label_color(self, axis: str, color: Color4f):

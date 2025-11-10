@@ -1,6 +1,6 @@
 import math
 
-from PySide6.QtGui import QMatrix4x4, QVector3D
+from mir_commander.core.algebra import Matrix4x4, Vector3D
 
 
 class Camera:
@@ -26,9 +26,9 @@ class Camera:
 
     def __init__(
         self,
-        position: QVector3D = QVector3D(0.0, 0.0, 1.0),
-        target: QVector3D = QVector3D(0.0, 0.0, 0.0),
-        up_vector: QVector3D = QVector3D(0.0, 1.0, 0.0),
+        position: Vector3D = Vector3D(0.0, 0.0, 1.0),
+        target: Vector3D = Vector3D(0.0, 0.0, 0.0),
+        up_vector: Vector3D = Vector3D(0.0, 1.0, 0.0),
         movement_speed: float = 1.0,
         rotation_speed: float = 1.0,
         zoom_speed: float = 1.0,
@@ -54,39 +54,39 @@ class Camera:
         self._rotation_speed = rotation_speed
         self._zoom_speed = zoom_speed
 
-        self._matrix = QMatrix4x4()
+        self._matrix = Matrix4x4()
         self._dirty = True
 
     @property
-    def matrix(self) -> QMatrix4x4:
+    def matrix(self) -> Matrix4x4:
         if self._dirty:
             self._update_matrix()
             self._dirty = False
         return self._matrix
 
     @property
-    def position(self) -> QVector3D:
+    def position(self) -> Vector3D:
         return self._position
 
-    def set_position(self, position: QVector3D):
+    def set_position(self, position: Vector3D):
         """Set camera position."""
 
         self._position = position
         self._dirty = True
 
-    def set_target(self, target: QVector3D):
+    def set_target(self, target: Vector3D):
         """Set camera target point."""
 
         self._target = target
         self._dirty = True
 
-    def set_up_vector(self, up_vector: QVector3D):
+    def set_up_vector(self, up_vector: Vector3D):
         """Set camera up vector."""
 
-        self._up_vector = up_vector.normalized()
+        self._up_vector = up_vector.normalized
         self._dirty = True
 
-    def look_at(self, position: QVector3D, target: QVector3D, up_vector: None | QVector3D = None):
+    def look_at(self, position: Vector3D, target: Vector3D, up_vector: None | Vector3D = None):
         """
         Set camera to look at a specific target from a specific position.
 
@@ -99,10 +99,10 @@ class Camera:
         self._position = position
         self._target = target
         if up_vector is not None:
-            self._up_vector = up_vector.normalized()
+            self._up_vector = up_vector.normalized
         self._dirty = True
 
-    def translate(self, translation: QVector3D):
+    def translate(self, translation: Vector3D):
         """
         Move camera by translation vector.
 
@@ -122,7 +122,7 @@ class Camera:
             distance: Distance to move (positive = forward, negative = backward)
         """
 
-        direction = (self._target - self._position).normalized()
+        direction = (self._target - self._position).normalized
         translation = direction * distance * self._movement_speed
         self.translate(translation)
 
@@ -134,8 +134,8 @@ class Camera:
             distance: Distance to move (positive = right, negative = left)
         """
 
-        forward = (self._target - self._position).normalized()
-        right = QVector3D.crossProduct(forward, self._up_vector).normalized()
+        forward = (self._target - self._position).normalized
+        right = Vector3D.cross_product(forward, self._up_vector).normalized
         translation = right * distance * self._movement_speed
         self.translate(translation)
 
@@ -164,7 +164,7 @@ class Camera:
         yaw_rad = yaw * self._rotation_speed * 0.0174533
 
         # Get current distance from target
-        distance = (self._position - self._target).length()
+        distance = (self._position - self._target).length
 
         # Calculate new position using spherical coordinates
         current_pitch = self._get_pitch_angle()
@@ -181,7 +181,7 @@ class Camera:
         y = distance * math.sin(new_pitch)
         z = distance * math.cos(new_pitch) * math.cos(new_yaw)
 
-        new_position = self._target + QVector3D(x, y, z)
+        new_position = self._target + Vector3D(x, y, z)
         self.set_position(new_position)
 
     def zoom_to_target(self, factor: float):
@@ -192,8 +192,8 @@ class Camera:
             factor: Zoom factor (positive = zoom in, negative = zoom out)
         """
 
-        direction = (self._target - self._position).normalized()
-        distance = (self._target - self._position).length()
+        direction = (self._target - self._position).normalized
+        distance = (self._target - self._position).length
 
         # Calculate new distance
         new_distance = distance * (1.0 + factor * self._zoom_speed)
@@ -207,47 +207,47 @@ class Camera:
         """Reset camera to default position and orientation."""
 
         self.look_at(
-            position=QVector3D(0.0, 0.0, 1.0), target=QVector3D(0.0, 0.0, 0.0), up_vector=QVector3D(0.0, 1.0, 0.0)
+            position=Vector3D(0.0, 0.0, 1.0), target=Vector3D(0.0, 0.0, 0.0), up_vector=Vector3D(0.0, 1.0, 0.0)
         )
 
-    def get_direction(self) -> QVector3D:
+    def get_direction(self) -> Vector3D:
         """Get camera view direction (normalized vector from position to target)."""
 
-        return (self._target - self._position).normalized()
+        return (self._target - self._position).normalized
 
-    def get_right_vector(self) -> QVector3D:
+    def get_right_vector(self) -> Vector3D:
         """Get camera right vector (normalized)."""
 
         forward = self.get_direction()
-        return QVector3D.crossProduct(forward, self._up_vector).normalized()
+        return Vector3D.cross_product(forward, self._up_vector).normalized
 
     def get_distance_to_target(self) -> float:
         """Get distance from camera to target."""
 
-        return (self._target - self._position).length()
+        return (self._target - self._position).length
 
-    def get_distance_to_point(self, point: QVector3D) -> float:
+    def get_distance_to_point(self, point: Vector3D) -> float:
         """Get distance from camera to a point."""
 
-        return self._position.distanceToPoint(point)
+        return self._position.distance_to_point(point)
 
     def _get_pitch_angle(self) -> float:
         """Get current pitch angle in radians."""
 
         direction = self.get_direction()
-        return math.asin(direction.y())
+        return math.asin(direction.y)
 
     def _get_yaw_angle(self) -> float:
         """Get current yaw angle in radians."""
 
         direction = self.get_direction()
-        return math.atan2(direction.x(), direction.z())
+        return math.atan2(direction.x, direction.z)
 
     def _update_matrix(self):
         """Update the view matrix based on current camera parameters."""
 
-        self._matrix.setToIdentity()
-        self._matrix.lookAt(self._position, self._target, self._up_vector)
+        self._matrix.set_to_identity()
+        self._matrix.look_at(self._position, self._target, self._up_vector)
 
     def __repr__(self) -> str:
         return f"Camera(position={self._position}, target={self._target})"

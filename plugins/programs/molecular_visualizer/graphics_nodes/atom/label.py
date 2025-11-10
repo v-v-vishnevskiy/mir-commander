@@ -1,5 +1,4 @@
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.scene import TextNode
 from mir_commander.core.graphics.utils import color_to_color4f
 
@@ -16,7 +15,7 @@ class Label(TextNode):
         self._number = number
 
         self._size = config.size / 100.0
-        self.set_scale(QVector3D(self._size, self._size, self._size))
+        self.set_scale(Vector3D(self._size, self._size, self._size))
         self.set_shader("atom_label")
         self.set_color(color_to_color4f(config.color))
         self._update_text()
@@ -34,7 +33,7 @@ class Label(TextNode):
     def set_config(self, config: AtomLabelConfig):
         self.set_color(color_to_color4f(config.color))
         s = config.size / 100.0
-        self.set_scale(QVector3D(s, s, s))
+        self.set_scale(Vector3D(s, s, s))
         self.set_font_atlas_name(config.font)
 
     def set_symbol(self, symbol: str):
@@ -68,4 +67,4 @@ class Label(TextNode):
             return
 
         self._size = s
-        self.set_scale(QVector3D(s, s, s))
+        self.set_scale(Vector3D(s, s, s))

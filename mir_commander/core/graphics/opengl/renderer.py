@@ -51,8 +51,8 @@ from OpenGL.GL import (
     glVertexAttribPointer,
     glViewport,
 )
-from PySide6.QtGui import QVector3D
 
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.projection import ProjectionManager
 from mir_commander.core.graphics.resource_manager import ResourceManager
 from mir_commander.core.graphics.scene import Node, NodeType, RenderingContainer, TextNode
@@ -255,17 +255,17 @@ class Renderer:
 
     def _update_model_matrix_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        transformation_data = []
+        transformation_data: list[float] = []
         for node in nodes:
-            transformation_data.extend(node.transform.data())
+            transformation_data.extend(node.transform.data)
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
     def _update_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        data = []
+        data: list[float] = []
         for node in nodes:
-            data.extend(list(node._transform._position.toTuple()))  # type: ignore[call-overload]
+            data.extend(node._transform._position.data)
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
@@ -287,10 +287,10 @@ class Renderer:
 
     def _update_parent_local_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        data = []
+        data: list[float] = []
         for node in nodes:
             if node._parent is not None:
-                data.extend(list(node._parent._transform._position.toTuple()))  # type: ignore[call-overload]
+                data.extend(node._parent._transform._position.data)
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
@@ -298,12 +298,12 @@ class Renderer:
 
     def _update_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        data = []
+        data: list[float] = []
         for node in nodes:
             if node._parent is not None:
-                nd = node._parent.transform.data()
-                center = QVector3D(nd[12], nd[13], nd[14])
-                data.extend(list(center.toTuple()))  # type: ignore[call-overload]
+                nd = node._parent.transform.data
+                center = Vector3D(nd[12], nd[13], nd[14])
+                data.extend(center.data)
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
@@ -311,17 +311,17 @@ class Renderer:
 
     def _update_parent_parent_world_position_buffer(self, buffer_id: int, nodes: set[Node]):
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
-        data = []
+        data: list[float] = []
         for node in nodes:
             if node._parent is not None:
                 if node._parent._parent is not None:
-                    nd = node._parent._parent.transform.data()
-                    center = QVector3D(nd[12], nd[13], nd[14])
-                    data.extend(list(center.toTuple()))  # type: ignore[call-overload]
+                    nd = node._parent._parent.transform.data
+                    center = Vector3D(nd[12], nd[13], nd[14])
+                    data.extend(center.data)
                 else:
-                    nd = node._parent.transform.data()
-                    center = QVector3D(nd[12], nd[13], nd[14])
-                    data.extend(list(center.toTuple()))  # type: ignore[call-overload]
+                    nd = node._parent.transform.data
+                    center = Vector3D(nd[12], nd[13], nd[14])
+                    data.extend(center.data)
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
@@ -354,11 +354,11 @@ class Renderer:
         scene_matrix = self._resource_manager.current_scene.transform.matrix
         projection_matrix = self._projection_manager.active_projection.matrix
 
-        glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix.data())
-        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix.data())
-        glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix.data())
+        glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix.data)
+        glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix.data)
+        glUniformMatrix4fv(uniform_locations.projection_matrix, 1, False, projection_matrix.data)
         glUniformMatrix4fv(
-            uniform_locations.transform_matrix, 1, False, (projection_matrix * view_matrix * scene_matrix).data()
+            uniform_locations.transform_matrix, 1, False, (projection_matrix * view_matrix * scene_matrix).data
         )
 
     def _render_to_image(self, paint_mode: PaintMode, width: int, height: int, crop_to_content: bool) -> np.ndarray:

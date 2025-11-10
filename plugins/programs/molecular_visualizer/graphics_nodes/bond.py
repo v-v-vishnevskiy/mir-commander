@@ -1,5 +1,4 @@
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.scene import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f
 
@@ -41,10 +40,10 @@ class Bond(Node):
         self._atom_2.remove_bond(self)
         super().remove()
 
-    def _build_bonds(self) -> list[tuple[QVector3D, float, Color4f]]:
+    def _build_bonds(self) -> list[tuple[Vector3D, float, Color4f]]:
         result = []
 
-        length = (self._atom_1.position - self._atom_2.position).length()
+        length = (self._atom_1.position - self._atom_2.position).length
         if self._atoms_color and self._atom_1.atomic_num != self._atom_2.atomic_num:
             mid_length = length - self._atom_1.radius - self._atom_2.radius
             if mid_length > 0:

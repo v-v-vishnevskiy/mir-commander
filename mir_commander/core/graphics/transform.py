@@ -1,4 +1,4 @@
-from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
+from mir_commander.core.algebra import Matrix4x4, Quaternion, Vector3D
 
 
 def normalize_angle(angle: float) -> float:
@@ -22,10 +22,10 @@ class Transform:
     __slots__ = ("_matrix", "_scale", "_rotation", "_position", "_dirty", "_pitch", "_yaw", "_roll")
 
     def __init__(self):
-        self._matrix = QMatrix4x4()
-        self._scale = QVector3D(1.0, 1.0, 1.0)
-        self._rotation = QQuaternion()
-        self._position = QVector3D(0.0, 0.0, 0.0)
+        self._matrix = Matrix4x4()
+        self._scale = Vector3D(1.0, 1.0, 1.0)
+        self._rotation = Quaternion()
+        self._position = Vector3D(0.0, 0.0, 0.0)
         self._pitch = 0.0
         self._yaw = 0.0
         self._roll = 0.0
@@ -33,14 +33,14 @@ class Transform:
         self._dirty = True
 
     @property
-    def matrix(self) -> QMatrix4x4:
+    def matrix(self) -> Matrix4x4:
         if self._dirty:
             self._update_matrix()
             self._dirty = False
         return self._matrix
 
     @property
-    def rotation(self) -> QQuaternion:
+    def rotation(self) -> Quaternion:
         return self._rotation
 
     @property
@@ -48,27 +48,27 @@ class Transform:
         return (self._pitch, self._yaw, self._roll)
 
     @property
-    def position(self) -> QVector3D:
-        return QVector3D(self._position)
+    def position(self) -> Vector3D:
+        return Vector3D(self._position.x, self._position.y, self._position.z)
 
     @property
     def dirty(self) -> int:
         return self._dirty
 
     def _update_matrix(self):
-        self._matrix.setToIdentity()
+        self._matrix.set_to_identity()
         self._matrix.translate(self._position)
         self._matrix.rotate(self._rotation)
         self._matrix.scale(self._scale)
 
-    def get_scale(self) -> QVector3D:
+    def get_scale(self) -> Vector3D:
         return self._scale
 
-    def scale(self, value: QVector3D):
+    def scale(self, value: Vector3D):
         self._scale *= value
         self._dirty = True
 
-    def set_scale(self, value: QVector3D):
+    def set_scale(self, value: Vector3D):
         self._scale = value
         self._dirty = True
 
@@ -77,9 +77,9 @@ class Transform:
         self._yaw = normalize_angle(self._yaw + yaw)
         self._roll = normalize_angle(self._roll + roll)
 
-        pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), pitch)
-        yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), yaw)
-        roll_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), roll)
+        pitch_quat = Quaternion.from_axis_and_angle(Vector3D(1.0, 0.0, 0.0), pitch)
+        yaw_quat = Quaternion.from_axis_and_angle(Vector3D(0.0, 1.0, 0.0), yaw)
+        roll_quat = Quaternion.from_axis_and_angle(Vector3D(0.0, 0.0, 1.0), roll)
 
         self._rotation = pitch_quat * yaw_quat * roll_quat * self._rotation
         self._dirty = True
@@ -89,22 +89,22 @@ class Transform:
         self._yaw = normalize_angle(yaw)
         self._roll = normalize_angle(roll)
 
-        pitch_quat = QQuaternion.fromAxisAndAngle(QVector3D(1.0, 0.0, 0.0), pitch)
-        yaw_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 1.0, 0.0), yaw)
-        roll_quat = QQuaternion.fromAxisAndAngle(QVector3D(0.0, 0.0, 1.0), roll)
+        pitch_quat = Quaternion.from_axis_and_angle(Vector3D(1.0, 0.0, 0.0), pitch)
+        yaw_quat = Quaternion.from_axis_and_angle(Vector3D(0.0, 1.0, 0.0), yaw)
+        roll_quat = Quaternion.from_axis_and_angle(Vector3D(0.0, 0.0, 1.0), roll)
 
         self._rotation = pitch_quat * yaw_quat * roll_quat
         self._dirty = True
 
-    def set_q_rotation(self, value: QQuaternion):
+    def set_q_rotation(self, value: Quaternion):
         self._rotation = value
         self._dirty = True
 
-    def translate(self, value: QVector3D):
+    def translate(self, value: Vector3D):
         self._position += value
         self._dirty = True
 
-    def set_position(self, value: QVector3D):
+    def set_position(self, value: Vector3D):
         self._position = value
         self._dirty = True
 

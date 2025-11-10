@@ -1,4 +1,4 @@
-from PySide6.QtGui import QVector3D
+from mir_commander.core.algebra import Vector3D
 
 from mir_commander.api.data_structures import VolumeCube as VolumeCubeDataStructure
 from mir_commander.core.chemistry import BOHR2ANGSTROM
@@ -34,10 +34,10 @@ class VolumeCube(Node):
         return self._volume_cube.cube_data is None or self._volume_cube.cube_data.size == 0
 
     def set_volume_cube(self, volume_cube: VolumeCubeDataStructure):
-        position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
+        position = Vector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
         self.set_position(position * BOHR2ANGSTROM)
 
-        scale = QVector3D(volume_cube.steps_size[0][0], volume_cube.steps_size[1][1], volume_cube.steps_size[2][2])
+        scale = Vector3D(volume_cube.steps_size[0][0], volume_cube.steps_size[1][1], volume_cube.steps_size[2][2])
         self.set_scale(scale * BOHR2ANGSTROM)
 
         for s in self.children:

@@ -1,7 +1,6 @@
 from typing import Literal
 
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.font_atlas import FontAtlas
 from mir_commander.core.graphics.utils import Color4f
 
@@ -92,15 +91,15 @@ class TextNode(Node):
                 child.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
             half_width = char_info.width / char_info.height
             x = half_width + x_offset
-            children[i].set_position(QVector3D(x, 0.0, 0.0))
+            children[i].set_position(Vector3D(x, 0.0, 0.0))
             x_offset += half_width * 2
 
         if self._align == "center":
-            vector = QVector3D(-x_offset / 2, 0.0, 0.0)
+            vector = Vector3D(-x_offset / 2, 0.0, 0.0)
         elif self._align == "right":
-            vector = QVector3D(-x_offset, 0.0, 0.0)
+            vector = Vector3D(-x_offset, 0.0, 0.0)
         else:
-            vector = QVector3D(0.0, 0.0, 0.0)
+            vector = Vector3D(0.0, 0.0, 0.0)
 
         for n in self.children:
             n.translate(vector)

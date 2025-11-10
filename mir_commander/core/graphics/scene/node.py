@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Hashable, Optional, Self
 
-from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
-
+from mir_commander.core.algebra import Matrix4x4, Quaternion, Vector3D
 from mir_commander.core.graphics.transform import Transform
 from mir_commander.core.graphics.utils import Color4f, id_to_color
 
@@ -75,7 +74,7 @@ class Node:
         # True - transform has been changed, False - transform is up to date
         self._transform_dirty = True
         self._transform = Transform()
-        self._transform_matrix = QMatrix4x4()
+        self._transform_matrix = Matrix4x4()
 
         self._modify_children: bool = False
 
@@ -132,11 +131,11 @@ class Node:
         return self._visible
 
     @property
-    def position(self) -> QVector3D:
+    def position(self) -> Vector3D:
         return self._transform.position
 
     @property
-    def transform(self) -> QMatrix4x4:
+    def transform(self) -> Matrix4x4:
         if self._transform_dirty:
             self._update_transform()
             self._transform_dirty = False
@@ -242,11 +241,11 @@ class Node:
             if root_node is not None:
                 root_node.notify_set_dirty(node)
 
-    def scale(self, value: QVector3D):
+    def scale(self, value: Vector3D):
         self._transform.scale(value)
         self.invalidate_transform()
 
-    def set_scale(self, value: QVector3D):
+    def set_scale(self, value: Vector3D):
         self._transform.set_scale(value)
         self.invalidate_transform()
 
@@ -258,15 +257,15 @@ class Node:
         self._transform.rotate(pitch, yaw, roll)
         self.invalidate_transform()
 
-    def set_q_rotation(self, value: QQuaternion):
+    def set_q_rotation(self, value: Quaternion):
         self._transform.set_q_rotation(value)
         self.invalidate_transform()
 
-    def translate(self, value: QVector3D):
+    def translate(self, value: Vector3D):
         self._transform.translate(value)
         self.invalidate_transform()
 
-    def set_position(self, value: QVector3D):
+    def set_position(self, value: Vector3D):
         self._transform.set_position(value)
         self.invalidate_transform()
 

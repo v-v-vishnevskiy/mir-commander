@@ -1,7 +1,6 @@
 from math import fabs
 
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.scene import Node, NodeType
 
 from ..config import Style
@@ -18,26 +17,26 @@ class Molecules(Node):
         super().__init__(*args, **kwargs)
 
     @property
-    def center(self) -> QVector3D:
+    def center(self) -> Vector3D:
         length = len(self.children)
         if length == 0:
-            return QVector3D(0, 0, 0)
+            return Vector3D(0, 0, 0)
 
         x = []
         y = []
         z = []
         for molecule in self.children:
-            x.append(molecule.center.x())
-            y.append(molecule.center.y())
-            z.append(molecule.center.z())
-        return QVector3D(sum(x) / length, sum(y) / length, sum(z) / length)
+            x.append(molecule.center.x)
+            y.append(molecule.center.y)
+            z.append(molecule.center.z)
+        return Vector3D(sum(x) / length, sum(y) / length, sum(z) / length)
 
     @property
     def max_coordinate(self) -> float:
         result = 0.0
         for molecule in self.children:
             for atom in molecule.atom_items:
-                result = max([result, fabs(atom.position.x()), fabs(atom.position.y()), fabs(atom.position.z())])
+                result = max([result, fabs(atom.position.x), fabs(atom.position.y), fabs(atom.position.z)])
         return result
 
     def num_molecules(self) -> int:

@@ -2,7 +2,7 @@ import math
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from PySide6.QtGui import QMatrix4x4
+from mir_commander.core.algebra import Matrix4x4
 
 
 class ProjectionMode(Enum):
@@ -14,7 +14,7 @@ class AbstractProjection(ABC):
     """Base abstract projection class."""
 
     def __init__(self):
-        self.matrix = QMatrix4x4()
+        self.matrix = Matrix4x4()
 
     @abstractmethod
     def setup_projection(self, width: int, height: int):
@@ -39,7 +39,7 @@ class PerspectiveProjection(AbstractProjection):
     def setup_projection(self, width: int, height: int):
         """Setup perspective projection matrix."""
         self._aspect = width / height
-        self.matrix.setToIdentity()
+        self.matrix.set_to_identity()
         self.matrix.perspective(self._fov, self._aspect, self._near_plane, self._far_plane)
 
     def get_fov(self):
@@ -97,7 +97,7 @@ class OrthographicProjection(AbstractProjection):
         self._near = -depth_range
         self._far = depth_range
 
-        self.matrix.setToIdentity()
+        self.matrix.set_to_identity()
         self.matrix.ortho(self._left, self._right, self._bottom, self._top, self._near, self._far)
 
     def set_view_bounds(self, value: float):

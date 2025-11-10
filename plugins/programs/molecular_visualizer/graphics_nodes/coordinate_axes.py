@@ -1,5 +1,4 @@
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.scene import Node, NodeType, TextNode
 from mir_commander.core.graphics.utils import Color4f
 
@@ -17,7 +16,7 @@ class AxisLabel(TextNode):
         self._size = size
 
         s = size / 100.0
-        self.set_scale(QVector3D(s, s, s))
+        self.set_scale(Vector3D(s, s, s))
         self.set_color(color)
         self.set_text(text)
 
@@ -28,11 +27,11 @@ class AxisLabel(TextNode):
     def set_size(self, value: int):
         self._size = value
         s = value / 100.0
-        self.set_scale(QVector3D(s, s, s))
+        self.set_scale(Vector3D(s, s, s))
 
 
 class Axis(Node):
-    def __init__(self, direction: QVector3D, color: Color4f, text: str, *args, **kwargs):
+    def __init__(self, direction: Vector3D, color: Color4f, text: str, *args, **kwargs):
         kwargs["node_type"] = NodeType.CONTAINER
         kwargs["visible"] = True
         super().__init__(*args, **kwargs)
@@ -113,7 +112,7 @@ class Axis(Node):
             self._sphere.set_visible(True)
         else:
             self._cylinder.set_length(self._length)
-            self._cylinder.set_position(QVector3D(0.0, 0.0, 0.0))
+            self._cylinder.set_position(Vector3D(0.0, 0.0, 0.0))
             self._sphere.set_visible(False)
 
         self._cone.set_size(self._thickness * self._cone_radius_factor, self._thickness * self._cone_length_factor)
@@ -148,9 +147,9 @@ class CoordinateAxes(Node):
         kwargs["visible"] = False
         super().__init__(*args, **kwargs)
 
-        self._x = Axis(QVector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
-        self._y = Axis(QVector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
-        self._z = Axis(QVector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
+        self._x = Axis(Vector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
+        self._y = Axis(Vector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
+        self._z = Axis(Vector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
         self._sphere = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
         self._sphere.set_shader("default")
         self._sphere.set_color((0.0, 0.0, 0.0, 1.0))
@@ -189,7 +188,7 @@ class CoordinateAxes(Node):
 
     @property
     def at_000(self) -> bool:
-        return self.position == QVector3D(0.0, 0.0, 0.0)
+        return self.position == Vector3D(0.0, 0.0, 0.0)
 
     def set_labels_visible(self, value: bool):
         self._x.set_label_visible(value)

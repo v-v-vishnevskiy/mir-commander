@@ -1,8 +1,7 @@
 from time import monotonic
 from typing import TYPE_CHECKING
 
-from PySide6.QtGui import QVector3D
-
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import atomic_number_to_symbol
 from mir_commander.core.graphics.scene import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f
@@ -21,7 +20,7 @@ class Atom(Node):
         self,
         index_number: int,
         atomic_number: int,
-        position: QVector3D,
+        position: Vector3D,
         radius: float,
         color: Color4f,
         selected_atom_config: SelectedAtom,
@@ -66,7 +65,7 @@ class Atom(Node):
         return atomic_number_to_symbol(self.atomic_num)
 
     @property
-    def position(self) -> QVector3D:
+    def position(self) -> Vector3D:
         return self._transform._position
 
     @property
@@ -104,7 +103,7 @@ class Atom(Node):
         return self._label
 
     def _update_label_position(self):
-        self._label.set_position(QVector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
+        self._label.set_position(Vector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
 
     def remove(self):
         self.remove_all_bonds()
@@ -169,7 +168,7 @@ class Atom(Node):
 
     def set_label_offset(self, offset: float):
         self._label_config.offset = offset
-        self.label.set_position(QVector3D(0.0, 0.0, self.radius * offset))
+        self.label.set_position(Vector3D(0.0, 0.0, self.radius * offset))
 
     def __repr__(self) -> str:
         return (
