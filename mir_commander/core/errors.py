@@ -32,3 +32,11 @@ class ProjectNodeRegistrationError(CoreError):
 
 class ProjectNodeNotFoundError(CoreError):
     pass
+
+
+class UndefinedProgramError(CoreError):
+    pass
+
+
+class ProgramRegistrationError(CoreError):
+    pass

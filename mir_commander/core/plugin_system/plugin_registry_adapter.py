@@ -3,10 +3,8 @@ from mir_commander.api.file_importer import FileImporterPlugin
 from mir_commander.api.plugin_registry import PluginRegistry
 from mir_commander.api.program import ProgramPlugin
 from mir_commander.api.project_node import ProjectNodePlugin
-from mir_commander.ui.program_manager import program_manager
 
-from .file_manager import file_manager
-from .project_node_registry import project_node_registry
+from .plugins_manager import plugins_manager
 
 
 class PluginRegistryAdapter(PluginRegistry):
@@ -20,19 +18,19 @@ class PluginRegistryAdapter(PluginRegistry):
 
     def register_file_importer(self, plugin: FileImporterPlugin) -> None:
         """Register a file importer plugin."""
-        file_manager.register_importer(plugin)
+        plugins_manager.file.register_importer(plugin)
 
     def register_file_exporter(self, plugin: FileExporterPlugin) -> None:
         """Register a file exporter plugin."""
-        file_manager.register_exporter(plugin)
+        plugins_manager.file.register_exporter(plugin)
 
     def register_program(self, plugin: ProgramPlugin) -> None:
         """Register a program plugin."""
-        program_manager.register(plugin)
+        plugins_manager.program.register(plugin)
 
     def register_project_node(self, plugin: ProjectNodePlugin) -> None:
         """Register a project node type plugin."""
-        project_node_registry.register(plugin)
+        plugins_manager.project_node.register(plugin)
 
 
 plugin_registry = PluginRegistryAdapter()

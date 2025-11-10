@@ -7,9 +7,8 @@ from PySide6.QtWidgets import QTreeView
 
 from mir_commander.api.program import UINode
 from mir_commander.api.project_node_schema import ActionType
-from mir_commander.core.file_manager import file_manager
+from mir_commander.core import plugins_manager
 from mir_commander.core.project_node import ProjectNode
-from mir_commander.ui.program_manager import program_manager
 from mir_commander.ui.sdk.widget import Action, Menu
 
 from .config import TreeConfig
@@ -55,7 +54,7 @@ class TreeView(QTreeView):
         )
         result.addAction(import_file_action)
 
-        for exporter in file_manager.get_exporters():
+        for exporter in plugins_manager.file.get_exporters():
             if item.project_node.type in exporter.get_supported_node_types():
                 export_item_action = Action(
                     text=Action.tr("Export..."), parent=result, triggered=lambda: self.export_item(item)
@@ -70,7 +69,7 @@ class TreeView(QTreeView):
 
             open_with_menu = Menu(Menu.tr("Open With"))
             for program_name in sorted(set[str]([item.default_program] + item.programs)):
-                name = program_manager.get_program(program_name).get_metadata().name
+                name = plugins_manager.program.get_program(program_name).get_metadata().name
                 action = Action(text=name, parent=open_with_menu, triggered=trigger(program_name))
                 open_with_menu.addAction(action)
             result.addMenu(open_with_menu)

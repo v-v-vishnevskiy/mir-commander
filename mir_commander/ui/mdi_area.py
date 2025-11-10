@@ -7,10 +7,10 @@ from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, UINode
+from mir_commander.core import plugins_manager
+from mir_commander.core.errors import UndefinedProgramError
 
 from .docks.program_control_panel import ProgramControlPanelDock
-from .errors import UndefinedProgramError
-from .program_manager import program_manager
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow
@@ -40,7 +40,7 @@ class _MdiProgramWindow(QMdiSubWindow):
 
         self._name = program_name
 
-        self.program = program_manager.get_program_class(program_name)(node=node, config=config, **kwargs)
+        self.program = plugins_manager.program.get_program_class(program_name)(node=node, config=config, **kwargs)
         self.program_control_panel_dock = program_control_panel_dock
 
         self.setWidget(self.program.get_widget())
@@ -128,7 +128,7 @@ class MdiArea(QMdiArea):
             window = _MdiProgramWindow(
                 program_name=program_name,
                 node=node,
-                config=program_manager.get_config_class(program_name)(),
+                config=plugins_manager.program.get_config_class(program_name)(),
                 program_control_panel_dock=self._project_window.add_program_control_panel(program_name),
                 parent=self,
                 kwargs=kwargs,

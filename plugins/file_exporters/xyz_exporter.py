@@ -19,7 +19,7 @@ class XYZExporter(BaseExporter):
     def get_supported_node_types(self) -> list[str]:
         return ["atomic_coordinates"]
 
-    def get_settings_config(self) -> list[dict[str, Any]]:
+    def get_format_params_config(self) -> list[dict[str, Any]]:
         return [
             {
                 "id": "title",
@@ -33,14 +33,14 @@ class XYZExporter(BaseExporter):
     def get_extensions(self) -> list[str]:
         return ["xyz"]
 
-    def write(self, node: ProjectNodeSchemaV1, path: Path, format_settings: dict[str, Any]):
+    def write(self, node: ProjectNodeSchemaV1, path: Path, format_params: dict[str, Any]):
         if node.type not in self.get_supported_node_types():
             raise ExportFileError(f"Node type {node.type} is not supported")
 
         if not isinstance(node.data, AtomicCoordinates):
             raise ExportFileError("Invalid node data")
 
-        title = format_settings.get("title", node.name)
+        title = format_params.get("title", node.name)
         atomic_num: list[int] = node.data.atomic_num
         x: list[float] = node.data.x
         y: list[float] = node.data.y

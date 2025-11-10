@@ -1,8 +1,7 @@
 import logging
 
 from mir_commander.api.project_node import ProjectNodePlugin
-
-from .errors import ProjectNodeNotFoundError, ProjectNodeRegistrationError
+from mir_commander.core.errors import ProjectNodeNotFoundError, ProjectNodeRegistrationError
 
 logger = logging.getLogger("Core.ProjectNodeRegistry")
 
@@ -30,6 +29,3 @@ class ProjectNodeRegistry:
         if node_type not in self._registry:
             raise ProjectNodeNotFoundError()
         return self._registry[node_type]
-
-
-project_node_registry = ProjectNodeRegistry()

@@ -1,15 +1,14 @@
 import logging
 from pathlib import Path
-from typing import Any
 
 from pydantic import ValidationError
 
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
+from . import plugins_manager
 from .config import ProjectConfig
 from .errors import LoadProjectError
-from .file_manager import file_manager
 from .project_node import ProjectNode
 
 logger = logging.getLogger("Core.Project")
@@ -64,7 +63,7 @@ class Project:
         return nodes
 
     def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchemaV1 | None = None) -> ProjectNode:
-        raw_node = file_manager.import_file(path, logs)
+        raw_node = plugins_manager.file.import_file(path, logs)
         project_node = self._convert_raw_node(raw_node)
         if parent is not None:
             parent.nodes.append(project_node)
@@ -72,9 +71,6 @@ class Project:
             self._nodes.append(project_node)
         self.save()
         return project_node
-
-    def export_file(self, node: ProjectNodeSchemaV1, exporter_name: str, path: Path, format_settings: dict[str, Any]):
-        file_manager.export_file(node=node, exporter_name=exporter_name, path=path, format_settings=format_settings)
 
     def save(self):
         if not self.is_temporary:

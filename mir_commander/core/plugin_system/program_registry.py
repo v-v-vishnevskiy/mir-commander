@@ -2,12 +2,12 @@ import logging
 from typing import Iterable
 
 from mir_commander.api.program import ControlPanel, Program, ProgramConfig, ProgramPlugin
-from mir_commander.ui.errors import ProgramRegistrationError, UndefinedProgramError
+from mir_commander.core.errors import ProgramRegistrationError, UndefinedProgramError
 
-logger = logging.getLogger("UI.ProgramManager")
+logger = logging.getLogger("Core.ProgramRegistry")
 
 
-class ProgramManager:
+class ProgramRegistry:
     def __init__(self):
         self._programs: dict[str, ProgramPlugin] = {}
 
@@ -41,6 +41,3 @@ class ProgramManager:
 
     def get_control_panel_class(self, program_id: str) -> None | type[ControlPanel]:
         return self._get_program(program_id).get_control_panel_class()
-
-
-program_manager = ProgramManager()

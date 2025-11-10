@@ -12,7 +12,7 @@ from mir_commander import __version__
 from mir_commander.api.file_exporter import ExportFileError
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.program import MessageChannel, UINode
-from mir_commander.core import Project
+from mir_commander.core import Project, plugins_manager
 from mir_commander.core.project_node import ProjectNode
 
 from .about import About
@@ -22,7 +22,6 @@ from .docks.program_control_panel import ProgramControlPanelDock
 from .docks.project_dock.project_dock import ProjectDock
 from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
-from .program_manager import program_manager
 from .sdk.widget import Action, Dialog, Menu, StatusBar
 from .settings.settings_dialog import SettingsDialog
 
@@ -289,7 +288,7 @@ class ProjectWindow(QMainWindow):
 
     def add_program_control_panel(self, program_id: str) -> None | ProgramControlPanelDock:
         if program_id not in self._programs_control_panels:
-            program = program_manager.get_program(program_id)
+            program = plugins_manager.program.get_program(program_id)
             control_panel_cls = program.get_control_panel_class()
             if control_panel_cls is None:
                 return None
@@ -346,13 +345,10 @@ class ProjectWindow(QMainWindow):
         dialog = ExportFileDialog(node, parent=self)
 
         if dialog.exec() == Dialog.DialogCode.Accepted:
-            path, exporter_name, format_settings = dialog.get_params()
+            path, exporter_id, format_settings = dialog.get_params()
             try:
-                self.project.export_file(
-                    node=node,
-                    exporter_name=exporter_name,
-                    path=path,
-                    format_settings=format_settings,
+                plugins_manager.file.export_file(
+                    node=node, exporter=exporter_id, path=path, format_params=format_settings
                 )
                 self.status_bar.showMessage(self.tr("File exported successfully"), 3000)
             except ExportFileError as e:

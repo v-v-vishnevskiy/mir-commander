@@ -1,8 +1,3 @@
-"""
-The FileManager has a high risk of getting an unpredictable error when working with third-party importers and exporters.
-Be careful when developing this tool. Test it more thoroughly.
-"""
-
 import logging
 from pathlib import Path
 from typing import Annotated, Any, Literal
@@ -12,10 +7,13 @@ from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 from mir_commander.api.file_exporter import ExportFileError, FileExporterPlugin
 from mir_commander.api.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.core.errors import (
+    FileExporterNotFoundError,
+    FileExporterRegistrationError,
+    FileImporterNotFoundError,
+)
 
-from .errors import FileExporterNotFoundError, FileExporterRegistrationError, FileImporterNotFoundError
-
-logger = logging.getLogger("Core.FileManager")
+logger = logging.getLogger("Core.FileRegistry")
 
 
 class FormatSettingsDefaultProperty(BaseModel):
@@ -66,14 +64,14 @@ FormatSettingsValidator = Annotated[
 format_settings_validator_adaptor = TypeAdapter[BaseFormatSettings](FormatSettingsValidator)
 
 
-class FileManager:
+class FileRegistry:
     def __init__(self):
         self._importers: list[FileImporterPlugin] = []
         self._exporters: list[FileExporterPlugin] = []
 
     def _validate_exporter_settings_config(self, exporter: FileExporterPlugin):
         errors = []
-        for i, config in enumerate(exporter.get_settings_config()):
+        for i, config in enumerate(exporter.get_format_params_config()):
             try:
                 format_settings_validator_adaptor.validate_python(config)
             except ValidationError as e:
@@ -105,15 +103,21 @@ class FileManager:
                 universal.append(importer)
         return specific + universal
 
-    def _get_importer_by_name(self, name: str) -> FileImporterPlugin:
+    def get_importer_by_name(self, name: str) -> FileImporterPlugin:
         for importer in self._importers:
             if name == importer.get_metadata().name:
                 return importer
         raise FileImporterNotFoundError()
 
-    def _get_exporter_by_name(self, name: str) -> FileExporterPlugin:
+    def get_exporter_by_name(self, name: str) -> FileExporterPlugin:
         for exporter in self._exporters:
             if name == exporter.get_metadata().name:
+                return exporter
+        raise FileExporterNotFoundError()
+
+    def get_exporter_by_id(self, exporter_id: int) -> FileExporterPlugin:
+        for exporter in self._exporters:
+            if exporter_id == id(exporter):
                 return exporter
         raise FileExporterNotFoundError()
 
@@ -138,7 +142,7 @@ class FileManager:
 
     def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchemaV1:
         if importer_name != "":
-            return self._get_importer_by_name(importer_name).read(path, logs)
+            return self.get_importer_by_name(importer_name).read(path, logs)
 
         file_extension = path.suffix.lstrip(".")
         importers = self._get_importers_by_extension(file_extension)
@@ -157,14 +161,15 @@ class FileManager:
                 logger.error("%s error: %s - %s", importer.__class__.__name__, e.__class__.__name__, e)
         raise ImportFileError()
 
-    def export_file(self, node: ProjectNodeSchemaV1, exporter_name: str, path: Path, format_settings: dict[str, Any]):
-        exporter = self._get_exporter_by_name(exporter_name)
+    def export_file(self, node: ProjectNodeSchemaV1, exporter: int | str, path: Path, format_params: dict[str, Any]):
+        if isinstance(exporter, str):
+            exporter_instance = self.get_exporter_by_name(exporter)
+        else:
+            exporter_instance = self.get_exporter_by_id(exporter)
+
         try:
-            exporter.write(node, path, format_settings)
+            exporter_instance.write(node, path, format_params)
         except ExportFileError as e:
             raise e
         except Exception as e:
             raise ExportFileError(f"Unexpected exporter error - {e}")
-
-
-file_manager = FileManager()

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable
 
 from mir_commander.api.plugin_registry import PluginRegistry
-from mir_commander.core.plugin_registry_adapter import plugin_registry
+from mir_commander.core import plugin_registry
 
 logger = logging.getLogger("PluginsLoader")
 
