@@ -8,7 +8,6 @@ from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
 
-from .consts import babushka_priehala
 from .utils import BaseImporter
 
 card_validator = re.compile(
@@ -119,7 +118,8 @@ class XYZImporter(BaseImporter):
 
                         state = ParserState.INIT
 
+        # Mark the last imported coordinates for auto-opening
         if result.nodes:
-            result.nodes[-1].metadata[babushka_priehala] = True
+            result.nodes[-1].auto_open = True
 
         return result

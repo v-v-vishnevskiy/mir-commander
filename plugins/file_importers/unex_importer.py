@@ -8,7 +8,6 @@ from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 from mir_commander.utils.chem import symbol_to_atomic_number
 
-from .consts import babushka_priehala
 from .utils import BaseImporter
 
 version_validator = re.compile(r"^([0-9]+).([0-9]+)-([0-9]+)-([a-z0-9]+)$")  # For example 1.7-33-g5a83887
@@ -58,11 +57,11 @@ class UnexImporter(BaseImporter):
         else:
             result = self._load_unex2x(path, logs)
 
-        # Currently it is assumed that top-level items are molecules
+        # Mark the last coordinates of each molecule for auto-opening
         for node in result.nodes:
             # Currently it is assumed that molecules may contain only sets of Cartesian coordinates
             if node.nodes:
-                node.nodes[-1].metadata[babushka_priehala] = True
+                node.nodes[-1].auto_open = True
 
         return result
 

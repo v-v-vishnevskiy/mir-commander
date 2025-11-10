@@ -10,7 +10,6 @@ from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
 
-from .consts import babushka_priehala
 from .utils import BaseImporter
 
 
@@ -86,7 +85,7 @@ class CCLibImporter(BaseImporter):
                     y=data.atomcoords[xyz_idx][:, 1],
                     z=data.atomcoords[xyz_idx][:, 2],
                 ),
-                metadata={babushka_priehala: True},
+                auto_open=True,
             )
             result.nodes.append(at_coord_item)
 

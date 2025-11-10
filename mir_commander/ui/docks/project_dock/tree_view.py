@@ -124,16 +124,27 @@ class TreeView(QTreeView):
         for i in range(root_item.rowCount()):
             self.setExpanded(self._model.indexFromItem(root_item.child(i)), True)
 
-    def view_babushka(self):
-        logger.debug("Opening items in respective programs ...")
+    def open_auto_open_nodes(self):
+        """Open nodes marked for auto-opening after import."""
         root_item = self._model.invisibleRootItem()
         for i in range(root_item.rowCount()):
-            self._view_babushka(cast(TreeItem, root_item.child(i)))
+            self._open_auto_open_nodes(cast(TreeItem, root_item.child(i)))
 
-    def _view_babushka(self, item: TreeItem):
-        data = item.project_node
-        if data is not None and data.metadata.pop("бабушка приехала", False):
-            if item.default_program:
-                self.open_item.emit(item, item.default_program, {})
+    def _open_auto_open_nodes(self, item: TreeItem):
+        """Recursively open nodes marked with auto_open flag."""
+        node = item.project_node
+        if node is not None and node.auto_open:
+            # Handle bool: open with default program
+            if isinstance(node.auto_open, bool) and node.auto_open:
+                if item.default_program:
+                    self.open_item.emit(item, item.default_program, {})
+            # Handle list of AutoOpenConfig: open in multiple programs
+            elif isinstance(node.auto_open, list):
+                for config in node.auto_open:
+                    self.open_item.emit(item, config.program, config.params)
+
+            # Reset auto_open flag after opening to prevent reopening on next load
+            node.auto_open = False
+
         for i in range(item.rowCount()):
-            self._view_babushka(item.child(i))
+            self._open_auto_open_nodes(cast(TreeItem, item.child(i)))

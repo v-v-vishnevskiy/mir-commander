@@ -18,13 +18,13 @@ from mir_commander.core.project_node import ProjectNode
 from .about import About
 from .config import AppConfig, ApplyCallbacks
 from .docks.console_dock import ConsoleDock
+from .docks.program_control_panel import ProgramControlPanelDock
 from .docks.project_dock.project_dock import ProjectDock
 from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
 from .program_manager import program_manager
-from .settings.settings_dialog import SettingsDialog
-from .docks.program_control_panel import ProgramControlPanelDock
 from .sdk.widget import Action, Dialog, Menu, StatusBar
+from .settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("UI.ProjectWindow")
 
@@ -87,7 +87,7 @@ class ProjectWindow(QMainWindow):
 
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
-            self.docks.project.tree.view_babushka()
+            self.docks.project.tree.open_auto_open_nodes()
 
     @property
     def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
