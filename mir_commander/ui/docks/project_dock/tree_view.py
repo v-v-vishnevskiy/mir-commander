@@ -18,7 +18,7 @@ from .items import TreeItem
 if TYPE_CHECKING:
     from .project_dock import ProjectDock
 
-logger = logging.getLogger("UI.ProjectDock.TreeView")
+logger = logging.getLogger("UI.ProjectDock")
 
 
 class TreeView(QTreeView):

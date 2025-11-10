@@ -1,4 +1,4 @@
-CODE=mir_commander
+CODE=mir_commander plugins tests
 PYTHON?=python3.13
 VIRTUAL_ENV?=.venv
 

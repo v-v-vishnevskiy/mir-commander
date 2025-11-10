@@ -19,7 +19,7 @@ from ..utils import InteratomicAngle, InteratomicDistance, InteratomicOutOfPlane
 from .atom.atom import Atom
 from .bond import Bond
 
-logger = logging.getLogger("MoleculeStructureViewer.GraphicsNodes.Molecule")
+logger = logging.getLogger("Programs.MolecularVisualizer")
 
 
 class Molecule(Node):

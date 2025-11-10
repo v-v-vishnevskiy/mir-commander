@@ -1,4 +1,3 @@
-import logging
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -15,8 +14,6 @@ from .utils import add_slider
 if TYPE_CHECKING:
     from ..control_panel import ControlPanel
     from ..program import Program
-
-logger = logging.getLogger("MoleculeStructureViewer.ControlPanel.Image")
 
 
 class Image(ControlComponent):
