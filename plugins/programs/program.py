@@ -8,7 +8,7 @@ from mir_commander.api.program import Program
 T = TypeVar("T", bound=Program)
 
 
-class ControlComponent(Generic[T], QWidget):
+class ControlBlock(Generic[T], QWidget):
     def update_values(self, program: T):
         raise NotImplementedError
 

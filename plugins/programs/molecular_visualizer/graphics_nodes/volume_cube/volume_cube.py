@@ -1,10 +1,10 @@
 from PySide6.QtGui import QVector3D
 
 from mir_commander.api.data_structures import VolumeCube as VolumeCubeDataStructure
+from mir_commander.core.chemistry import BOHR2ANGSTROM
 from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager
 from mir_commander.ui.sdk.opengl.scene import Node, NodeType
 from mir_commander.ui.sdk.opengl.utils import Color4f
-from mir_commander.utils import consts
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup
 from ...errors import EmptyScalarFieldError
@@ -35,10 +35,10 @@ class VolumeCube(Node):
 
     def set_volume_cube(self, volume_cube: VolumeCubeDataStructure):
         position = QVector3D(volume_cube.box_origin[0], volume_cube.box_origin[1], volume_cube.box_origin[2])
-        self.set_position(position * consts.BOHR2ANGSTROM)
+        self.set_position(position * BOHR2ANGSTROM)
 
         scale = QVector3D(volume_cube.steps_size[0][0], volume_cube.steps_size[1][1], volume_cube.steps_size[2][2])
-        self.set_scale(scale * consts.BOHR2ANGSTROM)
+        self.set_scale(scale * BOHR2ANGSTROM)
 
         for s in self.children:
             s.remove()

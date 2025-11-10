@@ -4,7 +4,7 @@ from PySide6.QtCore import QModelIndex, Slot
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
 from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout, QWidget
 
-from mir_commander.core.config import ProjectConfig
+from mir_commander.core import ProjectConfig
 from mir_commander.ui.config import AppConfig, ApplyCallbacks
 from mir_commander.ui.sdk.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
 

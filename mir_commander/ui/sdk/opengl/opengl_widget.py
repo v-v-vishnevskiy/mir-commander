@@ -5,7 +5,7 @@ from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
-from mir_commander.utils.consts import DIR
+from mir_commander.core.consts import DIR
 
 from . import shaders
 from .action_handler import ActionHandler

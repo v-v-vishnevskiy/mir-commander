@@ -7,7 +7,7 @@ from mir_commander.api.data_structures.volume_cube import VolumeCube
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
-from mir_commander.utils import consts
+from mir_commander.core.chemistry import BOHR2ANGSTROM
 
 from .utils import BaseImporter
 
@@ -98,9 +98,9 @@ class GaussianCubeImporter(BaseImporter):
             for _ in range(natm):
                 d = f.readline().split()
                 atom_atomic_num.append(int(d[0]))
-                atom_coord_x.append(float(d[2]) * consts.BOHR2ANGSTROM)
-                atom_coord_y.append(float(d[3]) * consts.BOHR2ANGSTROM)
-                atom_coord_z.append(float(d[4]) * consts.BOHR2ANGSTROM)
+                atom_coord_x.append(float(d[2]) * BOHR2ANGSTROM)
+                atom_coord_y.append(float(d[3]) * BOHR2ANGSTROM)
+                atom_coord_z.append(float(d[4]) * BOHR2ANGSTROM)
 
             if dset_ids:
                 d = f.readline().split()

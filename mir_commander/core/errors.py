@@ -2,6 +2,10 @@ class CoreError(Exception):
     pass
 
 
+class ConfigError(CoreError):
+    pass
+
+
 class LoadProjectError(CoreError):
     pass
 

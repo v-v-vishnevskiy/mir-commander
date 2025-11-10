@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinB
 from mir_commander.ui.sdk.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.sdk.widget import TR, ColorButton, GridLayout, Label, PushButton, VBoxLayout
 
-from ...program import ControlComponent
+from ...program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from ..program import Program
 
 
-class Image(ControlComponent):
+class Image(ControlBlock):
     _file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
 
     def __init__(self, control_panel: "ControlPanel"):

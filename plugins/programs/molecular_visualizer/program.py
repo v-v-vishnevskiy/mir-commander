@@ -17,7 +17,7 @@ from mir_commander.api.data_structures.atomic_coordinates import (
 from mir_commander.api.program import MessageChannel, NodeChangedAction, UINode
 from mir_commander.ui.sdk.opengl.utils import Color4f
 from mir_commander.ui.sdk.widget import TR
-from mir_commander.utils.text import sanitize_filename
+from mir_commander.core.utils import sanitize_filename
 
 from ..program import BaseProgram
 from .config import Config

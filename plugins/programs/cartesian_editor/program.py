@@ -15,7 +15,7 @@ from mir_commander.api.data_structures.atomic_coordinates import (
 )
 from mir_commander.api.program import NodeChangedAction
 from mir_commander.ui.sdk.widget import StandardItem, TableView
-from mir_commander.utils.chem import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
+from mir_commander.core.chemistry import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
 
 from ..program import BaseProgram
 from .config import Config

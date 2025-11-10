@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from mir_commander.ui.sdk.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
 
-from ...program import ControlComponent
+from ...program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ..program import Program
 
 
-class AtomLabels(ControlComponent["Program"]):
+class AtomLabels(ControlBlock["Program"]):
     def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
 

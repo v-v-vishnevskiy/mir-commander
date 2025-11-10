@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout, 
 
 from mir_commander.ui.sdk.widget import Dialog as BaseDialog
 from mir_commander.ui.sdk.widget import PushButton
-from mir_commander.utils.consts import DIR
+from mir_commander.core.consts import DIR
 
 from .config import ProjectConfig, RecentProjectsConfig
 

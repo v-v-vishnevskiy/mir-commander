@@ -15,7 +15,7 @@ from mir_commander.ui.sdk.widget import (
     VBoxLayout,
 )
 
-from ...program import ControlComponent
+from ...program import ControlBlock
 from ..entities import VolumeCubeIsosurfaceGroup
 
 if TYPE_CHECKING:
@@ -147,7 +147,7 @@ class IsosurfacesTreeView(TreeView):
         super().resizeEvent(event)
 
 
-class VolumeCube(ControlComponent):
+class VolumeCube(ControlBlock):
     def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
 

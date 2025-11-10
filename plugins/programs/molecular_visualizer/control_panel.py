@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from mir_commander.api.program import ControlBlock
+from mir_commander.api.program import ControlBlock as ControlBlockApi
 from mir_commander.api.program import ControlPanel as ControlPanelApi
 from mir_commander.ui.sdk.widget import Label
 
-from ..program import ControlComponent
+from ..program import ControlBlock
 from .control_elements.atom_labels import AtomLabels
 from .control_elements.coordinate_axes import CoordinateAxes
 from .control_elements.image import Image
@@ -20,17 +20,17 @@ class ControlPanel(ControlPanelApi["Program"]):
         super().__init__()
 
         self._blocks = [
-            ControlBlock[ControlComponent](Label.tr("View"), View(self), True),
-            ControlBlock[ControlComponent](Label.tr("Atom labels"), AtomLabels(self), True),
-            ControlBlock[ControlComponent](Label.tr("Cubes and surfaces"), VolumeCube(self), False),
-            ControlBlock[ControlComponent](Label.tr("Image"), Image(self), False),
-            ControlBlock[ControlComponent](Label.tr("Coordinate axes"), CoordinateAxes(self), False),
+            ControlBlockApi[ControlBlock](Label.tr("View"), View(self), True),
+            ControlBlockApi[ControlBlock](Label.tr("Atom labels"), AtomLabels(self), True),
+            ControlBlockApi[ControlBlock](Label.tr("Cubes and surfaces"), VolumeCube(self), False),
+            ControlBlockApi[ControlBlock](Label.tr("Image"), Image(self), False),
+            ControlBlockApi[ControlBlock](Label.tr("Coordinate axes"), CoordinateAxes(self), False),
         ]
 
     def allows_apply_for_all(self) -> bool:
         return True
 
-    def get_blocks(self) -> list[ControlBlock]:
+    def get_blocks(self) -> list[ControlBlockApi]:
         return self._blocks
 
     def update_event(self, program: "Program"):

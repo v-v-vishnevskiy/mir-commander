@@ -5,7 +5,7 @@ from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import InvalidFormatError
 from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
-from mir_commander.utils import consts
+from mir_commander.core.chemistry import BOHR2ANGSTROM
 
 from .utils import BaseImporter
 
@@ -63,9 +63,9 @@ class CFourImporter(BaseImporter):
                             atomic_num.append(-1)
                         else:
                             atomic_num.append(int(line_items[1]))
-                        atom_coord_x.append(float(line_items[2]) * consts.BOHR2ANGSTROM)
-                        atom_coord_y.append(float(line_items[3]) * consts.BOHR2ANGSTROM)
-                        atom_coord_z.append(float(line_items[4]) * consts.BOHR2ANGSTROM)
+                        atom_coord_x.append(float(line_items[2]) * BOHR2ANGSTROM)
+                        atom_coord_y.append(float(line_items[3]) * BOHR2ANGSTROM)
+                        atom_coord_z.append(float(line_items[4]) * BOHR2ANGSTROM)
 
                     at_coord_node = Node(
                         name=f"Set#{cart_set_number}",

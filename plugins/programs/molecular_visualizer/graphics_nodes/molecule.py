@@ -10,8 +10,8 @@ from PySide6.QtGui import QVector3D
 from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.ui.sdk.opengl.scene import Node, NodeType
 from mir_commander.ui.sdk.opengl.utils import Color4f, normalize_color
-from mir_commander.utils.consts import ATOM_SINGLE_BOND_COVALENT_RADIUS
-from mir_commander.utils.math import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
+from mir_commander.core.chemistry import atom_single_bond_covalent_radius
+from mir_commander.core.mathematics import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..config import AtomLabelConfig, Style
 from ..errors import CalcError
@@ -308,13 +308,13 @@ class Molecule(Node):
             if atom.atomic_num < 1:
                 continue
 
-            atom_crad = ATOM_SINGLE_BOND_COVALENT_RADIUS[atom.atomic_num]
+            atom_crad = atom_single_bond_covalent_radius(atom.atomic_num)
             for index_2 in range(index):
                 other_atom = self.atom_items[index_2]
                 if other_atom.atomic_num < 1 or atom == other_atom:
                     continue
 
-                other_atom_crad = ATOM_SINGLE_BOND_COVALENT_RADIUS[other_atom.atomic_num]
+                other_atom_crad = atom_single_bond_covalent_radius(other_atom.atomic_num)
                 crad_sum = atom_crad + other_atom_crad
                 dist = atom.position.distanceToPoint(other_atom.position)
                 if dist < crad_sum + crad_sum * self._geom_bond_tolerance:
@@ -325,22 +325,20 @@ class Molecule(Node):
         x = np.array(self._atomic_coordinates.x)
         y = np.array(self._atomic_coordinates.y)
         z = np.array(self._atomic_coordinates.z)
-        atom_single_bond_covalent_radius = np.array(
-            [ATOM_SINGLE_BOND_COVALENT_RADIUS[i] if i > 0 else 0 for i in atomic_num]
-        )
+        covalent_radius = np.array([atom_single_bond_covalent_radius(i) if i > 0 else 0 for i in atomic_num])
 
         for i in range(len(atomic_num)):
             if atomic_num[i] < 1:
                 continue
 
-            crad_i = atom_single_bond_covalent_radius[i]
+            crad_i = covalent_radius[i]
             j_indices = np.arange(i)
             valid_j = atomic_num[:i] >= 1
 
             if not np.any(valid_j):
                 continue
 
-            crad_j = atom_single_bond_covalent_radius[:i][valid_j]
+            crad_j = covalent_radius[:i][valid_j]
             crad_sum = crad_i + crad_j
 
             dx = x[i] - x[:i][valid_j]

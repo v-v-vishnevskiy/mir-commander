@@ -2,7 +2,7 @@ import logging
 import logging.config
 from logging import getLogger
 
-from mir_commander.utils.consts import DIR
+from .consts import DIR
 
 
 def setup():

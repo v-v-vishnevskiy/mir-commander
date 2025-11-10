@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .core import logging, plugins_loader
 from .ui.application import Application
-from .utils.consts import DIR
+from .core.consts import DIR
 
 logger = logging.getLogger("Main")
 

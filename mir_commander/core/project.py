@@ -7,11 +7,15 @@ from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
 from . import plugins_manager
-from .config import ProjectConfig
+from .config import BaseConfig
 from .errors import LoadProjectError
 from .project_node import ProjectNode
 
 logger = logging.getLogger("Core.Project")
+
+
+class ProjectConfig(BaseConfig):
+    name: str = "Untitled"
 
 
 class Project:

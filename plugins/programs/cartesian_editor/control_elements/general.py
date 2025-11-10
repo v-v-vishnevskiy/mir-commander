@@ -5,14 +5,14 @@ from PySide6.QtWidgets import QSpinBox
 
 from mir_commander.ui.sdk.widget import GridLayout, Label
 
-from ...program import ControlComponent
+from ...program import ControlBlock
 
 if TYPE_CHECKING:
     from ..control_panel import ControlPanel
     from ..program import Program
 
 
-class General(ControlComponent):
+class General(ControlBlock):
     def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
 

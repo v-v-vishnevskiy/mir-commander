@@ -27,7 +27,7 @@ from mir_commander.ui.sdk.opengl.utils import (
     unwind_vertices,
 )
 from mir_commander.ui.sdk.widget import TR
-from mir_commander.utils.chem import symbol_to_atomic_number
+from mir_commander.core.chemistry import symbol_to_atomic_number
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog

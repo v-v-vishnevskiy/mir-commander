@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QFileDialog, QLineEdi
 from mir_commander.api.file_exporter import FileExporterPlugin
 from mir_commander.core import plugins_manager
 from mir_commander.core.project_node import ProjectNode
-from mir_commander.utils.text import sanitize_filename
+from mir_commander.core.utils import sanitize_filename
 
 from .sdk.widget import (
     CheckBox,

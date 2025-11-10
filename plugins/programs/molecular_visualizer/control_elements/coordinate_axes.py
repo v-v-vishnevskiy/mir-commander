@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QLineEdit
 from mir_commander.ui.sdk.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.sdk.widget import CheckBox, ColorButton, GridLayout, Label, PushButton, TrString, VBoxLayout
 
-from ...program import ControlComponent
+from ...program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ..program import Program
 
 
-class CoordinateAxes(ControlComponent):
+class CoordinateAxes(ControlBlock):
     def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
 
