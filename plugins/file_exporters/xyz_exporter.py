@@ -10,8 +10,11 @@ from .utils import BaseExporter
 
 
 class XYZExporter(BaseExporter):
-    def get_name(self) -> str:
+    def _get_name(self) -> str:
         return "XYZ"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
 
     def get_supported_node_types(self) -> list[str]:
         return ["atomic_coordinates"]

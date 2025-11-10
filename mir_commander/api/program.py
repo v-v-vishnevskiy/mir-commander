@@ -97,6 +97,9 @@ class ControlPanel(Generic[T_PROGRAM], QObject):
 
 class ProgramPlugin(Plugin):
     @abstractmethod
+    def get_id(self) -> str: ...
+
+    @abstractmethod
     def get_config_class(self) -> type[ProgramConfig]: ...
 
     @abstractmethod

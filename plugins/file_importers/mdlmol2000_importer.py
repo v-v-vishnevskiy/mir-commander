@@ -18,13 +18,16 @@ class MDLMolV2000ParserState(Enum):
 
 
 class MDLMolV2000Importer(BaseImporter):
+    def _get_name(self) -> str:
+        return "MDL Mol V2000"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
+
     def _validate(self, path: Path):
         lines = self.load_lines(path, 4)
         if " V2000" not in lines[3]:
             raise InvalidFormatError()
-
-    def get_name(self) -> str:
-        return "MDL Mol V2000"
 
     def get_extensions(self) -> list[str]:
         return ["mol"]

@@ -11,14 +11,14 @@ class CartesianEditor(ProgramPlugin):
         return Metadata(
             name="Cartesian editor",
             version=(1, 0, 0),
-            description="Cartesian editor",
+            description="Editor for atomic coordinates.",
             author="Mir Commander",
             email="support@mircmd.com",
             url="https://mircmd.com",
             license="MirCommander",
         )
 
-    def get_name(self) -> str:
+    def get_id(self) -> str:
         return "cartesian_editor"
 
     def get_config_class(self) -> type[Config]:

@@ -1,12 +1,20 @@
+from abc import abstractmethod
+
 from mir_commander.api.file_exporter import FileExporterPlugin
 from mir_commander.api.metadata import Metadata
 
 
 class BaseExporter(FileExporterPlugin):
+    @abstractmethod
+    def _get_name(self) -> str: ...
+
+    @abstractmethod
+    def _get_version(self) -> tuple[int, int, int]: ...
+
     def get_metadata(self) -> Metadata:
         return Metadata(
-            name=self.get_name(),
-            version=(1, 0, 0),
+            name=self._get_name(),
+            version=self._get_version(),
             description="Core exporter",
             author="Mir Commander",
             email="support@mircmd.com",

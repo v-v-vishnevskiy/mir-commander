@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from pathlib import Path
 
 from mir_commander.api.file_importer import FileImporterPlugin
@@ -5,6 +6,12 @@ from mir_commander.api.metadata import Metadata
 
 
 class BaseImporter(FileImporterPlugin):
+    @abstractmethod
+    def _get_name(self) -> str: ...
+
+    @abstractmethod
+    def _get_version(self) -> tuple[int, int, int]: ...
+
     def load_lines(self, path: Path, n: int) -> list[str]:
         lines = []
         with path.open("r") as input_file:
@@ -16,8 +23,8 @@ class BaseImporter(FileImporterPlugin):
 
     def get_metadata(self) -> Metadata:
         return Metadata(
-            name=self.get_name(),
-            version=(1, 0, 0),
+            name=self._get_name(),
+            version=self._get_version(),
             description="Core importer",
             author="Mir Commander",
             email="support@mircmd.com",

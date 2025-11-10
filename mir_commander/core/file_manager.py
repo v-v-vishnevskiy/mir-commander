@@ -107,24 +107,24 @@ class FileManager:
 
     def _get_importer_by_name(self, name: str) -> FileImporterPlugin:
         for importer in self._importers:
-            if name == importer.get_name():
+            if name == importer.get_metadata().name:
                 return importer
         raise FileImporterNotFoundError()
 
     def _get_exporter_by_name(self, name: str) -> FileExporterPlugin:
         for exporter in self._exporters:
-            if name == exporter.get_name():
+            if name == exporter.get_metadata().name:
                 return exporter
         raise FileExporterNotFoundError()
 
     def register_importer(self, importer: FileImporterPlugin):
         # TODO: validate importer
-        logger.debug("`%s` importer registered", importer.get_name())
+        logger.debug("`%s` importer registered", importer.get_metadata().name)
         self._importers.append(importer)
 
     def register_exporter(self, exporter: FileExporterPlugin):
         self._validate_exporter_settings_config(exporter)
-        logger.debug("`%s` exporter registered", exporter.get_name())
+        logger.debug("`%s` exporter registered", exporter.get_metadata().name)
         self._exporters.append(exporter)
 
     def get_importers(self) -> list[FileImporterPlugin]:

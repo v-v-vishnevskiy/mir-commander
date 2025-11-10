@@ -14,8 +14,11 @@ from .utils import BaseImporter
 
 
 class CCLibImporter(BaseImporter):
-    def get_name(self) -> str:
+    def _get_name(self) -> str:
         return "CCLib"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
 
     def get_extensions(self) -> list[str]:
         return ["*"]

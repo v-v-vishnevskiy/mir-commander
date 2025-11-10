@@ -11,9 +11,9 @@ class ProgramManager:
     def __init__(self):
         self._programs: dict[str, ProgramPlugin] = {}
 
-    def _get_program(self, name: str) -> ProgramPlugin:
+    def _get_program(self, program_id: str) -> ProgramPlugin:
         try:
-            return self._programs[name]
+            return self._programs[program_id]
         except KeyError:
             raise UndefinedProgramError()
 
@@ -22,25 +22,25 @@ class ProgramManager:
         return self._programs.values()
 
     def register(self, program: ProgramPlugin):
-        name = program.get_name()
+        program_id = program.get_id()
 
-        if type(name) is not str or len(name) == 0:
-            raise ProgramRegistrationError(f"Invalid program name: {name}")
+        if type(program_id) is not str or len(program_id) == 0:
+            raise ProgramRegistrationError(f"Invalid program id: {program_id}")
 
-        self._programs[name] = program
-        logger.debug("`%s` program registered", program.get_name())
+        self._programs[program_id] = program
+        logger.debug("`%s` program registered", program.get_metadata().name)
 
-    def get_program(self, name: str) -> ProgramPlugin:
-        return self._get_program(name)
+    def get_program(self, progrma_id: str) -> ProgramPlugin:
+        return self._get_program(progrma_id)
 
-    def get_config_class(self, name: str) -> type[ProgramConfig]:
-        return self._get_program(name).get_config_class()
+    def get_config_class(self, program_id: str) -> type[ProgramConfig]:
+        return self._get_program(program_id).get_config_class()
 
-    def get_program_class(self, name: str) -> type[Program]:
-        return self._get_program(name).get_program_class()
+    def get_program_class(self, program_id: str) -> type[Program]:
+        return self._get_program(program_id).get_program_class()
 
-    def get_control_panel_class(self, name: str) -> None | type[ControlPanel]:
-        return self._get_program(name).get_control_panel_class()
+    def get_control_panel_class(self, program_id: str) -> None | type[ControlPanel]:
+        return self._get_program(program_id).get_control_panel_class()
 
 
 program_manager = ProgramManager()

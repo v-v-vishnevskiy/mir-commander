@@ -24,7 +24,7 @@ class ProjectNodeRegistry:
         self._validate_model(project_node)
 
         self._registry[project_node.get_type()] = project_node
-        logger.debug("`%s` registered", project_node.get_name())
+        logger.debug("`%s` registered", project_node.get_metadata().name)
 
     def get(self, node_type: str) -> ProjectNodePlugin:
         if node_type not in self._registry:

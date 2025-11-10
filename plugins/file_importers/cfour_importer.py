@@ -10,15 +10,18 @@ from .utils import BaseImporter
 
 
 class CFourImporter(BaseImporter):
+    def _get_name(self) -> str:
+        return "CFOUR"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
+
     def _valudate(self, path: Path):
         lines = self.load_lines(path, 20)
         for line in lines[1:]:
             if "<<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>" in line:
                 return
         raise InvalidFormatError()
-
-    def get_name(self) -> str:
-        return "CFOUR"
 
     def get_extensions(self) -> list[str]:
         return ["log"]

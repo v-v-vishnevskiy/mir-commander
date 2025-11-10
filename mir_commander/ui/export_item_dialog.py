@@ -39,9 +39,9 @@ class ExportFileDialog(Dialog):
 
         format_path_layout.addWidget(Label(Label.tr("Format:")), 0, 0)
         self._format_combo_box = ComboBox()
-        exporters = sorted(file_manager.get_exporters(node.type), key=lambda x: x.get_name())
+        exporters = sorted(file_manager.get_exporters(node.type), key=lambda x: x.get_metadata().name)
         for exporter in exporters:
-            self._format_combo_box.addItem(exporter.get_name(), userData=exporter)
+            self._format_combo_box.addItem(exporter.get_metadata().name, userData=exporter)
         self._set_proper_format()
         self._format_combo_box.currentIndexChanged.connect(self._exporters_combo_box_handler)
         format_path_layout.addWidget(self._format_combo_box, 0, 1, 1, 2)
@@ -194,7 +194,7 @@ class ExportFileDialog(Dialog):
             self._file_name_editbox.setText(text.replace(suffix, "." + item_exporter.get_extensions()[0]))
 
         if item_exporter.get_settings_config():
-            exporter_name = item_exporter.get_name()
+            exporter_name = item_exporter.get_metadata().name
             if exporter_name not in self._format_settings_widgets:
                 self._format_settings_widgets[exporter_name] = self._create_format_settings_widget(item_exporter)
 

@@ -12,14 +12,17 @@ from .utils import BaseImporter
 
 
 class GaussianCubeImporter(BaseImporter):
+    def _get_name(self) -> str:
+        return "Gaussian cube"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
+
     def _parse_nx(self, data: str) -> tuple[int, list[float]]:
         d = data.split()
         nx = int(d[0])
         x_vec = [float(x) for x in d[1:]]
         return nx, x_vec
-
-    def get_name(self) -> str:
-        return "Gaussian cube"
 
     def get_extensions(self) -> list[str]:
         return ["cube"]

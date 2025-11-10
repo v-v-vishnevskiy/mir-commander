@@ -22,11 +22,11 @@ def run():
 
     logger.debug("Starting Mir Commander ...")
 
-    # Load built-in plugins first
+    logger.debug("Loading built-in plugins ...")
     load_from_directory(DIR.INTERNAL_PLUGINS)
 
     # TODO: will be enabled later
-    # Load external plugins (user plugins directory)
+    # logger.debug("Loading external plugins ...")
     # load_from_directory(DIR.HOME_PLUGINS)
 
     parser = argparse.ArgumentParser(prog="Mir Commander")

@@ -22,6 +22,12 @@ class ParserState(Enum):
 
 
 class XYZImporter(BaseImporter):
+    def _get_name(self) -> str:
+        return "XYZ"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
+
     def _validate(self, path: Path):
         lines = self.load_lines(path, 10)
 
@@ -34,9 +40,6 @@ class XYZImporter(BaseImporter):
         for line in lines[2 : numat + 2]:
             if not card_validator.match(line.strip()):
                 raise InvalidFormatError()
-
-    def get_name(self) -> str:
-        return "XYZ"
 
     def get_extensions(self) -> list[str]:
         return ["xyz"]

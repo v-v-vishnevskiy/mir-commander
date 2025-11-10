@@ -49,7 +49,6 @@ def load_from_directory(plugins_dir: Path):
 
             try:
                 module_name = subdir.name
-                logger.info("Loading plugin from directory: %s", module_name)
 
                 # Import the module
                 spec = importlib.util.spec_from_file_location(module_name, init_file)
@@ -66,11 +65,10 @@ def load_from_directory(plugins_dir: Path):
                     register_func: Callable[[PluginRegistry], None] = getattr(module, "register_plugins")
                     if callable(register_func):
                         register_func(plugin_registry)
-                        logger.info("Successfully loaded plugin: %s", module_name)
                     else:
                         logger.error("register_plugins in '%s' is not callable", module_name)
                 else:
-                    logger.warning("Plugin directory '%s' has no `register_plugins` function", module_name)
+                    logger.error("Plugin directory '%s' has no `register_plugins` function", module_name)
 
             except Exception as e:
                 logger.error("Failed to load plugin from '%s': %s", subdir.name, e, exc_info=True)
@@ -79,22 +77,3 @@ def load_from_directory(plugins_dir: Path):
         # Remove plugins directory from sys.path
         if plugins_dir_str in sys.path:
             sys.path.remove(plugins_dir_str)
-
-
-def startup(plugins_dir: Path):
-    """
-    Load all external plugins.
-
-    Loads plugins from:
-    1. Python entry points (installed packages)
-    2. Plugins directory (if provided)
-
-    Args:
-        plugins_dir: path to directory containing plugin files
-    """
-    logger.info("Loading external plugins...")
-
-    # Load from plugins directory
-    load_from_directory(plugins_dir)
-
-    logger.info("External plugins loading completed")

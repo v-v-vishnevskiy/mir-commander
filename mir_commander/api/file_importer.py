@@ -19,9 +19,6 @@ class FileImporterPlugin(Plugin):
 
     Example:
         class MyImporter(FileImporterPlugin):
-            def get_name(self) -> str:
-                return "My Format"
-
             def get_extensions(self) -> list[str]:
                 return ["my_format"]
 

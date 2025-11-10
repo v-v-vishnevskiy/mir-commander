@@ -16,9 +16,6 @@ class FileExporterPlugin(Plugin):
 
     Example:
         class MyExporter(FileExporterPlugin):
-            def get_name(self) -> str:
-                return "My Format"
-
             def get_supported_node_types(self) -> list[str]:
                 return ["molecule", "atomic_coordinates"]
 

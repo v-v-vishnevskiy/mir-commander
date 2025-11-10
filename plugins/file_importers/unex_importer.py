@@ -20,7 +20,13 @@ class Unex2XyzFormat(Enum):
 
 
 class UnexImporter(BaseImporter):
-    def _get_version(self, path: Path):
+    def _get_name(self) -> str:
+        return "UNEX"
+
+    def _get_version(self) -> tuple[int, int, int]:
+        return (1, 0, 0)
+
+    def _get_format_version(self, path: Path):
         """
         Returns UNEX version number encoded in a single integer number
         or raise exception if not a UNEX-specific string.
@@ -36,9 +42,6 @@ class UnexImporter(BaseImporter):
             raise InvalidFormatError()
         raise InvalidFormatError()
 
-    def get_name(self) -> str:
-        return "UNEX v1 and v2 file format"
-
     def get_extensions(self) -> list[str]:
         return ["log"]
 
@@ -48,7 +51,7 @@ class UnexImporter(BaseImporter):
         Also return a list of flagged items.
         Additionally return a list of messages, which can be printed later.
         """
-        version = self._get_version(path)
+        version = self._get_format_version(path)
 
         # UNEX 1.x
         if version < 2000000:

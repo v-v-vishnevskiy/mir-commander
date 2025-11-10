@@ -27,9 +27,9 @@ class TreeItem(UINode):
         self.programs: list[str] = []
         for program in program_manager.programs:
             if node.type in program.get_supported_node_types():
-                self.programs.append(program.get_name())
+                self.programs.append(program.get_id())
             if node.type in program.is_default_for_node_type():
-                self.default_program = program.get_name()
+                self.default_program = program.get_id()
 
         try:
             icon_path = project_node_registry.get(node.type).get_icon_path()
