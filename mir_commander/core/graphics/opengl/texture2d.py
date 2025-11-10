@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 from OpenGL.GL import (
     GL_CLAMP_TO_EDGE,
@@ -22,14 +20,9 @@ from OpenGL.GL import (
     glTexParameteri,
 )
 
-from .base import Resource
 
-logger = logging.getLogger("OpenGL.Texture2D")
-
-
-class Texture2D(Resource):
-    def __init__(self, name: str):
-        super().__init__(name)
+class Texture2D:
+    def __init__(self):
         self._texture = glGenTextures(1)
         self._samples = 0
 
@@ -83,9 +76,7 @@ class Texture2D(Resource):
             glBindTexture(GL_TEXTURE_2D, 0)
 
     def release(self):
-        logger.debug("Deleting resources: %s", self.name)
-
         glDeleteTextures(1, [self._texture])
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(name={self.name}, texture={self._texture})"
+        return f"{self.__class__.__name__}(texture={self._texture})"

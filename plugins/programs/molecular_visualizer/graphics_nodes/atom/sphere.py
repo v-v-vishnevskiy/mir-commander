@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.sdk.opengl.scene import NodeType
-from mir_commander.ui.sdk.opengl.utils import Color4f
+from mir_commander.core.graphics.scene import NodeType
+from mir_commander.core.graphics.utils import Color4f
 
 from ...consts import VAO_SPHERE_RESOURCE_NAME
 from ..base import BaseGraphicsNode

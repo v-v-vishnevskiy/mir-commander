@@ -1,37 +1,38 @@
-from mir_commander.ui.sdk.opengl.scene import Scene
-
 from .camera import Camera
 from .font_atlas import FontAtlas
-from .mesh import Mesh
-from .shader import ShaderProgram
-from .texture2d import Texture2D
-from .vertex_array_object import VertexArrayObject
+from .opengl.shader import ShaderProgram
+from .opengl.texture2d import Texture2D
+from .opengl.vertex_array_object import VertexArrayObject
+from .scene import Scene
 
 
 class ResourceManager:
-    def __init__(self, camera: Camera, scene: Scene):
-        self._cameras: dict[str, Camera] = {camera.name: camera}
-        self._scenes: dict[str, Scene] = {scene.name: scene}
+    def __init__(self):
+        self._cameras: dict[str, Camera] = {}
+        self._scenes: dict[str, Scene] = {}
         self._shaders: dict[str, ShaderProgram] = {}
-        self._meshes: dict[str, Mesh] = {}
         self._vertex_array_objects: dict[str, VertexArrayObject] = {}
         self._textures: dict[str, Texture2D] = {}
         self._font_atlases: dict[str, FontAtlas] = {}
 
-        self._current_camera = camera
-        self._current_scene = scene
+        self._current_camera: None | Camera = None
+        self._current_scene: None | Scene = None
 
     @property
     def current_camera(self) -> Camera:
+        if self._current_camera is None:
+            raise ValueError("No current camera set")
         return self._current_camera
 
     @property
     def current_scene(self) -> Scene:
+        if self._current_scene is None:
+            raise ValueError("No current scene set")
         return self._current_scene
 
-    def add_camera(self, camera: Camera):
-        self._cameras[camera.name] = camera
-        if not self._current_camera:
+    def add_camera(self, name: str, camera: Camera, make_current: bool = False):
+        self._cameras[name] = camera
+        if make_current or not self._current_camera:
             self._current_camera = camera
 
     def get_camera(self, name: str) -> Camera:
@@ -40,9 +41,12 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Camera `{name}` not found")
 
-    def add_scene(self, scene: Scene):
-        self._scenes[scene.name] = scene
-        if not self._current_scene:
+    def set_current_camera(self, name: str):
+        self._current_camera = self.get_camera(name)
+
+    def add_scene(self, name: str, scene: Scene, make_current: bool = False):
+        self._scenes[name] = scene
+        if make_current or not self._current_scene:
             self._current_scene = scene
 
     def get_scene(self, name: str) -> Scene:
@@ -51,8 +55,11 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Scene `{name}` not found")
 
-    def add_shader(self, shader: ShaderProgram):
-        self._shaders[shader.name] = shader
+    def set_current_scene(self, name: str):
+        self._current_scene = self.get_scene(name)
+
+    def add_shader(self, name: str, shader: ShaderProgram):
+        self._shaders[name] = shader
 
     def get_shader(self, name: str) -> ShaderProgram:
         try:
@@ -60,17 +67,8 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"ShaderProgram `{name}` not found")
 
-    def add_mesh(self, mesh: Mesh):
-        self._meshes[mesh.name] = mesh
-
-    def get_mesh(self, name: str) -> Mesh:
-        try:
-            return self._meshes[name]
-        except KeyError:
-            raise ValueError(f"Mesh `{name}` not found")
-
-    def add_vertex_array_object(self, vertex_array_object: VertexArrayObject):
-        self._vertex_array_objects[vertex_array_object.name] = vertex_array_object
+    def add_vertex_array_object(self, name: str, vertex_array_object: VertexArrayObject):
+        self._vertex_array_objects[name] = vertex_array_object
 
     def get_vertex_array_object(self, name: str) -> VertexArrayObject:
         try:
@@ -85,8 +83,8 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"VertexArrayObject `{name}` not found")
 
-    def add_texture(self, texture: Texture2D):
-        self._textures[texture.name] = texture
+    def add_texture(self, name: str, texture: Texture2D):
+        self._textures[name] = texture
 
     def get_texture(self, name: str) -> Texture2D:
         try:
@@ -94,8 +92,8 @@ class ResourceManager:
         except KeyError:
             raise ValueError(f"Texture2D `{name}` not found")
 
-    def add_font_atlas(self, font_atlas: FontAtlas):
-        self._font_atlases[font_atlas.name] = font_atlas
+    def add_font_atlas(self, name: str, font_atlas: FontAtlas):
+        self._font_atlases[name] = font_atlas
 
     def get_font_atlas(self, name: str) -> FontAtlas:
         try:
@@ -114,7 +112,6 @@ class ResourceManager:
     def __repr__(self):
         cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))
         scenes = ",\n\t".join((str(scene) for scene in self._scenes.values()))
-        meshes = ",\n\t".join((str(mesh) for mesh in self._meshes.values()))
         vertex_array_objects = ",\n\t".join((str(vao) for vao in self._vertex_array_objects.values()))
         shaders = ",\n\t".join((str(shader) for shader in self._shaders.values()))
         textures = ",\n\t".join((str(texture) for texture in self._textures.values()))
@@ -129,9 +126,6 @@ class ResourceManager:
     ],
     shaders=[
         {shaders}
-    ],
-    meshes=[
-        {meshes}
     ],
     vertex_array_objects=[
         {vertex_array_objects}

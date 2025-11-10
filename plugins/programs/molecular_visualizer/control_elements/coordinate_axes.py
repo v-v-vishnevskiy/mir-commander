@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QLineEdit
 
-from mir_commander.ui.sdk.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.core.graphics.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.sdk.widget import CheckBox, ColorButton, GridLayout, Label, PushButton, TrString, VBoxLayout
 
 from ...program import ControlBlock

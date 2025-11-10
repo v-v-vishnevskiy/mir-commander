@@ -1,5 +1,3 @@
-import logging
-
 from OpenGL.GL import (
     GL_BACK,
     GL_BLEND,
@@ -55,45 +53,91 @@ from OpenGL.GL import (
     glUniform1i,
 )
 
-from . import shaders
-from .models import rect
-from .resource_manager import (
-    FragmentShader,
-    Framebuffer,
-    ShaderProgram,
-    Texture2D,
-    VertexArrayObject,
-    VertexShader,
-)
+from mir_commander.core.graphics.mesh import rect
 
-logger = logging.getLogger("OpenGL.WBOIT")
+from .framebuffer import Framebuffer
+from .shader import FragmentShader, ShaderProgram, VertexShader
+from .texture2d import Texture2D
+from .vertex_array_object import VertexArrayObject
+
+VERTEX_SHADER = """
+#version 330 core
+
+layout (location = 0) in vec3 position;
+layout (location = 2) in vec2 in_texcoord;
+
+out vec2 fragment_texcoord;
+
+void main() {
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+    fragment_texcoord = in_texcoord;
+}
+"""
+
+
+FRAGMENT_SHADER = """
+#version 330 core
+
+in vec2 fragment_texcoord;
+uniform sampler2D opaque_texture;
+uniform sampler2D accum_texture;
+uniform sampler2D alpha_texture;
+
+out vec4 output_color;
+
+void main() {
+    vec4 opaque_color = texture(opaque_texture, fragment_texcoord);
+    vec4 accum = texture(accum_texture, fragment_texcoord);
+    float alpha = 1.0 - texture(alpha_texture, fragment_texcoord).r;
+
+    // If no transparent geometry, show opaque only
+    if (accum.a <= 0.0001) {
+        output_color = opaque_color;
+        return;
+    }
+
+    // Compute average transparent color
+    vec3 transparent_color = accum.rgb / accum.a;
+
+    // Output alpha depends on background type
+    float output_alpha = opaque_color.a > 0.0 ? max(alpha, opaque_color.a) : alpha;
+
+    // Blend with opaque background if present, otherwise output straight alpha
+    vec3 color;
+    if (opaque_color.a > 0.0) {
+        // Blend transparent over opaque background
+        color = transparent_color * alpha + opaque_color.rgb * (1.0 - alpha);
+    } else {
+        // No opaque background - output straight alpha (not premultiplied)
+        color = transparent_color;
+    }
+
+    output_color = vec4(color, output_alpha);
+}
+"""
 
 
 class WBOIT:
     def __init__(self):
-        self._opaque_fbo = Framebuffer("wboit_opaque_fbo")
-        self._transparent_fbo = Framebuffer("wboit_transparent_fbo")
-        self._opaque_resolve_fbo = Framebuffer("wboit_opaque_resolve_fbo")
-        self._transparent_resolve_fbo = Framebuffer("wboit_transparent_resolve_fbo")
+        self._opaque_fbo = Framebuffer()
+        self._transparent_fbo = Framebuffer()
+        self._opaque_resolve_fbo = Framebuffer()
+        self._transparent_resolve_fbo = Framebuffer()
 
-        self._opaque_texture = Texture2D("wboit_opaque_texture")
-        self._depth_texture = Texture2D("wboit_depth_texture")
-        self._accum_texture = Texture2D("wboit_accum_texture")
-        self._alpha_texture = Texture2D("wboit_alpha_texture")
+        self._opaque_texture = Texture2D()
+        self._depth_texture = Texture2D()
+        self._accum_texture = Texture2D()
+        self._alpha_texture = Texture2D()
 
-        self._opaque_resolve_texture = Texture2D("wboit_opaque_resolve_texture")
-        self._accum_resolve_texture = Texture2D("wboit_accum_resolve_texture")
-        self._alpha_resolve_texture = Texture2D("wboit_alpha_resolve_texture")
+        self._opaque_resolve_texture = Texture2D()
+        self._accum_resolve_texture = Texture2D()
+        self._alpha_resolve_texture = Texture2D()
 
         self._fullscreen_quad_vao = VertexArrayObject(
-            "wboit_fullscreen_quad", rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
+            rect.get_vertices(), rect.get_normals(), rect.get_texture_coords()
         )
 
-        self._finalize_shader = ShaderProgram(
-            "wboit_finalize",
-            VertexShader(shaders.vertex.WBOIT_FINALIZE),
-            FragmentShader(shaders.fragment.WBOIT_FINALIZE),
-        )
+        self._finalize_shader = ShaderProgram(VertexShader(VERTEX_SHADER), FragmentShader(FRAGMENT_SHADER))
 
         self._opaque_texture_loc = glGetUniformLocation(self._finalize_shader.program, "opaque_texture")
         self._accum_texture_loc = glGetUniformLocation(self._finalize_shader.program, "accum_texture")

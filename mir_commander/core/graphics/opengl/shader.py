@@ -1,5 +1,3 @@
-import logging
-
 from OpenGL.GL import (
     GL_FRAGMENT_SHADER,
     GL_VERTEX_SHADER,
@@ -16,9 +14,7 @@ from OpenGL.GL.shaders import (
     compileShader,
 )
 
-from .base import Resource
-
-logger = logging.getLogger("OpenGL.Shader")
+from .errors import OpenGLError
 
 
 class UniformLocations:
@@ -31,7 +27,7 @@ class UniformLocations:
         self.transform_matrix: GLuint | None = None
 
 
-class Shader:
+class _Shader:
     __slots__ = ("_shader_type", "_code", "_shader")
 
     def __init__(self, shader_type, code: str):
@@ -49,33 +45,28 @@ class Shader:
         return f"{self.__class__.__name__}(type={self._shader_type}, shader={self._shader})"
 
 
-class VertexShader(Shader):
+class VertexShader(_Shader):
     def __init__(self, code: str):
         super().__init__(GL_VERTEX_SHADER, code)
 
 
-class FragmentShader(Shader):
+class FragmentShader(_Shader):
     def __init__(self, code: str):
         super().__init__(GL_FRAGMENT_SHADER, code)
 
 
-class ShaderProgram(Resource):
+class ShaderProgram:
     __slots__ = ("_shaders", "_program", "uniform_locations")
 
-    def __init__(self, name: str, *shaders: VertexShader | FragmentShader):
-        super().__init__(name)
-
+    def __init__(self, *shaders: VertexShader | FragmentShader):
         try:
             self._program = compileProgram(*[s.shader for s in shaders], validate=False)
         except ShaderCompilationError as e:
-            logger.error("Failed to compile shader program `%s`: %s", name, e)
-            raise e
+            raise OpenGLError(f"Failed to compile shader program: {e}")
         except ShaderValidationError as e:
-            logger.error("Failed to validate shader program `%s`: %s", name, e)
-            raise e
+            raise OpenGLError(f"Failed to validate shader program: {e}")
         except ShaderLinkError as e:
-            logger.error("Failed to link shader program `%s`: %s", name, e)
-            raise e
+            raise OpenGLError(f"Failed to link shader program: {e}")
 
         self.uniform_locations = UniformLocations()
         self._cache_uniform_locations()
@@ -98,9 +89,7 @@ class ShaderProgram(Resource):
         glUseProgram(0)
 
     def release(self):
-        logger.debug("Deleting resources: %s", self.name)
-
         glDeleteProgram(self._program)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(name={self.name})"
+        return f"{self.__class__.__name__}(program={self._program})"

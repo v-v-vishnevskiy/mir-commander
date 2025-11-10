@@ -1,9 +1,5 @@
-import logging
-
 import OpenGL.GL as gl
 from PySide6.QtGui import QOpenGLContext, QSurfaceFormat
-
-logger = logging.getLogger("UI.Utils.OpenGLInfo")
 
 
 class OpenGLInfo:

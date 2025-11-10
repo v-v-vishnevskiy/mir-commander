@@ -1,14 +1,9 @@
-import logging
 import math
 
 from PySide6.QtGui import QMatrix4x4, QVector3D
 
-from .base import Resource
 
-logger = logging.getLogger("OpenGL.Camera")
-
-
-class Camera(Resource):
+class Camera:
     """
     Camera class for managing 3D camera position, orientation and view matrix.
 
@@ -31,7 +26,6 @@ class Camera(Resource):
 
     def __init__(
         self,
-        name: str,
         position: QVector3D = QVector3D(0.0, 0.0, 1.0),
         target: QVector3D = QVector3D(0.0, 0.0, 0.0),
         up_vector: QVector3D = QVector3D(0.0, 1.0, 0.0),
@@ -50,8 +44,6 @@ class Camera(Resource):
             rotation_speed: Speed of camera rotation (default: 1.0)
             zoom_speed: Speed of camera zoom (default: 1.0)
         """
-
-        super().__init__(name)
 
         self._position = position
         self._target = target
@@ -217,7 +209,6 @@ class Camera(Resource):
         self.look_at(
             position=QVector3D(0.0, 0.0, 1.0), target=QVector3D(0.0, 0.0, 0.0), up_vector=QVector3D(0.0, 1.0, 0.0)
         )
-        logger.debug("Camera reset to default")
 
     def get_direction(self) -> QVector3D:
         """Get camera view direction (normalized vector from position to target)."""
@@ -259,4 +250,4 @@ class Camera(Resource):
         self._matrix.lookAt(self._position, self._target, self._up_vector)
 
     def __repr__(self) -> str:
-        return f"Camera(name={self.name}, position={self._position}, target={self._target})"
+        return f"Camera(position={self._position}, target={self._target})"

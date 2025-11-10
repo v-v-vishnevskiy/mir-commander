@@ -6,29 +6,24 @@ from PySide6.QtGui import QKeyEvent, QMouseEvent, QVector3D, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.core.consts import DIR
+from mir_commander.core.graphics.camera import Camera
+from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
+from mir_commander.core.graphics.mesh import rect
+from mir_commander.core.graphics.opengl import shaders
+from mir_commander.core.graphics.opengl.renderer import PaintMode, Renderer
+from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.core.graphics.opengl.texture2d import Texture2D
+from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
+from mir_commander.core.graphics.projection import ProjectionManager, ProjectionMode
+from mir_commander.core.graphics.resource_manager import ResourceManager
+from mir_commander.core.graphics.scene import Node, Scene
+from mir_commander.core.graphics.utils import Color4f, color_to_id
 
-from . import shaders
 from .action_handler import ActionHandler
-from .enums import ClickAndMoveMode, PaintMode, ProjectionMode, WheelMode
+from .enums import ClickAndMoveMode, WheelMode
 from .keymap import Keymap
-from .models import rect
-from .projection import ProjectionManager
-from .renderer import Renderer
-from .resource_manager import (
-    Camera,
-    FontAtlas,
-    FragmentShader,
-    ResourceManager,
-    ShaderProgram,
-    Texture2D,
-    VertexArrayObject,
-    VertexShader,
-)
-from .resource_manager.font_atlas import create_font_atlas
-from .scene import Node, Scene
-from .utils import Color4f, color_to_id
 
-logger = logging.getLogger("UI.Utils.OpenGLWidget")
+logger = logging.getLogger("UI.SDK.OpenGLWidget")
 
 
 class OpenGLWidget(QOpenGLWidget):
@@ -44,7 +39,10 @@ class OpenGLWidget(QOpenGLWidget):
         # Initialize components
         self.action_handler = ActionHandler(keymap)
         self.projection_manager = ProjectionManager(width=self.size().width(), height=self.size().height())
-        self.resource_manager = ResourceManager(Camera("main"), Scene("main"))
+        self.resource_manager = ResourceManager()
+        self.resource_manager.add_camera("main", Camera(), make_current=True)
+        self.resource_manager.add_scene("main", Scene(), make_current=True)
+
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
@@ -69,49 +67,49 @@ class OpenGLWidget(QOpenGLWidget):
 
     def init_shaders(self):
         self.resource_manager.add_shader(
+            "default",
             ShaderProgram(
-                "default",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.BLINN_PHONG),
-            )
+            ),
         )
         self.resource_manager.add_shader(
+            "text",
             ShaderProgram(
-                "text",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD),
                 FragmentShader(shaders.fragment.TEXTURE),
-            )
+            ),
         )
         self.resource_manager.add_shader(
+            "transparent_flat",
             ShaderProgram(
-                "transparent_flat",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
-            )
+            ),
         )
         self.resource_manager.add_shader(
+            "transparent",
             ShaderProgram(
-                "transparent",
                 VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
                 FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
-            )
+            ),
         )
         self.resource_manager.add_shader(
-            ShaderProgram("picking", VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
+            "picking", ShaderProgram(VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
         )
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
         atlas_size = 4096
         font_size = 475
-        data, font_atlas = create_font_atlas(font_atlas_name, font_path, font_size=font_size, atlas_size=atlas_size)
-        texture = Texture2D(name=f"font_atlas_{font_atlas_name}")
+        data, font_atlas = create_font_atlas(font_path, font_size=font_size, atlas_size=atlas_size)
+        texture = Texture2D()
         texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)
-        self.resource_manager.add_font_atlas(font_atlas)
-        self.resource_manager.add_texture(texture)
+        self.resource_manager.add_font_atlas(font_atlas_name, font_atlas)
+        self.resource_manager.add_texture(f"font_atlas_{font_atlas_name}", texture)
 
-        self._build_font_atlas_geometry(font_atlas)
+        self._build_font_atlas_geometry(font_atlas, font_atlas_name)
 
-    def _build_font_atlas_geometry(self, font_atlas: FontAtlas):
+    def _build_font_atlas_geometry(self, font_atlas: FontAtlas, font_atlas_name: str):
         for char, info in font_atlas.chars.items():
             u_min, v_min = info.u_min, info.v_min
             u_max, v_max = info.u_max, info.v_max
@@ -119,8 +117,8 @@ class OpenGLWidget(QOpenGLWidget):
 
             vertices = rect.get_vertices(left=-width, right=width, bottom=-1.0, top=1.0)
             tex_coords = rect.get_texture_coords(u_min=u_min, u_max=u_max, v_min=v_min, v_max=v_max)
-            vao = VertexArrayObject(f"font_atlas_{font_atlas.name}_{char}", vertices, rect.get_normals(), tex_coords)
-            self.resource_manager.add_vertex_array_object(vao)
+            vao = VertexArrayObject(vertices, rect.get_normals(), tex_coords)
+            self.resource_manager.add_vertex_array_object(f"font_atlas_{font_atlas_name}_{char}", vao)
 
     def clear(self):
         self.resource_manager.current_scene.clear()

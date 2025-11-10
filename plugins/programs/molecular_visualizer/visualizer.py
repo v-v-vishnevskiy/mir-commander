@@ -8,26 +8,23 @@ from PySide6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
 from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel
-from mir_commander.ui.sdk.opengl.errors import Error, NodeNotFoundError, NodeParentError
-from mir_commander.ui.sdk.opengl.keymap import Keymap
-from mir_commander.ui.sdk.opengl.models import cone, cylinder, sphere
-from mir_commander.ui.sdk.opengl.opengl_widget import OpenGLWidget
-from mir_commander.ui.sdk.opengl.resource_manager import (
-    FragmentShader,
-    ShaderProgram,
-    VertexArrayObject,
-    VertexShader,
-)
-from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
-from mir_commander.ui.sdk.opengl.utils import (
+from mir_commander.core.chemistry import symbol_to_atomic_number
+from mir_commander.core.graphics.mesh import cone, cylinder, sphere
+from mir_commander.core.graphics.opengl.errors import RendererError
+from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
+from mir_commander.core.graphics.scene.errors import NodeNotFoundError, NodeParentError
+from mir_commander.core.graphics.utils import (
     Color4f,
     compute_face_normals,
     compute_smooth_normals,
     normalize_color,
     unwind_vertices,
 )
+from mir_commander.ui.sdk.opengl.keymap import Keymap
+from mir_commander.ui.sdk.opengl.opengl_widget import OpenGLWidget
+from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
 from mir_commander.ui.sdk.widget import TR
-from mir_commander.core.chemistry import symbol_to_atomic_number
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
@@ -77,9 +74,8 @@ class Visualizer(OpenGLWidget):
     def init_shaders(self):
         super().init_shaders()
         self.resource_manager.add_shader(
-            ShaderProgram(
-                "atom_label", VertexShader(shaders.vertex.ATOM_LABEL), FragmentShader(shaders.fragment.ATOM_LABEL)
-            )
+            "atom_label",
+            ShaderProgram(VertexShader(shaders.vertex.ATOM_LABEL), FragmentShader(shaders.fragment.ATOM_LABEL)),
         )
 
     def init_opengl(self):
@@ -88,9 +84,9 @@ class Visualizer(OpenGLWidget):
         self.set_background_color(normalize_color(self._style.current.background.color))
 
         # Add VAOs to resource manager
-        self.resource_manager.add_vertex_array_object(self._get_sphere_vao())
-        self.resource_manager.add_vertex_array_object(self._get_cone_vao())
-        self.resource_manager.add_vertex_array_object(self._get_cylinder_vao())
+        self.resource_manager.add_vertex_array_object(VAO_SPHERE_RESOURCE_NAME, self._get_sphere_vao())
+        self.resource_manager.add_vertex_array_object(VAO_CONE_RESOURCE_NAME, self._get_cone_vao())
+        self.resource_manager.add_vertex_array_object(VAO_CYLINDER_RESOURCE_NAME, self._get_cylinder_vao())
 
         max_radius = self._molecules.get_max_molecule_radius()
         self.projection_manager.orthographic_projection.set_view_bounds(max_radius + max_radius * 0.10)
@@ -324,7 +320,7 @@ class Visualizer(OpenGLWidget):
         else:
             normals = compute_face_normals(vertices)
 
-        return VertexArrayObject(VAO_SPHERE_RESOURCE_NAME, vertices, normals)
+        return VertexArrayObject(vertices, normals)
 
     def _get_cone_vao(self) -> VertexArrayObject:
         logger.debug("Initializing cone mesh data")
@@ -339,7 +335,7 @@ class Visualizer(OpenGLWidget):
         else:
             normals = compute_face_normals(vertices)
 
-        return VertexArrayObject(VAO_CONE_RESOURCE_NAME, vertices, normals)
+        return VertexArrayObject(vertices, normals)
 
     def _get_cylinder_vao(self) -> VertexArrayObject:
         logger.debug("Initializing cylinder mesh data")
@@ -354,7 +350,7 @@ class Visualizer(OpenGLWidget):
         else:
             normals = compute_face_normals(vertices)
 
-        return VertexArrayObject(VAO_CYLINDER_RESOURCE_NAME, vertices, normals)
+        return VertexArrayObject(vertices, normals)
 
     def _handle_node_under_cursor(self, x: int, y: int):
         update_window = False
@@ -413,7 +409,7 @@ class Visualizer(OpenGLWidget):
                 try:
                     bg_color = (0.0, 0.0, 0.0, 0.0) if dlg.transparent_bg else None
                     image = self.render_to_image(dlg.img_width, dlg.img_height, bg_color, dlg.crop_to_content)
-                except Error as e:
+                except RendererError as e:
                     message_box = QMessageBox(
                         QMessageBox.Icon.Critical,
                         self.tr("Error image rendering"),

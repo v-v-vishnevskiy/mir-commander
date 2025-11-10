@@ -6,9 +6,9 @@ from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.core import Project
-from mir_commander.core.errors import LoadProjectError
 from mir_commander.core.consts import DIR
-from mir_commander.ui.sdk.opengl.opengl_info import OpenGLInfo
+from mir_commander.core.errors import LoadProjectError
+from mir_commander.core.graphics.opengl.opengl_info import OpenGLInfo
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow

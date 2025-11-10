@@ -1,13 +1,10 @@
-import logging
-
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from .config import TextOverlayConfig
-from .utils import color_to_qcolor
+from mir_commander.core.graphics.utils import color_to_qcolor
 
-logger = logging.getLogger("OpenGL.TextOverlay")
+from .config import TextOverlayConfig
 
 
 class TextOverlay(QWidget):

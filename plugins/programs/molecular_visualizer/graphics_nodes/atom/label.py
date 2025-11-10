@@ -1,7 +1,7 @@
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.sdk.opengl.scene import TextNode
-from mir_commander.ui.sdk.opengl.utils import color_to_color4f
+from mir_commander.core.graphics.scene import TextNode
+from mir_commander.core.graphics.utils import color_to_color4f
 
 from ...config import AtomLabelConfig
 

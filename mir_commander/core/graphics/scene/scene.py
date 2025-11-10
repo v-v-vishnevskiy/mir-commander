@@ -1,17 +1,14 @@
-from mir_commander.ui.sdk.opengl.resource_manager.base import Resource
+from mir_commander.core.graphics.transform import Transform
 
 from .node import Node, NodeType
 from .rendering_container import RenderingContainer
 from .root_node import RootNode
-from .transform import Transform
 
 
-class Scene(Resource):
+class Scene:
     __slots__ = ("_root_node", "_main_node", "transform")
 
-    def __init__(self, name: str):
-        super().__init__(name)
-
+    def __init__(self):
         self._root_node = RootNode()
         self._main_node = Node(node_type=NodeType.CONTAINER, root_node=self._root_node)
 
@@ -36,4 +33,4 @@ class Scene(Resource):
         self._root_node.clear()
 
     def __repr__(self):
-        return f"Scene(name={self.name}, root_node={self._root_node})"
+        return f"Scene(root_node={self._root_node})"

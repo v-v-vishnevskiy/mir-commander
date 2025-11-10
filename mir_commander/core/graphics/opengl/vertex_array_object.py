@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 from OpenGL.GL import (
     GL_ARRAY_BUFFER,
@@ -16,17 +14,11 @@ from OpenGL.GL import (
     glVertexAttribPointer,
 )
 
-from .base import Resource
 
-logger = logging.getLogger("OpenGL.VertexArrayObject")
-
-
-class VertexArrayObject(Resource):
+class VertexArrayObject:
     __slots__ = ("_vao", "_vbo_vertices", "_vbo_normals", "_vbo_tex_coords", "_triangles_count")
 
-    def __init__(self, name: str, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray = None):
-        super().__init__(name)
-
+    def __init__(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: None | np.ndarray = None):
         self._vao = glGenVertexArrays(1)
         self._vbo_vertices = glGenBuffers(1)
         self._vbo_normals = glGenBuffers(1)
@@ -47,8 +39,6 @@ class VertexArrayObject(Resource):
         glBindVertexArray(0)
 
     def _setup_buffers(self, vertices: np.ndarray, normals: np.ndarray, tex_coords: np.ndarray):
-        logger.debug("Setup buffers: %s", self.name)
-
         self.bind()
 
         # Setup position data
@@ -72,12 +62,10 @@ class VertexArrayObject(Resource):
         glBindVertexArray(0)
 
     def release(self):
-        logger.debug("Deleting resources: %s", self.name)
-
         glDeleteVertexArrays(1, [self._vao])
         glDeleteBuffers(1, [self._vbo_vertices])
         glDeleteBuffers(1, [self._vbo_normals])
         glDeleteBuffers(1, [self._vbo_tex_coords])
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(name={self.name}, vao={self._vao}, vbo_vertices={self._vbo_vertices}, vbo_normals={self._vbo_normals}, vbo_tex_coords={self._vbo_tex_coords})"
+        return f"{self.__class__.__name__}(vao={self._vao})"

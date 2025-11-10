@@ -2,7 +2,7 @@ from math import fabs
 
 from PySide6.QtGui import QVector3D
 
-from mir_commander.ui.sdk.opengl.scene import Node, NodeType
+from mir_commander.core.graphics.scene import Node, NodeType
 
 from ..config import Style
 from ..errors import CalcError

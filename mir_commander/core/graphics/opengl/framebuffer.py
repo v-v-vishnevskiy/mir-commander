@@ -1,5 +1,3 @@
-import logging
-
 from OpenGL.GL import (
     GL_FRAMEBUFFER,
     GL_FRAMEBUFFER_COMPLETE,
@@ -12,15 +10,11 @@ from OpenGL.GL import (
     glGenFramebuffers,
 )
 
-from .base import Resource
-
-logger = logging.getLogger("OpenGL.Framebuffer")
+from .errors import FramebufferError
 
 
-class Framebuffer(Resource):
-    def __init__(self, name: str):
-        super().__init__(name)
-
+class Framebuffer:
+    def __init__(self):
         self._framebuffer = glGenFramebuffers(1)
 
     def bind(self):
@@ -36,12 +30,10 @@ class Framebuffer(Resource):
     def check_status(self):
         status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
         if status != GL_FRAMEBUFFER_COMPLETE:
-            logger.error("Framebuffer `%s` incomplete: %s", self.name, hex(status))
+            raise FramebufferError(f"Framebuffer `{self._framebuffer}` incomplete: {hex(status)}")
 
     def release(self):
-        logger.debug("Deleting resources: %s", self.name)
-
         glDeleteFramebuffers(1, [self._framebuffer])
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(name={self.name}, framebuffer={self._framebuffer})"
+        return f"{self.__class__.__name__}(framebuffer={self._framebuffer})"

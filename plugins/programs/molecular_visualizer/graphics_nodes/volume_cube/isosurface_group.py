@@ -3,10 +3,11 @@ from copy import copy
 
 import numpy as np
 
-from mir_commander.ui.sdk.opengl.models import marching_cubes
-from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager, VertexArrayObject
-from mir_commander.ui.sdk.opengl.scene import Node, NodeType
-from mir_commander.ui.sdk.opengl.utils import Color4f
+from mir_commander.core.graphics.mesh import marching_cubes
+from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
+from mir_commander.core.graphics.resource_manager import ResourceManager
+from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.utils import Color4f
 
 from .isosurface import Isosurface
 
@@ -56,8 +57,7 @@ class IsosurfaceGroup(Node):
         )
         vertices, normals = marching_cubes.isosurface(cube_data, value, -1.0 if inverted else 1.0)
         model_name = f"isosurface_{isosurface.id}"
-        vao = VertexArrayObject(model_name, vertices, normals)
-        self._resource_manager.add_vertex_array_object(vao)
+        self._resource_manager.add_vertex_array_object(model_name, VertexArrayObject(vertices, normals))
         isosurface.set_model(model_name)
 
     def remove(self):

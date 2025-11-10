@@ -2,9 +2,9 @@ from PySide6.QtGui import QVector3D
 
 from mir_commander.api.data_structures import VolumeCube as VolumeCubeDataStructure
 from mir_commander.core.chemistry import BOHR2ANGSTROM
-from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager
-from mir_commander.ui.sdk.opengl.scene import Node, NodeType
-from mir_commander.ui.sdk.opengl.utils import Color4f
+from mir_commander.core.graphics.resource_manager import ResourceManager
+from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.utils import Color4f
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup
 from ...errors import EmptyScalarFieldError

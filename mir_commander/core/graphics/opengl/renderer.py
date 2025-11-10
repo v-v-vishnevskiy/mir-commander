@@ -1,5 +1,6 @@
 import ctypes
 import logging
+from enum import Enum
 from typing import Hashable, cast
 
 import numpy as np
@@ -52,15 +53,21 @@ from OpenGL.GL import (
 )
 from PySide6.QtGui import QVector3D
 
-from .enums import PaintMode
-from .errors import Error
-from .projection import ProjectionManager
-from .resource_manager import ResourceManager, UniformLocations
-from .scene import Node, NodeType, RenderingContainer, TextNode
-from .utils import Color4f, crop_image_to_content
+from mir_commander.core.graphics.projection import ProjectionManager
+from mir_commander.core.graphics.resource_manager import ResourceManager
+from mir_commander.core.graphics.scene import Node, NodeType, RenderingContainer, TextNode
+from mir_commander.core.graphics.utils import Color4f, crop_image_to_content
+
+from .errors import RendererError
+from .shader import UniformLocations
 from .wboit import WBOIT
 
-logger = logging.getLogger("OpenGL.Renderer")
+logger = logging.getLogger("Core.Graphics.Renderer")
+
+
+class PaintMode(Enum):
+    Normal = 1
+    Picking = 2
 
 
 class Renderer:
@@ -424,8 +431,7 @@ class Renderer:
 
             return self._render_to_image(PaintMode.Normal, width, height, crop_to_content)
         except OpenGL.error.GLError as e:
-            logger.error("Error rendering to image: %s", e)
-            raise Error(f"Error rendering to image: {e}")
+            raise RendererError(f"Error rendering to image: {e}")
         finally:
             self.set_background_color(background_color_backup)
 

@@ -13,12 +13,10 @@ class CharInfo(BaseModel):
 
 
 class FontAtlas(BaseModel):
-    name: str
     chars: dict[str, CharInfo]
 
 
 def create_font_atlas(
-    name: str,
     file: str,
     font_size: int = 124,
     atlas_size: int = 1024,
@@ -33,7 +31,7 @@ def create_font_atlas(
     draw = ImageDraw.Draw(atlas)
     font = ImageFont.truetype(file, font_size)
 
-    atlas_info = FontAtlas(name=name, chars={})
+    atlas_info = FontAtlas(chars={})
 
     bbox = draw.textbbox((0, 0), chars[0], font=font)
     min_top_padding = bbox[1]

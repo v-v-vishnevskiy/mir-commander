@@ -1,12 +1,13 @@
-import logging
 import math
 from abc import ABC, abstractmethod
+from enum import Enum
 
 from PySide6.QtGui import QMatrix4x4
 
-from .enums import ProjectionMode
 
-logger = logging.getLogger("OpenGL.Projection")
+class ProjectionMode(Enum):
+    Orthographic = 1
+    Perspective = 2
 
 
 class AbstractProjection(ABC):
@@ -141,7 +142,6 @@ class ProjectionManager:
         if self._projection_mode == mode:
             return
         self._projection_mode = mode
-        logger.info("Setting projection mode to %s", mode.name)
 
     def toggle_projection_mode(self):
         if self._projection_mode == ProjectionMode.Orthographic:

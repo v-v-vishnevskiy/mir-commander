@@ -1,7 +1,6 @@
 from typing import Generic, Hashable, TypeVar
 
-from mir_commander.ui.sdk.opengl.errors import NodeNotFoundError
-
+from .errors import NodeNotFoundError
 from .node import Node
 
 T = TypeVar("T", bound=Node)

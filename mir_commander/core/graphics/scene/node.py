@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING, Any, Hashable, Optional, Self
 
 from PySide6.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
-from ..errors import NodeError, NodeNotFoundError, NodeParentError
-from ..utils import Color4f, id_to_color
-from .transform import Transform
+from mir_commander.core.graphics.transform import Transform
+from mir_commander.core.graphics.utils import Color4f, id_to_color
+
+from .errors import NodeError, NodeNotFoundError, NodeParentError
 
 if TYPE_CHECKING:
     from .root_node import RootNode

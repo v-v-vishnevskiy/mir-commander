@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
-from .enums import ProjectionMode
+from mir_commander.core.graphics.projection import ProjectionMode
 
 
 class PerspectiveProjection(BaseModel):

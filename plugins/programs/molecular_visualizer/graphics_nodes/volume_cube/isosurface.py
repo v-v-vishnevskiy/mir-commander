@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from mir_commander.ui.sdk.opengl.resource_manager import ResourceManager
-from mir_commander.ui.sdk.opengl.scene import NodeType
-from mir_commander.ui.sdk.opengl.utils import Color4f
+from mir_commander.core.graphics.resource_manager import ResourceManager
+from mir_commander.core.graphics.scene import NodeType
+from mir_commander.core.graphics.utils import Color4f
 
 from ..base import BaseGraphicsNode
 

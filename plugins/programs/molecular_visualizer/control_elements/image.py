@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QColor, QImageWriter
 from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QLineEdit, QSpinBox
 
-from mir_commander.ui.sdk.opengl.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.core.graphics.utils import color4f_to_qcolor, qcolor_to_color4f
 from mir_commander.ui.sdk.widget import TR, ColorButton, GridLayout, Label, PushButton, VBoxLayout
 
 from ...program import ControlBlock

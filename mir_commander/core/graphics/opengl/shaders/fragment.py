@@ -56,48 +56,6 @@ void main() {
 """
 
 
-WBOIT_FINALIZE = """
-#version 330 core
-
-in vec2 fragment_texcoord;
-uniform sampler2D opaque_texture;
-uniform sampler2D accum_texture;
-uniform sampler2D alpha_texture;
-
-out vec4 output_color;
-
-void main() {
-    vec4 opaque_color = texture(opaque_texture, fragment_texcoord);
-    vec4 accum = texture(accum_texture, fragment_texcoord);
-    float alpha = 1.0 - texture(alpha_texture, fragment_texcoord).r;
-
-    // If no transparent geometry, show opaque only
-    if (accum.a <= 0.0001) {
-        output_color = opaque_color;
-        return;
-    }
-
-    // Compute average transparent color
-    vec3 transparent_color = accum.rgb / accum.a;
-
-    // Output alpha depends on background type
-    float output_alpha = opaque_color.a > 0.0 ? max(alpha, opaque_color.a) : alpha;
-
-    // Blend with opaque background if present, otherwise output straight alpha
-    vec3 color;
-    if (opaque_color.a > 0.0) {
-        // Blend transparent over opaque background
-        color = transparent_color * alpha + opaque_color.rgb * (1.0 - alpha);
-    } else {
-        // No opaque background - output straight alpha (not premultiplied)
-        color = transparent_color;
-    }
-
-    output_color = vec4(color, output_alpha);
-}
-"""
-
-
 PICKING = """
 #version 330 core
 
