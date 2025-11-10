@@ -10,6 +10,7 @@ from mir_commander.ui.sdk.widget import Dialog, ListView, PushButton, StandardIt
 
 from .base import BasePage
 from .general_page import General
+from .plugins_page import Plugins
 from .project_page import Project
 
 
@@ -98,6 +99,7 @@ class SettingsDialog(Dialog):
         page_items: list[dict[str, Any]] = [
             {"title": StandardItem.tr("Project"), "tabs": [(Project, "")]},
             {"title": StandardItem.tr("General"), "tabs": [(General, "")]},
+            {"title": StandardItem.tr("Plugins"), "tabs": [(Plugins, "")]},
         ]
 
         root = self._pages_model.invisibleRootItem()
