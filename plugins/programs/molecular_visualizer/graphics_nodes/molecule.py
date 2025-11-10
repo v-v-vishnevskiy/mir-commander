@@ -11,7 +11,7 @@ from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import atom_single_bond_covalent_radius
 from mir_commander.core.graphics.scene import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f, normalize_color
-from mir_commander.core.mathematics import geom_angle_xyz, geom_distance_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
+from mir_commander.core.mathematics import geom_angle_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 
 from ..config import AtomLabelConfig, Style
 from ..errors import CalcError
@@ -446,9 +446,7 @@ class Molecule(Node):
         if len(atoms) >= 2:
             atom1 = atoms[-2]
             atom2 = atoms[-1]
-            pos1 = atom1.position
-            pos2 = atom2.position
-            distance = geom_distance_xyz(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z)
+            distance = atom1.position.distance_to_point(atom2.position)
             return f"r({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1})={distance:.3f}"
         else:
             raise CalcError("At least two atoms must be selected!")
@@ -463,12 +461,7 @@ class Molecule(Node):
             atom1 = atoms[-3]
             atom2 = atoms[-2]
             atom3 = atoms[-1]
-            pos1 = atom1.position
-            pos2 = atom2.position
-            pos3 = atom3.position
-            angle = geom_angle_xyz(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, pos3.x, pos3.y, pos3.z) * (
-                180.0 / math.pi
-            )
+            angle = geom_angle_xyz(atom1.position, atom2.position, atom3.position) * (180.0 / math.pi)
             return (
                 f"a({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}-"
                 f"{atom3.element_symbol}{atom3.index + 1})={angle:.1f}"
@@ -487,24 +480,9 @@ class Molecule(Node):
             atom2 = atoms[-3]
             atom3 = atoms[-2]
             atom4 = atoms[-1]
-            pos1 = atom1.position
-            pos2 = atom2.position
-            pos3 = atom3.position
-            pos4 = atom4.position
-            angle = geom_torsion_angle_xyz(
-                pos1.x,
-                pos1.y,
-                pos1.z,
-                pos2.x,
-                pos2.y,
-                pos2.z,
-                pos3.x,
-                pos3.y,
-                pos3.z,
-                pos4.x,
-                pos4.y,
-                pos4.z,
-            ) * (180.0 / math.pi)
+            angle = geom_torsion_angle_xyz(atom1.position, atom2.position, atom3.position, atom4.position) * (
+                180.0 / math.pi
+            )
             return (
                 f"t({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}-"
                 f"{atom3.element_symbol}{atom3.index + 1}-{atom4.element_symbol}{atom4.index + 1})={angle:.1f}"
@@ -523,24 +501,9 @@ class Molecule(Node):
             atom2 = atoms[-3]
             atom3 = atoms[-2]
             atom4 = atoms[-1]
-            pos1 = atom1.position
-            pos2 = atom2.position
-            pos3 = atom3.position
-            pos4 = atom4.position
-            angle = geom_oop_angle_xyz(
-                pos1.x,
-                pos1.y,
-                pos1.z,
-                pos2.x,
-                pos2.y,
-                pos2.z,
-                pos3.x,
-                pos3.y,
-                pos3.z,
-                pos4.x,
-                pos4.y,
-                pos4.z,
-            ) * (180.0 / math.pi)
+            angle = geom_oop_angle_xyz(atom1.position, atom2.position, atom3.position, atom4.position) * (
+                180.0 / math.pi
+            )
             return (
                 f"o({atom1.element_symbol}{atom1.index + 1}-{atom2.element_symbol}{atom2.index + 1}<"
                 f"{atom3.element_symbol}{atom3.index + 1}/{atom4.element_symbol}{atom4.index + 1})={angle:.1f}"
@@ -566,14 +529,7 @@ class Molecule(Node):
 
         # Calculate distances
         for dist in distances:
-            dist.value = geom_distance_xyz(
-                dist.atom1.position.x,
-                dist.atom1.position.y,
-                dist.atom1.position.z,
-                dist.atom2.position.x,
-                dist.atom2.position.y,
-                dist.atom2.position.z,
-            )
+            dist.value = dist.atom1.position.distance_to_point(dist.atom2.position)
 
         # Generate list of angles
         n = len(distances)
@@ -590,17 +546,9 @@ class Molecule(Node):
 
         # Calculate angles
         for angle in angles:
-            angle.value = geom_angle_xyz(
-                angle.atom1.position.x,
-                angle.atom1.position.y,
-                angle.atom1.position.z,
-                angle.atom2.position.x,
-                angle.atom2.position.y,
-                angle.atom2.position.z,
-                angle.atom3.position.x,
-                angle.atom3.position.y,
-                angle.atom3.position.z,
-            ) * (180.0 / math.pi)
+            angle.value = geom_angle_xyz(angle.atom1.position, angle.atom2.position, angle.atom3.position) * (
+                180.0 / math.pi
+            )
 
         # Generate list of torsions
         ndist = len(distances)
@@ -655,18 +603,7 @@ class Molecule(Node):
         # Calculate torsions
         for torsion in torsions:
             torsion.value = geom_torsion_angle_xyz(
-                torsion.atom1.position.x,
-                torsion.atom1.position.y,
-                torsion.atom1.position.z,
-                torsion.atom2.position.x,
-                torsion.atom2.position.y,
-                torsion.atom2.position.z,
-                torsion.atom3.position.x,
-                torsion.atom3.position.y,
-                torsion.atom3.position.z,
-                torsion.atom4.position.x,
-                torsion.atom4.position.y,
-                torsion.atom4.position.z,
+                torsion.atom1.position, torsion.atom2.position, torsion.atom3.position, torsion.atom4.position
             ) * (180.0 / math.pi)
 
         # Generate list of out-of-plane angles
@@ -714,18 +651,10 @@ class Molecule(Node):
         # Calculate out-of-planes
         for outofplane in outofplanes:
             outofplane.value = geom_oop_angle_xyz(
-                outofplane.atom1.position.x,
-                outofplane.atom1.position.y,
-                outofplane.atom1.position.z,
-                outofplane.atom2.position.x,
-                outofplane.atom2.position.y,
-                outofplane.atom2.position.z,
-                outofplane.atom3.position.x,
-                outofplane.atom3.position.y,
-                outofplane.atom3.position.z,
-                outofplane.atom4.position.x,
-                outofplane.atom4.position.y,
-                outofplane.atom4.position.z,
+                outofplane.atom1.position,
+                outofplane.atom2.position,
+                outofplane.atom3.position,
+                outofplane.atom4.position,
             ) * (180.0 / math.pi)
 
         # Print parameters
