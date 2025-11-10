@@ -23,7 +23,7 @@ from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
 from .program_manager import program_manager
 from .settings.settings_dialog import SettingsDialog
-from .sdk.program_control_panel import ProgramControlPanelDock
+from .docks.program_control_panel import ProgramControlPanelDock
 from .sdk.widget import Action, Dialog, Menu, StatusBar
 
 logger = logging.getLogger("UI.ProjectWindow")

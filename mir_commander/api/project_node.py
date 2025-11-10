@@ -1,17 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-from .metadata import Metadata
+from .plugin import Plugin
 
 
-class ProjectNodePlugin(ABC):
-    @abstractmethod
-    def get_metadata(self) -> Metadata: ...
-
+class ProjectNodePlugin(Plugin):
     @abstractmethod
     def get_type(self) -> str: ...
-
-    @abstractmethod
-    def get_name(self) -> str: ...
 
     @abstractmethod
     def get_icon_path(self) -> str: ...

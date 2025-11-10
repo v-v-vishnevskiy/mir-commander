@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 
-from .metadata import Metadata
+from .plugin import Plugin
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -10,7 +10,7 @@ class ExportFileError(Exception):
     pass
 
 
-class FileExporterPlugin(ABC):
+class FileExporterPlugin(Plugin):
     """
     Base class for file exporter plugins.
 
@@ -52,9 +52,6 @@ class FileExporterPlugin(ABC):
     """
 
     @abstractmethod
-    def get_name(self) -> str: ...
-
-    @abstractmethod
     def get_supported_node_types(self) -> list[str]: ...
 
     @abstractmethod
@@ -65,6 +62,3 @@ class FileExporterPlugin(ABC):
 
     @abstractmethod
     def write(self, node: ProjectNodeSchemaV1, path: Path, format_settings: dict[str, Any]): ...
-
-    @abstractmethod
-    def get_metadata(self) -> Metadata: ...

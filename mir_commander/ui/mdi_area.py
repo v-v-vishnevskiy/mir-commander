@@ -10,7 +10,7 @@ from mir_commander.api.program import MessageChannel, NodeChangedAction, Program
 
 from .errors import UndefinedProgramError
 from .program_manager import program_manager
-from .sdk.program_control_panel import ProgramControlPanelDock
+from .docks.program_control_panel import ProgramControlPanelDock
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow

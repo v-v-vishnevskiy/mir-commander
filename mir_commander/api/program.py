@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Generic, TypeVar
@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from .metadata import Metadata
+from .plugin import Plugin
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -95,13 +95,7 @@ class ControlPanel(Generic[T_PROGRAM], QObject):
         raise NotImplementedError
 
 
-class ProgramPlugin(ABC):
-    @abstractmethod
-    def get_metadata(self) -> Metadata: ...
-
-    @abstractmethod
-    def get_name(self) -> str: ...
-
+class ProgramPlugin(Plugin):
     @abstractmethod
     def get_config_class(self) -> type[ProgramConfig]: ...
 

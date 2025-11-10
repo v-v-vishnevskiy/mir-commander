@@ -1,26 +1,33 @@
 import argparse
-import logging as base_logging
 import sys
 from pathlib import Path
 
-from mir_commander.startup import file_manager, logging, program_manager, project_nodes
-from mir_commander.ui.application import Application
-from mir_commander.utils.consts import DIR
+from . import logging
+from .plugins_loader import load_from_directory
+from .ui.application import Application
+from .utils.consts import DIR
 
-logger = base_logging.getLogger("Main")
+logger = logging.getLogger("Main")
 
 
 def run():
     if not DIR.HOME_CONFIG.exists():
         DIR.HOME_CONFIG.mkdir(parents=True, exist_ok=True)
 
-    logging.startup()
+    # TODO: will be enabled later
+    # if not DIR.HOME_PLUGINS.exists():
+    #     DIR.HOME_PLUGINS.mkdir(parents=True, exist_ok=True)
+
+    logging.setup()
 
     logger.debug("Starting Mir Commander ...")
 
-    project_nodes.startup()
-    file_manager.startup()
-    program_manager.startup()
+    # Load built-in plugins first
+    load_from_directory(DIR.INTERNAL_PLUGINS)
+
+    # TODO: will be enabled later
+    # Load external plugins (user plugins directory)
+    # load_from_directory(DIR.HOME_PLUGINS)
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(

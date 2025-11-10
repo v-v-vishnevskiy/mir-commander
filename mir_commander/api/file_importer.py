@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 
-from .metadata import Metadata
+from .plugin import Plugin
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -13,7 +13,7 @@ class InvalidFormatError(ImportFileError):
     pass
 
 
-class FileImporterPlugin(ABC):
+class FileImporterPlugin(Plugin):
     """
     Base class for file importer plugins.
 
@@ -41,13 +41,7 @@ class FileImporterPlugin(ABC):
     """
 
     @abstractmethod
-    def get_name(self) -> str: ...
-
-    @abstractmethod
     def get_extensions(self) -> list[str]: ...
 
     @abstractmethod
     def read(self, path: Path, logs: list[str]) -> ProjectNodeSchemaV1: ...
-
-    @abstractmethod
-    def get_metadata(self) -> Metadata: ...

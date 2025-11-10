@@ -24,7 +24,7 @@ class ProjectNodeSchemaV1(BaseModel):
     type: str = Field(
         min_length=1, max_length=255, description="Type identifier (e.g., 'molecule', 'atomic_coordinates')"
     )
-    data: Any = Field(default=None, description="Node-specific data, validated by ProjectNodeDataPlugin")
+    data: Any = Field(default=None, description="Node-specific data")
     nodes: list[Self] = Field(default_factory=list, description="Nested nodes of the node")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 

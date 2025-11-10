@@ -6,7 +6,6 @@ from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QTreeView
 
 from mir_commander.api.program import UINode
-from mir_commander.core.file_importers.consts import babushka_priehala
 from mir_commander.core.file_manager import file_manager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.program_manager import program_manager
@@ -133,7 +132,7 @@ class TreeView(QTreeView):
 
     def _view_babushka(self, item: TreeItem):
         data = item.project_node
-        if data is not None and data.metadata.pop(babushka_priehala, False):
+        if data is not None and data.metadata.pop("бабушка приехала", False):
             if item.default_program:
                 self.open_item.emit(item, item.default_program, {})
         for i in range(item.rowCount()):
