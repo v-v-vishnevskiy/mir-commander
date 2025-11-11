@@ -5,12 +5,7 @@ from typing import Any
 from mir_commander.api.file_exporter import ExportFileError, FileExporterPlugin
 from mir_commander.api.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
-from mir_commander.core.errors import (
-    FileExporterNotFoundError,
-    FileImporterNotFoundError,
-    PluginDisabledError,
-    PluginNotFoundError,
-)
+from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 
 from .plugins_registry import PluginItem, PluginsRegistry
 
@@ -53,13 +48,13 @@ class FileManager:
             try:
                 return self._plugins_registry.file_importer.get(importer_name).details.read_function(path, logs)
             except (PluginNotFoundError, PluginDisabledError):
-                raise FileImporterNotFoundError()
+                raise ImportFileError("Importer not found")
 
         file_extension = path.suffix.lstrip(".")
         importers = self._get_importers_by_extension(file_extension)
 
         if len(importers) == 0:
-            raise FileImporterNotFoundError()
+            raise ImportFileError("No importers found for this file")
 
         for importer in importers:
             try:
@@ -67,20 +62,18 @@ class FileManager:
             except InvalidFormatError:
                 continue
             except ImportFileError as e:
-                logger.error("Can't import file with %s: %s", importer.__class__.__name__, e)
+                logger.error("`%s` file importer error: %s", importer.metadata.name, e)
             except Exception as e:
-                logger.error("%s error: %s - %s", importer.__class__.__name__, e.__class__.__name__, e)
-        raise ImportFileError()
+                logger.error("%s: %s", importer.__class__.__name__, e)
+        raise ImportFileError("No importers can handle this file")
 
     def export_file(self, node: ProjectNodeSchemaV1, exporter_id: str, path: Path, format_params: dict[str, Any]):
         try:
             exporter = self._plugins_registry.file_exporter.get(exporter_id)
         except (PluginNotFoundError, PluginDisabledError):
-            raise FileExporterNotFoundError()
+            raise ExportFileError("Exporter not found")
 
         try:
             exporter.details.write_function(node, path, format_params)
-        except ExportFileError as e:
-            raise e
         except Exception as e:
-            raise ExportFileError(f"Unexpected exporter error - {e}")
+            raise ExportFileError(str(e))

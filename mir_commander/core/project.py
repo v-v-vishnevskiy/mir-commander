@@ -6,10 +6,10 @@ from pydantic import ValidationError
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
-from .plugins_registry import plugins_registry
 from .config import BaseConfig
 from .errors import LoadProjectError
 from .file_manager import FileManager
+from .plugins_registry import plugins_registry
 from .project_node import ProjectNode
 
 logger = logging.getLogger("Core.Project")
@@ -63,9 +63,10 @@ class Project:
         for file in files:
             try:
                 nodes.append(self.import_file(file, logs, parent))
-            except Exception as e:
-                logger.error("Failed to import file %s: %s", file, e)
-                logs.append(f"Failed to import file {file}: {e}")
+            except ImportFileError as e:
+                msg = f"Failed to import file {file}: {e}"
+                logs.append(msg)
+                logger.error(msg)
         return nodes
 
     def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchemaV1 | None = None) -> ProjectNode:

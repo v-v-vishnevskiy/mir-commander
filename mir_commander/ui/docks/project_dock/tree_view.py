@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QTreeView
 from mir_commander.api.program import UINode
 from mir_commander.api.project_node_schema import ActionType
 from mir_commander.core import plugins_registry
+from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 from mir_commander.core.file_manager import FileManager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.config import ImportFileRulesConfig
@@ -67,15 +68,22 @@ class TreeView(QTreeView):
 
         if item.default_program:
 
-            def trigger(program_name: str) -> Callable[[], None]:
-                return lambda: self.open_item.emit(item, program_name, {})
+            def trigger(program_id: str) -> Callable[[], None]:
+                return lambda: self.open_item.emit(item, program_id, {})
 
-            open_with_menu = Menu(Menu.tr("Open With"))
-            for program_name in sorted(set[str]([item.default_program] + item.programs)):
-                name = plugins_registry.program.get(program_name).metadata.name
-                action = Action(text=name, parent=open_with_menu, triggered=trigger(program_name))
-                open_with_menu.addAction(action)
-            result.addMenu(open_with_menu)
+            programs = []
+            for program_id in sorted(set[str]([item.default_program] + item.programs)):
+                try:
+                    programs.append((program_id, plugins_registry.program.get(program_id).metadata.name))
+                except (PluginNotFoundError, PluginDisabledError):
+                    continue
+
+            if programs:
+                open_with_menu = Menu(Menu.tr("Open With"))
+                for program_id, program_name in programs:
+                    action = Action(text=program_name, parent=open_with_menu, triggered=trigger(program_id))
+                    open_with_menu.addAction(action)
+                result.addMenu(open_with_menu)
 
         if item.hasChildren():
             result.addSeparator()

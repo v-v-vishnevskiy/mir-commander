@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, UINode
 from mir_commander.core import plugins_registry
-from mir_commander.core.errors import PluginNotFoundError
+from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 
 from .docks.program_control_panel import ProgramControlPanelDock
 
@@ -145,6 +145,10 @@ class MdiArea(QMdiArea):
             window.show()
         except PluginNotFoundError:
             logger.error("Program `%s` is not registered", program_id)
+        except PluginDisabledError:
+            logger.error("Program `%s` is disabled", program_id)
+        except Exception as e:
+            logger.error("Failed to open program `%s`: %s", program_id, e)
 
     def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
         windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
