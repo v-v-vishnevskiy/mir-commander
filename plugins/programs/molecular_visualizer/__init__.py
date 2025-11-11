@@ -14,8 +14,7 @@ class MolecularVisualizer(ProgramPlugin):
             version=(1, 0, 0),
             description="Can visualize atomic coordinates and volume cubes.",
             author="Mir Commander",
-            email="support@mircmd.com",
-            url="https://mircmd.com",
+            contacts="https://mircmd.com",
             license="MirCommander",
         )
 

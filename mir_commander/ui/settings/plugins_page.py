@@ -40,8 +40,7 @@ class Plugins(BasePage):
             StandardItem.tr("Type"),
             StandardItem.tr("Version"),
             StandardItem.tr("Author"),
-            StandardItem.tr("Email"),
-            StandardItem.tr("URL"),
+            StandardItem.tr("Contacts"),
         ]
         self._model.setHorizontalHeaderLabels([h for h in headers])
 
@@ -75,12 +74,9 @@ class Plugins(BasePage):
             author_item = StandardItem(metadata.author)
             author_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            email_item = StandardItem(metadata.email)
-            email_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            contacts_item = StandardItem(metadata.contacts)
+            contacts_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            url_item = StandardItem(metadata.url)
-            url_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
-            self._model.appendRow([name_item, type_item, version_item, author_item, email_item, url_item])
+            self._model.appendRow([name_item, type_item, version_item, author_item, contacts_item])
 
         self._table.resizeColumnsToContents()

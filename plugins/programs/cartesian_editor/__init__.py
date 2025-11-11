@@ -14,8 +14,7 @@ class CartesianEditor(ProgramPlugin):
             version=(1, 0, 0),
             description="Editor for atomic coordinates.",
             author="Mir Commander",
-            email="support@mircmd.com",
-            url="https://mircmd.com",
+            contacts="https://mircmd.com",
             license="MirCommander",
         )
 

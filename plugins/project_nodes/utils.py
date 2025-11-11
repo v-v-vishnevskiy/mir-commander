@@ -18,8 +18,7 @@ class ProjectNodePlugin(BaseProjectNodePlugin):
             version=self._get_version(),
             description="Core project node",
             author="Mir Commander",
-            email="support@mircmd.com",
-            url="https://mircmd.com",
+            contacts="https://mircmd.com",
             license="MirCommander",
         )
 

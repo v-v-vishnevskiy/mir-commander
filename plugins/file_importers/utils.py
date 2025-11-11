@@ -28,8 +28,7 @@ class BaseImporter(FileImporterPlugin):
             version=self._get_version(),
             description="Core importer",
             author="Mir Commander",
-            email="support@mircmd.com",
-            url="https://mircmd.com",
+            contacts="https://mircmd.com",
             license="MirCommander",
         )
 
