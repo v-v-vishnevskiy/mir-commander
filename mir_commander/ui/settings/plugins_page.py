@@ -2,8 +2,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel
 from PySide6.QtWidgets import QVBoxLayout
 
-from mir_commander.api.plugin import Plugin
-from mir_commander.core import plugins_manager
+from mir_commander.core import plugins_registry
+from mir_commander.core.plugins_registry import PluginItem
 from mir_commander.ui.sdk.widget import StandardItem, TableView
 
 from .base import BasePage
@@ -41,25 +41,28 @@ class Plugins(BasePage):
             StandardItem.tr("Version"),
             StandardItem.tr("Author"),
             StandardItem.tr("Contacts"),
+            StandardItem.tr("Enabled"),
         ]
         self._model.setHorizontalHeaderLabels([h for h in headers])
 
-        plugins: list[tuple[Plugin, str]] = []
+        plugins: list[tuple[PluginItem, str]] = []
 
-        for importer in plugins_manager.file._importers:
+        for importer in plugins_registry.file_importer.get_all():
             plugins.append((importer, StandardItem.tr("File Importer")))
 
-        for exporter in plugins_manager.file._exporters:
+        for exporter in plugins_registry.file_exporter.get_all():
             plugins.append((exporter, StandardItem.tr("File Exporter")))
 
-        for program in plugins_manager.program.programs:
+        for program in plugins_registry.program.get_all():
             plugins.append((program, StandardItem.tr("Program")))
 
-        for project_node in plugins_manager.project_node.get_project_nodes().values():
+        for project_node in plugins_registry.project_node.get_all():
             plugins.append((project_node, StandardItem.tr("Project Node")))
 
-        for plugin, plugin_type in plugins:
-            metadata = plugin.get_metadata()
+        for item, plugin_type in plugins:
+            plugin = item.plugin
+
+            metadata = plugin.metadata
 
             name_item = StandardItem(metadata.name)
             name_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
@@ -77,6 +80,9 @@ class Plugins(BasePage):
             contacts_item = StandardItem(metadata.contacts)
             contacts_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            self._model.appendRow([name_item, type_item, version_item, author_item, contacts_item])
+            enabled_item = StandardItem("Enabled" if item.enabled else "Disabled")
+            enabled_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+            self._model.appendRow([name_item, type_item, version_item, author_item, contacts_item, enabled_item])
 
         self._table.resizeColumnsToContents()

@@ -1,10 +1,19 @@
+import logging
 from pathlib import Path
 from typing import Any, cast
 
 from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit, QWidget
 
-from mir_commander.api.file_exporter import FileExporterPlugin
-from mir_commander.core import plugins_manager
+from mir_commander.api.file_exporter import (
+    BoolParam,
+    FileExporterPlugin,
+    FormatParamsConfig,
+    ListParam,
+    NumberParam,
+    TextParam,
+)
+from mir_commander.core.file_manager import FileManager
+from mir_commander.core.plugins_registry import PluginItem
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.core.utils import sanitize_filename
 
@@ -21,13 +30,16 @@ from .sdk.widget import (
     VBoxLayout,
 )
 
+logger = logging.getLogger("UI.ExportFileDialog")
+
 
 class ExportFileDialog(Dialog):
-    def __init__(self, node: ProjectNode, *args, **kwargs):
+    def __init__(self, node: ProjectNode, file_manager: FileManager, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._node = node
-        self._format_params_widgets: dict[int, QWidget] = {}
+        self._format_params_widgets: dict[str, QWidget] = {}
+        self._file_manager = file_manager
 
         self.setWindowTitle(self.tr("Export: {}").format(node.name))
         self.setFixedWidth(500)
@@ -39,9 +51,9 @@ class ExportFileDialog(Dialog):
 
         format_path_layout.addWidget(Label(Label.tr("Format:")), 0, 0)
         self._format_combo_box = ComboBox()
-        exporters = sorted(plugins_manager.file.get_exporters(node.type), key=lambda x: x.get_metadata().name)
+        exporters = sorted(self._file_manager.get_exporters(node.type), key=lambda x: x.plugin.metadata.name)
         for exporter in exporters:
-            self._format_combo_box.addItem(exporter.get_metadata().name, userData=exporter)
+            self._format_combo_box.addItem(exporter.plugin.metadata.name, userData=exporter)
         self._set_proper_format()
         self._format_combo_box.currentIndexChanged.connect(self._exporters_combo_box_handler)
         format_path_layout.addWidget(self._format_combo_box, 0, 1, 1, 2)
@@ -75,96 +87,81 @@ class ExportFileDialog(Dialog):
         main_layout.addWidget(button_box)
         self.setLayout(main_layout)
 
-        self._create_functions_by_type = {
-            "text": self._create_text_widget,
-            "number": self._create_number_widget,
-            "list": self._create_list_widget,
-            "bool": self._create_bool_widget,
-        }
-
         self._update()
 
     def _set_proper_format(self):
-        if self._node.type != "atomic_coordinates":
+        if self._node.type != "builtin.atomic_coordinates":
             self._format_combo_box.setCurrentIndex(0)
             return
 
         self._format_combo_box.setCurrentText("XYZ")
 
     def _get_format_params(self) -> dict[str, Any]:
-        exporter_id = id(self._format_combo_box.currentData())
-        if exporter_id not in self._format_params_widgets:
+        exporter = cast(PluginItem[FileExporterPlugin], self._format_combo_box.currentData())
+        if exporter.id not in self._format_params_widgets:
             return {}
 
-        widget_container = self._format_params_widgets[exporter_id]
+        widget_container = self._format_params_widgets[exporter.id]
         layout = cast(GridLayout, widget_container.layout())
-        exporter = cast(FileExporterPlugin, self._format_combo_box.currentData())
         params: dict[str, Any] = {}
 
-        for i, config in enumerate(exporter.get_format_params_config()):
+        for i, config in enumerate(exporter.plugin.details.format_params_config):
             layout_item = layout.itemAtPosition(i, 1)
             if layout_item is None:
                 continue
-            widget = layout_item.widget()
-            param_id = config["id"]
 
-            if config["type"] == "text":
-                params[param_id] = cast(QLineEdit, widget).text()
-            elif config["type"] == "number":
-                params[param_id] = cast(SpinBox, widget).value()
-            elif config["type"] == "list":
-                combo_widget = cast(ComboBox, widget)
-                params[param_id] = combo_widget.currentText() if combo_widget.count() > 0 else ""
-            elif config["type"] == "bool":
-                params[param_id] = cast(QCheckBox, widget).isChecked()
+            match config:
+                case TextParam():
+                    params[config.id] = cast(QLineEdit, layout_item.widget()).text()
+                case NumberParam():
+                    params[config.id] = cast(SpinBox, layout_item.widget()).value()
+                case ListParam():
+                    combo_widget = cast(ComboBox, layout_item.widget())
+                    params[config.id] = combo_widget.currentText() if combo_widget.count() > 0 else ""
+                case BoolParam():
+                    params[config.id] = cast(QCheckBox, layout_item.widget()).isChecked()
 
         return params
 
-    def _get_default_value(self, config: dict[str, Any]) -> Any:
-        if "default" not in config:
-            return None
-
-        default = config["default"]
-
-        if default["type"] == "property":
-            property_path = default["value"]
+    def _get_default_value(self, config: FormatParamsConfig) -> Any:
+        if config.default.type == "property":
+            property_path = config.default.value
             if property_path == "node.name":
                 return self._node.name
             elif property_path == "node.full_name":
                 return "/".join(self._node.full_name)
             return None
-        elif default["type"] == "literal":
-            return default["value"]
+        elif config.default.type == "literal":
+            return config.default.value
 
         return None
 
-    def _create_text_widget(self, default_value: Any, config: dict[str, Any]) -> QLineEdit:
+    def _create_text_widget(self, default_value: Any) -> QLineEdit:
         widget = QLineEdit()
         if default_value is not None:
             widget.setText(str(default_value))
         return widget
 
-    def _create_number_widget(self, default_value: Any, config: dict[str, Any]) -> SpinBox:
+    def _create_number_widget(self, default_value: Any, config: NumberParam) -> SpinBox:
         widget = SpinBox()
-        widget.setMinimum(config.get("min", -2147483648))
-        widget.setMaximum(config.get("max", 2147483647))
-        widget.setSingleStep(config.get("step", 1))
+        widget.setMinimum(config.min)
+        widget.setMaximum(config.max)
+        widget.setSingleStep(config.step)
         if default_value is not None:
             widget.setValue(int(default_value))
         return widget
 
-    def _create_list_widget(self, default_value: Any, config: dict[str, Any]) -> ComboBox:
+    def _create_list_widget(self, default_value: Any, config: ListParam) -> ComboBox:
         widget = ComboBox()
-        items = config.get("items", [])
-        for item in items:
-            widget.addItem(str(item))
+        for item in config.items:
+            widget.addItem(item)
         if default_value is not None:
             index = widget.findText(str(default_value))
             if index >= 0:
                 widget.setCurrentIndex(index)
         return widget
 
-    def _create_bool_widget(self, default_value: Any, config: dict[str, Any]) -> CheckBox:
+    def _create_bool_widget(self, default_value: Any) -> CheckBox:
         widget = CheckBox("")
         if default_value is not None:
             widget.setChecked(bool(default_value))
@@ -175,11 +172,22 @@ class ExportFileDialog(Dialog):
         layout = GridLayout()
         layout.setContentsMargins(10, 10, 10, 10)
 
-        for i, config in enumerate(exporter.get_format_params_config()):
+        for i, config in enumerate[FormatParamsConfig](exporter.details.format_params_config):
             default_value = self._get_default_value(config)
-            widget = self._create_functions_by_type[config["type"]](default_value, config)
+            match config:
+                case TextParam():
+                    widget = self._create_text_widget(default_value)
+                case NumberParam():
+                    widget = self._create_number_widget(default_value, config)  # type: ignore[assignment]
+                case ListParam():
+                    widget = self._create_list_widget(default_value, config)  # type: ignore[assignment]
+                case BoolParam():
+                    widget = self._create_bool_widget(default_value)  # type: ignore[assignment]
+                case _:
+                    logger.error("Unknown format parameter type: %s", config.type)
+                    continue
 
-            layout.addWidget(Label(config["label"] + ":"), i, 0)
+            layout.addWidget(Label(config.label + ":"), i, 0)
             layout.addWidget(widget, i, 1)
 
         layout.setColumnStretch(1, 1)
@@ -188,16 +196,14 @@ class ExportFileDialog(Dialog):
         return container
 
     def _update(self):
-        item_exporter = cast(FileExporterPlugin, self._format_combo_box.currentData())
+        exporter = cast(PluginItem[FileExporterPlugin], self._format_combo_box.currentData())
         text = self._file_name_editbox.text()
         if suffix := Path(text).suffix:
-            self._file_name_editbox.setText(text.replace(suffix, "." + item_exporter.get_extensions()[0]))
+            self._file_name_editbox.setText(text.replace(suffix, "." + exporter.plugin.details.extensions[0]))
 
-        if item_exporter.get_format_params_config():
-            exporter_id = id(item_exporter)
-            exporter_name = item_exporter.get_metadata().name
-            if exporter_name not in self._format_params_widgets:
-                self._format_params_widgets[exporter_id] = self._create_format_params_widget(item_exporter)
+        if exporter.plugin.details.format_params_config:
+            if exporter.id not in self._format_params_widgets:
+                self._format_params_widgets[exporter.id] = self._create_format_params_widget(exporter.plugin)
 
             # Remove old layout
             old_layout = self._format_params_group_box.layout()
@@ -211,16 +217,16 @@ class ExportFileDialog(Dialog):
 
             # Create new layout and add widget
             new_layout = GridLayout()
-            new_layout.addWidget(self._format_params_widgets[exporter_id])
+            new_layout.addWidget(self._format_params_widgets[exporter.id])
             self._format_params_group_box.setLayout(new_layout)
             self._format_params_group_box.setVisible(True)
         else:
             self._format_params_group_box.setVisible(False)
 
-    def get_params(self) -> tuple[Path, int, dict[str, Any]]:
+    def get_params(self) -> tuple[Path, str, dict[str, Any]]:
         return (
             Path(self._file_name_editbox.text()),
-            id(self._format_combo_box.currentData()),
+            cast(PluginItem[FileExporterPlugin], self._format_combo_box.currentData()).id,
             self._get_format_params(),
         )
 

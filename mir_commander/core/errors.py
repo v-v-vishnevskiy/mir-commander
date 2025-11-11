@@ -2,6 +2,22 @@ class CoreError(Exception):
     pass
 
 
+class PluginError(CoreError):
+    pass
+
+
+class PluginRegistrationError(PluginError):
+    pass
+
+
+class PluginNotFoundError(PluginError):
+    pass
+
+
+class PluginDisabledError(PluginError):
+    pass
+
+
 class ConfigError(CoreError):
     pass
 
@@ -22,25 +38,5 @@ class FileImporterNotFoundError(FileManagerError):
     pass
 
 
-class FileImporterRegistrationError(FileManagerError):
-    pass
-
-
-class FileExporterRegistrationError(FileManagerError):
-    pass
-
-
-class ProjectNodeRegistrationError(CoreError):
-    pass
-
-
 class ProjectNodeNotFoundError(CoreError):
-    pass
-
-
-class UndefinedProgramError(CoreError):
-    pass
-
-
-class ProgramRegistrationError(CoreError):
     pass

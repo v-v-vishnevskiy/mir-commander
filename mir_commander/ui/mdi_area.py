@@ -7,8 +7,8 @@ from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, UINode
-from mir_commander.core import plugins_manager
-from mir_commander.core.errors import UndefinedProgramError
+from mir_commander.core import plugins_registry
+from mir_commander.core.errors import PluginNotFoundError
 
 from .docks.program_control_panel import ProgramControlPanelDock
 
@@ -26,7 +26,7 @@ class _MdiProgramWindow(QMdiSubWindow):
 
     def __init__(
         self,
-        program_name: str,
+        program_id: str,
         node: UINode,
         config: ProgramConfig,
         program_control_panel_dock: None | ProgramControlPanelDock,
@@ -38,9 +38,11 @@ class _MdiProgramWindow(QMdiSubWindow):
         _MdiProgramWindow._id_counter += 1
         self._id = _MdiProgramWindow._id_counter
 
-        self._name = program_name
+        self._program_id = program_id
 
-        self.program = plugins_manager.program.get_program_class(program_name)(node=node, config=config, **kwargs)
+        self.program = plugins_registry.program.get(program_id).details.program_class(
+            node=node, config=config, **kwargs
+        )
         self.program_control_panel_dock = program_control_panel_dock
 
         self.setWidget(self.program.get_widget())
@@ -50,8 +52,8 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
         self.resize(config.window_size.width, config.window_size.height)
 
-        _MdiProgramWindow._opened_programs[self._name] += 1
-        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._name] == 1:
+        _MdiProgramWindow._opened_programs[self._program_id] += 1
+        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._program_id] == 1:
             self.program_control_panel_dock.restore_visibility()
             self.program_control_panel_dock.toggleViewAction().setVisible(True)
 
@@ -60,16 +62,16 @@ class _MdiProgramWindow(QMdiSubWindow):
         return self._id
 
     @property
-    def name(self) -> str:
-        return self._name
+    def program_id(self) -> str:
+        return self._program_id
 
     def update_title(self):
         self.setWindowIcon(self.program.get_icon())
         self.setWindowTitle(self.program.get_title())
 
     def closeEvent(self, event: QCloseEvent):
-        _MdiProgramWindow._opened_programs[self._name] -= 1
-        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._name] == 0:
+        _MdiProgramWindow._opened_programs[self._program_id] -= 1
+        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._program_id] == 0:
             self.program_control_panel_dock.hide()
             self.program_control_panel_dock.toggleViewAction().setVisible(False)
         super().closeEvent(event)
@@ -116,20 +118,20 @@ class MdiArea(QMdiArea):
 
         cast(_MdiProgramWindow, w).update_title()
 
-    def open_program(self, node: UINode, program_name: str, kwargs: dict[str, Any]):
+    def open_program(self, node: UINode, program_id: str, kwargs: dict[str, Any]):
         for window in cast(list[_MdiProgramWindow], self.subWindowList()):
             # checking if program for this node already opened
-            if window.name == program_name and window.program.node == node:
+            if window.program_id == program_id and window.program.node == node:
                 self.setActiveSubWindow(window)
                 window.show()
                 return
 
         try:
             window = _MdiProgramWindow(
-                program_name=program_name,
+                program_id=program_id,
                 node=node,
-                config=plugins_manager.program.get_config_class(program_name)(),
-                program_control_panel_dock=self._project_window.add_program_control_panel(program_name),
+                config=plugins_registry.program.get(program_id).details.config_class(),
+                program_control_panel_dock=self._project_window.add_program_control_panel(program_id),
                 parent=self,
                 kwargs=kwargs,
             )
@@ -141,14 +143,14 @@ class MdiArea(QMdiArea):
             window.program.update_control_panel_signal.connect(self._update_control_panel_handler)
             window.program.update_window_title_signal.connect(self._update_window_title_handler)
             window.show()
-        except UndefinedProgramError:
-            logger.error("Program `%s` is not registered", program_name)
+        except PluginNotFoundError:
+            logger.error("Program `%s` is not registered", program_id)
 
     def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
         windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
         i = 0
         for window in reversed(cast(list[_MdiProgramWindow], windows)):
-            if window.name == program_id:
+            if window.program_id == program_id:
                 window.program.action_event(key, data, i)
                 i += 1
                 if apply_for_all is False:

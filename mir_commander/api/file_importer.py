@@ -1,7 +1,9 @@
-from abc import abstractmethod
 from pathlib import Path
+from typing import Callable
 
-from .plugin import Plugin
+from pydantic import Field
+
+from .plugin import Details, Plugin
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -13,32 +15,10 @@ class InvalidFormatError(ImportFileError):
     pass
 
 
+class FileImporterDetails(Details):
+    extensions: list[str] = Field(default_factory=list, description="Extensions")
+    read_function: Callable[[Path, list[str]], ProjectNodeSchemaV1] = Field(description="Read function")
+
+
 class FileImporterPlugin(Plugin):
-    """
-    Base class for file importer plugins.
-
-    Example:
-        class MyImporter(FileImporterPlugin):
-            def get_extensions(self) -> list[str]:
-                return ["my_format"]
-
-            def read(self, path: Path, logs: list[str]) -> ProjectNodeSchema:
-                return ProjectNodeSchema(name="My Format", type="my_format")
-
-            def get_metadata(self) -> Metadata:
-                return Metadata(
-                    name="My Format",
-                    version=(1, 0, 0),
-                    description="My Format",
-                    author="My Name",
-                    email="my@email.com",
-                    url="https://my.url.com",
-                    license="MIT",
-                )
-    """
-
-    @abstractmethod
-    def get_extensions(self) -> list[str]: ...
-
-    @abstractmethod
-    def read(self, path: Path, logs: list[str]) -> ProjectNodeSchemaV1: ...
+    details: FileImporterDetails

@@ -6,9 +6,10 @@ from pydantic import ValidationError
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
 
-from . import plugins_manager
+from .plugins_registry import plugins_registry
 from .config import BaseConfig
 from .errors import LoadProjectError
+from .file_manager import FileManager
 from .project_node import ProjectNode
 
 logger = logging.getLogger("Core.Project")
@@ -26,6 +27,7 @@ class Project:
         self.config = ProjectConfig.load(path / "config.yaml")
 
         self._load_project()
+        self._file_manager = FileManager(plugins_registry)
 
     @property
     def name(self) -> str:
@@ -67,7 +69,7 @@ class Project:
         return nodes
 
     def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchemaV1 | None = None) -> ProjectNode:
-        raw_node = plugins_manager.file.import_file(path, logs)
+        raw_node = self._file_manager.import_file(path, logs)
         project_node = self._convert_raw_node(raw_node)
         if parent is not None:
             parent.nodes.append(project_node)

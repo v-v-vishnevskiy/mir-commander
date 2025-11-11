@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Generic, TypeVar
@@ -8,7 +7,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
-from .plugin import Plugin, PluginDependency
+from .plugin import Details, Plugin
 from .project_node_schema import ProjectNodeSchemaV1
 
 
@@ -94,24 +93,13 @@ class ControlPanel(Generic[T_PROGRAM], QObject):
         raise NotImplementedError
 
 
+class ProgramDetails(Details):
+    config_class: type[ProgramConfig]
+    program_class: type[Program]
+    control_panel_class: type[ControlPanel]
+    supported_node_types: list[str] = Field(default_factory=list, description="Supported node types")
+    is_default_for_node_type: list[str] = Field(default_factory=list, description="Is default for node type")
+
+
 class ProgramPlugin(Plugin):
-    @abstractmethod
-    def get_id(self) -> str: ...
-
-    @abstractmethod
-    def get_config_class(self) -> type[ProgramConfig]: ...
-
-    @abstractmethod
-    def get_program_class(self) -> type[Program]: ...
-
-    @abstractmethod
-    def get_control_panel_class(self) -> None | type[ControlPanel]: ...
-
-    @abstractmethod
-    def get_supported_node_types(self) -> list[str]: ...
-
-    @abstractmethod
-    def is_default_for_node_type(self) -> list[str]: ...
-
-    @abstractmethod
-    def get_dependencies(self) -> list[PluginDependency]: ...
+    details: ProgramDetails
