@@ -92,14 +92,14 @@ class TreeView(QTreeView):
                 Action(
                     text=Action.tr("VS_Child"),
                     parent=view_structures_menu,
-                    triggered=lambda: self.open_item.emit(item, "molecular_visualizer", {"all": False}),
+                    triggered=lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": False}),
                 )
             )
             view_structures_menu.addAction(
                 Action(
                     text=Action.tr("VS_All"),
                     parent=view_structures_menu,
-                    triggered=lambda: self.open_item.emit(item, "molecular_visualizer", {"all": True}),
+                    triggered=lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": True}),
                 )
             )
             result.addMenu(view_structures_menu)
