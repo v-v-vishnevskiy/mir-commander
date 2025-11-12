@@ -16,7 +16,6 @@ def register_plugins() -> list[Plugin]:
                 contacts="https://mircmd.com",
                 license="MirCommander",
             ),
-            dependencies=[],
             details=FileExporterDetails(
                 supported_node_types=["builtin.atomic_coordinates"],
                 extensions=["xyz"],

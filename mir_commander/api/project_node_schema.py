@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Self
+from typing import Any, Literal, Self, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -8,7 +8,13 @@ class ActionType(Enum):
     OPEN = "open"
 
 
-class ProjectNodeSchemaV1(BaseModel):
+class BaseProjectNodeSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    schema_version: int = Field(frozen=True, description="Schema version for serialization compatibility")
+
+
+class ProjectNodeSchemaV1(BaseProjectNodeSchema):
     """
     Base model for project tree nodes.
 
@@ -24,7 +30,7 @@ class ProjectNodeSchemaV1(BaseModel):
         )
     """
 
-    model_config = ConfigDict(extra="forbid", strict=True)
+    schema_version: Literal[1] = 1
 
     name: str = Field(min_length=1, max_length=255, description="Display name of the node")
     type: str = Field(
@@ -38,3 +44,6 @@ class ProjectNodeSchemaV1(BaseModel):
     @property
     def full_name(self) -> list[str]:
         return []
+
+
+ProjectNodeSchema = Union[ProjectNodeSchemaV1]

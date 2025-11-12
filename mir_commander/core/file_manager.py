@@ -4,7 +4,7 @@ from typing import Any
 
 from mir_commander.api.file_exporter import ExportFileError, FileExporterPlugin
 from mir_commander.api.file_importer import FileImporterPlugin, ImportFileError, InvalidFormatError
-from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.project_node_schema import ProjectNodeSchema
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 
 from .plugins_registry import PluginItem, PluginsRegistry
@@ -43,7 +43,7 @@ class FileManager:
                     result.append(item)
             return result
 
-    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchemaV1:
+    def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchema:
         if importer_name != "":
             try:
                 return self._plugins_registry.file_importer.get(importer_name).details.read_function(path, logs)
@@ -67,7 +67,7 @@ class FileManager:
                 logger.error("%s: %s", importer.__class__.__name__, e)
         raise ImportFileError("No importers can handle this file")
 
-    def export_file(self, node: ProjectNodeSchemaV1, exporter_id: str, path: Path, format_params: dict[str, Any]):
+    def export_file(self, node: ProjectNodeSchema, exporter_id: str, path: Path, format_params: dict[str, Any]):
         try:
             exporter = self._plugins_registry.file_exporter.get(exporter_id)
         except (PluginNotFoundError, PluginDisabledError):

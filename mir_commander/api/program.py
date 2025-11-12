@@ -8,7 +8,7 @@ from PySide6.QtGui import QIcon, QStandardItem
 from PySide6.QtWidgets import QWidget
 
 from .plugin import Details, Plugin
-from .project_node_schema import ProjectNodeSchemaV1
+from .project_node_schema import ProjectNodeSchema
 
 
 class WindowSizeConfig(BaseModel):
@@ -31,7 +31,7 @@ class UINode(QStandardItem):
         raise NotImplementedError
 
     @property
-    def project_node(self) -> ProjectNodeSchemaV1:
+    def project_node(self) -> ProjectNodeSchema:
         raise NotImplementedError
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from mir_commander.api.file_importer import ImportFileError
-from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.project_node_schema import ProjectNodeSchema
 
 from .config import BaseConfig
 from .errors import LoadProjectError
@@ -52,7 +52,7 @@ class Project:
             raise LoadProjectError(f"Invalid path: {self.path}")
         logger.info("Loading project completed")
 
-    def _convert_raw_node(self, raw_node: ProjectNodeSchemaV1) -> ProjectNode:
+    def _convert_raw_node(self, raw_node: ProjectNodeSchema) -> ProjectNode:
         try:
             return ProjectNode.model_validate(raw_node)
         except ValidationError as e:
@@ -69,7 +69,7 @@ class Project:
                 logger.error(msg)
         return nodes
 
-    def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchemaV1 | None = None) -> ProjectNode:
+    def import_file(self, path: Path, logs: list[str], parent: ProjectNodeSchema | None = None) -> ProjectNode:
         raw_node = self._file_manager.import_file(path, logs)
         project_node = self._convert_raw_node(raw_node)
         if parent is not None:

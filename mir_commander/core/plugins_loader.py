@@ -11,7 +11,7 @@ from .plugins_registry import plugins_registry
 logger = logging.getLogger("PluginsLoader")
 
 
-def load_from_directory(plugins_dir: Path):
+def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []):
     """
     Load plugins from a directory.
 
@@ -39,6 +39,10 @@ def load_from_directory(plugins_dir: Path):
     try:
         # Iterate through author directories
         for author_dir in plugins_dir.iterdir():
+            if author_dir.name in skip_authors:
+                logger.debug("Skipping author: %s", author_dir.name)
+                continue
+
             if not author_dir.is_dir():
                 continue
 

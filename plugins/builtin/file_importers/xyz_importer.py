@@ -6,7 +6,7 @@ from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinat
 from mir_commander.api.data_structures.molecule import Molecule
 from mir_commander.api.file_importer import ImportFileError, InvalidFormatError
 from mir_commander.api.project_node_schema import ActionType
-from mir_commander.api.project_node_schema import ProjectNodeSchemaV1 as Node
+from mir_commander.api.project_node_schema import ProjectNodeSchema as Node
 from mir_commander.core.chemistry import symbol_to_atomic_number
 
 from .utils import load_lines

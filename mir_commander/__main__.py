@@ -24,7 +24,7 @@ def run():
     plugins_loader.load_from_directory(DIR.INTERNAL_PLUGINS)
 
     logger.debug("Loading external plugins ...")
-    plugins_loader.load_from_directory(DIR.HOME_PLUGINS)
+    plugins_loader.load_from_directory(DIR.HOME_PLUGINS, skip_authors=["builtin"])
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(

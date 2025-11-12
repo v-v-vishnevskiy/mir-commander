@@ -3,11 +3,11 @@ from typing import Any
 
 from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.file_exporter import ExportFileError
-from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api.project_node_schema import ProjectNodeSchema
 from mir_commander.core.chemistry import atomic_number_to_symbol
 
 
-def write(node: ProjectNodeSchemaV1, path: Path, format_params: dict[str, Any]):
+def write(node: ProjectNodeSchema, path: Path, format_params: dict[str, Any]):
     if not isinstance(node.data, AtomicCoordinates):
         raise ExportFileError("Invalid node data")
 

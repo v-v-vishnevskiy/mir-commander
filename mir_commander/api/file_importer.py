@@ -4,7 +4,7 @@ from typing import Callable
 from pydantic import Field
 
 from .plugin import Details, Plugin
-from .project_node_schema import ProjectNodeSchemaV1
+from .project_node_schema import ProjectNodeSchema
 
 
 class ImportFileError(Exception):
@@ -17,7 +17,7 @@ class InvalidFormatError(ImportFileError):
 
 class FileImporterDetails(Details):
     extensions: list[str] = Field(default_factory=list, description="Extensions")
-    read_function: Callable[[Path, list[str]], ProjectNodeSchemaV1] = Field(description="Read function")
+    read_function: Callable[[Path, list[str]], ProjectNodeSchema] = Field(description="Read function")
 
 
 class FileImporterPlugin(Plugin):

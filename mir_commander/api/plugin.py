@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -12,12 +10,6 @@ class Metadata(BaseModel):
     license: str = Field(min_length=1, description="License of the plugin")
 
 
-class Dependency(BaseModel):
-    name: str = Field(min_length=1, description="Name of the dependency")
-    version: str = ""
-    type: Literal["python_package"]
-
-
 class Details(BaseModel):
     pass
 
@@ -27,5 +19,4 @@ class Plugin(BaseModel):
 
     id: str = Field(min_length=1, description="ID of the plugin")
     metadata: Metadata = Field(description="Metadata of the plugin")
-    dependencies: list[Dependency] = Field(default_factory=list, description="Dependencies of the plugin")
     details: Details = Field(description="Details of the plugin")

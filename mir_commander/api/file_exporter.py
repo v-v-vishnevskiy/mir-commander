@@ -4,7 +4,7 @@ from typing import Annotated, Any, Callable, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .plugin import Details, Plugin
-from .project_node_schema import ProjectNodeSchemaV1
+from .project_node_schema import ProjectNodeSchema
 
 
 class ExportFileError(Exception):
@@ -58,7 +58,7 @@ class FileExporterDetails(Details):
     format_params_config: list[
         Annotated[BoolParam | TextParam | NumberParam | ListParam, Field(discriminator="type")]
     ] = Field(default_factory=list, description="Format params config")
-    write_function: Callable[[ProjectNodeSchemaV1, Path, dict[str, Any]], None] = Field(description="Write function")
+    write_function: Callable[[ProjectNodeSchema, Path, dict[str, Any]], None] = Field(description="Write function")
 
 
 class FileExporterPlugin(Plugin):

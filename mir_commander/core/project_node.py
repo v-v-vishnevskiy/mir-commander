@@ -2,7 +2,7 @@ from typing import Any, Iterable, Self, SupportsIndex
 
 from pydantic import ConfigDict, PrivateAttr, field_validator
 
-from mir_commander.api.project_node_schema import ProjectNodeSchemaV1
+from mir_commander.api import ProjectNodeSchemaV1
 
 ProjectNodeData = Any
 
