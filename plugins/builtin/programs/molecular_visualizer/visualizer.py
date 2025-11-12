@@ -90,19 +90,20 @@ class Visualizer(OpenGLWidget):
         self.resource_manager.add_vertex_array_object(VAO_CYLINDER_RESOURCE_NAME, self._get_cylinder_vao())
 
         max_radius = self._molecules.get_max_molecule_radius()
-        self.projection_manager.orthographic_projection.set_view_bounds(max_radius + max_radius * 0.10)
+        if max_radius > 0.0:
+            self.projection_manager.orthographic_projection.set_view_bounds(max_radius + max_radius * 0.10)
 
-        current_fov = self._style.current.projection.perspective.fov
-        self.set_perspective_projection_fov(current_fov)
-        fov_factor = current_fov / 45.0
-        self.projection_manager.perspective_projection.set_near_far_plane(
-            max_radius / fov_factor,
-            8 * max_radius / fov_factor,
-        )
-        self.set_projection_mode(self._style.current.projection.mode)
+            current_fov = self._style.current.projection.perspective.fov
+            self.set_perspective_projection_fov(current_fov)
+            fov_factor = current_fov / 45.0
+            self.projection_manager.perspective_projection.set_near_far_plane(
+                max_radius / fov_factor,
+                8 * max_radius / fov_factor,
+            )
+            self.set_projection_mode(self._style.current.projection.mode)
 
-        self.resource_manager.current_camera.reset_to_default()
-        self.resource_manager.current_camera.set_position(Vector3D(0, 0, 3 * max_radius / fov_factor))
+            self.resource_manager.current_camera.reset_to_default()
+            self.resource_manager.current_camera.set_position(Vector3D(0, 0, 3 * max_radius / fov_factor))
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())

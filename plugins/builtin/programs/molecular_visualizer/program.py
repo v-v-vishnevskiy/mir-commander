@@ -39,16 +39,16 @@ class Program(BaseProgram):
 
         self.visualizer = Visualizer(program=self, title=self.node.text(), config=self.config)
 
-        match self.node.project_node.data:
-            case VolumeCube():
-                self._volume_cube_nodes.append(self.node)
-                self.visualizer.set_volume_cube(self.node.project_node.data)
-
         self._molecule_index = 0
         self._draw_node = self.node
         self._set_draw_node()
         self.visualizer.set_atomic_coordinates(self._get_draw_node_atomic_coordinates())
         self.visualizer.coordinate_axes_adjust_length()
+
+        match self.node.project_node.data:
+            case VolumeCube():
+                self._volume_cube_nodes.append(self.node)
+                self.visualizer.set_volume_cube(self.node.project_node.data)
 
     def _get_node(self, node_id: int) -> UINode:
         for nodes_list in [self._atomic_coordinates_nodes, self._volume_cube_nodes]:
@@ -73,12 +73,12 @@ class Program(BaseProgram):
 
         index = max(0, index)
         last_node = parent
-        if not parent.hasChildren() and parent.project_node.type == "atomic_coordinates":
+        if not parent.hasChildren() and parent.project_node.type == "builtin.atomic_coordinates":
             return True, 0, last_node
         else:
             for i in range(parent.rowCount()):
                 node = cast(UINode, parent.child(i))
-                if node.project_node.type == "atomic_coordinates":
+                if node.project_node.type == "builtin.atomic_coordinates":
                     last_node = node
                     counter += 1
                     if index == counter:

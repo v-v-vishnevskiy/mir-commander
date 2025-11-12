@@ -49,6 +49,8 @@ class PerspectiveProjection(AbstractProjection):
         self._fov = min(90.0, max(35.0, value))
 
     def set_near_far_plane(self, near_plane: float, far_plane: float):
+        if near_plane >= far_plane:
+            raise ValueError("Near plane must be less than far plane")
         self._near_plane = near_plane
         self._far_plane = far_plane
 
@@ -101,9 +103,13 @@ class OrthographicProjection(AbstractProjection):
         self.matrix.ortho(self._left, self._right, self._bottom, self._top, self._near, self._far)
 
     def set_view_bounds(self, value: float):
+        if value <= 0.0:
+            raise ValueError("View bounds must be greater than 0.0")
         self._view_bounds = value
 
     def set_depth_factor(self, value: float):
+        if value <= 0.0:
+            raise ValueError("Depth factor must be greater than 0.0")
         self._orthographic_depth_factor = value
 
     @property
