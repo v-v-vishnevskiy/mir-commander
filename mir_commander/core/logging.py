@@ -35,6 +35,7 @@ def setup():
         }
     )
     logging.getLogger("cclib").setLevel(logging.CRITICAL)
+    logging.getLogger("OpenGL").setLevel(logging.WARNING)
 
 
 __all__ = ["setup", "getLogger"]

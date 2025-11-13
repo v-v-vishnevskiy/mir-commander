@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from PIL import Image, ImageCms
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QSurfaceFormat
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
@@ -14,7 +14,7 @@ from mir_commander.api.data_structures.atomic_coordinates import (
     RemoveAtomsAction,
     SwapAtomsIndicesAction,
 )
-from mir_commander.api.program import MessageChannel, NodeChangedAction, UINode
+from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramError, UINode
 from mir_commander.core.graphics.utils import Color4f
 from mir_commander.core.utils import sanitize_filename
 from mir_commander.ui.sdk.widget import TR
@@ -30,6 +30,9 @@ class Program(BaseProgram):
     config: Config
 
     def __init__(self, all: bool = False, *args, **kwargs):
+        if QSurfaceFormat.defaultFormat().version() < (3, 3):
+            raise ProgramError("OpenGL 3.3 or higher is required")
+
         super().__init__(*args, **kwargs)
 
         self._all = all

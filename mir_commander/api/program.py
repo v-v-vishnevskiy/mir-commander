@@ -25,6 +25,9 @@ class ProgramConfig(BaseModel):
 class NodeChangedAction(BaseModel): ...
 
 
+class ProgramError(Exception): ...
+
+
 class UINode(QStandardItem):
     @property
     def id(self) -> int:

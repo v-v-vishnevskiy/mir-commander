@@ -20,6 +20,8 @@ def run():
 
     logger.debug("Starting Mir Commander ...")
 
+    app = Application([])
+
     logger.debug("Loading built-in plugins ...")
     plugins_loader.load_from_directory(DIR.INTERNAL_PLUGINS)
 
@@ -32,9 +34,6 @@ def run():
     )
     parser.add_argument("-p", "--project", type=Path, help="Path to project directory")
     args = parser.parse_args()
-
-    app = Application([])
-    app.fix_palette()
 
     if args.files:
         sys.exit(app.open_temporary_project(args.files))

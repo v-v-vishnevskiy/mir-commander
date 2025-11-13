@@ -148,13 +148,11 @@ class OpenGLWidget(QOpenGLWidget):
         return self.resource_manager.current_scene.transform.get_scale().x
 
     def resizeGL(self, w: int, h: int):
-        self.makeCurrent()
         self.projection_manager.build_projections(w, h)
         self.renderer.resize(w, h, self.devicePixelRatio())
         self.update()
 
     def paintGL(self):
-        self.makeCurrent()
         self.renderer.paint(PaintMode.Normal, self.defaultFramebufferObject())
 
     def keyPressEvent(self, event: QKeyEvent):

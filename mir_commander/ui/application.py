@@ -2,13 +2,12 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
+from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.core import Project
 from mir_commander.core.consts import DIR
 from mir_commander.core.errors import LoadProjectError
-from mir_commander.core.graphics.opengl.opengl_info import OpenGLInfo
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -21,15 +20,18 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
-        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, on=False)
         super().__init__(*args, **kwargs)
+        self.setApplicationName("mir_commander")
+        self.setApplicationDisplayName("Mir Commander")
         self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
         self._register_resources()
+        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
 
-        self.apply_callbacks = ApplyCallbacks()
-        self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+        self._apply_callbacks = ApplyCallbacks()
+        self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
@@ -42,17 +44,19 @@ class Application(QApplication):
         self._error = QMessageBox()
         self._error.setIcon(QMessageBox.Icon.Critical)
 
-        self.apply_callbacks.add(self._set_translation)
+        self._apply_callbacks.add(self._set_translation)
 
-        self.setup_opengl()
+        self._setup_opengl()
+        self._fix_palette()
 
-    def setup_opengl(self):
-        try:
-            opengl_info = OpenGLInfo()
-            version = opengl_info.version
-        except Exception as e:
-            logger.error("Failed to get OpenGL info: %s", e)
-            version = (2, 1)
+    def _setup_opengl(self):
+        context = QOpenGLContext()
+        fmt = QSurfaceFormat()
+        fmt.setVersion(4, 6)
+        fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        context.setFormat(fmt)
+        context.create()
+        version = context.format().version()
 
         sf = QSurfaceFormat()
         sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
@@ -60,7 +64,7 @@ class Application(QApplication):
         sf.setColorSpace(QSurfaceFormat.ColorSpace.sRGBColorSpace)
         QSurfaceFormat.setDefaultFormat(sf)
 
-    def fix_palette(self):
+    def _fix_palette(self):
         """
         PySide6 may work bad if GTK3 theme engine is active with builtin themes Adwaita, Adwaita-dark and High-Contrast.
         In this case text labels (window text) of many different (QLabel, etc) Qt widgets is shown as if it were
@@ -103,7 +107,7 @@ class Application(QApplication):
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
 
-        language: str = self.config.language
+        language: str = self._config.language
         if language == "system":
             language = QLocale.languageToCode(QLocale.system().language())
 
@@ -139,8 +143,8 @@ class Application(QApplication):
             return self.exec()
 
         project_window = ProjectWindow(
-            app_config=self.config,
-            app_apply_callbacks=self.apply_callbacks,
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
             project=project,
         )
         self._setup_project_window(project_window)
@@ -155,8 +159,8 @@ class Application(QApplication):
         project.import_files(files, messages)
 
         project_window = ProjectWindow(
-            app_config=self.config,
-            app_apply_callbacks=self.apply_callbacks,
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
             project=project,
             init_msg=messages,
         )
