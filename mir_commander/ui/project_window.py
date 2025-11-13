@@ -133,7 +133,7 @@ class ProjectWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
 
     def _set_mainwindow_title(self):
-        self.setWindowTitle(f"Mir Commander – {self.project.name}")
+        self.setWindowTitle(self.project.name)
 
     def setup_menubar(self):
         menubar = self.menuBar()
