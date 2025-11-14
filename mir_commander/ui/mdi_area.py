@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
 from mir_commander.core import plugins_registry
@@ -121,6 +121,9 @@ class MdiArea(QMdiArea):
                 window.show()
                 return
 
+        error_title = None
+        error_message = None
+
         try:
             window = _MdiProgramWindow(
                 program_id=program_id,
@@ -141,12 +144,28 @@ class MdiArea(QMdiArea):
             window.show()
         except ProgramError as e:
             logger.error("Failed to open program `%s`: %s", program_id, e)
+            error_title = "Program Error"
+            error_message = f"Failed to open program '{program_id}':\n{str(e)}"
         except PluginNotFoundError:
             logger.error("Program `%s` is not registered", program_id)
+            error_title = "Plugin Not Found"
+            error_message = f"Program '{program_id}' is not registered in the plugin registry."
         except PluginDisabledError:
             logger.error("Program `%s` is disabled", program_id)
+            error_title = "Plugin Disabled"
+            error_message = f"Program '{program_id}' is currently disabled."
         except Exception as e:
             logger.error("Failed to open program `%s`: %s", program_id, e)
+            error_title = "Unexpected Error"
+            error_message = f"Failed to open program '{program_id}':\n{str(e)}"
+
+        if error_title and error_message:
+            error_dialog = QMessageBox(self)
+            error_dialog.setIcon(QMessageBox.Icon.Critical)
+            error_dialog.setWindowTitle(error_title)
+            error_dialog.setText(error_title)
+            error_dialog.setInformativeText(error_message)
+            error_dialog.show()
 
     def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
         windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
