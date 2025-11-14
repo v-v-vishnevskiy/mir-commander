@@ -1,8 +1,6 @@
 from mir_commander.api.plugin import Metadata, Plugin
 from mir_commander.api.project_node import ProjectNodeDetails, ProjectNodePlugin
 
-from . import atomic_coordinates, atomic_coordinates_group, molecule, unex, volume_cube
-
 
 def register_plugins() -> list[Plugin]:
     return [
@@ -16,7 +14,9 @@ def register_plugins() -> list[Plugin]:
                 contacts="https://mircmd.com",
                 license="MirCommander",
             ),
-            details=ProjectNodeDetails(type=atomic_coordinates.TYPE, icon_path=atomic_coordinates.ICON_PATH),
+            details=ProjectNodeDetails(
+                type="atomic_coordinates", icon_path=":/builtin/resources/icons/atomic_coordinates.png"
+            ),
         ),
         ProjectNodePlugin(
             id="atomic_coordinates_group",
@@ -29,7 +29,7 @@ def register_plugins() -> list[Plugin]:
                 license="MirCommander",
             ),
             details=ProjectNodeDetails(
-                type=atomic_coordinates_group.TYPE, icon_path=atomic_coordinates_group.ICON_PATH
+                type="atomic_coordinates_group", icon_path=":/builtin/resources/icons/atomic_coordinates_group.png"
             ),
         ),
         ProjectNodePlugin(
@@ -42,7 +42,7 @@ def register_plugins() -> list[Plugin]:
                 contacts="https://mircmd.com",
                 license="MirCommander",
             ),
-            details=ProjectNodeDetails(type=molecule.TYPE, icon_path=molecule.ICON_PATH),
+            details=ProjectNodeDetails(type="molecule", icon_path=":/builtin/resources/icons/molecule.png"),
         ),
         ProjectNodePlugin(
             id="unex",
@@ -54,7 +54,7 @@ def register_plugins() -> list[Plugin]:
                 contacts="https://mircmd.com",
                 license="MirCommander",
             ),
-            details=ProjectNodeDetails(type=unex.TYPE, icon_path=unex.ICON_PATH),
+            details=ProjectNodeDetails(type="unex", icon_path=":/builtin/resources/icons/unex.png"),
         ),
         ProjectNodePlugin(
             id="volume_cube",
@@ -66,6 +66,6 @@ def register_plugins() -> list[Plugin]:
                 contacts="https://mircmd.com",
                 license="MirCommander",
             ),
-            details=ProjectNodeDetails(type=volume_cube.TYPE, icon_path=volume_cube.ICON_PATH),
+            details=ProjectNodeDetails(type="volume_cube", icon_path=":/builtin/resources/icons/volume_cube.png"),
         ),
     ]

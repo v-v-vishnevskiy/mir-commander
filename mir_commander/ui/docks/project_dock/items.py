@@ -36,7 +36,7 @@ class TreeItem(UINode):
         try:
             icon_path = plugins_registry.project_node.get(node.type).details.icon_path
         except ProjectNodeNotFoundError:
-            icon_path = ":/icons/items/project-node.png"
+            icon_path = ":/core/icons/project-node.png"
         self.setIcon(QIcon(icon_path))
 
         self._load_data()

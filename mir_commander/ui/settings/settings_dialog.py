@@ -42,7 +42,7 @@ class SettingsDialog(Dialog):
         self._pages_model = QStandardItemModel(self)
 
         self.setWindowTitle(self.tr("Settings"))
-        self.setWindowIcon(QIcon(":/icons/general/settings.png"))
+        self.setWindowIcon(QIcon(":/core/icons/settings.png"))
         self.setMinimumSize(800, 600)
 
         self.setup_ui()

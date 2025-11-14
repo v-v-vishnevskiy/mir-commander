@@ -3,8 +3,8 @@ import sys
 from pathlib import Path
 
 from .core import logging, plugins_loader
-from .ui.application import Application
 from .core.consts import DIR
+from .ui.application import Application
 
 logger = logging.getLogger("Main")
 
@@ -23,10 +23,12 @@ def run():
     app = Application([])
 
     logger.debug("Loading built-in plugins ...")
-    plugins_loader.load_from_directory(DIR.INTERNAL_PLUGINS)
+    resources = plugins_loader.load_from_directory(DIR.INTERNAL_PLUGINS)
+    app.register_plugin_resources(resources)
 
     logger.debug("Loading external plugins ...")
-    plugins_loader.load_from_directory(DIR.HOME_PLUGINS, skip_authors=["builtin"])
+    resources = plugins_loader.load_from_directory(DIR.HOME_PLUGINS, skip_authors=["builtin"])
+    app.register_plugin_resources(resources)
 
     parser = argparse.ArgumentParser(prog="Mir Commander")
     parser.add_argument(

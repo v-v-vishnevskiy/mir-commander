@@ -14,8 +14,8 @@ from mir_commander.api.data_structures.atomic_coordinates import (
     SwapAtomsIndicesAction,
 )
 from mir_commander.api.program import NodeChangedAction
-from mir_commander.ui.sdk.widget import StandardItem, TableView
 from mir_commander.core.chemistry import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
+from mir_commander.ui.sdk.widget import StandardItem, TableView
 
 from ..program import BaseProgram
 from .config import Config
@@ -178,7 +178,7 @@ class AtomicCoordinatesTableView(TableView):
         self._new_atom_y_item = FloatItem("0.0", index=-1)
         self._new_atom_z_item = FloatItem("0.0", index=-1)
 
-        self._plus_button = QPushButton(QIcon(":/icons/general/plus.png"), "")
+        self._plus_button = QPushButton(QIcon(":/core/icons/plus.png"), "")
         self._plus_button.setIconSize(QSize(16, 16))
         self._plus_button.setEnabled(False)
         self.setStyleSheet("QPushButton { border: none; }")

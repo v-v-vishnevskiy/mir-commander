@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Any
 
 from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
@@ -28,7 +29,7 @@ class Application(QApplication):
         self._quitting = False
 
         self._register_resources()
-        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
+        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
 
         self._apply_callbacks = ApplyCallbacks()
         self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
@@ -101,8 +102,9 @@ class Application(QApplication):
             self.setPalette(palette)
 
     def _register_resources(self):
-        for file in DIR.ICONS.glob("*.rcc"):
-            QResource.registerResource(str(file))
+        for file in DIR.RESOURCES.glob("*.rcc"):
+            if QResource.registerResource(str(file), "/core") is False:
+                logger.error("Failed to register resource %s", file)
 
     def _set_translation(self):
         """The callback called by the Settings when a setting is applied or set."""
@@ -131,6 +133,12 @@ class Application(QApplication):
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project_window.project)
             self._recent_projects_dialog.add_recent(project_window.project)
+
+    def register_plugin_resources(self, resources: list[dict[str, Any]]):
+        for resource in resources:
+            for file in resource["files"]:
+                if QResource.registerResource(str(file), resource["namespace"]) is False:
+                    logger.error("Failed to register resource %s", file)
 
     def open_project(self, path: Path) -> int:
         try:

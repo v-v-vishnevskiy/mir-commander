@@ -59,6 +59,9 @@ class Plugins(BasePage):
         for project_node in plugins_registry.project_node.get_all():
             plugins.append((project_node, StandardItem.tr("Project Node")))
 
+        for resources in plugins_registry.resources.get_all():
+            plugins.append((resources, StandardItem.tr("Resources")))
+
         for item, plugin_type in plugins:
             plugin = item.plugin
 

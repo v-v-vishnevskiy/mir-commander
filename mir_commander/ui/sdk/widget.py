@@ -437,9 +437,9 @@ class _GroupHeaderWidget(QFrame):
 
     def _apply_style(self):
         if self._parent.expanded:
-            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-down.png); }")
+            self._icon.setStyleSheet("QFrame { image: url(:/core/icons/arrow-down.png); }")
         else:
-            self._icon.setStyleSheet("QFrame { image: url(:/icons/general/arrow-right.png); }")
+            self._icon.setStyleSheet("QFrame { image: url(:/core/icons/arrow-right.png); }")
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         self._parent.toggle_expand()

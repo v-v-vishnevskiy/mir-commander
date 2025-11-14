@@ -1,0 +1,12 @@
+<RCC>
+  <qresource>
+    <file>icons/app.svg</file>
+    <file>icons/arrow-down.png</file>
+    <file>icons/arrow-right.png</file>
+    <file>icons/delete.png</file>
+    <file>icons/eye.png</file>
+    <file>icons/plus.png</file>
+    <file>icons/settings.png</file>
+    <file>icons/square.png</file>
+  </qresource>
+</RCC>

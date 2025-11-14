@@ -36,6 +36,8 @@ def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []):
     if plugins_dir_str not in sys.path:
         sys.path.insert(0, plugins_dir_str)
 
+    resources = []
+
     try:
         # Iterate through author directories
         for author_dir in plugins_dir.iterdir():
@@ -82,6 +84,16 @@ def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []):
                             try:
                                 for plugin in register_func():
                                     plugins_registry.register_plugin(plugin, author_dir.name)
+                                    if plugin.resources:
+                                        resources.append(
+                                            {
+                                                "namespace": f"/{author_dir.name}/{plugin.id}",
+                                                "files": [
+                                                    author_dir / plugin_dir / resource.path
+                                                    for resource in plugin.resources
+                                                ],
+                                            }
+                                        )
                             except Exception as e:
                                 logger.error("Failed to register plugins from '%s': %s", module_name, e)
                         else:
@@ -98,3 +110,5 @@ def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []):
         # Remove plugins directory from sys.path
         if plugins_dir_str in sys.path:
             sys.path.remove(plugins_dir_str)
+
+    return resources

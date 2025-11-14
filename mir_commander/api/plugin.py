@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -14,9 +16,14 @@ class Details(BaseModel):
     pass
 
 
+class Resource(BaseModel):
+    path: Path = Field(description="Relative path to the resource file")
+
+
 class Plugin(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
 
     id: str = Field(min_length=1, description="ID of the plugin")
     metadata: Metadata = Field(description="Metadata of the plugin")
     details: Details = Field(description="Details of the plugin")
+    resources: list[Resource] = Field(default_factory=list, description="Resources of the plugin")

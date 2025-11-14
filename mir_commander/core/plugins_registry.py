@@ -9,12 +9,13 @@ from mir_commander.api.file_importer import FileImporterPlugin
 from mir_commander.api.plugin import Plugin
 from mir_commander.api.program import ProgramPlugin
 from mir_commander.api.project_node import ProjectNodePlugin
+from mir_commander.api.resources import ResourcesPlugin
 
 from .errors import PluginDisabledError, PluginNotFoundError, PluginRegistrationError
 
 logger = logging.getLogger("Core.PluginsRegistry")
 
-_plugin_types_map = {FileImporterPlugin, FileExporterPlugin, ProgramPlugin, ProjectNodePlugin}
+_plugin_types_map = {FileImporterPlugin, FileExporterPlugin, ProgramPlugin, ProjectNodePlugin, ResourcesPlugin}
 
 
 T = TypeVar("T", bound=Plugin)
@@ -81,6 +82,10 @@ class PluginsRegistry:
     @property
     def project_node(self) -> _PluginsRepository[ProjectNodePlugin]:
         return self._plugins[ProjectNodePlugin]
+
+    @property
+    def resources(self) -> _PluginsRepository[ResourcesPlugin]:
+        return self._plugins[ResourcesPlugin]
 
     def register_plugin(self, plugin: Plugin, author: str):
         try:

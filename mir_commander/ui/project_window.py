@@ -61,7 +61,7 @@ class ProjectWindow(QMainWindow):
 
         self._file_manager = FileManager(plugins_registry)
 
-        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
+        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
 
         self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()

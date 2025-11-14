@@ -15,7 +15,7 @@ class About(Dialog):
 
         layout = QVBoxLayout()
         label = QLabel(self)
-        pixmap = QPixmap(":/icons/general/app.svg")
+        pixmap = QPixmap(":/core/icons/app.svg")
         label.setPixmap(pixmap.scaledToWidth(150, mode=Qt.TransformationMode.SmoothTransformation))
         layout.addWidget(label, 100, Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(QLabel(f"Mir Commander {__version__}"), 100, Qt.AlignmentFlag.AlignCenter)
