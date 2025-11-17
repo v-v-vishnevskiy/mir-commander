@@ -1,3 +1,5 @@
+from PySide6.QtCore import QCoreApplication
+
 from mir_commander.api.plugin import Metadata, Plugin
 from mir_commander.api.program import ProgramDetails, ProgramPlugin
 
@@ -9,7 +11,7 @@ def register_plugins() -> list[Plugin]:
         ProgramPlugin(
             id="cartesian_editor",
             metadata=Metadata(
-                name="Cartesian editor",
+                name=QCoreApplication.translate("builtin.cartesian_editor", "Cartesian editor"),
                 version=(1, 0, 0),
                 description="Editor for atomic coordinates.",
                 author="Mir Commander",
@@ -27,7 +29,7 @@ def register_plugins() -> list[Plugin]:
         ProgramPlugin(
             id="molecular_visualizer",
             metadata=Metadata(
-                name="Molecular visualizer",
+                name=QCoreApplication.translate("builtin.molecular_visualizer", "Molecular visualizer"),
                 version=(1, 0, 0),
                 description="Can visualize atomic coordinates and volume cubes.",
                 author="Mir Commander",

@@ -1,10 +1,10 @@
 from typing import Callable
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QScrollArea, QSizePolicy, QWidget
+from PySide6.QtWidgets import QCheckBox, QScrollArea, QSizePolicy, QWidget
 
 from mir_commander.api.program import ControlBlock, ControlPanel
-from mir_commander.ui.sdk.widget import CheckBox, GroupVBoxLayout
+from mir_commander.ui.sdk.widget import GroupVBoxLayout
 
 from .base import BaseDock
 
@@ -27,7 +27,7 @@ class _Container(QWidget):
         self.group_layout = GroupVBoxLayout()
 
         if allows_apply_for_all:
-            _apply_for_all_checkbox = CheckBox(CheckBox.tr("Apply for all"))
+            _apply_for_all_checkbox = QCheckBox(self.tr("Apply for all"))
             _apply_for_all_checkbox.setStyleSheet("QCheckBox { border: 0px; }")
             _apply_for_all_checkbox.setChecked(apply_for_all_value)
             _apply_for_all_checkbox.toggled.connect(apply_for_all_handler)

@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QLineEdit
+from PySide6.QtWidgets import QCheckBox, QGridLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout
 
 from mir_commander.core.graphics.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.sdk.widget import CheckBox, ColorButton, GridLayout, Label, PushButton, TrString, VBoxLayout
+from mir_commander.ui.sdk.widget import ColorButton
 
-from ...program import ControlBlock
+from ....program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -21,29 +21,29 @@ class CoordinateAxes(ControlBlock):
 
         self._control_panel = control_panel
 
-        self._layouts: list[GridLayout] = [self._add_checkboxes(), self._add_sliders(), self._add_axes()]
+        self._layouts: list[QGridLayout] = [self._add_checkboxes(), self._add_sliders(), self._add_axes()]
 
-        layout = VBoxLayout()
+        layout = QVBoxLayout()
         for item in self._layouts:
             layout.addLayout(item)
         self.setLayout(layout)
 
-    def _add_checkboxes(self) -> GridLayout:
-        layout = GridLayout()
+    def _add_checkboxes(self) -> QGridLayout:
+        layout = QGridLayout()
 
-        self._visibility_checkbox = CheckBox(CheckBox.tr("Show"))
+        self._visibility_checkbox = QCheckBox(self.tr("Show"))
         self._visibility_checkbox.setChecked(False)
         self._visibility_checkbox.toggled.connect(self._visibility_checkbox_toggled_handler)
 
-        self._labels_visibility_checkbox = CheckBox(CheckBox.tr("Labels"))
+        self._labels_visibility_checkbox = QCheckBox(self.tr("Labels"))
         self._labels_visibility_checkbox.setChecked(True)
         self._labels_visibility_checkbox.toggled.connect(self._labels_visibility_checkbox_toggled_handler)
 
-        self._both_directions_checkbox = CheckBox(CheckBox.tr("Both directions"))
+        self._both_directions_checkbox = QCheckBox(self.tr("Both directions"))
         self._both_directions_checkbox.setChecked(False)
         self._both_directions_checkbox.toggled.connect(self._both_directions_checkbox_toggled_handler)
 
-        self._center_checkbox = CheckBox(CheckBox.tr("Center"))
+        self._center_checkbox = QCheckBox(self.tr("Center"))
         self._center_checkbox.setChecked(False)
         self._center_checkbox.toggled.connect(self._center_checkbox_toggled_handler)
 
@@ -54,13 +54,13 @@ class CoordinateAxes(ControlBlock):
 
         return layout
 
-    def _add_sliders(self) -> GridLayout:
-        layout = GridLayout()
+    def _add_sliders(self) -> QGridLayout:
+        layout = QGridLayout()
 
         self._length_slider, self._length_double_spinbox = add_slider(
             layout=layout,
             row=0,
-            text=Label.tr("Length:"),
+            text=self.tr("Length:"),
             min_value=0.5,
             max_value=100.0,
             single_step=0.1,
@@ -73,7 +73,7 @@ class CoordinateAxes(ControlBlock):
         self._thickness_slider, self._thickness_double_spinbox = add_slider(
             layout=layout,
             row=1,
-            text=Label.tr("Thickness:"),
+            text=self.tr("Thickness:"),
             min_value=0.03,
             max_value=1.0,
             single_step=0.01,
@@ -86,7 +86,7 @@ class CoordinateAxes(ControlBlock):
         self._font_size_slider, self._font_size_double_spinbox = add_slider(
             layout=layout,
             row=2,
-            text=Label.tr("Font size:"),
+            text=self.tr("Font size:"),
             min_value=16,
             max_value=500,
             single_step=1,
@@ -94,32 +94,32 @@ class CoordinateAxes(ControlBlock):
         self._font_size_slider.valueChanged.connect(self._font_size_slider_value_changed_handler)
         self._font_size_double_spinbox.valueChanged.connect(self._font_size_double_spinbox_value_changed_handler)
 
-        adjust_length_button = PushButton(PushButton.tr("Adjust length"))
+        adjust_length_button = QPushButton(self.tr("Adjust length"))
         adjust_length_button.clicked.connect(self._adjust_labels_length_button_clicked_handler)
 
         layout.addWidget(adjust_length_button, 3, 0, 1, 3)
 
         return layout
 
-    def _add_axes(self) -> GridLayout:
-        layout = GridLayout()
+    def _add_axes(self) -> QGridLayout:
+        layout = QGridLayout()
 
         self._x_axis_color_button, self._x_label_color_button, self._x_line_edit = self._add_axis(
-            layout, 0, Label.tr("Axis X:"), "x"
+            layout, 0, self.tr("Axis X:"), "x"
         )
         self._y_axis_color_button, self._y_label_color_button, self._y_line_edit = self._add_axis(
-            layout, 1, Label.tr("Axis Y:"), "y"
+            layout, 1, self.tr("Axis Y:"), "y"
         )
         self._z_axis_color_button, self._z_label_color_button, self._z_line_edit = self._add_axis(
-            layout, 2, Label.tr("Axis Z:"), "z"
+            layout, 2, self.tr("Axis Z:"), "z"
         )
 
         return layout
 
     def _add_axis(
-        self, layout: GridLayout, row: int, label_text: TrString, axis: str
+        self, layout: QGridLayout, row: int, label_text: str, axis: str
     ) -> tuple[ColorButton, ColorButton, QLineEdit]:
-        label = Label(label_text)
+        label = QLabel(label_text)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         axis_color_button = ColorButton()

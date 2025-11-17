@@ -1,5 +1,8 @@
 <RCC>
-  <qresource>
+  <qresource prefix="core">
+    <file>fonts/DejaVuSansCondensed-Bold.ttf</file>
+  </qresource>
+  <qresource prefix="core">
     <file>icons/app.svg</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-right.png</file>
@@ -8,5 +11,9 @@
     <file>icons/plus.png</file>
     <file>icons/settings.png</file>
     <file>icons/square.png</file>
+  </qresource>
+  <qresource prefix="core">
+    <file>i18n/en.qm</file>
+    <file>i18n/ru.qm</file>
   </qresource>
 </RCC>

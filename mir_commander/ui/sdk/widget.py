@@ -1,151 +1,6 @@
-from time import monotonic
-from typing import Any, Self, cast
-
-from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPropertyAnimation, Qt, Signal
-from PySide6.QtGui import QAction, QColor, QMouseEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QColorDialog,
-    QComboBox,
-    QDialog,
-    QDockWidget,
-    QFrame,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QListView,
-    QMenu,
-    QPushButton,
-    QScrollArea,
-    QSpinBox,
-    QStatusBar,
-    QTableView,
-    QTabWidget,
-    QToolBar,
-    QTreeView,
-    QVBoxLayout,
-    QWidget,
-)
-
-
-class TrString(str):
-    format_args: tuple[Any, ...] = tuple()
-    format_kwargs: dict[str, Any] = dict()
-
-    def format(self, *args: Any, **kwargs: Any) -> Self:
-        self.format_args = args
-        self.format_kwargs = kwargs
-        return self
-
-
-class Translator:
-    """Translator class.
-
-    Classes implementing widgets with translatable elements
-    must inherit this class.
-    """
-
-    @staticmethod
-    def tr(value: str, *args: Any, **kwargs: Any) -> TrString:
-        return TrString(value)
-
-    @classmethod
-    def translate(cls, text: str | TrString) -> str:
-        if text and isinstance(text, TrString):
-            return QCoreApplication.translate(cls.__name__, text).format(*text.format_args, **text.format_kwargs)
-        return text
-
-
-class TR:
-    @staticmethod
-    def tr(value: str) -> str:
-        return QCoreApplication.translate("TR", value)
-
-
-class Widget(Translator):
-    """
-    A special class, which implements changeEvent handler.
-    """
-
-    def retranslate_ui(self):
-        pass
-
-    def changeEvent(self, event: QEvent):
-        """Handling only LanguageChange events and calling retranslate_ui"""
-
-        if event.type() == QEvent.Type.LanguageChange:
-            self.retranslate_ui()
-        super().changeEvent(event)  # type: ignore
-
-
-class Dialog(Widget, QDialog):
-    def setWindowTitle(self, value: str):
-        self.__window_title = value
-        super().setWindowTitle(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setWindowTitle(self.__window_title)
-
-
-class DockWidget(Widget, QDockWidget):
-    """The basic class for dockable widgets.
-
-    Has been created as a wrapper of QDockWidget
-    for simple handling of translation.
-    """
-
-    def __init__(self, title: str, *args, **kwargs):
-        self.__title = title
-        super().__init__(self.translate(title), *args, **kwargs)
-
-        self.setObjectName(f"Dock.{self.__class__.__name__}")
-        self.setAllowedAreas(
-            Qt.DockWidgetArea.LeftDockWidgetArea
-            | Qt.DockWidgetArea.BottomDockWidgetArea
-            | Qt.DockWidgetArea.RightDockWidgetArea
-        )
-        self.setContentsMargins(0, 0, 0, 0)
-
-    def setWindowTitle(self, value: str):
-        self.__title = value
-        super().setWindowTitle(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setWindowTitle(self.__title)
-
-
-class Label(Widget, QLabel):
-    def __init__(self, text: str, parent: QWidget | None = None):
-        self.__text = text
-        self.__tooltip: str | None = None
-        super().__init__(self.translate(text), parent)
-
-    def setText(self, value: str):
-        self.__text = value
-        super().setText(self.translate(value))
-
-    def setToolTip(self, value: str):
-        self.__tooltip = value
-        super().setToolTip(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setText(self.__text)
-        if self.__tooltip is not None:
-            self.setToolTip(self.__tooltip)
-
-
-class PushButton(Widget, QPushButton):
-    def __init__(self, text: str, parent: QWidget | None = None):
-        self.__text = text
-        super().__init__(self.translate(text), parent)
-
-    def setText(self, value: str):
-        self.__text = value
-        super().setText(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setText(self.__text)
+from PySide6.QtCore import QPropertyAnimation, Qt, Signal
+from PySide6.QtGui import QColor, QMouseEvent
+from PySide6.QtWidgets import QColorDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 
 class ColorButton(QPushButton):
@@ -188,229 +43,6 @@ class ColorButton(QPushButton):
             self.color_changed.emit(color)
 
 
-class GroupBox(Widget, QGroupBox):
-    def __init__(self, text: str, parent: QWidget | None = None):
-        self.__text = text
-        super().__init__(self.translate(text), parent)
-
-    def setTitle(self, value: str):
-        self.__text = value
-        super().setTitle(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setTitle(self.__text)
-
-
-class CheckBox(Widget, QCheckBox):
-    def __init__(self, text: str, parent: QWidget | None = None):
-        self.__text = text
-        super().__init__(self.translate(text), parent)
-
-    def setText(self, value: str):
-        self.__text = value
-        super().setText(self.translate(value))
-
-    def retranslate_ui(self):
-        self.setText(self.__text)
-
-
-class SpinBox(Widget, QSpinBox):
-    def __init__(self, parent: QWidget | None = None):
-        self.__suffix = ""
-        super().__init__(parent)
-
-    def setSuffix(self, value: str):
-        self.__suffix = value
-        super().setSuffix(self.translate(value))
-
-    def retranslate_ui(self):
-        if self.__suffix:
-            self.setSuffix(self.__suffix)
-
-
-class ComboBox(Widget, QComboBox):
-    def __init__(self, parent: QWidget | None = None):
-        super().__init__(parent)
-        self.__items: list[str] = []
-
-    def addItem(self, text: str, /, userData: Any = None):  # type: ignore[override]
-        self.__items.append(text)
-        super().addItem(self.translate(text), userData)
-
-    def removeItem(self, index: int):
-        self.__items.pop(index)
-        super().removeItem(index)
-
-    def retranslate_ui(self):
-        for i, text in enumerate(self.__items):
-            self.setItemText(i, self.translate(text))
-
-
-class ListView(Widget, QListView):
-    def retranslate_ui(self):
-        model = cast(QStandardItemModel, self.model())
-        root = model.invisibleRootItem()
-        for i in range(root.rowCount()):
-            item = root.child(i)
-            if isinstance(item, StandardItem):
-                item.retranslate()
-
-
-class TableView(Widget, QTableView):
-    def retranslate_ui(self):
-        model = cast(QStandardItemModel, self.model())
-
-        for i in range(self.horizontalHeader().count()):
-            item = model.horizontalHeaderItem(i)
-            if isinstance(item, StandardItem):
-                item.retranslate()
-
-        for row in range(model.rowCount()):
-            for column in range(model.columnCount()):
-                item = model.item(row, column)
-                if isinstance(item, StandardItem):
-                    item.retranslate()
-
-
-class TreeView(Widget, QTreeView):
-    def retranslate_ui(self):
-        model = cast(QStandardItemModel, self.model())
-        root = model.invisibleRootItem()
-        self._retranslate(root)
-
-    def _retranslate(self, root_item: QStandardItem):
-        for i in range(root_item.rowCount()):
-            for j in range(root_item.columnCount()):
-                item = root_item.child(i, j)
-                if isinstance(item, StandardItem):
-                    item.retranslate()
-                if item.hasChildren():
-                    self._retranslate(item)
-
-
-class StandardItem(Translator, QStandardItem):
-    def __init__(self, text: str):
-        super().__init__(self.translate(text))
-        self.__text = text
-
-    def retranslate(self):
-        super().setText(self.translate(self.__text))
-
-    def setText(self, text: str):
-        self.__text = text
-        super().setText(self.translate(text))
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(text={self.text()})"
-
-
-class TabWidget(Widget, QTabWidget):
-    def __init__(self, parent: QWidget | None = None):
-        super().__init__(parent)
-        self.__labels: list[str] = []
-
-    def addTab(self, page: QWidget, label: str, /):  # type: ignore[override]
-        self.__labels.append(label)
-        super().addTab(page, self.translate(label))
-
-    def removeTab(self, index: int):
-        self.__labels.pop(index)
-        super().removeTab(index)
-
-    def retranslate_ui(self):
-        for i, label in enumerate(self.__labels):
-            self.setTabText(i, self.translate(label))
-
-
-class Action(Translator, QAction):
-    def __init__(self, text: str, parent: QObject | None = None, *args, **kwargs):
-        super().__init__(self.translate(text), parent, *args, **kwargs)
-        self.__text = text
-
-    def retranslate(self):
-        super().setText(self.translate(self.__text))
-
-    def setText(self, text: str):
-        self.__text = text
-        super().setText(self.translate(text))
-
-
-class Menu(Widget, QMenu):
-    def __init__(self, title: str = "", parent: QWidget | None = None):
-        super().__init__(self.translate(title), parent)
-        self.__title = title
-
-    def setTitle(self, title: str):
-        self.__title = title
-        super().setTitle(self.translate(title))
-
-    def set_enabled_actions(self, flag: bool):
-        for action in self.actions():
-            menu = cast(Menu, action.menu())
-            if menu:
-                menu.set_enabled_actions(flag)
-            action.setEnabled(flag)
-
-    def retranslate_ui(self):
-        for action in self.actions():
-            if isinstance(action, Action):
-                action.retranslate()
-        self.setTitle(self.__title)
-
-
-class StatusBar(Widget, QStatusBar):
-    def showMessage(self, message: str, timeout: int | None = 10000):
-        self.__message = message
-        self.__timeout = timeout
-        self.__monotonic = monotonic()
-        super().showMessage(self.translate(message), timeout)
-
-    def retranslate_ui(self):
-        if self.currentMessage():
-            if self.__timeout is not None:
-                timeout = self.__timeout - (int(monotonic() - self.__monotonic) * 1000)
-            else:
-                timeout = None
-            self.showMessage(self.__message, timeout)
-
-
-class ToolBar(Widget, QToolBar):
-    def __init__(self, title: str = "", parent: QWidget | None = None):
-        super().__init__(self.translate(title), parent)
-        self.__title = title
-
-    def setTitle(self, title: str):
-        self.__title = title
-        super().setWindowTitle(self.translate(title))
-
-    def retranslate_ui(self):
-        for action in self.actions():
-            if isinstance(action, Action):
-                action.retranslate()
-        self.setTitle(self.__title)
-
-
-class GridLayout(QGridLayout):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setSpacing(5)
-
-
-class VBoxLayout(QVBoxLayout):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setSpacing(0)
-
-
-class HBoxLayout(QHBoxLayout):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setSpacing(0)
-
-
 class _GroupHeaderWidget(QFrame):
     def __init__(self, title: str, layout_widget: "_GroupLayoutWidget"):
         super().__init__()
@@ -424,10 +56,12 @@ class _GroupHeaderWidget(QFrame):
         self._icon = QFrame()
         self._icon.setFixedSize(16, 16)
 
-        label = Label(title)
+        label = QLabel(title)
         label.setStyleSheet("QLabel { padding: 0px; margin: 0px; }")
 
-        layout = HBoxLayout()
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         layout.addWidget(self._icon)
         layout.addSpacing(4)
         layout.addWidget(label)
@@ -447,7 +81,7 @@ class _GroupHeaderWidget(QFrame):
         event.accept()
 
 
-class _GroupLayoutWidget(VBoxLayout):
+class _GroupLayoutWidget(QVBoxLayout):
     def __init__(self, title: str, widget: QWidget, expanded: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -467,6 +101,8 @@ class _GroupLayoutWidget(VBoxLayout):
         self._animation_min = QPropertyAnimation(self._scroll_area, b"minimumHeight")
         self._animation_min.setDuration(200)
 
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
         self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
         self.addWidget(self._scroll_area)
 
@@ -503,6 +139,11 @@ class _GroupLayoutWidget(VBoxLayout):
         self._animation_min.start()
 
 
-class GroupVBoxLayout(VBoxLayout):
+class GroupVBoxLayout(QVBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+
     def add_widget(self, title: str, widget: QWidget, expanded: bool = True, *args, **kwargs):
         super().addLayout(_GroupLayoutWidget(title, widget, expanded), *args, **kwargs)

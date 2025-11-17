@@ -2,8 +2,8 @@ from bisect import bisect
 from typing import Any, Callable, cast
 
 from PySide6.QtCore import QSignalBlocker, QSize, Qt
-from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItemModel
-from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QWidget
+from PySide6.QtGui import QColor, QIcon, QKeyEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QFrame, QHeaderView, QPushButton, QTableView, QWidget
 
 from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.api.data_structures.atomic_coordinates import (
@@ -15,13 +15,12 @@ from mir_commander.api.data_structures.atomic_coordinates import (
 )
 from mir_commander.api.program import NodeChangedAction
 from mir_commander.core.chemistry import all_symbols, atomic_number_to_symbol, symbol_to_atomic_number
-from mir_commander.ui.sdk.widget import StandardItem, TableView
 
-from ..program import BaseProgram
+from ...program import BaseProgram
 from .config import Config
 
 
-class TableItem(StandardItem):
+class TableItem(QStandardItem):
     def __init__(self, *args, index: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -134,7 +133,7 @@ class FloatItemY(FloatItem): ...
 class FloatItemZ(FloatItem): ...
 
 
-class AtomicCoordinatesTableView(TableView):
+class AtomicCoordinatesTableView(QTableView):
     def __init__(self, program: "Program", decimals: int = 6, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -146,15 +145,15 @@ class AtomicCoordinatesTableView(TableView):
         self._model = QStandardItemModel(parent=self)
         self.setModel(self._model)
 
-        for i, text in enumerate([StandardItem.tr("Tag"), StandardItem.tr("Symbol"), "X", "Y", "Z"]):
-            self._model.setHorizontalHeaderItem(i, StandardItem(text))
+        for i, text in enumerate([self.tr("Tag"), self.tr("Symbol"), "X", "Y", "Z"]):
+            self._model.setHorizontalHeaderItem(i, QStandardItem(text))
 
         self._model.itemChanged.connect(self._on_item_changed)
 
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setAlternatingRowColors(True)
-        self.setSelectionBehavior(TableView.SelectionBehavior.SelectRows)
-        self.setSelectionMode(TableView.SelectionMode.ExtendedSelection)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)
 
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setVisible(False)
@@ -171,7 +170,7 @@ class AtomicCoordinatesTableView(TableView):
         return cast(TableItem, self._model.item(row, column))
 
     def _init_new_atom_row(self):
-        self._new_atom_plus_item = StandardItem("")
+        self._new_atom_plus_item = QStandardItem("")
         self._new_atom_plus_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self._new_atom_symbol_item = SymbolItem("", index=-1)
         self._new_atom_x_item = FloatItem("0.0", index=-1)
@@ -191,7 +190,7 @@ class AtomicCoordinatesTableView(TableView):
         self._new_atom_y_item.reset()
         self._new_atom_z_item.reset()
 
-    def _on_item_changed(self, item: StandardItem):
+    def _on_item_changed(self, item: QStandardItem):
         """Handle item changes in the table."""
 
         if not isinstance(item, TableItem):

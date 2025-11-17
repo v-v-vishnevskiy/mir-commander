@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
+from PySide6.QtCore import QCoreApplication, Qt, Signal, Slot
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
+from PySide6.QtWidgets import QDialog, QFileDialog, QMainWindow, QMdiSubWindow, QMenu, QStatusBar, QTabWidget
 
 from mir_commander import __version__
 from mir_commander.api.file_exporter import ExportFileError
@@ -23,7 +23,6 @@ from .docks.program_control_panel import ProgramControlPanelDock
 from .docks.project_dock.project_dock import ProjectDock
 from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
-from .sdk.widget import Action, Dialog, Menu, StatusBar
 from .settings.settings_dialog import SettingsDialog
 
 logger = logging.getLogger("UI.ProjectWindow")
@@ -68,7 +67,7 @@ class ProjectWindow(QMainWindow):
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
-        self.status_bar = StatusBar(self)
+        self.status_bar = QStatusBar(self)
         self.setStatusBar(self.status_bar)
 
         self._set_mainwindow_title()
@@ -85,7 +84,7 @@ class ProjectWindow(QMainWindow):
             for msg in init_msg:
                 self.append_to_console(msg)
 
-        self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
+        self.status_bar.showMessage(self.tr("Ready"), 10000)
 
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
@@ -142,8 +141,8 @@ class ProjectWindow(QMainWindow):
         menubar.addMenu(self._setup_menubar_window())
         menubar.addMenu(self._setup_menubar_help())
 
-    def _setup_menubar_file(self) -> Menu:
-        menu = Menu(Menu.tr("File"), self)
+    def _setup_menubar_file(self) -> QMenu:
+        menu = QMenu(self.tr("File"), self)
         menu.addAction(self._import_file_action())
         menu.addSeparator()
         menu.addAction(self._settings_action())
@@ -151,32 +150,32 @@ class ProjectWindow(QMainWindow):
         menu.addAction(self._quit_action())
         return menu
 
-    def _setup_menubar_view(self) -> Menu:
-        self._view_menu = Menu(Menu.tr("View"), self)
+    def _setup_menubar_view(self) -> QMenu:
+        self._view_menu = QMenu(self.tr("View"), self)
         self._view_menu.addAction(self.docks.project.toggleViewAction())
         self._view_menu.addAction(self.docks.console.toggleViewAction())
         return self._view_menu
 
-    def _setup_menubar_window(self) -> Menu:
+    def _setup_menubar_window(self) -> QMenu:
         self._window_actions()
-        self._window_menu = Menu(Menu.tr("&Window"), self)
+        self._window_menu = QMenu(self.tr("Window"), self)
         self.update_window_menu()
         self._window_menu.aboutToShow.connect(self.update_window_menu)
         return self._window_menu
 
-    def _setup_menubar_help(self) -> Menu:
-        menu = Menu(Menu.tr("Help"), self)
+    def _setup_menubar_help(self) -> QMenu:
+        menu = QMenu(self.tr("Help"), self)
         menu.addAction(self._about_action())
         return menu
 
-    def _close_project_action(self, checked: bool = False) -> Action:
-        action = Action(Action.tr("Close Project"), self)
+    def _close_project_action(self, checked: bool = False) -> QAction:
+        action = QAction(self.tr("Close Project"), self)
         action.triggered.connect(self.close)
         return action
 
-    def _settings_action(self) -> Action:
-        action = Action(Action.tr("Settings..."), self)
-        action.setMenuRole(Action.MenuRole.PreferencesRole)
+    def _settings_action(self) -> QAction:
+        action = QAction(self.tr("Settings..."), self)
+        action.setMenuRole(QAction.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
             parent=self,
@@ -188,68 +187,57 @@ class ProjectWindow(QMainWindow):
         action.triggered.connect(settings_dialog.show)
         return action
 
-    def _quit_action(self) -> Action:
-        action = Action(Action.tr("Quit"), self)
-        action.setMenuRole(Action.MenuRole.QuitRole)
+    def _quit_action(self) -> QAction:
+        action = QAction(self.tr("Quit"), self)
+        action.setMenuRole(QAction.MenuRole.QuitRole)
         action.setShortcut(QKeySequence.StandardKey.Quit)
         action.triggered.connect(self.quit_application_signal.emit)
         return action
 
-    def _about_action(self) -> Action:
-        action = Action(Action.tr("About"), self)
-        action.setMenuRole(Action.MenuRole.AboutRole)
+    def _about_action(self) -> QAction:
+        action = QAction(self.tr("About"), self)
+        action.setMenuRole(QAction.MenuRole.AboutRole)
         action.triggered.connect(About(self).show)
         return action
 
-    def _import_file_action(self) -> Action:
-        action = Action(Action.tr("Import File..."), self)
+    def _import_file_action(self) -> QAction:
+        action = QAction(self.tr("Import File..."), self)
         action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
         action.triggered.connect(self.import_file)
         return action
 
     def _window_actions(self):
-        self._win_close_act = Action(
-            Action.tr("Cl&ose"),
-            self,
-            statusTip=self.tr("Close the active window"),
-            triggered=self.mdi_area.closeActiveSubWindow,
-        )
+        self._win_close_act = QAction(text=self.tr("Close"), parent=self, statusTip=self.tr("Close the active window"))
+        self._win_close_act.triggered.connect(self.mdi_area.closeActiveSubWindow)
 
-        self._win_close_all_act = Action(
-            Action.tr("Close &All"),
-            self,
-            statusTip=self.tr("Close all the windows"),
-            triggered=self.mdi_area.closeAllSubWindows,
+        self._win_close_all_act = QAction(
+            text=self.tr("Close All"), parent=self, statusTip=self.tr("Close all the windows")
         )
+        self._win_close_all_act.triggered.connect(self.mdi_area.closeAllSubWindows)
 
-        self._win_tile_act = Action(
-            Action.tr("&Tile"), self, statusTip=self.tr("Tile the windows"), triggered=self.mdi_area.tileSubWindows
-        )
+        self._win_tile_act = QAction(text=self.tr("Tile"), parent=self, statusTip=self.tr("Tile the windows"))
+        self._win_tile_act.triggered.connect(self.mdi_area.tileSubWindows)
 
-        self._win_cascade_act = Action(
-            Action.tr("&Cascade"),
-            self,
-            statusTip=self.tr("Cascade the windows"),
-            triggered=self.mdi_area.cascadeSubWindows,
-        )
+        self._win_cascade_act = QAction(text=self.tr("Cascade"), parent=self, statusTip=self.tr("Cascade the windows"))
+        self._win_cascade_act.triggered.connect(self.mdi_area.cascadeSubWindows)
 
-        self._win_next_act = Action(
-            Action.tr("Ne&xt"),
-            self,
-            shortcut=QKeySequence.StandardKey.NextChild,
+        self._win_next_act = QAction(
+            text=self.tr("Next"),
+            parent=self,
+            shortcut=QKeySequence(QKeySequence.StandardKey.NextChild),
             statusTip=self.tr("Move the focus to the next window"),
-            triggered=self.mdi_area.activateNextSubWindow,
         )
+        self._win_next_act.triggered.connect(self.mdi_area.activateNextSubWindow)
 
-        self._win_previous_act = Action(
-            Action.tr("Pre&vious"),
-            self,
-            shortcut=QKeySequence.StandardKey.PreviousChild,
+        self._win_previous_act = QAction(
+            text=self.tr("Previous"),
+            parent=self,
+            shortcut=QKeySequence(QKeySequence.StandardKey.PreviousChild),
             statusTip=self.tr("Move the focus to the previous window"),
-            triggered=self.mdi_area.activatePreviousSubWindow,
         )
+        self._win_previous_act.triggered.connect(self.mdi_area.activatePreviousSubWindow)
 
-        self._win_separator_act = Action("", self)
+        self._win_separator_act = QAction("", self)
         self._win_separator_act.setSeparator(True)
 
     def _save_settings(self):
@@ -298,7 +286,7 @@ class ProjectWindow(QMainWindow):
             program_control_panel_dock = ProgramControlPanelDock(
                 program_id=program_id,
                 control_panel=control_panel,
-                title=program.metadata.name,
+                title=QCoreApplication.translate(program_id, program.metadata.name),
                 parent=self,
             )
             control_panel.program_action_signal.connect(
@@ -344,7 +332,7 @@ class ProjectWindow(QMainWindow):
     def export_file(self, node: ProjectNode):
         dialog = ExportFileDialog(node, file_manager=self._file_manager, parent=self)
 
-        if dialog.exec() == Dialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             path, exporter_id, format_settings = dialog.get_params()
             try:
                 self._file_manager.export_file(

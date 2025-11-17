@@ -1,12 +1,21 @@
 from typing import Any, cast
 
 from PySide6.QtCore import QModelIndex, Slot
-from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItemModel
-from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QStackedLayout, QVBoxLayout, QWidget
+from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (
+    QAbstractButton,
+    QDialog,
+    QHBoxLayout,
+    QListView,
+    QPushButton,
+    QStackedLayout,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from mir_commander.core import ProjectConfig
 from mir_commander.ui.config import AppConfig, ApplyCallbacks
-from mir_commander.ui.sdk.widget import Dialog, ListView, PushButton, StandardItem, TabWidget
 
 from .base import BasePage
 from .general_page import General
@@ -14,7 +23,7 @@ from .plugins_page import Plugins
 from .project_page import Project
 
 
-class SettingsDialog(Dialog):
+class SettingsDialog(QDialog):
     """Main dialog of the setting window.
 
     Inherits Translator, since we have here UI elements,
@@ -62,7 +71,7 @@ class SettingsDialog(Dialog):
         main_layout = QVBoxLayout(self)
 
         layout = QHBoxLayout()
-        self.pages = ListView(self)
+        self.pages = QListView(self)
         self.pages.setFixedWidth(150)
         self.pages.setModel(self._pages_model)
 
@@ -71,14 +80,14 @@ class SettingsDialog(Dialog):
         layout.addWidget(self.pages)
         layout.addLayout(self.area)
 
-        self.pb_restore_defaults = PushButton(PushButton.tr("Restore Defaults"))
+        self.pb_restore_defaults = QPushButton(self.tr("Restore Defaults"))
         self.pb_restore_defaults.setMinimumWidth(70)
-        self.pb_apply = PushButton(PushButton.tr("Apply"))
+        self.pb_apply = QPushButton(self.tr("Apply"))
         self.pb_apply.setMinimumWidth(70)
         self.pb_apply.setEnabled(True)
-        self.pb_cancel = PushButton(PushButton.tr("Cancel"))
+        self.pb_cancel = QPushButton(self.tr("Cancel"))
         self.pb_cancel.setMinimumWidth(70)
-        self.pb_ok = PushButton(PushButton.tr("Ok"))
+        self.pb_ok = QPushButton(self.tr("Ok"))
         self.pb_ok.setMinimumWidth(70)
 
         buttons = QHBoxLayout()
@@ -97,19 +106,19 @@ class SettingsDialog(Dialog):
         """Generation of particular pages (as tab widgets) with controls for settings."""
 
         page_items: list[dict[str, Any]] = [
-            {"title": StandardItem.tr("Project"), "tabs": [(Project, "")]},
-            {"title": StandardItem.tr("General"), "tabs": [(General, "")]},
-            {"title": StandardItem.tr("Plugins"), "tabs": [(Plugins, "")]},
+            {"title": self.tr("Project"), "tabs": [(Project, "")]},
+            {"title": self.tr("General"), "tabs": [(General, "")]},
+            {"title": self.tr("Plugins"), "tabs": [(Plugins, "")]},
         ]
 
         root = self._pages_model.invisibleRootItem()
         for i, section in enumerate(page_items):
-            item = StandardItem(section["title"])
+            item = QStandardItem(section["title"])
             item.setEditable(False)
             item.setData({"position": i})
             root.appendRow(item)
 
-            tabwidget = TabWidget()
+            tabwidget = QTabWidget()
             tabwidget.setTabBarAutoHide(True)
             for tab in section["tabs"]:
                 page = tab[0](parent=self, app_config=self.app_config, project_config=self.project_config)
@@ -125,7 +134,7 @@ class SettingsDialog(Dialog):
 
         self.pages.clicked.connect(self.page_changed)
         for i in range(self.area.count()):
-            widget = cast(TabWidget, self.area.widget(i))
+            widget = cast(QTabWidget, self.area.widget(i))
             widget.currentChanged.connect(self.tab_changed)
 
         self.pb_restore_defaults.clicked.connect(self.restore_defaults_clicked)
@@ -138,7 +147,7 @@ class SettingsDialog(Dialog):
         item = self._pages_model.itemFromIndex(index)
         self.area.setCurrentIndex(item.data()["position"])
         self._config.current_page = item.data()["position"]
-        self._config.current_tab = cast(TabWidget, self.area.currentWidget()).currentIndex()
+        self._config.current_tab = cast(QTabWidget, self.area.currentWidget()).currentIndex()
 
     @Slot()
     def tab_changed(self, index: int):
@@ -188,7 +197,7 @@ class SettingsDialog(Dialog):
 
             current_tab = self._config.current_tab
             if current_tab:
-                cast(TabWidget, self.area.currentWidget()).setCurrentIndex(current_tab)
+                cast(QTabWidget, self.area.currentWidget()).setCurrentIndex(current_tab)
 
     def moveEvent(self, event: QMoveEvent):
         self._config.pos = [event.pos().x(), event.pos().y()]

@@ -1,16 +1,14 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QSlider
-
-from mir_commander.ui.sdk.widget import Label, TrString
+from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QLabel, QSlider
 
 
 def add_slider(
     layout: QGridLayout,
     row: int,
-    text: TrString,
+    text: str,
     min_value: float,
     max_value: float,
-    label_tooltip: TrString | None = None,
+    label_tooltip: str | None = None,
     single_step: float = 1.0,
     factor: int = 1,
     decimals: int = 0,
@@ -27,7 +25,7 @@ def add_slider(
     double_spinbox.setDecimals(decimals)
     double_spinbox.setValue(default_value)
 
-    label = Label(text)
+    label = QLabel(text)
     if label_tooltip is not None:
         label.setToolTip(label_tooltip)
     layout.addWidget(label, row, 0)

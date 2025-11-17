@@ -16,8 +16,15 @@ class Details(BaseModel):
     pass
 
 
+class Translation(BaseModel):
+    filename: str
+    prefix: str
+    path: str
+
+
 class Resource(BaseModel):
     path: Path = Field(description="Relative path to the resource file")
+    translations: list[Translation] = Field(default_factory=list, description="Translations of the resource")
 
 
 class Plugin(BaseModel):

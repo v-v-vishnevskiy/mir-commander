@@ -1,15 +1,13 @@
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QDialogButtonBox, QDoubleSpinBox, QGridLayout, QSlider, QVBoxLayout
-
-from mir_commander.ui.sdk.widget import Dialog, Label
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QDoubleSpinBox, QGridLayout, QLabel, QSlider, QVBoxLayout
 
 if TYPE_CHECKING:
     from .visualizer import Visualizer
 
 
-class BuildBondsDialog(Dialog):
+class BuildBondsDialog(QDialog):
     def __init__(self, current_tol: float, parent: "Visualizer"):
         super().__init__(parent)
 
@@ -35,18 +33,18 @@ class BuildBondsDialog(Dialog):
         self.double_spinbox.valueChanged.connect(self.double_spinbox_value_changed_handler)
 
         slider_layout = QGridLayout()
-        label = Label(Label.tr("Threshold for bond detection:"), self)
+        label = QLabel(self.tr("Threshold for bond detection:"), self)
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         slider_layout.addWidget(label, 0, 0, 1, 3)
         slider_layout.addWidget(self.slider, 1, 0, 1, 3)
         slider_layout.addWidget(self.double_spinbox, 1, 4)
-        label = Label("-1.0", self)
+        label = QLabel("-1.0", self)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         slider_layout.addWidget(label, 2, 0)
-        label = Label("0.0", self)
+        label = QLabel("0.0", self)
         label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         slider_layout.addWidget(label, 2, 1)
-        label = Label("1.0", self)
+        label = QLabel("1.0", self)
         label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
         slider_layout.addWidget(label, 2, 2)
 

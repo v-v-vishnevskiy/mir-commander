@@ -2,10 +2,8 @@ from pathlib import Path
 
 from PySide6.QtCore import QDir, QModelIndex, Qt, Signal, Slot
 from PySide6.QtGui import QMouseEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QListView, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDialog, QFileDialog, QHBoxLayout, QListView, QPushButton, QVBoxLayout, QWidget
 
-from mir_commander.ui.sdk.widget import Dialog as BaseDialog
-from mir_commander.ui.sdk.widget import PushButton
 from mir_commander.core.consts import DIR
 
 from .config import ProjectConfig, RecentProjectsConfig
@@ -40,7 +38,7 @@ class ListView(QListView):
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
 
-class RecentProjectsDialog(BaseDialog):
+class RecentProjectsDialog(QDialog):
     """Dialog with information about the program."""
 
     open_project_signal = Signal(Path, bool)
@@ -67,8 +65,8 @@ class RecentProjectsDialog(BaseDialog):
 
         self._recent = ListView(self)
 
-        self._pb_open_project = PushButton(PushButton.tr("Open"), self)
-        self._pb_cancel = PushButton(PushButton.tr("Cancel"), self)
+        self._pb_open_project = QPushButton(self.tr("Open"), self)
+        self._pb_cancel = QPushButton(self.tr("Cancel"), self)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)

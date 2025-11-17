@@ -2,9 +2,8 @@ from typing import TYPE_CHECKING
 
 from mir_commander.api.program import ControlBlock as ControlBlockApi
 from mir_commander.api.program import ControlPanel as ControlPanelApi
-from mir_commander.ui.sdk.widget import Label
 
-from ..program import ControlBlock
+from ...program import ControlBlock
 from .control_elements.general import General
 
 if TYPE_CHECKING:
@@ -15,7 +14,7 @@ class ControlPanel(ControlPanelApi):
     def __init__(self):
         super().__init__()
 
-        self._blocks = [ControlBlockApi[ControlBlock](Label.tr("General"), General(self), True)]
+        self._blocks = [ControlBlockApi[ControlBlock](self.tr("General"), General(self), True)]
 
     def allows_apply_for_all(self) -> bool:
         return True

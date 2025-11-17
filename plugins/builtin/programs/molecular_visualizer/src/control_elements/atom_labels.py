@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from mir_commander.ui.sdk.widget import CheckBox, GridLayout, HBoxLayout, Label, PushButton
+from PySide6.QtWidgets import QCheckBox, QGridLayout, QHBoxLayout, QLabel, QPushButton
 
-from ...program import ControlBlock
+from ....program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -16,20 +16,20 @@ class AtomLabels(ControlBlock["Program"]):
 
         self._control_panel = control_panel
 
-        layout = GridLayout()
+        layout = QGridLayout()
 
-        layout.addWidget(Label(Label.tr("Show:"), self), 0, 0)
+        layout.addWidget(QLabel(self.tr("Show:"), self), 0, 0)
 
-        checkbox_layout = HBoxLayout()
+        checkbox_layout = QHBoxLayout()
 
-        self._symbol_visible_checkbox = CheckBox(CheckBox.tr("Symbol"))
+        self._symbol_visible_checkbox = QCheckBox(self.tr("Symbol"))
         self._symbol_visible_checkbox.setChecked(True)
         self._symbol_visible_checkbox.toggled.connect(self._symbol_visible_checkbox_handler)
         checkbox_layout.addWidget(self._symbol_visible_checkbox)
 
         checkbox_layout.addSpacing(5)
 
-        self._number_visible_checkbox = CheckBox(CheckBox.tr("Number"))
+        self._number_visible_checkbox = QCheckBox(self.tr("Number"))
         self._number_visible_checkbox.setChecked(True)
         self._number_visible_checkbox.toggled.connect(self._number_visible_checkbox_handler)
         checkbox_layout.addWidget(self._number_visible_checkbox)
@@ -39,7 +39,7 @@ class AtomLabels(ControlBlock["Program"]):
         self._size_slider, self._size_double_spinbox = add_slider(
             layout=layout,
             row=2,
-            text=Label.tr("Size:"),
+            text=self.tr("Size:"),
             min_value=1,
             max_value=100,
             single_step=1,
@@ -52,7 +52,7 @@ class AtomLabels(ControlBlock["Program"]):
         self._offset_slider, self._offset_double_spinbox = add_slider(
             layout=layout,
             row=3,
-            text=Label.tr("Offset:"),
+            text=self.tr("Offset:"),
             min_value=1.01,
             max_value=5.0,
             single_step=0.1,
@@ -62,17 +62,17 @@ class AtomLabels(ControlBlock["Program"]):
         self._offset_slider.valueChanged.connect(self._offset_slider_value_changed_handler)
         self._offset_double_spinbox.valueChanged.connect(self._offset_double_spinbox_value_changed_handler)
 
-        layout.addWidget(Label(Label.tr("Toggle:"), self), 4, 0)
+        layout.addWidget(QLabel(self.tr("Toggle:"), self), 4, 0)
 
-        toggle_layout = HBoxLayout()
+        toggle_layout = QHBoxLayout()
 
-        self._toggle_all_button = PushButton(PushButton.tr("All"))
+        self._toggle_all_button = QPushButton(self.tr("All"))
         self._toggle_all_button.clicked.connect(self._toggle_all_button_clicked_handler)
         toggle_layout.addWidget(self._toggle_all_button)
 
         toggle_layout.addSpacing(5)
 
-        self._toggle_selected_button = PushButton(PushButton.tr("Selected"))
+        self._toggle_selected_button = QPushButton(self.tr("Selected"))
         self._toggle_selected_button.clicked.connect(self._toggle_selected_button_clicked_handler)
         toggle_layout.addWidget(self._toggle_selected_button)
 

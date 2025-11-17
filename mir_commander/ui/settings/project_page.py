@@ -1,7 +1,5 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QVBoxLayout
-
-from mir_commander.ui.sdk.widget import Label
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
 from .base import BasePage
 
@@ -30,7 +28,7 @@ class Project(BasePage):
     def _project_name_ui(self) -> QHBoxLayout:
         layout = QHBoxLayout()
 
-        self.l_project_name = Label(Label.tr("Project name:"))
+        self.l_project_name = QLabel(self.tr("Project name:"))
         self.le_project_name = QLineEdit()
 
         layout.addWidget(self.l_project_name, 0, Qt.AlignmentFlag.AlignLeft)

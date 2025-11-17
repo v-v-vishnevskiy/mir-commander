@@ -1,14 +1,15 @@
 import logging
 from pathlib import Path
-from typing import Any
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
+from PySide6.QtCore import QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from mir_commander.api.plugin import Translation
 from mir_commander.core import Project
 from mir_commander.core.consts import DIR
 from mir_commander.core.errors import LoadProjectError
+from mir_commander.core.models import PluginResource
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -28,24 +29,23 @@ class Application(QApplication):
         self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
-        self._register_resources()
-        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
-
         self._apply_callbacks = ApplyCallbacks()
         self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+
+        if self._config.language != "system":
+            QLocale.setDefault(QLocale(self._config.language))
+
+        self._register_resources()
+        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
         self._recent_projects_dialog.open_project_signal.connect(self.open_project)
 
-        self._translator_app = QTranslator(self)
-        self._translator_qt = QTranslator(self)
         self._set_translation()
 
         self._error = QMessageBox()
         self._error.setIcon(QMessageBox.Icon.Critical)
-
-        self._apply_callbacks.add(self._set_translation)
 
         self._setup_opengl()
         self._fix_palette()
@@ -103,28 +103,17 @@ class Application(QApplication):
 
     def _register_resources(self):
         for file in DIR.RESOURCES.glob("*.rcc"):
-            if QResource.registerResource(str(file), "/core") is False:
+            if QResource.registerResource(str(file)) is False:
                 logger.error("Failed to register resource %s", file)
 
     def _set_translation(self):
-        """The callback called by the Settings when a setting is applied or set."""
-
-        language: str = self._config.language
-        if language == "system":
-            language = QLocale.languageToCode(QLocale.system().language())
-
+        locale = QLocale()
         translator = QTranslator(self)
-        if translator.load(str(DIR.TRANSLATIONS / f"app_{language}")):
-            self.removeTranslator(self._translator_app)
-            self.installTranslator(translator)
-            self._translator_app = translator
-
-        translator = QTranslator(self)
-        path = Path(QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)) / f"qtbase_{language}"
-        if translator.load(str(path)):
-            self.removeTranslator(self._translator_qt)
-            self.installTranslator(translator)
-            self._translator_qt = translator
+        if translator.load(locale, "", "", ":/core/i18n"):
+            if not self.installTranslator(translator):
+                logger.error("Failed to install translator for language %s", locale.name())
+        else:
+            logger.error("Failed to load translator for language %s", locale.name())
 
     def _setup_project_window(self, project_window: ProjectWindow):
         project_window.close_project_signal.connect(self.close_project)
@@ -134,11 +123,25 @@ class Application(QApplication):
             self._recent_projects_dialog.add_opened(project_window.project)
             self._recent_projects_dialog.add_recent(project_window.project)
 
-    def register_plugin_resources(self, resources: list[dict[str, Any]]):
-        for resource in resources:
-            for file in resource["files"]:
-                if QResource.registerResource(str(file), resource["namespace"]) is False:
-                    logger.error("Failed to register resource %s", file)
+    def register_plugin_resources(self, plugin_resources: list[PluginResource]):
+        for pr in plugin_resources:
+            for resource in pr.resources:
+                path = pr.base_path / resource.path
+                if QResource.registerResource(str(path), pr.namespace) is False:
+                    logger.error("Failed to register resource %s", path)
+                    continue
+                self._install_plugins_translations(resource.translations, pr.namespace)
+
+    def _install_plugins_translations(self, translations: list[Translation], namespace: str):
+        locale = QLocale()
+        for translation in translations:
+            translator = QTranslator(self)
+            directory = f":{namespace}/{translation.path.lstrip('/')}"
+            if translator.load(locale, translation.filename, translation.prefix, directory):
+                if not self.installTranslator(translator):
+                    logger.error("Failed to install plugin translator: %s", directory)
+            else:
+                logger.error("Failed to load plugin translator: %s", directory)
 
     def open_project(self, path: Path) -> int:
         try:

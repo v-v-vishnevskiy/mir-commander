@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QVBoxLayout
 
 from mir_commander.ui.config import AppConfig
-from mir_commander.ui.sdk.widget import ComboBox, Label
 
 from .base import BasePage
 
@@ -41,12 +40,12 @@ class General(BasePage):
     def _language_ui(self) -> QHBoxLayout:
         layout = QHBoxLayout()
 
-        self._languages = [(ComboBox.tr("System"), "system"), ("English", "en"), ("Русский", "ru")]
-        self.cb_language = ComboBox()
+        self._languages = [(self.tr("System"), "system"), ("English", "en"), ("Русский", "ru")]
+        self.cb_language = QComboBox()
         for item in self._languages:
             self.cb_language.addItem(*item)
 
-        self.l_language = Label(Label.tr("Language:"))
+        self.l_language = QLabel(self.tr("Language:"))
 
         layout.addWidget(self.l_language, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.cb_language, 1, Qt.AlignmentFlag.AlignLeft)

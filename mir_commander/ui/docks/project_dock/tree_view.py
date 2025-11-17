@@ -1,9 +1,9 @@
 import logging
 from typing import TYPE_CHECKING, Callable, cast
 
-from PySide6.QtCore import QModelIndex, QPoint, QSize, Qt, Signal
-from PySide6.QtGui import QStandardItemModel
-from PySide6.QtWidgets import QTreeView
+from PySide6.QtCore import QCoreApplication, QModelIndex, QPoint, QSize, Qt, Signal
+from PySide6.QtGui import QAction, QStandardItemModel
+from PySide6.QtWidgets import QMenu, QTreeView
 
 from mir_commander.api.program import UINode
 from mir_commander.api.project_node_schema import ActionType
@@ -12,7 +12,6 @@ from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 from mir_commander.core.file_manager import FileManager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.config import ImportFileRulesConfig
-from mir_commander.ui.sdk.widget import Action, Menu
 
 from .config import TreeConfig
 from .items import TreeItem
@@ -50,19 +49,17 @@ class TreeView(QTreeView):
             if menu := self._build_context_menu(item):
                 menu.exec(self.mapToGlobal(pos))
 
-    def _build_context_menu(self, item: TreeItem) -> Menu | None:
-        result = Menu()
+    def _build_context_menu(self, item: TreeItem) -> QMenu | None:
+        result = QMenu()
 
-        import_file_action = Action(
-            text=Action.tr("Import File"), parent=result, triggered=lambda: self.import_file(item)
-        )
+        import_file_action = QAction(text=self.tr("Import File"), parent=result)
+        import_file_action.triggered.connect(lambda: self.import_file(item))
         result.addAction(import_file_action)
 
         for exporter in self._file_manager.get_exporters():
             if item.project_node.type in exporter.plugin.details.supported_node_types:
-                export_item_action = Action(
-                    text=Action.tr("Export..."), parent=result, triggered=lambda: self.export_item(item)
-                )
+                export_item_action = QAction(text=self.tr("Export..."), parent=result)
+                export_item_action.triggered.connect(lambda: self.export_item(item))
                 result.addAction(export_item_action)
                 break
 
@@ -79,29 +76,26 @@ class TreeView(QTreeView):
                     continue
 
             if programs:
-                open_with_menu = Menu(Menu.tr("Open With"))
+                open_with_menu = QMenu(self.tr("Open With"))
                 for program_id, program_name in programs:
-                    action = Action(text=program_name, parent=open_with_menu, triggered=trigger(program_id))
+                    action = QAction(text=QCoreApplication.translate(program_id, program_name), parent=open_with_menu)
+                    action.triggered.connect(trigger(program_id))
                     open_with_menu.addAction(action)
                 result.addMenu(open_with_menu)
 
         if item.hasChildren():
             result.addSeparator()
-            view_structures_menu = Menu(Menu.tr("View Structures"), result)
-            view_structures_menu.addAction(
-                Action(
-                    text=Action.tr("VS_Child"),
-                    parent=view_structures_menu,
-                    triggered=lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": False}),
-                )
+            view_structures_menu = QMenu(self.tr("View Structures"), result)
+            action_vs_child = QAction(text=self.tr("VS_Child"), parent=view_structures_menu)
+            action_vs_child.triggered.connect(
+                lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": False})
             )
-            view_structures_menu.addAction(
-                Action(
-                    text=Action.tr("VS_All"),
-                    parent=view_structures_menu,
-                    triggered=lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": True}),
-                )
+            view_structures_menu.addAction(action_vs_child)
+            action_vs_all = QAction(text=self.tr("VS_All"), parent=view_structures_menu)
+            action_vs_all.triggered.connect(
+                lambda: self.open_item.emit(item, "builtin.molecular_visualizer", {"all": True})
             )
+            view_structures_menu.addAction(action_vs_all)
             result.addMenu(view_structures_menu)
 
         return result

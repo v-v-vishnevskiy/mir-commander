@@ -2,20 +2,20 @@ from time import monotonic_ns
 from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QColor, QIcon, QResizeEvent, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QAbstractItemView, QDoubleSpinBox, QPushButton
-
-from mir_commander.core.graphics.utils import color4f_to_qcolor, qcolor_to_color4f
-from mir_commander.ui.sdk.widget import (
-    CheckBox,
-    ColorButton,
-    GridLayout,
-    PushButton,
-    StandardItem,
-    TreeView,
-    VBoxLayout,
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QCheckBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QPushButton,
+    QTreeView,
+    QVBoxLayout,
 )
 
-from ...program import ControlBlock
+from mir_commander.core.graphics.utils import color4f_to_qcolor, qcolor_to_color4f
+from mir_commander.ui.sdk.widget import ColorButton
+
+from ....program import ControlBlock
 from ..entities import VolumeCubeIsosurfaceGroup
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class DeleteButton(QPushButton):
         self._control_panel.program_action_signal.emit("volume_cube.remove_isosurface", {"id": self._id})
 
 
-class IsosurfacesTreeView(TreeView):
+class IsosurfacesTreeView(QTreeView):
     def __init__(self, control_panel: "ControlPanel"):
         super().__init__()
         self._control_panel = control_panel
@@ -77,13 +77,13 @@ class IsosurfacesTreeView(TreeView):
 
         if len(group.isosurfaces) < 2:
             if group.isosurfaces[0].inverted:
-                text = StandardItem.tr("{} (inverted)").format(group.value)
+                text = self.tr("{} (inverted)").format(group.value)
             else:
-                text = StandardItem.tr("{} (original)").format(group.value)
+                text = self.tr("{} (original)").format(group.value)
         else:
             text = str(group.value)  # type: ignore[assignment]
 
-        group_text_item = StandardItem(text)
+        group_text_item = QStandardItem(text)
         group_text_item.setEditable(False)
         group_color_item = QStandardItem()
         group_visibility_item = QStandardItem()
@@ -96,9 +96,7 @@ class IsosurfacesTreeView(TreeView):
         if len(group.isosurfaces) > 1:
             for isosurface in group.isosurfaces:
                 isosurface_text_item = (
-                    StandardItem(StandardItem.tr("inverted"))
-                    if isosurface.inverted
-                    else StandardItem(StandardItem.tr("original"))
+                    QStandardItem(self.tr("inverted")) if isosurface.inverted else QStandardItem(self.tr("original"))
                 )
                 isosurface_text_item.setEditable(False)
                 isosurface_color_item = QStandardItem()
@@ -160,16 +158,16 @@ class VolumeCube(ControlBlock):
         self._value.setValue(0.05)
 
         # Value layout
-        value_layout = GridLayout()
+        value_layout = QGridLayout()
 
         self._color_button_1 = ColorButton(color=QColor(255, 0, 0, a=200))
         self._color_button_2 = ColorButton(color=QColor(0, 0, 255, a=200))
         self._color_button_2.setEnabled(False)
 
-        add_button = PushButton(PushButton.tr("Add"))
+        add_button = QPushButton(self.tr("Add"))
         add_button.clicked.connect(self.add_button_clicked_handler)
 
-        self._inverse_checkbox = CheckBox(CheckBox.tr("Inverse"))
+        self._inverse_checkbox = QCheckBox(self.tr("Inverse"))
         self._inverse_checkbox.setChecked(False)
         self._inverse_checkbox.toggled.connect(self._inverse_checkbox_toggled_handler)
 
@@ -182,7 +180,7 @@ class VolumeCube(ControlBlock):
         value_layout.addWidget(self._color_button_2, 1, 1)
         value_layout.addWidget(self._isosurfaces_tree_view, 2, 0, 1, 3)
 
-        self.main_layout = VBoxLayout()
+        self.main_layout = QVBoxLayout()
         self.main_layout.addLayout(value_layout)
         self.setLayout(self.main_layout)
 

@@ -2,11 +2,9 @@ import contextlib
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QSignalBlocker
-from PySide6.QtWidgets import QDoubleSpinBox, QSlider
+from PySide6.QtWidgets import QDoubleSpinBox, QGridLayout, QPushButton, QSlider, QVBoxLayout
 
-from mir_commander.ui.sdk.widget import GridLayout, Label, PushButton, TrString, VBoxLayout
-
-from ...program import ControlBlock
+from ....program import ControlBlock
 from .utils import add_slider
 
 if TYPE_CHECKING:
@@ -26,43 +24,43 @@ class View(ControlBlock):
         self._rotation_slider: dict[str, QSlider] = {}
         self._rotation_double_spinbox: dict[str, QDoubleSpinBox] = {}
 
-        reset_button = PushButton(PushButton.tr("Reset"))
+        reset_button = QPushButton(self.tr("Reset"))
         reset_button.clicked.connect(self._reset_button_clicked_handler)
 
-        layout = VBoxLayout()
+        layout = QVBoxLayout()
         layout.addLayout(self._add_translations())
         layout.addWidget(reset_button)
         self.setLayout(layout)
 
-    def _add_translations(self) -> GridLayout:
-        layout = GridLayout()
+    def _add_translations(self) -> QGridLayout:
+        layout = QGridLayout()
 
         self._add_axis_rotation(
             layout,
             0,
-            Label.tr("Rotation X:"),
+            self.tr("Rotation X:"),
             "pitch",
-            Label.tr("Rotation angle around the X-axis in window coordinates"),
+            self.tr("Rotation angle around the X-axis in window coordinates"),
         )
         self._add_axis_rotation(
             layout,
             1,
-            Label.tr("Rotation Y:"),
+            self.tr("Rotation Y:"),
             "yaw",
-            Label.tr("Rotation angle around the Y-axis in window coordinates"),
+            self.tr("Rotation angle around the Y-axis in window coordinates"),
         )
         self._add_axis_rotation(
             layout,
             2,
-            Label.tr("Rotation Z:"),
+            self.tr("Rotation Z:"),
             "roll",
-            Label.tr("Rotation angle around the Z-axis in window coordinates"),
+            self.tr("Rotation angle around the Z-axis in window coordinates"),
         )
 
         self._scale_slider, self._scale_double_spinbox = add_slider(
             layout=layout,
             row=3,
-            text=Label.tr("Scale:"),
+            text=self.tr("Scale:"),
             min_value=0.01,
             max_value=10.0,
             single_step=0.01,
@@ -75,7 +73,7 @@ class View(ControlBlock):
         return layout
 
     def _add_axis_rotation(
-        self, layout: GridLayout, row: int, label_text: TrString, axis: str, label_tooltip: TrString | None = None
+        self, layout: QGridLayout, row: int, label_text: str, axis: str, label_tooltip: str | None = None
     ):
         self._axis_prev_value[axis] = 0.0
         self._rotation_slider[axis], self._rotation_double_spinbox[axis] = add_slider(

@@ -25,7 +25,6 @@ from mir_commander.core.graphics.utils import (
 from mir_commander.ui.sdk.opengl.keymap import Keymap
 from mir_commander.ui.sdk.opengl.opengl_widget import OpenGLWidget
 from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
-from mir_commander.ui.sdk.widget import TR
 
 from . import shaders
 from .build_bonds_dialog import BuildBondsDialog
@@ -427,7 +426,7 @@ class Visualizer(OpenGLWidget):
                         Image.fromarray(image).save(
                             str(dlg.img_file_path), icc_profile=ImageCms.ImageCmsProfile(profile).tobytes()
                         )
-                        self._program.send_message_signal.emit(MessageChannel.STATUS, TR.tr("Image saved"))
+                        self._program.send_message_signal.emit(MessageChannel.STATUS, self.tr("Image saved"))
                     except Exception as e:
                         logger.error("Could not save image: %s", e)
                         if isinstance(e, OSError):

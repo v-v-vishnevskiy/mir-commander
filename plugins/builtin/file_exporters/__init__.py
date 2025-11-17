@@ -1,3 +1,5 @@
+from PySide6.QtCore import QCoreApplication
+
 from mir_commander.api.file_exporter import DefaultProperty, FileExporterDetails, FileExporterPlugin, TextParam
 from mir_commander.api.plugin import Metadata, Plugin
 
@@ -7,7 +9,7 @@ from .xyz_exporter import write
 def register_plugins() -> list[Plugin]:
     return [
         FileExporterPlugin(
-            id="xyz",
+            id="file_exporter_xyz",
             metadata=Metadata(
                 name="XYZ",
                 version=(1, 0, 0),
@@ -21,7 +23,10 @@ def register_plugins() -> list[Plugin]:
                 extensions=["xyz"],
                 format_params_config=[
                     TextParam(
-                        id="title", label="Title", default=DefaultProperty(value="node.full_name"), required=False
+                        id="title",
+                        label=QCoreApplication.translate("builtin.file_exporter_xyz", "Title"),
+                        default=DefaultProperty(value="node.full_name"),
+                        required=False,
                     )
                 ],
                 write_function=write,

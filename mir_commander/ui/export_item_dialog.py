@@ -2,7 +2,23 @@ import logging
 from pathlib import Path
 from typing import Any, cast
 
-from PySide6.QtWidgets import QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit, QWidget
+from PySide6.QtCore import QCoreApplication
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from mir_commander.api.file_exporter import (
     BoolParam,
@@ -17,23 +33,10 @@ from mir_commander.core.plugins_registry import PluginItem
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.core.utils import sanitize_filename
 
-from .sdk.widget import (
-    CheckBox,
-    ComboBox,
-    Dialog,
-    GridLayout,
-    GroupBox,
-    HBoxLayout,
-    Label,
-    PushButton,
-    SpinBox,
-    VBoxLayout,
-)
-
 logger = logging.getLogger("UI.ExportFileDialog")
 
 
-class ExportFileDialog(Dialog):
+class ExportFileDialog(QDialog):
     def __init__(self, node: ProjectNode, file_manager: FileManager, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -44,13 +47,13 @@ class ExportFileDialog(Dialog):
         self.setWindowTitle(self.tr("Export: {}").format(node.name))
         self.setFixedWidth(500)
 
-        main_layout = VBoxLayout()
+        main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
 
-        format_path_layout = GridLayout()
+        format_path_layout = QGridLayout()
 
-        format_path_layout.addWidget(Label(Label.tr("Format:")), 0, 0)
-        self._format_combo_box = ComboBox()
+        format_path_layout.addWidget(QLabel(self.tr("Format:")), 0, 0)
+        self._format_combo_box = QComboBox()
         exporters = sorted(self._file_manager.get_exporters(node.type), key=lambda x: x.plugin.metadata.name)
         for exporter in exporters:
             self._format_combo_box.addItem(exporter.plugin.metadata.name, userData=exporter)
@@ -58,24 +61,24 @@ class ExportFileDialog(Dialog):
         self._format_combo_box.currentIndexChanged.connect(self._exporters_combo_box_handler)
         format_path_layout.addWidget(self._format_combo_box, 0, 1, 1, 2)
 
-        format_path_layout.addWidget(Label(Label.tr("Save to:")), 1, 0)
+        format_path_layout.addWidget(QLabel(self.tr("Save to:")), 1, 0)
         self._file_name_editbox = QLineEdit()
         self._file_name_editbox.setText(str(Path.cwd() / sanitize_filename(node.name)) + ".log")
         format_path_layout.addWidget(self._file_name_editbox, 1, 1)
-        choose_pb = PushButton(PushButton.tr("Browse..."))
+        choose_pb = QPushButton(self.tr("Browse..."))
         choose_pb.clicked.connect(self._choose_pb_handler)
         format_path_layout.addWidget(choose_pb, 1, 2)
 
-        format_params_layout = HBoxLayout()
+        format_params_layout = QHBoxLayout()
         format_params_layout.addSpacing(50)
-        self._format_params_group_box = GroupBox(GroupBox.tr("Format parameters"))
+        self._format_params_group_box = QGroupBox(self.tr("Format parameters"))
         self._format_params_group_box.setVisible(False)
         format_params_layout.addWidget(self._format_params_group_box)
         format_params_layout.addSpacing(50)
 
         button_box = QDialogButtonBox()
-        button_box.addButton(PushButton(PushButton.tr("Export")), QDialogButtonBox.ButtonRole.AcceptRole)
-        button_box.addButton(PushButton(PushButton.tr("Cancel")), QDialogButtonBox.ButtonRole.RejectRole)
+        button_box.addButton(QPushButton(self.tr("Export")), QDialogButtonBox.ButtonRole.AcceptRole)
+        button_box.addButton(QPushButton(self.tr("Cancel")), QDialogButtonBox.ButtonRole.RejectRole)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
 
@@ -102,7 +105,7 @@ class ExportFileDialog(Dialog):
             return {}
 
         widget_container = self._format_params_widgets[exporter.id]
-        layout = cast(GridLayout, widget_container.layout())
+        layout = cast(QGridLayout, widget_container.layout())
         params: dict[str, Any] = {}
 
         for i, config in enumerate(exporter.plugin.details.format_params_config):
@@ -114,9 +117,9 @@ class ExportFileDialog(Dialog):
                 case TextParam():
                     params[config.id] = cast(QLineEdit, layout_item.widget()).text()
                 case NumberParam():
-                    params[config.id] = cast(SpinBox, layout_item.widget()).value()
+                    params[config.id] = cast(QSpinBox, layout_item.widget()).value()
                 case ListParam():
-                    combo_widget = cast(ComboBox, layout_item.widget())
+                    combo_widget = cast(QComboBox, layout_item.widget())
                     params[config.id] = combo_widget.currentText() if combo_widget.count() > 0 else ""
                 case BoolParam():
                     params[config.id] = cast(QCheckBox, layout_item.widget()).isChecked()
@@ -142,8 +145,8 @@ class ExportFileDialog(Dialog):
             widget.setText(str(default_value))
         return widget
 
-    def _create_number_widget(self, default_value: Any, config: NumberParam) -> SpinBox:
-        widget = SpinBox()
+    def _create_number_widget(self, default_value: Any, config: NumberParam) -> QSpinBox:
+        widget = QSpinBox()
         widget.setMinimum(config.min)
         widget.setMaximum(config.max)
         widget.setSingleStep(config.step)
@@ -151,8 +154,8 @@ class ExportFileDialog(Dialog):
             widget.setValue(int(default_value))
         return widget
 
-    def _create_list_widget(self, default_value: Any, config: ListParam) -> ComboBox:
-        widget = ComboBox()
+    def _create_list_widget(self, default_value: Any, config: ListParam) -> QComboBox:
+        widget = QComboBox()
         for item in config.items:
             widget.addItem(item)
         if default_value is not None:
@@ -161,18 +164,18 @@ class ExportFileDialog(Dialog):
                 widget.setCurrentIndex(index)
         return widget
 
-    def _create_bool_widget(self, default_value: Any) -> CheckBox:
-        widget = CheckBox("")
+    def _create_bool_widget(self, default_value: Any) -> QCheckBox:
+        widget = QCheckBox("")
         if default_value is not None:
             widget.setChecked(bool(default_value))
         return widget
 
-    def _create_format_params_widget(self, exporter: FileExporterPlugin) -> QWidget:
+    def _create_format_params_widget(self, exporter: PluginItem[FileExporterPlugin]) -> QWidget:
         container = QWidget()
-        layout = GridLayout()
+        layout = QGridLayout()
         layout.setContentsMargins(10, 10, 10, 10)
 
-        for i, config in enumerate[FormatParamsConfig](exporter.details.format_params_config):
+        for i, config in enumerate[FormatParamsConfig](exporter.plugin.details.format_params_config):
             default_value = self._get_default_value(config)
             match config:
                 case TextParam():
@@ -187,7 +190,7 @@ class ExportFileDialog(Dialog):
                     logger.error("Unknown format parameter type: %s", config.type)
                     continue
 
-            layout.addWidget(Label(config.label + ":"), i, 0)
+            layout.addWidget(QLabel(QCoreApplication.translate(exporter.id, config.label) + ":"), i, 0)
             layout.addWidget(widget, i, 1)
 
         layout.setColumnStretch(1, 1)
@@ -203,7 +206,7 @@ class ExportFileDialog(Dialog):
 
         if exporter.plugin.details.format_params_config:
             if exporter.id not in self._format_params_widgets:
-                self._format_params_widgets[exporter.id] = self._create_format_params_widget(exporter.plugin)
+                self._format_params_widgets[exporter.id] = self._create_format_params_widget(exporter)
 
             # Remove old layout
             old_layout = self._format_params_group_box.layout()
@@ -216,7 +219,7 @@ class ExportFileDialog(Dialog):
                 QWidget().setLayout(old_layout)
 
             # Create new layout and add widget
-            new_layout = GridLayout()
+            new_layout = QGridLayout()
             new_layout.addWidget(self._format_params_widgets[exporter.id])
             self._format_params_group_box.setLayout(new_layout)
             self._format_params_group_box.setVisible(True)
@@ -238,6 +241,6 @@ class ExportFileDialog(Dialog):
         file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
 
-        if file_dialog.exec() == Dialog.DialogCode.Accepted:
+        if file_dialog.exec() == QDialog.DialogCode.Accepted:
             file_name = file_dialog.selectedFiles()[0]
             self._file_name_editbox.setText(file_name)

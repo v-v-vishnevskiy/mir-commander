@@ -24,7 +24,15 @@ class _MdiProgramWindow(QMdiSubWindow):
 
     _opened_programs = defaultdict[str, int](int)
 
-    def __init__(self, program_id: str, node: UINode, config: ProgramConfig, parent: QWidget, kwargs: dict[str, Any]):
+    def __init__(
+        self,
+        program_id: str,
+        node: UINode,
+        config: ProgramConfig,
+        program_control_panel_dock: None | ProgramControlPanelDock,
+        parent: QWidget,
+        kwargs: dict[str, Any],
+    ):
         _MdiProgramWindow._id_counter += 1
         self._id = _MdiProgramWindow._id_counter
 
@@ -33,7 +41,7 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.program = plugins_registry.program.get(program_id).details.program_class(
             node=node, config=config, **kwargs
         )
-        self.program_control_panel_dock: None | ProgramControlPanelDock = None
+        self.program_control_panel_dock = program_control_panel_dock
 
         super().__init__(parent=parent)
 
@@ -45,6 +53,9 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.resize(config.window_size.width, config.window_size.height)
 
         _MdiProgramWindow._opened_programs[self._program_id] += 1
+        if _MdiProgramWindow._opened_programs[self._program_id] == 1 and program_control_panel_dock is not None:
+            program_control_panel_dock.restore_visibility()
+            program_control_panel_dock.toggleViewAction().setVisible(True)
 
     @property
     def id(self) -> int:
@@ -57,12 +68,6 @@ class _MdiProgramWindow(QMdiSubWindow):
     def update_title(self):
         self.setWindowIcon(self.program.get_icon())
         self.setWindowTitle(self.program.get_title())
-
-    def set_program_control_panel_dock(self, program_control_panel_dock: ProgramControlPanelDock):
-        self.program_control_panel_dock = program_control_panel_dock
-        if _MdiProgramWindow._opened_programs[self._program_id] == 1:
-            program_control_panel_dock.restore_visibility()
-            program_control_panel_dock.toggleViewAction().setVisible(True)
 
     def closeEvent(self, event: QCloseEvent):
         _MdiProgramWindow._opened_programs[self._program_id] -= 1
@@ -125,15 +130,15 @@ class MdiArea(QMdiArea):
         error_message = None
 
         try:
+            program_control_panel_dock = self._project_window.add_program_control_panel(program_id)
             window = _MdiProgramWindow(
                 program_id=program_id,
                 node=node,
                 config=plugins_registry.program.get(program_id).details.config_class(),
+                program_control_panel_dock=program_control_panel_dock,
                 parent=self,
                 kwargs=kwargs,
             )
-            if program_control_panel_dock := self._project_window.add_program_control_panel(program_id):
-                window.set_program_control_panel_dock(program_control_panel_dock)
             self.addSubWindow(window)
             window.program.node_changed_signal.connect(
                 lambda node_id, action: self._node_changed_handler(node_id, window.id, action)

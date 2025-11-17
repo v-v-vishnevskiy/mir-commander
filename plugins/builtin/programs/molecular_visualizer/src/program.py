@@ -17,9 +17,8 @@ from mir_commander.api.data_structures.atomic_coordinates import (
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramError, UINode
 from mir_commander.core.graphics.utils import Color4f
 from mir_commander.core.utils import sanitize_filename
-from mir_commander.ui.sdk.widget import TR
 
-from ..program import BaseProgram
+from ...program import BaseProgram
 from .config import Config
 from .visualizer import Visualizer
 
@@ -133,16 +132,16 @@ class Program(BaseProgram):
         t_filename = t_filename.replace("%i", str(i_param + instance_index).zfill(6))
 
         if rewrite is False and Path(t_filename).exists():
-            self.send_message_signal.emit(MessageChannel.CONSOLE, TR.tr("File already exists: {}").format(t_filename))
+            self.send_message_signal.emit(MessageChannel.CONSOLE, self.tr("File already exists: {}").format(t_filename))
             return
 
         try:
             image = self.visualizer.render_to_image(width, height, bg_color, crop_to_content)
             profile = ImageCms.createProfile("sRGB")
             Image.fromarray(image).save(t_filename, icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
-            self.send_message_signal.emit(MessageChannel.CONSOLE, TR.tr("{} saved successfully").format(t_filename))
+            self.send_message_signal.emit(MessageChannel.CONSOLE, self.tr("{} saved successfully").format(t_filename))
         except Exception as e:
-            txt = TR.tr("Error saving image {}").format(t_filename)
+            txt = self.tr("Error saving image {}").format(t_filename)
             logger.error(f"{txt}: {e}")
             self.send_message_signal.emit(MessageChannel.CONSOLE, txt)
 

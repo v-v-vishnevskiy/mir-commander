@@ -6,4 +6,8 @@
     <file>icons/unex.png</file>
     <file>icons/volume_cube.png</file>
   </qresource>
+  <qresource prefix="translations">
+    <file>i18n/en.qm</file>
+    <file>i18n/ru.qm</file>
+  </qresource>
 </RCC>
