@@ -25,9 +25,13 @@ class General(BasePage):
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
+        self.l_language_warning.setVisible(False)
 
     def restore_defaults(self):
-        self.app_config.language = AppConfig().language
+        default_language = AppConfig().language
+        language_changed = default_language != self._backup["language"]
+        self.l_language_warning.setVisible(language_changed)
+        self.app_config.language = default_language
         self.setup_data()
 
     def setup_data(self):
@@ -47,8 +51,14 @@ class General(BasePage):
 
         self.l_language = QLabel(self.tr("Language:"))
 
+        self.l_language_warning = QLabel(self.tr("Language will be changed after restarting the program"))
+        self.l_language_warning.setStyleSheet("color: #FF6B00; font-style: italic;")
+        self.l_language_warning.setVisible(False)
+
         layout.addWidget(self.l_language, 0, Qt.AlignmentFlag.AlignLeft)
-        layout.addWidget(self.cb_language, 1, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.cb_language, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.l_language_warning, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addStretch(1)
 
         return layout
 
@@ -58,4 +68,7 @@ class General(BasePage):
 
     @Slot()
     def _language_changed(self, index: int):
-        self.app_config.language = self._languages[index][1]  # type: ignore[assignment]
+        new_language = self._languages[index][1]
+        language_changed = new_language != self._backup["language"]
+        self.l_language_warning.setVisible(language_changed)
+        self.app_config.language = new_language  # type: ignore[assignment]
