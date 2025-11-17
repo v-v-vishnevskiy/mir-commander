@@ -1,6 +1,32 @@
 from PySide6.QtCore import QPropertyAnimation, Qt, Signal
 from PySide6.QtGui import QColor, QMouseEvent
-from PySide6.QtWidgets import QColorDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QColorDialog,
+    QDockWidget,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
+
+
+class DockWidget(QDockWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea
+            | Qt.DockWidgetArea.BottomDockWidgetArea
+            | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.setObjectName(f"Dock.{self._get_name()}")
+        self.setContentsMargins(0, 0, 0, 0)
+
+    def _get_name(self) -> str:
+        return self.__class__.__name__
 
 
 class ColorButton(QPushButton):
@@ -10,7 +36,6 @@ class ColorButton(QPushButton):
         super().__init__(*args, **kwargs)
         self._color = color
         self._set_style_sheet(color)
-        self.setFixedSize(20, 20)
         self.clicked.connect(self.clicked_handler)
 
     @property
@@ -18,12 +43,8 @@ class ColorButton(QPushButton):
         return self._color
 
     def _set_style_sheet(self, color: QColor):
-        enabled = self.isEnabled()
-        color_name = color.name(QColor.NameFormat.HexArgb) if enabled else "gray"
-        border_color = "black" if enabled else "gray"
-        self.setStyleSheet(
-            f"QPushButton {{ border: 1px solid {border_color}; margin: 1px;background-color: {color_name}; }}"
-        )
+        color_name = color.name(QColor.NameFormat.HexArgb) if self.isEnabled() else "gray"
+        self.setStyleSheet(f"ColorButton {{ background-color: {color_name}; }}")
 
     def setEnabled(self, enabled: bool):
         super().setEnabled(enabled)
@@ -43,21 +64,19 @@ class ColorButton(QPushButton):
             self.color_changed.emit(color)
 
 
-class _GroupHeaderWidget(QFrame):
-    def __init__(self, title: str, layout_widget: "_GroupLayoutWidget"):
+class StackItemHeader(QFrame):
+    def __init__(self, title: str, layout_widget: "StackItemLayout"):
         super().__init__()
 
         self._parent = layout_widget
 
-        self.setFixedHeight(20)
-        self.setStyleSheet("QFrame { padding: 2px; background-color: #D0D0D0; }")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self._icon = QFrame()
-        self._icon.setFixedSize(16, 16)
+        self._icon.setObjectName("mircmd-stack-item-header-icon")
 
         label = QLabel(title)
-        label.setStyleSheet("QLabel { padding: 0px; margin: 0px; }")
+        label.setObjectName("mircmd-stack-item-header-label")
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -70,10 +89,9 @@ class _GroupHeaderWidget(QFrame):
         self._apply_style()
 
     def _apply_style(self):
-        if self._parent.expanded:
-            self._icon.setStyleSheet("QFrame { image: url(:/core/icons/arrow-down.png); }")
-        else:
-            self._icon.setStyleSheet("QFrame { image: url(:/core/icons/arrow-right.png); }")
+        self._icon.setProperty("expanded", self._parent.expanded)
+        self._icon.style().polish(self._icon)
+        self._icon.update()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         self._parent.toggle_expand()
@@ -81,37 +99,37 @@ class _GroupHeaderWidget(QFrame):
         event.accept()
 
 
-class _GroupLayoutWidget(QVBoxLayout):
+class StackItemLayout(QVBoxLayout):
     def __init__(self, title: str, widget: QWidget, expanded: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._scroll_area = QScrollArea()
-        self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll_area.setWidget(widget)
-        self._scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSpacing(0)
+
+        scroll_area = QScrollArea()
+        scroll_area.setObjectName("mircmd-group-layout-widget-scroll-area")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setWidget(widget)
 
         self._expanded = expanded
         self._widget = widget
-        self._widget.setContentsMargins(5, 5, 5, 10)
         self._widget_height = self._widget_current_height = self._widget.sizeHint().height()
-        self._animation_max = QPropertyAnimation(self._scroll_area, b"maximumHeight")
+        self._animation_max = QPropertyAnimation(scroll_area, b"maximumHeight")
         self._animation_max.setDuration(200)
-        self._animation_min = QPropertyAnimation(self._scroll_area, b"minimumHeight")
+        self._animation_min = QPropertyAnimation(scroll_area, b"minimumHeight")
         self._animation_min.setDuration(200)
 
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setSpacing(0)
-        self.addWidget(_GroupHeaderWidget(title=title, layout_widget=self))
-        self.addWidget(self._scroll_area)
+        self.addWidget(StackItemHeader(title=title, layout_widget=self))
+        self.addWidget(scroll_area)
 
         if self._expanded:
-            self._scroll_area.setMinimumHeight(widget.sizeHint().height())
-            self._scroll_area.setMaximumHeight(widget.sizeHint().height())
+            scroll_area.setMinimumHeight(widget.sizeHint().height())
+            scroll_area.setMaximumHeight(widget.sizeHint().height())
         else:
-            self._scroll_area.setMinimumHeight(0)
-            self._scroll_area.setMaximumHeight(0)
+            scroll_area.setMinimumHeight(0)
+            scroll_area.setMaximumHeight(0)
 
     @property
     def expanded(self) -> bool:
@@ -139,11 +157,11 @@ class _GroupLayoutWidget(QVBoxLayout):
         self._animation_min.start()
 
 
-class GroupVBoxLayout(QVBoxLayout):
+class VerticalStackLayout(QVBoxLayout):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setContentsMargins(0, 0, 0, 0)
         self.setSpacing(0)
 
     def add_widget(self, title: str, widget: QWidget, expanded: bool = True, *args, **kwargs):
-        super().addLayout(_GroupLayoutWidget(title, widget, expanded), *args, **kwargs)
+        super().addLayout(StackItemLayout(title, widget, expanded), *args, **kwargs)

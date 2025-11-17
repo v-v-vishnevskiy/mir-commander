@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from mir_commander.api.program import UINode
 from mir_commander.core import Project
 from mir_commander.core.project_node import ProjectNode
+from mir_commander.ui.sdk.widget import DockWidget
 
-from ..base import BaseDock
 from .config import ProjectDockConfig
 from .tree_view import TreeView
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from mir_commander.ui.project_window import ProjectWindow
 
 
-class ProjectDock(BaseDock):
+class ProjectDock(DockWidget):
     """
     The project dock widget.
 
@@ -26,7 +26,6 @@ class ProjectDock(BaseDock):
 
         self.tree = TreeView(self, project.nodes, config.tree)
         self.tree.load_data()
-        self.setMinimumWidth(200)
         self.setWidget(self.tree)
 
     def add_node(self, node: ProjectNode, parent: None | UINode = None):

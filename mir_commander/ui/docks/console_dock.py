@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
-from .base import BaseDock
+from mir_commander.ui.sdk.widget import DockWidget
 
 
 class Text(QPlainTextEdit):
@@ -14,7 +14,7 @@ class Text(QPlainTextEdit):
         self.setReadOnly(True)
 
 
-class ConsoleDock(BaseDock):
+class ConsoleDock(DockWidget):
     """The console dockable widget.
 
     Contains an instance of the Text widget for showing text information.
@@ -22,9 +22,8 @@ class ConsoleDock(BaseDock):
 
     def __init__(self, parent: QWidget):
         super().__init__(self.tr("Console output"), parent)
-        self.text = Text(self)
-        self.setMinimumHeight(50)
-        self.setWidget(self.text)
+        self._text = Text(self)
+        self.setWidget(self._text)
 
     def append(self, text: str):
-        self.text.appendPlainText(text)
+        self._text.appendPlainText(text)

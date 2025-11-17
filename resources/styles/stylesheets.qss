@@ -1,0 +1,93 @@
+ColorButton {
+    margin: 1px;
+    max-width: 14px;
+    min-width: 14px;
+    max-height: 14px;
+    min-height: 14px;
+}
+
+ColorButton:enabled {
+    border: 1px solid black;
+}
+
+ColorButton:disabled {
+    border: 1px solid gray;
+}
+
+StackItemHeader {
+    max-height: 20px;
+    min-height: 20px;
+    padding-left: 4px;
+    background-color: #D0D0D0;
+}
+
+QFrame#mircmd-stack-item-header-icon {
+    max-width: 12px;
+    min-width: 12px;
+    max-height: 12px;
+    min-height: 12px;
+}
+
+QFrame#mircmd-stack-item-header-icon[expanded="false"] {
+    image: url(:/core/icons/arrow-right.png);
+}
+
+QFrame#mircmd-stack-item-header-icon[expanded="true"] {
+    image: url(:/core/icons/arrow-down.png);
+}
+
+QLabel#mircmd-stack-item-header-label {
+    padding: 0px;
+    margin: 0px;
+}
+
+QLabel#mircmd-text-overlay-label {
+    border-radius: 5px;
+    padding: 2px;
+}
+
+QScrollArea#mircmd-program-control-panel-scroll-area {
+    border: 0px;
+}
+
+QScrollArea#mircmd-group-layout-widget-scroll-area {
+    border: 0px;
+}
+
+QCheckBox#mircmd-apply-for-all-checkbox::checked {
+    border: 2px solid #F44336;
+    border-radius: 4px;
+    padding: 6px 12px;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+QCheckBox#mircmd-apply-for-all-checkbox::unchecked {
+    border: 2px solid transparent;
+    border-radius: 4px;
+    padding: 6px 12px;
+    background-color: transparent;
+}
+
+About {
+    min-width: 400px;
+    max-width: 400px;
+    min-height: 300px;
+    max-height: 300px;
+}
+
+ProjectDock {
+    min-width: 200px;
+}
+
+ConsoleDock {
+    min-height: 50px;
+}
+
+ProgramControlPanelDock {
+    min-width: 350px;
+}
+
+RecentProjectsDialog {
+    min-width: 600px;
+    min-height: 450px;
+}

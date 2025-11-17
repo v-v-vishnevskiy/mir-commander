@@ -17,6 +17,7 @@ class TextOverlay(QWidget):
         self._config = config
         self._text = text
         self._label = QLabel(self)
+        self._label.setObjectName("mircmd-text-overlay-label")
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         layout.addWidget(self._label)
@@ -61,8 +62,6 @@ class TextOverlay(QWidget):
                 color: rgb({self._color.red()}, {self._color.green()}, {self._color.blue()});
                 background-color: rgba({self._background_color.red()}, {self._background_color.green()},
                                         {self._background_color.blue()}, {self._background_color.alpha()});
-                border-radius: 5px;
-                padding: 2px;
             }}
         """
 

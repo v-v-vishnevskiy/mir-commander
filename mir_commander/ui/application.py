@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from PySide6.QtCore import QLocale, QResource, Qt, QTranslator
+from PySide6.QtCore import QFile, QLocale, QResource, Qt, QTranslator
 from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
@@ -49,6 +49,7 @@ class Application(QApplication):
 
         self._setup_opengl()
         self._fix_palette()
+        self._set_stylesheet()
 
     def _setup_opengl(self):
         context = QOpenGLContext()
@@ -114,6 +115,14 @@ class Application(QApplication):
                 logger.error("Failed to install translator for language %s", locale.name())
         else:
             logger.error("Failed to load translator for language %s", locale.name())
+
+    def _set_stylesheet(self):
+        styles = QFile(":/core/styles/stylesheets.qss")
+        if styles.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+            self.setStyleSheet(styles.readAll().data().decode("utf-8"))  # type: ignore[union-attr]
+            styles.close()
+        else:
+            logger.error("Failed to open stylesheet file: %s", styles.errorString())
 
     def _setup_project_window(self, project_window: ProjectWindow):
         project_window.close_project_signal.connect(self.close_project)

@@ -284,11 +284,9 @@ class ProjectWindow(QMainWindow):
                 return None
             control_panel = control_panel_cls()
             program_control_panel_dock = ProgramControlPanelDock(
-                program_id=program_id,
-                control_panel=control_panel,
-                title=QCoreApplication.translate(program_id, program.metadata.name),
-                parent=self,
+                program_id=program_id, control_panel=control_panel, parent=self
             )
+            program_control_panel_dock.setWindowTitle(QCoreApplication.translate(program_id, program.metadata.name))
             control_panel.program_action_signal.connect(
                 lambda key, data: self.mdi_area.update_program_event(
                     program_id, program_control_panel_dock.apply_for_all, key, data

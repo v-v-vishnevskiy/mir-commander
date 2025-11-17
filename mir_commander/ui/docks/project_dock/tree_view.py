@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QMenu, QTreeView
 from mir_commander.api.program import UINode
 from mir_commander.api.project_node_schema import ActionType
 from mir_commander.core import plugins_registry
-from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
+from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError, ProjectNodeNotFoundError
 from mir_commander.core.file_manager import FileManager
 from mir_commander.core.project_node import ProjectNode
 from mir_commander.ui.config import ImportFileRulesConfig
@@ -115,7 +115,10 @@ class TreeView(QTreeView):
 
     def add_item(self, node: ProjectNode, parent: UINode | None = None):
         parent_item = parent if parent is not None else self._model.invisibleRootItem()
-        parent_item.appendRow(TreeItem(node))
+        try:
+            parent_item.appendRow(TreeItem(node))
+        except ProjectNodeNotFoundError:
+            logger.error("Project node type not found: %s", node.type)
 
     def load_data(self):
         logger.debug("Loading data ...")

@@ -1,48 +1,11 @@
-from typing import Callable
-
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QCheckBox, QScrollArea, QSizePolicy, QWidget
+from PySide6.QtWidgets import QCheckBox, QFrame, QScrollArea
 
-from mir_commander.api.program import ControlBlock, ControlPanel
-from mir_commander.ui.sdk.widget import GroupVBoxLayout
-
-from .base import BaseDock
+from mir_commander.api.program import ControlPanel
+from mir_commander.ui.sdk.widget import DockWidget, VerticalStackLayout
 
 
-class _Container(QWidget):
-    def __init__(
-        self,
-        blocks: list[ControlBlock],
-        allows_apply_for_all: bool,
-        apply_for_all_value: bool,
-        apply_for_all_handler: Callable[[bool], None],
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred))
-
-        self.group_layout = GroupVBoxLayout()
-
-        if allows_apply_for_all:
-            _apply_for_all_checkbox = QCheckBox(self.tr("Apply for all"))
-            _apply_for_all_checkbox.setStyleSheet("QCheckBox { border: 0px; }")
-            _apply_for_all_checkbox.setChecked(apply_for_all_value)
-            _apply_for_all_checkbox.toggled.connect(apply_for_all_handler)
-            self.group_layout.addSpacing(10)
-            self.group_layout.addWidget(_apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
-            self.group_layout.addSpacing(10)
-
-        for item in blocks:
-            self.group_layout.add_widget(item.title, item.widget, item.expanded)
-        self.group_layout.addStretch(1)
-
-        self.setLayout(self.group_layout)
-
-
-class ProgramControlPanelDock(BaseDock):
+class ProgramControlPanelDock(DockWidget):
     """
     The program's control panel dock widget.
 
@@ -57,28 +20,37 @@ class ProgramControlPanelDock(BaseDock):
         self.control_panel = control_panel
 
         self._apply_for_all = False
-
         self._visible = True
 
-        self._scroll_area = QScrollArea(self)
-        self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scroll_area = QScrollArea()
+        scroll_area.setObjectName("mircmd-program-control-panel-scroll-area")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setSizeAdjustPolicy(QScrollArea.SizeAdjustPolicy.AdjustToContents)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-        self._container = _Container(
-            control_panel.get_blocks(),
-            control_panel.allows_apply_for_all(),
-            self._apply_for_all,
-            self._apply_for_all_handler,
-            parent=self,
-        )
-        self._scroll_area.setWidget(self._container)
+        frame = QFrame(scroll_area)
+        vertical_stack = VerticalStackLayout()
+        frame.setLayout(vertical_stack)
 
-        self.setMinimumWidth(350)
+        scroll_area.setWidget(frame)
+
+        for block in control_panel.get_blocks():
+            vertical_stack.add_widget(block.title, block.widget, block.expanded)
+
+        if control_panel.allows_apply_for_all():
+            _apply_for_all_checkbox = QCheckBox(self.tr("Apply for all"))
+            _apply_for_all_checkbox.setObjectName("mircmd-apply-for-all-checkbox")
+            _apply_for_all_checkbox.setChecked(self._apply_for_all)
+            _apply_for_all_checkbox.toggled.connect(self._apply_for_all_handler)
+            vertical_stack.addSpacing(10)
+            vertical_stack.addWidget(_apply_for_all_checkbox, alignment=Qt.AlignmentFlag.AlignHCenter)
+            vertical_stack.addSpacing(10)
+        vertical_stack.addStretch(1)
 
         self.visibilityChanged.connect(self._visibility_changed_handler)
 
-        self.setWidget(self._scroll_area)
+        self.setWidget(scroll_area)
 
     def _apply_for_all_handler(self, checked: bool):
         self._apply_for_all = checked

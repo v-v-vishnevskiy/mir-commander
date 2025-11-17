@@ -60,8 +60,6 @@ class RecentProjectsDialog(QDialog):
         layout = QVBoxLayout()
 
         self.setLayout(layout)
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(450)
 
         self._recent = ListView(self)
 

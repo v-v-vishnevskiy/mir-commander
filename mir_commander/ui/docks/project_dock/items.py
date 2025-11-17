@@ -4,7 +4,6 @@ from PySide6.QtGui import QIcon
 
 from mir_commander.api.program import UINode
 from mir_commander.core import plugins_registry
-from mir_commander.core.errors import ProjectNodeNotFoundError
 from mir_commander.core.project_node import ProjectNode
 
 
@@ -33,10 +32,7 @@ class TreeItem(UINode):
             if node.type in program.details.is_default_for_node_type:
                 self.default_program = item.id
 
-        try:
-            icon_path = plugins_registry.project_node.get(node.type).details.icon_path
-        except ProjectNodeNotFoundError:
-            icon_path = ":/core/icons/project-node.png"
+        icon_path = plugins_registry.project_node.get(node.type).details.icon_path
         self.setIcon(QIcon(icon_path))
 
         self._load_data()
