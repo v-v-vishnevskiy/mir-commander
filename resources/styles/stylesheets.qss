@@ -46,10 +46,6 @@ QLabel#mircmd-text-overlay-label {
     padding: 2px;
 }
 
-QScrollArea#mircmd-program-control-panel-scroll-area {
-    border: 0px;
-}
-
 QScrollArea#mircmd-group-layout-widget-scroll-area {
     border: 0px;
 }
