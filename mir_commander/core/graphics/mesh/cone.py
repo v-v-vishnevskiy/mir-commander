@@ -43,7 +43,7 @@ def get_faces(stacks: int, slices: int, cap: bool = True) -> np.ndarray:
     if cap:
         prev_i = slices
         for i in range(1, slices + 1):
-            faces.extend([0, prev_i, i])
+            faces.extend([0, i, prev_i])
             prev_i = i
 
     # the middle (cone surface)
