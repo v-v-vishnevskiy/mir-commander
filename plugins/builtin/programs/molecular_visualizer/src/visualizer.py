@@ -118,13 +118,11 @@ class Visualizer(OpenGLWidget):
 
     def scale_scene(self, factor: float):
         super().scale_scene(factor)
-        if self.hasFocus():
-            self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit()
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
-        if self.hasFocus():
-            self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit()
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)

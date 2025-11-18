@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent
@@ -77,8 +77,14 @@ class _MdiProgramWindow(QMdiSubWindow):
         super().closeEvent(event)
 
 
+class SubWindowListFn(Protocol):
+    def __call__(self, /, order: QMdiArea.WindowOrder = ...) -> list[_MdiProgramWindow]: ...
+
+
 class MdiArea(QMdiArea):
     program_send_message_signal = Signal(MessageChannel, str)
+    subWindowList: SubWindowListFn  # type: ignore[assignment]
+    currentSubWindow: Callable[[], _MdiProgramWindow]
 
     def __init__(self, project_window: "ProjectWindow", *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -98,17 +104,13 @@ class MdiArea(QMdiArea):
             window.program_control_panel_dock.control_panel.update_event(window.program)
 
     def _node_changed_handler(self, node_id: int, window_id: int, action: NodeChangedAction):
-        for window in cast(list[_MdiProgramWindow], self.subWindowList()):
+        for window in self.subWindowList():
             if window.id != window_id:
                 window.program.node_changed_event(node_id, action)
 
-    def _update_control_panel_handler(self):
+    def _update_control_panel_handler(self, window: _MdiProgramWindow):
         w = self.currentSubWindow()
-        if w is None:
-            return
-
-        window = cast(_MdiProgramWindow, w)
-        if window.program_control_panel_dock is not None:
+        if window.program_control_panel_dock is not None and w is not None and w.id == window.id:
             window.program_control_panel_dock.control_panel.update_event(window.program)
 
     def _update_window_title_handler(self, title: str):
@@ -116,10 +118,10 @@ class MdiArea(QMdiArea):
         if w is None:
             return
 
-        cast(_MdiProgramWindow, w).update_title()
+        w.update_title()
 
     def open_program(self, node: UINode, program_id: str, kwargs: dict[str, Any]):
-        for window in cast(list[_MdiProgramWindow], self.subWindowList()):
+        for window in self.subWindowList():
             # checking if program for this node already opened
             if window.program_id == program_id and window.program.node == node:
                 self.setActiveSubWindow(window)
@@ -144,7 +146,7 @@ class MdiArea(QMdiArea):
                 lambda node_id, action: self._node_changed_handler(node_id, window.id, action)
             )
             window.program.send_message_signal.connect(self.program_send_message_signal.emit)
-            window.program.update_control_panel_signal.connect(self._update_control_panel_handler)
+            window.program.update_control_panel_signal.connect(lambda: self._update_control_panel_handler(window))
             window.program.update_window_title_signal.connect(self._update_window_title_handler)
             window.show()
         except ProgramError as e:
@@ -173,9 +175,8 @@ class MdiArea(QMdiArea):
             error_dialog.show()
 
     def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
-        windows = self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)
         i = 0
-        for window in reversed(cast(list[_MdiProgramWindow], windows)):
+        for window in reversed(self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)):
             if window.program_id == program_id:
                 window.program.action_event(key, data, i)
                 i += 1
