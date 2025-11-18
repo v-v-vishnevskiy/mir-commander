@@ -44,7 +44,7 @@ class Atom(Node):
         self._label = Label(self._label_config, self.element_symbol, self._index + 1, parent=self)
         self._selection_update = 0.0
 
-        self._update_label_position()
+        self.update_label_position()
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.add(bond)
@@ -102,8 +102,9 @@ class Atom(Node):
     def label(self) -> Label:
         return self._label
 
-    def _update_label_position(self):
-        self._label.set_position(Vector3D(0.0, 0.0, self._sphere.radius * self._label_config.offset))
+    def update_label_position(self, radius: float = 0.0):
+        radius = radius or self._sphere.radius
+        self._label.set_position(Vector3D(0.0, 0.0, radius + self._label_config.offset))
 
     def remove(self):
         self.remove_all_bonds()
@@ -136,7 +137,7 @@ class Atom(Node):
 
     def set_radius(self, radius: float):
         self._sphere.set_radius(radius)
-        self._update_label_position()
+        self.update_label_position()
 
     def set_selected(self, value: bool):
         self._selection_update = monotonic()
@@ -168,7 +169,7 @@ class Atom(Node):
 
     def set_label_offset(self, offset: float):
         self._label_config.offset = offset
-        self.label.set_position(Vector3D(0.0, 0.0, self.radius * offset))
+        self.update_label_position()
 
     def __repr__(self) -> str:
         return (

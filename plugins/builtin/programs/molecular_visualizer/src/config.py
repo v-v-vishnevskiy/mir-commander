@@ -26,7 +26,7 @@ class AtomLabelConfig(BaseModel):
     color: Color = Color("#000000")
     size: int = Field(default=10, ge=1, le=100)
     font: str = "default"
-    offset: float = Field(default=2.00, ge=1.01, le=5.0)
+    offset: float = Field(default=0.1, ge=0.01, le=1.0)
     symbol_visible: bool = True
     number_visible: bool = True
     visible: bool = False

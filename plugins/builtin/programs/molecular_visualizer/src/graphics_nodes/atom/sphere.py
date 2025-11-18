@@ -37,6 +37,7 @@ class Sphere(BaseGraphicsNode):
         else:
             radius = self._radius
         self.set_scale(Vector3D(radius, radius, radius))
+        self.parent.update_label_position(radius)
 
     def get_text(self) -> str:
         atom = self.parent
