@@ -54,7 +54,7 @@ class AtomLabels(ControlBlock["Program"]):
             row=3,
             text=self.tr("Offset:"),
             min_value=0.01,
-            max_value=1.0,
+            max_value=10.0,
             single_step=0.1,
             factor=100,
             decimals=2,
