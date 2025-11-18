@@ -101,8 +101,10 @@ class OpenGLWidget(QOpenGLWidget):
 
     def add_font_atlas(self, font_path: str, font_atlas_name: str):
         atlas_size = 4096
-        font_size = 475
-        data, font_atlas = create_font_atlas(font_path, font_size=font_size, atlas_size=atlas_size)
+        font_size = 470
+        data, font_atlas = create_font_atlas(
+            font_path, font_size=font_size, atlas_size=atlas_size, padding=3, debug=False
+        )
         texture = Texture2D()
         texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)
         self.resource_manager.add_font_atlas(font_atlas_name, font_atlas)
