@@ -82,7 +82,7 @@ class Plugins(BasePage):
             contacts_item = QStandardItem(metadata.contacts)
             contacts_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            enabled_item = QStandardItem("Enabled" if item.enabled else "Disabled")
+            enabled_item = QStandardItem(self.tr("Yes") if item.enabled else self.tr("No"))
             enabled_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
             self._model.appendRow([name_item, type_item, version_item, author_item, contacts_item, enabled_item])

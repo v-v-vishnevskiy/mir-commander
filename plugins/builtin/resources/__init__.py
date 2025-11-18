@@ -9,9 +9,9 @@ def register_plugins() -> list[Plugin]:
         ResourcesPlugin(
             id="resources",
             metadata=Metadata(
-                name="Icons",
+                name="Core resources",
                 version=(1, 0, 0),
-                description="Icons for the builtin plugins",
+                description="Resources of the builtin plugins",
                 author="Mir Commander",
                 contacts="https://mircmd.com",
                 license="MirCommander",

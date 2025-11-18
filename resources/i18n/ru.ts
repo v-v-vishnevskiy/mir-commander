@@ -4,17 +4,17 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="20"/>
+        <location filename="../../mir_commander/ui/about.py" line="22"/>
         <source>Yury V. Vishnevskiy</source>
         <translation>Юрий В. Вишневский</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="21"/>
+        <location filename="../../mir_commander/ui/about.py" line="23"/>
         <source>Valery V. Vishnevskiy</source>
         <translation>Валерий В. Вишневский</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="26"/>
+        <location filename="../../mir_commander/ui/about.py" line="27"/>
         <source>About Mir Commander</source>
         <translation>О Mir Commander</translation>
     </message>
@@ -139,6 +139,24 @@
         <location filename="../../mir_commander/ui/settings/plugins_page.py" line="62"/>
         <source>Resources</source>
         <translation>Ресурсы</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="85"/>
+        <source>Yes</source>
+        <translation>Да</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="85"/>
+        <source>No</source>
+        <translation>Нет</translation>
+    </message>
+</context>
+<context>
+    <name>ProgramControlPanelDock</name>
+    <message>
+        <location filename="../../mir_commander/ui/docks/program_control_panel.py" line="42"/>
+        <source>Apply for all</source>
+        <translation>Применить для всех</translation>
     </message>
 </context>
 <context>
@@ -275,42 +293,42 @@
         <translation>Переместить фокус на предыдущее окно</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="305"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="303"/>
         <source>Import File</source>
         <translation>Импорт файла</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="307"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="305"/>
         <source>All files (*)</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="323"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="321"/>
         <source>File imported successfully</source>
         <translation>Файл успешно импортирован</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="328"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="326"/>
         <source>Error importing file {file_path}: {e}</source>
         <translation>Ошибка импорта файла {file_path}: {e}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="330"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="328"/>
         <source>Failed to import file</source>
         <translation>Не удалось импортировать файл</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="341"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="339"/>
         <source>File exported successfully</source>
         <translation>Файл успешно экспортирован</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="344"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="342"/>
         <source>Failed to export file: {}</source>
         <translation>Не удалось экспортировать файл: {}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="345"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="343"/>
         <source>Failed to export file</source>
         <translation>Не удалось экспортировать файл</translation>
     </message>
@@ -318,17 +336,17 @@
 <context>
     <name>RecentProjectsDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="68"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="66"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="69"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="67"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="112"/>
+        <location filename="../../mir_commander/ui/recent_projects/recent_projects_dialog.py" line="110"/>
         <source>Open Project</source>
         <translation>Открыть проект</translation>
     </message>
@@ -412,14 +430,6 @@
         <location filename="../../mir_commander/ui/docks/project_dock/tree_view.py" line="94"/>
         <source>VS_All</source>
         <translation>Все</translation>
-    </message>
-</context>
-<context>
-    <name>_Container</name>
-    <message>
-        <location filename="../../mir_commander/ui/docks/program_control_panel.py" line="30"/>
-        <source>Apply for all</source>
-        <translation>Применить для всех</translation>
     </message>
 </context>
 </TS>

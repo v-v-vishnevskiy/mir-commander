@@ -547,12 +547,12 @@
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="40"/>
         <source>Options</source>
-        <translation type="unfinished">Options</translation>
+        <translation>Options</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="42"/>
         <source>Proportional size</source>
-        <translation type="unfinished">Proportional size</translation>
+        <translation>Proportional size</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="47"/>
@@ -563,7 +563,7 @@
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="49"/>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="57"/>
         <source> pixels</source>
-        <translation type="unfinished"> pixels</translation>
+        <translation> pixels</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="55"/>
@@ -573,12 +573,12 @@
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="66"/>
         <source>Transparent background</source>
-        <translation type="unfinished">Transparent background</translation>
+        <translation>Transparent background</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="70"/>
         <source>Crop to content</source>
-        <translation type="unfinished">Crop to content</translation>
+        <translation>Crop to content</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/save_image_dialog.py" line="76"/>
@@ -601,7 +601,7 @@
     <message>
         <location filename="../../programs/molecular_visualizer/src/control_elements/view.py" line="27"/>
         <source>Reset</source>
-        <translation type="unfinished">Reset</translation>
+        <translation>Reset</translation>
     </message>
     <message>
         <location filename="../../programs/molecular_visualizer/src/control_elements/view.py" line="41"/>
