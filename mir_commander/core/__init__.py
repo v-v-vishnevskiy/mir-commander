@@ -1,4 +1,4 @@
-from .config import ProjectConfig
-from .project import Project
+from .plugins_registry import plugins_registry
+from .project import Project, ProjectConfig
 
-__all__ = ["Project", "ProjectConfig"]
+__all__ = ["Project", "ProjectConfig", "plugins_registry"]

@@ -1,4 +1,4 @@
-from mir_commander.ui.utils.opengl.utils import color_to_id, id_to_color
+from mir_commander.ui.sdk.opengl.utils import color_to_id, id_to_color
 
 
 def test_color_to_id():

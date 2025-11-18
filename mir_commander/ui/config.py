@@ -2,11 +2,10 @@ from typing import Any, Callable, Literal
 
 from pydantic import BaseModel, Field
 
-from mir_commander.utils.config import BaseConfig
+from mir_commander.core.config import BaseConfig
 
-from .widgets.docks.config import DocksConfig
-from .widgets.programs.config import ProgramsConfig
-from .widgets.settings.config import SettingsConfig
+from .docks.config import DocksConfig
+from .settings.config import SettingsConfig
 
 
 class Toolbars(BaseModel):
@@ -16,7 +15,6 @@ class Toolbars(BaseModel):
 class Widgets(BaseModel):
     toolbars: Toolbars = Toolbars()
     docks: DocksConfig = DocksConfig()
-    programs: ProgramsConfig = ProgramsConfig()
 
 
 class MenuFileHotkeys(BaseModel):
@@ -35,15 +33,48 @@ class ProjectWindowConfig(BaseModel):
     widgets: Widgets = Widgets()
 
 
-class OpenGLConfig(BaseModel):
-    antialiasing: bool = True
+class NodeTypeImportConfig(BaseModel):
+    """Configuration for importing a specific node type."""
+
+    open_nodes_on_startup: bool = True
+    open_nodes_on_import: bool = False
+    programs_ids: list[str] = Field(
+        default_factory=list,
+        description="List of program ids to open the node with. If empty list, will open with the default program.",
+    )
+
+
+class ImportFileRulesConfig(NodeTypeImportConfig):
+    node_types: dict[str, NodeTypeImportConfig] = Field(
+        default_factory=dict,
+        description="Per-node-type import configuration. "
+        "Keys are node type identifiers (e.g., 'atomic_coordinates', 'molecule'). ",
+    )
+
+    def get_open_on_startup(self, node_type: str) -> bool:
+        """Get open_nodes_in_temporary_project setting for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].open_nodes_on_startup
+        return self.open_nodes_on_startup
+
+    def get_open_on_import(self, node_type: str) -> bool:
+        """Get open_nodes_in_current_project setting for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].open_nodes_on_import
+        return self.open_nodes_on_import
+
+    def get_programs(self, node_type: str) -> list[str]:
+        """Get programs list for a specific node type."""
+        if node_type in self.node_types:
+            return self.node_types[node_type].programs_ids
+        return self.programs_ids
 
 
 class AppConfig(BaseConfig):
     language: Literal["system", "en", "ru"] = "system"
-    opengl: OpenGLConfig = OpenGLConfig()
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
+    import_file_rules: ImportFileRulesConfig = ImportFileRulesConfig()
 
 
 class ApplyCallbacks(BaseModel):

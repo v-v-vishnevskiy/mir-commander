@@ -1,14 +1,15 @@
 import logging
 from pathlib import Path
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QPalette, QSurfaceFormat
+from PySide6.QtCore import QFile, QLocale, QResource, Qt, QTranslator
+from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from mir_commander.api.plugin import Translation
 from mir_commander.core import Project
+from mir_commander.core.consts import DIR
 from mir_commander.core.errors import LoadProjectError
-from mir_commander.ui.utils.opengl.opengl_info import OpenGLInfo
-from mir_commander.utils.consts import DIR
+from mir_commander.core.models import PluginResource
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -21,51 +22,51 @@ class Application(QApplication):
     """Application class. In fact, only one instance is created thereof."""
 
     def __init__(self, *args, **kwargs):
-        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+        self.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, on=False)
         super().__init__(*args, **kwargs)
+        self.setApplicationName("mir_commander")
+        self.setApplicationDisplayName("Mir Commander")
         self.setAttribute(Qt.ApplicationAttribute.AA_DontShowShortcutsInContextMenus, on=False)
         self._quitting = False
 
-        self._register_resources()
+        self._apply_callbacks = ApplyCallbacks()
+        self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
 
-        self.apply_callbacks = ApplyCallbacks()
-        self.config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+        if self._config.language != "system":
+            QLocale.setDefault(QLocale(self._config.language))
+
+        self._register_resources()
+        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
         self._recent_projects_dialog.open_project_signal.connect(self.open_project)
 
-        self._translator_app = QTranslator(self)
-        self._translator_qt = QTranslator(self)
         self._set_translation()
 
         self._error = QMessageBox()
         self._error.setIcon(QMessageBox.Icon.Critical)
 
-        self.apply_callbacks.add(self._set_translation)
+        self._setup_opengl()
+        self._fix_palette()
+        self._set_stylesheet()
 
-        self.setup_opengl()
-
-    def setup_opengl(self):
-        try:
-            opengl_info = OpenGLInfo()
-            version = opengl_info.version
-        except Exception as e:
-            logger.error("Failed to get OpenGL info: %s", e)
-            version = (2, 1)
+    def _setup_opengl(self):
+        context = QOpenGLContext()
+        fmt = QSurfaceFormat()
+        fmt.setVersion(4, 6)
+        fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        context.setFormat(fmt)
+        context.create()
+        version = context.format().version()
 
         sf = QSurfaceFormat()
-        if self.config.opengl.antialiasing:
-            sf.setSamples(16)
-        else:
-            sf.setSamples(0)
-
         sf.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         sf.setVersion(*version)
         sf.setColorSpace(QSurfaceFormat.ColorSpace.sRGBColorSpace)
         QSurfaceFormat.setDefaultFormat(sf)
 
-    def fix_palette(self):
+    def _fix_palette(self):
         """
         PySide6 may work bad if GTK3 theme engine is active with builtin themes Adwaita, Adwaita-dark and High-Contrast.
         In this case text labels (window text) of many different (QLabel, etc) Qt widgets is shown as if it were
@@ -102,28 +103,26 @@ class Application(QApplication):
             self.setPalette(palette)
 
     def _register_resources(self):
-        for file in DIR.ICONS.glob("*.rcc"):
-            QResource.registerResource(str(file))
+        for file in DIR.RESOURCES.glob("*.rcc"):
+            if QResource.registerResource(str(file)) is False:
+                logger.error("Failed to register resource %s", file)
 
     def _set_translation(self):
-        """The callback called by the Settings when a setting is applied or set."""
-
-        language: str = self.config.language
-        if language == "system":
-            language = QLocale.languageToCode(QLocale.system().language())
-
+        locale = QLocale()
         translator = QTranslator(self)
-        if translator.load(str(DIR.TRANSLATIONS / f"app_{language}")):
-            self.removeTranslator(self._translator_app)
-            self.installTranslator(translator)
-            self._translator_app = translator
+        if translator.load(locale, "", "", ":/core/i18n"):
+            if not self.installTranslator(translator):
+                logger.error("Failed to install translator for language %s", locale.name())
+        else:
+            logger.error("Failed to load translator for language %s", locale.name())
 
-        translator = QTranslator(self)
-        path = Path(QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)) / f"qtbase_{language}"
-        if translator.load(str(path)):
-            self.removeTranslator(self._translator_qt)
-            self.installTranslator(translator)
-            self._translator_qt = translator
+    def _set_stylesheet(self):
+        styles = QFile(":/core/styles/stylesheets.qss")
+        if styles.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+            self.setStyleSheet(styles.readAll().data().decode("utf-8"))  # type: ignore[union-attr]
+            styles.close()
+        else:
+            logger.error("Failed to open stylesheet file: %s", styles.errorString())
 
     def _setup_project_window(self, project_window: ProjectWindow):
         project_window.close_project_signal.connect(self.close_project)
@@ -132,6 +131,26 @@ class Application(QApplication):
         if not project_window.project.is_temporary:
             self._recent_projects_dialog.add_opened(project_window.project)
             self._recent_projects_dialog.add_recent(project_window.project)
+
+    def register_plugin_resources(self, plugin_resources: list[PluginResource]):
+        for pr in plugin_resources:
+            for resource in pr.resources:
+                path = pr.base_path / resource.path
+                if QResource.registerResource(str(path), pr.namespace) is False:
+                    logger.error("Failed to register resource %s", path)
+                    continue
+                self._install_plugins_translations(resource.translations, pr.namespace)
+
+    def _install_plugins_translations(self, translations: list[Translation], namespace: str):
+        locale = QLocale()
+        for translation in translations:
+            translator = QTranslator(self)
+            directory = f":{namespace}/{translation.path.lstrip('/')}"
+            if translator.load(locale, translation.filename, translation.prefix, directory):
+                if not self.installTranslator(translator):
+                    logger.error("Failed to install plugin translator: %s", directory)
+            else:
+                logger.error("Failed to load plugin translator: %s", directory)
 
     def open_project(self, path: Path) -> int:
         try:
@@ -144,8 +163,8 @@ class Application(QApplication):
             return self.exec()
 
         project_window = ProjectWindow(
-            app_config=self.config,
-            app_apply_callbacks=self.apply_callbacks,
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
             project=project,
         )
         self._setup_project_window(project_window)
@@ -160,8 +179,8 @@ class Application(QApplication):
         project.import_files(files, messages)
 
         project_window = ProjectWindow(
-            app_config=self.config,
-            app_apply_callbacks=self.apply_callbacks,
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
             project=project,
             init_msg=messages,
         )

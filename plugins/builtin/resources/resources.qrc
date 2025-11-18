@@ -1,0 +1,13 @@
+<RCC>
+  <qresource>
+    <file>icons/atomic_coordinates_group.png</file>
+    <file>icons/atomic_coordinates.png</file>
+    <file>icons/molecule.png</file>
+    <file>icons/unex.png</file>
+    <file>icons/volume_cube.png</file>
+  </qresource>
+  <qresource prefix="translations">
+    <file>i18n/en.qm</file>
+    <file>i18n/ru.qm</file>
+  </qresource>
+</RCC>

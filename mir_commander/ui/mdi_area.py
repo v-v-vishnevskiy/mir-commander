@@ -1,75 +1,184 @@
-from typing import TYPE_CHECKING, Any, cast
+import logging
+from collections import defaultdict
+from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QMdiArea
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QWidget
 
-from mir_commander.ui.config import AppConfig
-from mir_commander.ui.utils.program import ProgramControlPanel, ProgramWindow
-from mir_commander.ui.widgets.docks.project_dock.items import TreeItem
+from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
+from mir_commander.core import plugins_registry
+from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
+
+from .docks.program_control_panel import ProgramControlPanelDock
 
 if TYPE_CHECKING:
     from .project_window import ProjectWindow
 
 
-class MdiArea(QMdiArea):
-    opened_program_signal = Signal(ProgramWindow)
+logger = logging.getLogger("UI.MdiArea")
 
-    def __init__(self, project_window: "ProjectWindow", app_config: AppConfig, *args, **kwargs):
+
+class _MdiProgramWindow(QMdiSubWindow):
+    _id_counter = 0
+
+    _opened_programs = defaultdict[str, int](int)
+
+    def __init__(
+        self,
+        program_id: str,
+        node: UINode,
+        config: ProgramConfig,
+        program_control_panel_dock: None | ProgramControlPanelDock,
+        parent: QWidget,
+        kwargs: dict[str, Any],
+    ):
+        _MdiProgramWindow._id_counter += 1
+        self._id = _MdiProgramWindow._id_counter
+
+        self._program_id = program_id
+
+        self.program = plugins_registry.program.get(program_id).details.program_class(
+            node=node, config=config, **kwargs
+        )
+        self.program_control_panel_dock = program_control_panel_dock
+
+        super().__init__(parent=parent)
+
+        self.setWidget(self.program.get_widget())
+        self.setWindowIcon(self.program.get_icon())
+        self.setWindowTitle(self.program.get_title())
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
+        self.resize(config.window_size.width, config.window_size.height)
+
+        _MdiProgramWindow._opened_programs[self._program_id] += 1
+        if _MdiProgramWindow._opened_programs[self._program_id] == 1 and program_control_panel_dock is not None:
+            program_control_panel_dock.restore_visibility()
+            program_control_panel_dock.toggleViewAction().setVisible(True)
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def program_id(self) -> str:
+        return self._program_id
+
+    def update_title(self):
+        self.setWindowIcon(self.program.get_icon())
+        self.setWindowTitle(self.program.get_title())
+
+    def closeEvent(self, event: QCloseEvent):
+        _MdiProgramWindow._opened_programs[self._program_id] -= 1
+        if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._program_id] == 0:
+            self.program_control_panel_dock.hide()
+            self.program_control_panel_dock.toggleViewAction().setVisible(False)
+        super().closeEvent(event)
+
+
+class SubWindowListFn(Protocol):
+    def __call__(self, /, order: QMdiArea.WindowOrder = ...) -> list[_MdiProgramWindow]: ...
+
+
+class MdiArea(QMdiArea):
+    program_send_message_signal = Signal(MessageChannel, str)
+    subWindowList: SubWindowListFn  # type: ignore[assignment]
+    currentSubWindow: Callable[[], _MdiProgramWindow]
+
+    def __init__(self, project_window: "ProjectWindow", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._project_window = project_window
-        self._app_config = app_config
 
+        self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         self.subWindowActivated.connect(self._sub_window_activated_handler)
 
-    def open_program(self, item: TreeItem, program_cls: type[ProgramWindow], kwargs: dict[str, Any]):
-        for program in self.subWindowList():
-            # checking if program for this item already opened
-            if isinstance(program, program_cls) and program.item == item:
-                self.setActiveSubWindow(program)
-                break
-        else:
-            program = program_cls(
+    def _sub_window_activated_handler(self, window: None | _MdiProgramWindow):
+        if window is None:
+            return
+
+        if window.program_control_panel_dock is not None:
+            window.program_control_panel_dock.control_panel.update_event(window.program)
+
+    def _node_changed_handler(self, node_id: int, window_id: int, action: NodeChangedAction):
+        for window in self.subWindowList():
+            if window.id != window_id:
+                window.program.node_changed_event(node_id, action)
+
+    def _update_control_panel_handler(self, window: _MdiProgramWindow):
+        w = self.currentSubWindow()
+        if window.program_control_panel_dock is not None and w is not None and w.id == window.id:
+            window.program_control_panel_dock.control_panel.update_event(window.program)
+
+    def _update_window_title_handler(self, title: str):
+        w = self.currentSubWindow()
+        if w is None:
+            return
+
+        w.update_title()
+
+    def open_program(self, node: UINode, program_id: str, kwargs: dict[str, Any]):
+        for window in self.subWindowList():
+            # checking if program for this node already opened
+            if window.program_id == program_id and window.program.node == node:
+                self.setActiveSubWindow(window)
+                window.show()
+                return
+
+        error_title = None
+        error_message = None
+
+        try:
+            program_control_panel_dock = self._project_window.add_program_control_panel(program_id)
+            window = _MdiProgramWindow(
+                program_id=program_id,
+                node=node,
+                config=plugins_registry.program.get(program_id).details.config_class(),
+                program_control_panel_dock=program_control_panel_dock,
                 parent=self,
-                app_config=self._app_config,
-                item=item,
-                control_panel=self._add_program_control_panel(program_cls),
-                **kwargs,
+                kwargs=kwargs,
             )
-            program.item_changed_signal.connect(self._item_changed_handler)
-            self.opened_program_signal.emit(program)
-            self.addSubWindow(program)
-        program.show()
+            self.addSubWindow(window)
+            window.program.node_changed_signal.connect(
+                lambda node_id, action: self._node_changed_handler(node_id, window.id, action)
+            )
+            window.program.send_message_signal.connect(self.program_send_message_signal.emit)
+            window.program.update_control_panel_signal.connect(lambda: self._update_control_panel_handler(window))
+            window.program.update_window_title_signal.connect(self._update_window_title_handler)
+            window.show()
+        except ProgramError as e:
+            logger.error("Failed to open program `%s`: %s", program_id, e)
+            error_title = "Program Error"
+            error_message = f"Failed to open program '{program_id}':\n{str(e)}"
+        except PluginNotFoundError:
+            logger.error("Program `%s` is not registered", program_id)
+            error_title = "Plugin Not Found"
+            error_message = f"Program '{program_id}' is not registered in the plugin registry."
+        except PluginDisabledError:
+            logger.error("Program `%s` is disabled", program_id)
+            error_title = "Plugin Disabled"
+            error_message = f"Program '{program_id}' is currently disabled."
+        except Exception as e:
+            logger.error("Failed to open program `%s`: %s", program_id, e)
+            error_title = "Unexpected Error"
+            error_message = f"Failed to open program '{program_id}':\n{str(e)}"
 
-    def _add_program_control_panel(self, program_cls: type[ProgramWindow]) -> ProgramControlPanel | None:
-        if program_cls.control_panel_cls is None:
-            return None
-        return self._project_window.add_program_control_panel(program_cls.control_panel_cls)
+        if error_title and error_message:
+            error_dialog = QMessageBox(self)
+            error_dialog.setIcon(QMessageBox.Icon.Critical)
+            error_dialog.setWindowTitle(error_title)
+            error_dialog.setText(error_title)
+            error_dialog.setInformativeText(error_message)
+            error_dialog.show()
 
-    def _sub_window_activated_handler(self, window: None | ProgramWindow):
-        programs_control_panels = self._project_window.programs_control_panels
-        grouped_programs: dict[type[ProgramControlPanel], list[ProgramWindow]] = {
-            k: [] for k in programs_control_panels.keys()
-        }
-        for w in self.subWindowList():
-            program = cast(ProgramWindow, w)
-            control_panel_cls = program.control_panel_cls
-            if control_panel_cls is None:
-                continue
-            grouped_programs[control_panel_cls].append(program)
-
-        for control_panel_cls, programs in grouped_programs.items():
-            if control_panel := programs_control_panels.get(control_panel_cls):
-                control_panel.set_opened_programs(programs)
-
-        if window is not None and window.control_panel_cls is not None:
-            if control_panel := programs_control_panels.get(window.control_panel_cls):
-                control_panel.set_active_program(window)
-
-    def _item_changed_handler(self, item_id: int, program_window_id: int, metainfo: dict[str, Any]):
-        for w in self.subWindowList():
-            program = cast(ProgramWindow, w)
-            if program.id != program_window_id and program.contains_item(item_id):
-                program.item_changed_event(item_id, metainfo)
+    def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
+        i = 0
+        for window in reversed(self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)):
+            if window.program_id == program_id:
+                window.program.action_event(key, data, i)
+                i += 1
+                if apply_for_all is False:
+                    break

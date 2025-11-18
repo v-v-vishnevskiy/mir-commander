@@ -16,8 +16,8 @@ dist/
 build/
 logs/
 /icons/
-resources/i18n/*.qm
-resources/icons/*.rcc
+*.qm
+*.rcc
 /*.png
 /*.jpg
 /*.xyz

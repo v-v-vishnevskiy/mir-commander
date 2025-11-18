@@ -2,5 +2,5 @@
 
 source .venv/bin/activate
 
-pyside6-rcc --binary resources/icons/general.qrc -o resources/icons/general.rcc
-pyside6-rcc --binary resources/icons/project_nodes.qrc -o resources/icons/project_nodes.rcc
+pyside6-rcc --binary resources/resources.qrc -o resources/resources.rcc
+pyside6-rcc --binary plugins/builtin/resources/resources.qrc -o plugins/builtin/resources/resources.rcc

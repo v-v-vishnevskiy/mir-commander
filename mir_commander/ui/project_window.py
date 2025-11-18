@@ -4,28 +4,28 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QFileDialog, QMainWindow, QMdiSubWindow, QTabWidget
+from PySide6.QtCore import QCoreApplication, Qt, Signal, Slot
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
+from PySide6.QtWidgets import QDialog, QFileDialog, QMainWindow, QMdiSubWindow, QMenu, QStatusBar, QTabWidget
 
 from mir_commander import __version__
-from mir_commander.core import Project
+from mir_commander.api.file_exporter import ExportFileError
+from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.program import MessageChannel, UINode
+from mir_commander.core import Project, plugins_registry
+from mir_commander.core.file_manager import FileManager
 from mir_commander.core.project_node import ProjectNode
-from mir_commander.plugin_system.file_exporter import ExportFileError
-from mir_commander.plugin_system.file_importer import ImportFileError
 
+from .about import About
 from .config import AppConfig, ApplyCallbacks
+from .docks.console_dock import ConsoleDock
+from .docks.program_control_panel import ProgramControlPanelDock
+from .docks.project_dock.project_dock import ProjectDock
+from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
-from .utils.program import ProgramControlPanel, ProgramWindow
-from .utils.widget import Action, Dialog, Menu, StatusBar
-from .widgets.about import About
-from .widgets.docks.console_dock import ConsoleDock
-from .widgets.docks.project_dock.items import TreeItem
-from .widgets.docks.project_dock.project_dock import ProjectDock
-from .widgets.export_item_dialog import ExportFileDialog
-from .widgets.settings.settings_dialog import SettingsDialog
+from .settings.settings_dialog import SettingsDialog
 
-logger = logging.getLogger("ProjectWindow")
+logger = logging.getLogger("UI.ProjectWindow")
 
 
 @dataclass
@@ -48,7 +48,7 @@ class ProjectWindow(QMainWindow):
         logger.debug("Initializing main window ...")
         super().__init__(None)
 
-        self._programs_control_panels: dict[type[ProgramControlPanel], ProgramControlPanel] = {}
+        self._programs_control_panels: dict[str, ProgramControlPanelDock] = {}
 
         self.project = project
         self.app_config = app_config
@@ -58,14 +58,16 @@ class ProjectWindow(QMainWindow):
 
         self.apply_callbacks.add(self._set_mainwindow_title)
 
-        self.setWindowIcon(QIcon(":/icons/general/app.svg"))
+        self._file_manager = FileManager(plugins_registry)
+
+        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
 
         self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()
         self.setup_menubar()  # Toolbars and docks must have been already created, so we can populate the View menu.
 
         # Status Bar
-        self.status_bar = StatusBar(self)
+        self.status_bar = QStatusBar(self)
         self.setStatusBar(self.status_bar)
 
         self._set_mainwindow_title()
@@ -82,30 +84,34 @@ class ProjectWindow(QMainWindow):
             for msg in init_msg:
                 self.append_to_console(msg)
 
-        self.status_bar.showMessage(StatusBar.tr("Ready"), 10000)
+        self.status_bar.showMessage(self.tr("Ready"), 10000)
 
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
-            self.docks.project.tree.view_babushka()
+            self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, True)
 
     @property
-    def programs_control_panels(self) -> dict[type[ProgramControlPanel], ProgramControlPanel]:
+    def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
         return self._programs_control_panels
 
     def append_to_console(self, text: str):
         self.docks.console.append(text)
 
     def setup_mdi_area(self):
-        def opened_program_slot(program: ProgramWindow):
-            program.short_msg_signal.connect(self.status_bar.showMessage)
-            program.long_msg_signal.connect(self.docks.console.append)
+        def program_send_message_handler(message_channel: MessageChannel, message: str):
+            if message_channel == MessageChannel.CONSOLE:
+                self.append_to_console(message)
+            elif message_channel == MessageChannel.STATUS:
+                self.status_bar.showMessage(message, 10000)
+            else:
+                logger.error("Unknown message channel: %s", message_channel)
 
-        self.mdi_area = MdiArea(self, app_config=self.app_config, parent=self)
+        self.mdi_area = MdiArea(project_window=self, parent=self)
         self.mdi_area.subWindowActivated.connect(self.update_menus)
-        self.mdi_area.opened_program_signal.connect(opened_program_slot)
+        self.mdi_area.program_send_message_signal.connect(program_send_message_handler)
         self.setCentralWidget(self.mdi_area)
 
-        self.docks.project.tree.view_item.connect(self.mdi_area.open_program)
+        self.docks.project.tree.open_item.connect(self.mdi_area.open_program)
 
     def setup_docks(self):
         self.setTabPosition(Qt.DockWidgetArea.BottomDockWidgetArea, QTabWidget.TabPosition.North)
@@ -126,7 +132,7 @@ class ProjectWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.docks.console)
 
     def _set_mainwindow_title(self):
-        self.setWindowTitle(f"Mir Commander – {self.project.name}")
+        self.setWindowTitle(self.project.name)
 
     def setup_menubar(self):
         menubar = self.menuBar()
@@ -135,8 +141,8 @@ class ProjectWindow(QMainWindow):
         menubar.addMenu(self._setup_menubar_window())
         menubar.addMenu(self._setup_menubar_help())
 
-    def _setup_menubar_file(self) -> Menu:
-        menu = Menu(Menu.tr("File"), self)
+    def _setup_menubar_file(self) -> QMenu:
+        menu = QMenu(self.tr("File"), self)
         menu.addAction(self._import_file_action())
         menu.addSeparator()
         menu.addAction(self._settings_action())
@@ -144,32 +150,32 @@ class ProjectWindow(QMainWindow):
         menu.addAction(self._quit_action())
         return menu
 
-    def _setup_menubar_view(self) -> Menu:
-        self._view_menu = Menu(Menu.tr("View"), self)
+    def _setup_menubar_view(self) -> QMenu:
+        self._view_menu = QMenu(self.tr("View"), self)
         self._view_menu.addAction(self.docks.project.toggleViewAction())
         self._view_menu.addAction(self.docks.console.toggleViewAction())
         return self._view_menu
 
-    def _setup_menubar_window(self) -> Menu:
+    def _setup_menubar_window(self) -> QMenu:
         self._window_actions()
-        self._window_menu = Menu(Menu.tr("&Window"), self)
+        self._window_menu = QMenu(self.tr("Window"), self)
         self.update_window_menu()
         self._window_menu.aboutToShow.connect(self.update_window_menu)
         return self._window_menu
 
-    def _setup_menubar_help(self) -> Menu:
-        menu = Menu(Menu.tr("Help"), self)
+    def _setup_menubar_help(self) -> QMenu:
+        menu = QMenu(self.tr("Help"), self)
         menu.addAction(self._about_action())
         return menu
 
-    def _close_project_action(self, checked: bool = False) -> Action:
-        action = Action(Action.tr("Close Project"), self)
+    def _close_project_action(self, checked: bool = False) -> QAction:
+        action = QAction(self.tr("Close Project"), self)
         action.triggered.connect(self.close)
         return action
 
-    def _settings_action(self) -> Action:
-        action = Action(Action.tr("Settings..."), self)
-        action.setMenuRole(Action.MenuRole.PreferencesRole)
+    def _settings_action(self) -> QAction:
+        action = QAction(self.tr("Settings..."), self)
+        action.setMenuRole(QAction.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
             parent=self,
@@ -181,68 +187,57 @@ class ProjectWindow(QMainWindow):
         action.triggered.connect(settings_dialog.show)
         return action
 
-    def _quit_action(self) -> Action:
-        action = Action(Action.tr("Quit"), self)
-        action.setMenuRole(Action.MenuRole.QuitRole)
+    def _quit_action(self) -> QAction:
+        action = QAction(self.tr("Quit"), self)
+        action.setMenuRole(QAction.MenuRole.QuitRole)
         action.setShortcut(QKeySequence.StandardKey.Quit)
         action.triggered.connect(self.quit_application_signal.emit)
         return action
 
-    def _about_action(self) -> Action:
-        action = Action(Action.tr("About"), self)
-        action.setMenuRole(Action.MenuRole.AboutRole)
+    def _about_action(self) -> QAction:
+        action = QAction(self.tr("About"), self)
+        action.setMenuRole(QAction.MenuRole.AboutRole)
         action.triggered.connect(About(self).show)
         return action
 
-    def _import_file_action(self) -> Action:
-        action = Action(Action.tr("Import File..."), self)
+    def _import_file_action(self) -> QAction:
+        action = QAction(self.tr("Import File..."), self)
         action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
         action.triggered.connect(self.import_file)
         return action
 
     def _window_actions(self):
-        self._win_close_act = Action(
-            Action.tr("Cl&ose"),
-            self,
-            statusTip=self.tr("Close the active window"),
-            triggered=self.mdi_area.closeActiveSubWindow,
-        )
+        self._win_close_act = QAction(text=self.tr("Close"), parent=self, statusTip=self.tr("Close the active window"))
+        self._win_close_act.triggered.connect(self.mdi_area.closeActiveSubWindow)
 
-        self._win_close_all_act = Action(
-            Action.tr("Close &All"),
-            self,
-            statusTip=self.tr("Close all the windows"),
-            triggered=self.mdi_area.closeAllSubWindows,
+        self._win_close_all_act = QAction(
+            text=self.tr("Close All"), parent=self, statusTip=self.tr("Close all the windows")
         )
+        self._win_close_all_act.triggered.connect(self.mdi_area.closeAllSubWindows)
 
-        self._win_tile_act = Action(
-            Action.tr("&Tile"), self, statusTip=self.tr("Tile the windows"), triggered=self.mdi_area.tileSubWindows
-        )
+        self._win_tile_act = QAction(text=self.tr("Tile"), parent=self, statusTip=self.tr("Tile the windows"))
+        self._win_tile_act.triggered.connect(self.mdi_area.tileSubWindows)
 
-        self._win_cascade_act = Action(
-            Action.tr("&Cascade"),
-            self,
-            statusTip=self.tr("Cascade the windows"),
-            triggered=self.mdi_area.cascadeSubWindows,
-        )
+        self._win_cascade_act = QAction(text=self.tr("Cascade"), parent=self, statusTip=self.tr("Cascade the windows"))
+        self._win_cascade_act.triggered.connect(self.mdi_area.cascadeSubWindows)
 
-        self._win_next_act = Action(
-            Action.tr("Ne&xt"),
-            self,
-            shortcut=QKeySequence.StandardKey.NextChild,
+        self._win_next_act = QAction(
+            text=self.tr("Next"),
+            parent=self,
+            shortcut=QKeySequence(QKeySequence.StandardKey.NextChild),
             statusTip=self.tr("Move the focus to the next window"),
-            triggered=self.mdi_area.activateNextSubWindow,
         )
+        self._win_next_act.triggered.connect(self.mdi_area.activateNextSubWindow)
 
-        self._win_previous_act = Action(
-            Action.tr("Pre&vious"),
-            self,
-            shortcut=QKeySequence.StandardKey.PreviousChild,
+        self._win_previous_act = QAction(
+            text=self.tr("Previous"),
+            parent=self,
+            shortcut=QKeySequence(QKeySequence.StandardKey.PreviousChild),
             statusTip=self.tr("Move the focus to the previous window"),
-            triggered=self.mdi_area.activatePreviousSubWindow,
         )
+        self._win_previous_act.triggered.connect(self.mdi_area.activatePreviousSubWindow)
 
-        self._win_separator_act = Action("", self)
+        self._win_separator_act = QAction("", self)
         self._win_separator_act.setSeparator(True)
 
     def _save_settings(self):
@@ -281,14 +276,28 @@ class ProjectWindow(QMainWindow):
         if window:
             self.mdi_area.setActiveSubWindow(window)
 
-    def add_program_control_panel(self, control_panel_cls: type[ProgramControlPanel]) -> ProgramControlPanel:
-        if control_panel_cls not in self._programs_control_panels:
-            self._programs_control_panels[control_panel_cls] = control_panel_cls(parent=self)
-            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self._programs_control_panels[control_panel_cls])
-            self._view_menu.addAction(self._programs_control_panels[control_panel_cls].toggleViewAction())
-        return self._programs_control_panels[control_panel_cls]
+    def add_program_control_panel(self, program_id: str) -> None | ProgramControlPanelDock:
+        if program_id not in self._programs_control_panels:
+            program = plugins_registry.program.get(program_id)
+            control_panel_cls = program.details.control_panel_class
+            if control_panel_cls is None:
+                return None
+            control_panel = control_panel_cls()
+            program_control_panel_dock = ProgramControlPanelDock(
+                program_id=program_id, control_panel=control_panel, parent=self
+            )
+            program_control_panel_dock.setWindowTitle(QCoreApplication.translate(program_id, program.metadata.name))
+            control_panel.program_action_signal.connect(
+                lambda key, data: self.mdi_area.update_program_event(
+                    program_id, program_control_panel_dock.apply_for_all, key, data
+                )
+            )
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, program_control_panel_dock)
+            self._view_menu.addAction(program_control_panel_dock.toggleViewAction())
+            self._programs_control_panels[program_id] = program_control_panel_dock
+        return self._programs_control_panels[program_id]
 
-    def import_file(self, parent: TreeItem | None = None):
+    def import_file(self, parent: UINode | None = None):
         """Import a file into the current project."""
 
         dialog = QFileDialog(self, self.tr("Import File"))
@@ -302,7 +311,7 @@ class ProjectWindow(QMainWindow):
                 imported_item = self.project.import_file(
                     file_path, logs, parent.project_node if parent is not None else None
                 )
-                self.docks.project.tree._add_item(imported_item, parent)
+                self.docks.project.add_node(imported_item, parent)
 
                 # Show import messages in console
                 self.append_to_console(f"Imported file: {file_path}")
@@ -310,6 +319,7 @@ class ProjectWindow(QMainWindow):
                     self.append_to_console(log)
 
                 self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
+                self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, False)
             except ImportFileError as e:
                 logger.error("Failed to import file %s: %s", file_path, e)
                 self.append_to_console(
@@ -318,16 +328,13 @@ class ProjectWindow(QMainWindow):
                 self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
 
     def export_file(self, node: ProjectNode):
-        dialog = ExportFileDialog(node, parent=self)
+        dialog = ExportFileDialog(node, file_manager=self._file_manager, parent=self)
 
-        if dialog.exec() == Dialog.DialogCode.Accepted:
-            path, exporter_name, format_settings = dialog.get_params()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            path, exporter_id, format_settings = dialog.get_params()
             try:
-                self.project.export_file(
-                    node=node,
-                    exporter_name=exporter_name,
-                    path=path,
-                    format_settings=format_settings,
+                self._file_manager.export_file(
+                    node=node, exporter_id=exporter_id, path=path, format_params=format_settings
                 )
                 self.status_bar.showMessage(self.tr("File exported successfully"), 3000)
             except ExportFileError as e:

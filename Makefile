@@ -1,4 +1,4 @@
-CODE=mir_commander
+CODE=mir_commander plugins tests
 PYTHON?=python3.13
 VIRTUAL_ENV?=.venv
 
@@ -75,3 +75,6 @@ clean:  ## Clean up the project
 	@rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache .coverage .coverage.*
 	@rm -rf mircmd
 	@rm -rf $(VIRTUAL_ENV)
+
+resources: check-venv
+	@./ts_to_qm.sh && ./qrc_to_rcc.sh

@@ -69,7 +69,7 @@ We use external resource files and load them in runtime with the `QResource.regi
 The generation of required binary resource files is done for example as
 
 ```shell
-pyside6-rcc resources/icons/general.qrc --binary -o resources/icons/general.rcc
+make resources
 ```
 
 This is opposite to the commonly used scheme in PySide, when python modules are created from `qrc` files by the `pyside6-rcc` program.

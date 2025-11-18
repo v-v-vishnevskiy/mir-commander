@@ -1,0 +1,139 @@
+from .camera import Camera
+from .font_atlas import FontAtlas
+from .opengl.shader import ShaderProgram
+from .opengl.texture2d import Texture2D
+from .opengl.vertex_array_object import VertexArrayObject
+from .scene import Scene
+
+
+class ResourceManager:
+    def __init__(self):
+        self._cameras: dict[str, Camera] = {}
+        self._scenes: dict[str, Scene] = {}
+        self._shaders: dict[str, ShaderProgram] = {}
+        self._vertex_array_objects: dict[str, VertexArrayObject] = {}
+        self._textures: dict[str, Texture2D] = {}
+        self._font_atlases: dict[str, FontAtlas] = {}
+
+        self._current_camera: None | Camera = None
+        self._current_scene: None | Scene = None
+
+    @property
+    def current_camera(self) -> Camera:
+        if self._current_camera is None:
+            raise ValueError("No current camera set")
+        return self._current_camera
+
+    @property
+    def current_scene(self) -> Scene:
+        if self._current_scene is None:
+            raise ValueError("No current scene set")
+        return self._current_scene
+
+    def add_camera(self, name: str, camera: Camera, make_current: bool = False):
+        self._cameras[name] = camera
+        if make_current or not self._current_camera:
+            self._current_camera = camera
+
+    def get_camera(self, name: str) -> Camera:
+        try:
+            return self._cameras[name]
+        except KeyError:
+            raise ValueError(f"Camera `{name}` not found")
+
+    def set_current_camera(self, name: str):
+        self._current_camera = self.get_camera(name)
+
+    def add_scene(self, name: str, scene: Scene, make_current: bool = False):
+        self._scenes[name] = scene
+        if make_current or not self._current_scene:
+            self._current_scene = scene
+
+    def get_scene(self, name: str) -> Scene:
+        try:
+            return self._scenes[name]
+        except KeyError:
+            raise ValueError(f"Scene `{name}` not found")
+
+    def set_current_scene(self, name: str):
+        self._current_scene = self.get_scene(name)
+
+    def add_shader(self, name: str, shader: ShaderProgram):
+        self._shaders[name] = shader
+
+    def get_shader(self, name: str) -> ShaderProgram:
+        try:
+            return self._shaders[name]
+        except KeyError:
+            raise ValueError(f"ShaderProgram `{name}` not found")
+
+    def add_vertex_array_object(self, name: str, vertex_array_object: VertexArrayObject):
+        self._vertex_array_objects[name] = vertex_array_object
+
+    def get_vertex_array_object(self, name: str) -> VertexArrayObject:
+        try:
+            return self._vertex_array_objects[name]
+        except KeyError:
+            raise ValueError(f"VertexArrayObject `{name}` not found")
+
+    def remove_vertex_array_object(self, name: str):
+        try:
+            self._vertex_array_objects[name].release()
+            del self._vertex_array_objects[name]
+        except KeyError:
+            raise ValueError(f"VertexArrayObject `{name}` not found")
+
+    def add_texture(self, name: str, texture: Texture2D):
+        self._textures[name] = texture
+
+    def get_texture(self, name: str) -> Texture2D:
+        try:
+            return self._textures[name]
+        except KeyError:
+            raise ValueError(f"Texture2D `{name}` not found")
+
+    def add_font_atlas(self, name: str, font_atlas: FontAtlas):
+        self._font_atlases[name] = font_atlas
+
+    def get_font_atlas(self, name: str) -> FontAtlas:
+        try:
+            return self._font_atlases[name]
+        except KeyError:
+            raise ValueError(f"FontAtlas `{name}` not found")
+
+    def release(self):
+        for vertex_array_object in self._vertex_array_objects.values():
+            vertex_array_object.release()
+        for shader in self._shaders.values():
+            shader.release()
+        for texture in self._textures.values():
+            texture.release()
+
+    def __repr__(self):
+        cameras = ",\n\t".join((str(camera) for camera in self._cameras.values()))
+        scenes = ",\n\t".join((str(scene) for scene in self._scenes.values()))
+        vertex_array_objects = ",\n\t".join((str(vao) for vao in self._vertex_array_objects.values()))
+        shaders = ",\n\t".join((str(shader) for shader in self._shaders.values()))
+        textures = ",\n\t".join((str(texture) for texture in self._textures.values()))
+        font_atlases = ",\n\t".join((str(font_atlas) for font_atlas in self._font_atlases.values()))
+
+        return f"""{self.__class__.__name__}(
+    cameras=[
+        {cameras}
+    ],
+    scenes=[
+        {scenes}
+    ],
+    shaders=[
+        {shaders}
+    ],
+    vertex_array_objects=[
+        {vertex_array_objects}
+    ],
+    textures=[
+        {textures}
+    ],
+    font_atlases=[
+        {font_atlases}
+    ]
+)"""
