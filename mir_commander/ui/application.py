@@ -36,7 +36,7 @@ class Application(QApplication):
             QLocale.setDefault(QLocale(self._config.language))
 
         self._register_resources()
-        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
+        self.setWindowIcon(QIcon(":/core/icons/app.png"))
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()

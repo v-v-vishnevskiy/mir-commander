@@ -3,7 +3,7 @@
     <file>fonts/DejaVuSansCondensed-Bold.ttf</file>
   </qresource>
   <qresource prefix="core">
-    <file>icons/app.svg</file>
+    <file>icons/app.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-right.png</file>
     <file>icons/delete.png</file>
