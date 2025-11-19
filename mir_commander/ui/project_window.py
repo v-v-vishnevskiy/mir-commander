@@ -203,7 +203,7 @@ class ProjectWindow(QMainWindow):
     def _import_file_action(self) -> QAction:
         action = QAction(self.tr("Import File..."), self)
         action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
-        action.triggered.connect(self.import_file)
+        action.triggered.connect(lambda: self.import_file(None))
         return action
 
     def _window_actions(self):
