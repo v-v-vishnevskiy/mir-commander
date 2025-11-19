@@ -21,7 +21,7 @@ In case of problems with finding the default expected version of python you may 
 for example
 
 ```shell
-PYTHON=python3.12 make init
+PYTHON=python3.13 make init
 ```
 
 The development version of Mir Commander can now be started as
@@ -75,6 +75,14 @@ make resources
 This is opposite to the commonly used scheme in PySide, when python modules are created from `qrc` files by the `pyside6-rcc` program.
 We avoid this because of two issues: (a) resources are loaded together with module loading and
 (b) the data are duplicated in python and in Qt library.
+
+#### Icon conversion
+
+To convert the application icon from SVG to PNG format, use the following command:
+
+```shell
+rsvg-convert -d 300 -p 300 -w 256 -h 256 resources/icons/app.svg -o resources/icons/app.png
+```
 
 ### GUI Design
 
