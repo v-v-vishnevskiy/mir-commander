@@ -60,7 +60,7 @@ class ProjectWindow(QMainWindow):
 
         self._file_manager = FileManager(plugins_registry)
 
-        self.setWindowIcon(QIcon(":/core/icons/app.svg"))
+        self.setWindowIcon(QIcon(":/core/icons/app.png"))
 
         self.setup_docks()  # Create docks before menus
         self.setup_mdi_area()
@@ -203,7 +203,7 @@ class ProjectWindow(QMainWindow):
     def _import_file_action(self) -> QAction:
         action = QAction(self.tr("Import File..."), self)
         action.setShortcut(QKeySequence(self.config.hotkeys.menu_file.import_file))
-        action.triggered.connect(self.import_file)
+        action.triggered.connect(lambda: self.import_file(None))
         return action
 
     def _window_actions(self):

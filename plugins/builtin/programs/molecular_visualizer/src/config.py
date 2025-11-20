@@ -334,10 +334,9 @@ class Config(ProgramConfig):
     current_style: str = "Colored Bonds"
     styles: list[Style] = Field(
         default=[
-            Style(name="Colored Bonds", background=Background(color=Color("#222222"))),
-            Style(name="Simple", bond=Bond(color=Color("#888888"))),
+            Style(name="Ball and Stick", background=Background(color=Color("#222222"))),
             Style(
-                name="Colored Bonds Only",
+                name="Stick Only",
                 atoms=Atoms(radius="bond"),
                 selected_atom=SelectedAtom(scale_factor=3.0),
             ),
