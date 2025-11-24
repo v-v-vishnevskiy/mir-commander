@@ -171,6 +171,23 @@ class Application(QApplication):
         project_window.show()
         return self.exec()
 
+    def open_empty_project(self) -> int:
+        logger.info("Creating temporary empty project ...")
+
+        project = Project(path=Path(), temporary=True)
+
+        project_window = ProjectWindow(
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
+            project=project,
+            init_msg=[],
+        )
+        self._setup_project_window(project_window)
+
+        project_window.show()
+
+        return self.exec()
+
     def open_temporary_project(self, files: list[Path]) -> int:
         logger.info("Creating temporary project from files ...")
 
@@ -204,8 +221,9 @@ class Application(QApplication):
             if not self._quitting:
                 self._recent_projects_dialog.remove_opened(project_window.project)
 
-        if not self._open_projects:
-            self._recent_projects_dialog.show()
+        # TODO: uncomment this when we have a way to open the recent projects dialog
+        # if not self._open_projects:
+        #     self._recent_projects_dialog.show()
 
     def close_app(self):
         self._quitting = True

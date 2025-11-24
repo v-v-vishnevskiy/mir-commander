@@ -42,4 +42,4 @@ def main():
     elif args.project:
         sys.exit(app.open_project(args.project))
     else:
-        sys.exit(app.open_recent_projects_dialog())
+        sys.exit(app.open_empty_project())
