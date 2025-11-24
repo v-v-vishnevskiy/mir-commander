@@ -74,8 +74,8 @@ pre-commit-uninstall:
 init: venv install scripts resources  ## Initialize the project
 	@echo "$(COLOUR_GREEN)Project initialized. Activate the virtual environment with 'source $(VIRTUAL_ENV)/bin/activate'$(END_COLOUR)"
 
-.PHONY: build
-build: check-venv  ## Build
+.PHONY: build-lib
+build-lib: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py
 	@cp mir_commander/__init__.py build/lib/mir_commander/__init__.py
 	@cp mir_commander/__main__.py build/lib/mir_commander/__main__.py
@@ -84,9 +84,13 @@ build: check-venv  ## Build
 	@cp -r plugins build/lib/plugins
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
+.PHONY: build-app
 build-app: check-venv  ## Build the application
-	@briefcase create
-	@briefcase build
+	@$(VIRTUAL_ENV)/bin/briefcase create
+	@$(VIRTUAL_ENV)/bin/briefcase build
+
+.PHONY: build
+build: build-lib build-app
 
 .PHONY: clean-build
 clean-build:  ## Clean build artifacts

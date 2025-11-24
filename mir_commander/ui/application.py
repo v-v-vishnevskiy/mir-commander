@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QFile, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
+from PySide6.QtGui import QColor, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.api.plugin import Translation
@@ -36,7 +36,6 @@ class Application(QApplication):
             QLocale.setDefault(QLocale(self._config.language))
 
         self._register_resources()
-        self.setWindowIcon(QIcon(":/core/icons/app.png"))
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
