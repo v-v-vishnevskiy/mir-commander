@@ -4,11 +4,25 @@ from pathlib import Path
 from typing import Self
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field
 
 from .errors import ConfigError
 
 logger = logging.getLogger("Utils.Config")
+
+
+class _CyFunctionDetectorMeta(type):
+    def __instancecheck__(self, instance):
+        return instance.__class__.__name__ == "cython_function_or_method"
+
+
+class CyFunctionDetector(metaclass=_CyFunctionDetectorMeta):
+    pass
+
+
+class BaseModel(PydanticBaseModel):
+    model_config = {"ignored_types": (CyFunctionDetector,)}
 
 
 class BaseConfig(BaseModel, abc.ABC):

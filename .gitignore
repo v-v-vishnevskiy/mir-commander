@@ -13,7 +13,6 @@ build/
 dist/
 .mypy_cache
 .ruff_cache
-build/
 logs/
 /icons/
 *.qm
@@ -26,3 +25,12 @@ logs/
 /*.mol
 *.pyproject*
 mircmd
+
+# Cython build artifacts
+dist_cython/
+*.so
+*.pyd
+*.c
+*.cpp
+mir_commander/**/*.so
+mir_commander/**/*.pyd

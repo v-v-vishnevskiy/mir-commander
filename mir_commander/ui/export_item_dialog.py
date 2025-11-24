@@ -113,16 +113,15 @@ class ExportFileDialog(QDialog):
             if layout_item is None:
                 continue
 
-            match config:
-                case TextParam():
-                    params[config.id] = cast(QLineEdit, layout_item.widget()).text()
-                case NumberParam():
-                    params[config.id] = cast(QSpinBox, layout_item.widget()).value()
-                case ListParam():
-                    combo_widget = cast(QComboBox, layout_item.widget())
-                    params[config.id] = combo_widget.currentText() if combo_widget.count() > 0 else ""
-                case BoolParam():
-                    params[config.id] = cast(QCheckBox, layout_item.widget()).isChecked()
+            if isinstance(config, TextParam):
+                params[config.id] = cast(QLineEdit, layout_item.widget()).text()
+            elif isinstance(config, NumberParam):
+                params[config.id] = cast(QSpinBox, layout_item.widget()).value()
+            elif isinstance(config, ListParam):
+                combo_widget = cast(QComboBox, layout_item.widget())
+                params[config.id] = combo_widget.currentText() if combo_widget.count() > 0 else ""
+            elif isinstance(config, BoolParam):
+                params[config.id] = cast(QCheckBox, layout_item.widget()).isChecked()
 
         return params
 
@@ -177,18 +176,17 @@ class ExportFileDialog(QDialog):
 
         for i, config in enumerate[FormatParamsConfig](exporter.plugin.details.format_params_config):
             default_value = self._get_default_value(config)
-            match config:
-                case TextParam():
-                    widget = self._create_text_widget(default_value)
-                case NumberParam():
-                    widget = self._create_number_widget(default_value, config)  # type: ignore[assignment]
-                case ListParam():
-                    widget = self._create_list_widget(default_value, config)  # type: ignore[assignment]
-                case BoolParam():
-                    widget = self._create_bool_widget(default_value)  # type: ignore[assignment]
-                case _:
-                    logger.error("Unknown format parameter type: %s", config.type)
-                    continue
+            if isinstance(config, TextParam):
+                widget = self._create_text_widget(default_value)
+            elif isinstance(config, NumberParam):
+                widget = self._create_number_widget(default_value, config)  # type: ignore[assignment]
+            elif isinstance(config, ListParam):
+                widget = self._create_list_widget(default_value, config)  # type: ignore[assignment]
+            elif isinstance(config, BoolParam):
+                widget = self._create_bool_widget(default_value)  # type: ignore[assignment]
+            else:
+                logger.error("Unknown format parameter type: %s", config.type)
+                continue
 
             layout.addWidget(QLabel(QCoreApplication.translate(exporter.id, config.label) + ":"), i, 0)
             layout.addWidget(widget, i, 1)
