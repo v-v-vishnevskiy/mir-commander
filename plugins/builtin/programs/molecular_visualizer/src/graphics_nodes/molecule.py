@@ -9,7 +9,7 @@ from pydantic_extra_types.color import Color
 from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import atom_single_bond_covalent_radius
-from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f, normalize_color
 from mir_commander.core.mathematics import geom_angle_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
 

@@ -7,7 +7,7 @@ from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
-from mir_commander.core import plugins_registry
+from mir_commander.core.plugins_registry import plugins_registry
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 
 from .docks.program_control_panel import ProgramControlPanelDock

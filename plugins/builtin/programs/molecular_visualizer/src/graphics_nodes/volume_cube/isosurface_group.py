@@ -6,7 +6,7 @@ import numpy as np
 from mir_commander.core.graphics.mesh import marching_cubes
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f
 
 from .isosurface import Isosurface

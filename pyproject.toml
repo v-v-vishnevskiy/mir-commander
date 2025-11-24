@@ -25,6 +25,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 build = [
+    "briefcase>=0.3.25",
     "cython>=3.2.1",
     "setuptools>=80.9.0",
 ]
@@ -55,3 +56,79 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.briefcase]
+project_name = "Mir Commander"
+bundle = "com.mircmd"
+version = "1.0.1"
+url = "https://mircmd.com/"
+license.file = "LICENSE"
+author = "Valery Vishnevskiy"
+author_email = "v.v.vishnevskiy@yandex.ru"
+
+[tool.briefcase.app.mir_commander]
+formal_name = "Mir Commander"
+description = "A modern GUI for structural chemistry"
+long_description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
+sources = [
+    "build/lib/mir_commander",
+    "build/lib/resources",
+    "build/lib/plugins",
+]
+icon = "resources/icon"
+
+[tool.briefcase.app.mir_commander.macOS]
+universal_build = false
+min_os_version = "12.0"
+requires = []
+
+[tool.briefcase.app.mir_commander.linux]
+requires = []
+
+[tool.briefcase.app.mir_commander.linux.system.debian]
+system_requires = []
+
+[tool.briefcase.app.mir_commander.linux.system.rhel]
+system_requires = []
+
+system_runtime_requires = []
+
+[tool.briefcase.app.mir_commander.linux.system.suse]
+system_requires = []
+
+system_runtime_requires = []
+
+[tool.briefcase.app.mir_commander.linux.system.arch]
+system_requires = []
+
+system_runtime_requires = []
+
+[tool.briefcase.app.mir_commander.linux.appimage]
+manylinux = "manylinux_2_28"
+
+system_requires = [
+# ?? FIXME
+]
+
+linuxdeploy_plugins = [
+]
+
+[tool.briefcase.app.mir_commander.linux.flatpak]
+flatpak_runtime = "org.kde.Platform"
+flatpak_runtime_version = "6.9"
+flatpak_sdk = "org.kde.Sdk"
+
+[tool.briefcase.app.mir_commander.windows]
+requires = [
+]
+
+# Mobile deployments
+[tool.briefcase.app.mir_commander.iOS]
+supported = false
+
+[tool.briefcase.app.mir_commander.android]
+supported = false
+
+# Web deployments
+[tool.briefcase.app.mir_commander.web]
+supported = false

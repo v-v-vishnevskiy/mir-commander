@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import NodeType
+from mir_commander.core.graphics.scene.node import NodeType
 from mir_commander.core.graphics.utils import Color4f
 
 from ..base import BaseGraphicsNode

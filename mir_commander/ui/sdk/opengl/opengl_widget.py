@@ -9,14 +9,15 @@ from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.camera import Camera
 from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
 from mir_commander.core.graphics.mesh import rect
-from mir_commander.core.graphics.opengl import shaders
 from mir_commander.core.graphics.opengl.renderer import PaintMode, Renderer
 from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
+from mir_commander.core.graphics.opengl.shaders import fragment, vertex
 from mir_commander.core.graphics.opengl.texture2d import Texture2D
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
 from mir_commander.core.graphics.projection import ProjectionManager, ProjectionMode
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import Node, Scene
+from mir_commander.core.graphics.scene.node import Node
+from mir_commander.core.graphics.scene.scene import Scene
 from mir_commander.core.graphics.utils import Color4f, color_to_id
 
 from .action_handler import ActionHandler
@@ -73,34 +74,24 @@ class OpenGLWidget(QOpenGLWidget):
     def init_shaders(self):
         self.resource_manager.add_shader(
             "default",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.BLINN_PHONG),
-            ),
+            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.BLINN_PHONG)),
         )
         self.resource_manager.add_shader(
             "text",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD),
-                FragmentShader(shaders.fragment.TEXTURE),
-            ),
+            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD), FragmentShader(fragment.TEXTURE)),
         )
         self.resource_manager.add_shader(
             "transparent_flat",
             ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
+                VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.WBOIT_TRANSPARENT_FLAT)
             ),
         )
         self.resource_manager.add_shader(
             "transparent",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
-            ),
+            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.WBOIT_TRANSPARENT)),
         )
         self.resource_manager.add_shader(
-            "picking", ShaderProgram(VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
+            "picking", ShaderProgram(VertexShader(vertex.PICKING), FragmentShader(fragment.PICKING))
         )
 
     def add_font_atlas(self, font_data: bytes, font_atlas_name: str):

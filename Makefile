@@ -77,13 +77,22 @@ init: venv install scripts resources  ## Initialize the project
 .PHONY: build
 build: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py
+	@cp mir_commander/__init__.py build/lib/mir_commander/__init__.py
+	@cp mir_commander/__main__.py build/lib/mir_commander/__main__.py
+	@mkdir -p build/lib/resources && cp resources/resources.rcc build/lib/resources/resources.rcc
+	@cp -r mir_commander/api build/lib/mir_commander/api
+	@cp -r plugins build/lib/plugins
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+
+build-app: check-venv  ## Build the application
+	@briefcase create
+	@briefcase build
 
 .PHONY: clean-build
 clean-build:  ## Clean build artifacts
-	@rm -rf build/
 	@find mir_commander -name '*.so' -type f -delete
 	@find mir_commander -name '*.cpp' -type f -delete
+	@rm -rf build/
 	@echo "$(COLOUR_GREEN)Build artifacts cleaned successfully!$(END_COLOUR)"
 
 .PHONY: clean

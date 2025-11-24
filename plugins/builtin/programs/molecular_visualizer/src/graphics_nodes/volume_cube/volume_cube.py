@@ -1,9 +1,8 @@
-from mir_commander.core.algebra import Vector3D
-
 from mir_commander.api.data_structures import VolumeCube as VolumeCubeDataStructure
+from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import BOHR2ANGSTROM
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f
 
 from ...entities import VolumeCubeIsosurface, VolumeCubeIsosurfaceGroup

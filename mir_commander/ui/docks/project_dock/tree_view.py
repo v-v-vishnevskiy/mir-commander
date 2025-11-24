@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QMenu, QTreeView
 
 from mir_commander.api.program import UINode
 from mir_commander.api.project_node_schema import ActionType
-from mir_commander.core import plugins_registry
+from mir_commander.core.plugins_registry import plugins_registry
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError, ProjectNodeNotFoundError
 from mir_commander.core.file_manager import FileManager
 from mir_commander.core.project_node import ProjectNode

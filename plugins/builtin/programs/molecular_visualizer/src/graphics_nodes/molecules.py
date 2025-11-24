@@ -1,7 +1,7 @@
 from math import fabs
 
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.scene.node import Node, NodeType
 
 from ..config import Style
 from ..errors import CalcError

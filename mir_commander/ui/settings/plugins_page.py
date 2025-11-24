@@ -2,8 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QTableView, QVBoxLayout
 
-from mir_commander.core import plugins_registry
-from mir_commander.core.plugins_registry import PluginItem
+from mir_commander.core.plugins_registry import PluginItem, plugins_registry
 
 from .base import BasePage
 

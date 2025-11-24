@@ -12,8 +12,9 @@ from mir_commander import __version__
 from mir_commander.api.file_exporter import ExportFileError
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.program import MessageChannel, UINode
-from mir_commander.core import Project, plugins_registry
 from mir_commander.core.file_manager import FileManager
+from mir_commander.core.plugins_registry import plugins_registry
+from mir_commander.core.project import Project
 from mir_commander.core.project_node import ProjectNode
 
 from .about import About

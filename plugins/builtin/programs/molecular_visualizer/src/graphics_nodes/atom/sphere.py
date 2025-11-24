@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.graphics.scene import NodeType
+from mir_commander.core.graphics.scene.node import NodeType
 from mir_commander.core.graphics.utils import Color4f
 
 from ...consts import VAO_SPHERE_RESOURCE_NAME

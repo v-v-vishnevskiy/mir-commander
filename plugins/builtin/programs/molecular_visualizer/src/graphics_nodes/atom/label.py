@@ -1,5 +1,5 @@
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.graphics.scene import TextNode
+from mir_commander.core.graphics.scene.text_node import TextNode
 from mir_commander.core.graphics.utils import color_to_color4f
 
 from ...config import AtomLabelConfig

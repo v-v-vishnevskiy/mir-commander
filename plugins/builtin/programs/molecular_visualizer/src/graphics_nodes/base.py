@@ -1,4 +1,4 @@
-from mir_commander.core.graphics.scene import Node
+from mir_commander.core.graphics.scene.node import Node
 
 
 class BaseGraphicsNode(Node):

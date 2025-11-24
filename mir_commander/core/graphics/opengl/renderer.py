@@ -55,7 +55,9 @@ from OpenGL.GL import (
 from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.projection import ProjectionManager
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import Node, NodeType, RenderingContainer, TextNode
+from mir_commander.core.graphics.scene.node import Node, NodeType
+from mir_commander.core.graphics.scene.rendering_container import RenderingContainer
+from mir_commander.core.graphics.scene.text_node import TextNode
 from mir_commander.core.graphics.utils import Color4f, crop_image_to_content
 
 from .errors import RendererError

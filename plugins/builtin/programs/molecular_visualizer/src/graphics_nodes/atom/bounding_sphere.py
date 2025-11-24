@@ -1,5 +1,5 @@
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.graphics.scene import Node, NodeType
+from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f, color_to_color4f
 
 from ...config import SelectedAtom

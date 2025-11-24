@@ -6,10 +6,10 @@ from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceForma
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.api.plugin import Translation
-from mir_commander.core import Project
 from mir_commander.core.consts import DIR
 from mir_commander.core.errors import LoadProjectError
 from mir_commander.core.models import PluginResource
+from mir_commander.core.project import Project
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow

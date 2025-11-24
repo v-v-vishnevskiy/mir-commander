@@ -1,5 +1,6 @@
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.graphics.scene import Node, NodeType, TextNode
+from mir_commander.core.graphics.scene.node import Node, NodeType
+from mir_commander.core.graphics.scene.text_node import TextNode
 from mir_commander.core.graphics.utils import Color4f
 
 from .cone import Cone

@@ -72,9 +72,8 @@ def _compile(package_dir: str, threads: int = 4, force: bool = False):
         )
 
     setup(
-        name=f"mir-commander-{package_dir}",
-        # packages=[],  # Disable automatic package discovery
-        script_args=["build_ext", "--inplace"],
+        name="mir-commander",
+        script_args=["build_ext", "--inplace", "--build-lib", "build/lib"],
         ext_modules=cythonize(
             extensions,
             compiler_directives=COMPILER_DIRECTIVES,
