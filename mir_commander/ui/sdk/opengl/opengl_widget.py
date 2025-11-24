@@ -1,12 +1,11 @@
 import logging
 
 import numpy as np
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QFile, QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.consts import DIR
 from mir_commander.core.graphics.camera import Camera
 from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
 from mir_commander.core.graphics.mesh import rect
@@ -59,7 +58,12 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer = Renderer(self.projection_manager, self.resource_manager)
         self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.init_shaders()
-        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
+
+        font = QFile(":/core/fonts/DejaVuSansCondensed-Bold.ttf")
+        if font.open(QFile.OpenModeFlag.ReadOnly):
+            self.add_font_atlas(font_data=font.readAll().data(), font_atlas_name="default")
+        else:
+            logger.error("Failed to open font file: %s", font.errorString())
 
     def release_opengl(self):
         self.makeCurrent()
@@ -99,11 +103,11 @@ class OpenGLWidget(QOpenGLWidget):
             "picking", ShaderProgram(VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
         )
 
-    def add_font_atlas(self, font_path: str, font_atlas_name: str):
+    def add_font_atlas(self, font_data: bytes, font_atlas_name: str):
         atlas_size = 4096
         font_size = 470
         data, font_atlas = create_font_atlas(
-            font_path, font_size=font_size, atlas_size=atlas_size, padding=3, debug=False
+            font_data, font_size=font_size, atlas_size=atlas_size, padding=3, debug=False
         )
         texture = Texture2D()
         texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)

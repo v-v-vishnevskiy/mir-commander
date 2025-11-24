@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 from pydantic import BaseModel
 
 
@@ -17,7 +18,7 @@ class FontAtlas(BaseModel):
 
 
 def create_font_atlas(
-    file: str,
+    font_data: bytes,
     font_size: int = 124,
     atlas_size: int = 1024,
     chars: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _.,:;!?–-+±=/\\|#()[]{}<>*&$%^@~§'\"`",
@@ -31,7 +32,7 @@ def create_font_atlas(
     # Create an empty texture
     atlas = Image.new("RGBA", (atlas_size, atlas_size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(atlas)
-    font = ImageFont.truetype(file, font_size)
+    font = ImageFont.truetype(BytesIO(font_data), font_size)
 
     atlas_info = FontAtlas(chars={})
 
