@@ -82,7 +82,6 @@ build: check-venv  ## Build
 .PHONY: clean-build
 clean-build:  ## Clean build artifacts
 	@rm -rf build/
-	@rm -rf dist_cython/
 	@find mir_commander -name '*.so' -type f -delete
 	@find mir_commander -name '*.cpp' -type f -delete
 	@echo "$(COLOUR_GREEN)Build artifacts cleaned successfully!$(END_COLOUR)"
