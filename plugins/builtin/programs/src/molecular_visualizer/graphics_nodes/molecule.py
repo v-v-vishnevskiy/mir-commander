@@ -8,7 +8,7 @@ from pydantic_extra_types.color import Color
 
 from mir_commander.api.data_structures import AtomicCoordinates
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.chemistry import atom_single_bond_covalent_radius
+from mir_commander.core.chemistry import atom_single_bond_covalent_radius_list, build_bonds
 from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.utils import Color4f, normalize_color
 from mir_commander.core.mathematics import geom_angle_xyz, geom_oop_angle_xyz, geom_torsion_angle_xyz
@@ -105,16 +105,8 @@ class Molecule(Node):
             logger.debug("Can't build molecule because AtomicCoordinates is empty")
             return
 
-        loaded = len(self.atom_items)
-
-        # add atoms
         self._load_atoms()
-
-        # add bonds
-        if loaded == 0:
-            self._build_all_bonds()
-        else:
-            self._build_bonds_for_atoms(loaded)
+        self.rebuild_bonds()
 
     def _load_atoms(self):
         center = self.center
@@ -302,61 +294,19 @@ class Molecule(Node):
         self.atom_items[index_2].set_index_number(index_1)
         self.atom_items[index_1], self.atom_items[index_2] = self.atom_items[index_2], self.atom_items[index_1]
 
-    def _build_bonds_for_atoms(self, start_index: int):
-        for index in range(start_index, len(self.atom_items)):
-            atom = self.atom_items[index]
-            if atom.atomic_num < 1:
-                continue
-
-            atom_crad = atom_single_bond_covalent_radius(atom.atomic_num)
-            for index_2 in range(index):
-                other_atom = self.atom_items[index_2]
-                if other_atom.atomic_num < 1 or atom == other_atom:
-                    continue
-
-                other_atom_crad = atom_single_bond_covalent_radius(other_atom.atomic_num)
-                crad_sum = atom_crad + other_atom_crad
-                dist = atom.position.distance_to_point(other_atom.position)
-                if dist < crad_sum + crad_sum * self._geom_bond_tolerance:
-                    self.add_bond(atom, other_atom)
-
-    def _build_all_bonds(self):
-        atomic_num = np.array(self._atomic_coordinates.atomic_num)
-        x = np.array(self._atomic_coordinates.x)
-        y = np.array(self._atomic_coordinates.y)
-        z = np.array(self._atomic_coordinates.z)
-        covalent_radius = np.array([atom_single_bond_covalent_radius(i) if i > 0 else 0 for i in atomic_num])
-
-        for i in range(len(atomic_num)):
-            if atomic_num[i] < 1:
-                continue
-
-            crad_i = covalent_radius[i]
-            j_indices = np.arange(i)
-            valid_j = atomic_num[:i] >= 1
-
-            if not np.any(valid_j):
-                continue
-
-            crad_j = covalent_radius[:i][valid_j]
-            crad_sum = crad_i + crad_j
-
-            dx = x[i] - x[:i][valid_j]
-            dy = y[i] - y[:i][valid_j]
-            dz = z[i] - z[:i][valid_j]
-
-            dist_ij = np.sqrt(dx * dx + dy * dy + dz * dz)
-            threshold = crad_sum + crad_sum * self._geom_bond_tolerance
-
-            bonded = dist_ij < threshold
-            j_valid_indices = j_indices[valid_j][bonded]
-
-            for j in j_valid_indices:
-                self.add_bond(self.atom(i), self.atom(j))
-
     def rebuild_bonds(self):
         self.remove_all_bonds()
-        self._build_all_bonds()
+        covalent_radius = atom_single_bond_covalent_radius_list()
+        bonds = build_bonds(
+            self._atomic_coordinates.atomic_num,
+            self._atomic_coordinates.x,
+            self._atomic_coordinates.y,
+            self._atomic_coordinates.z,
+            self._geom_bond_tolerance,
+            covalent_radius,
+        )
+        for i, j in bonds:
+            self.add_bond(self.atom(i), self.atom(j))
 
     def add_atom(self, index: int) -> Atom:
         atomic_num = self._atomic_coordinates.atomic_num[index]

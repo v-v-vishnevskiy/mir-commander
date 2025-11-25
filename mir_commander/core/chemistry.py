@@ -152,5 +152,100 @@ def atom_single_bond_covalent_radius(atomic_number: int) -> float:
 
 
 @cache
+def atom_single_bond_covalent_radius_list() -> list[float]:
+    return [item[2] for item in _symbols[1:]]
+
+
+@cache
 def all_symbols() -> list[str]:
     return [symbol for _, symbol, _ in _symbols]
+
+
+def build_bonds(
+    atomic_num: list[int],
+    x: list[float],
+    y: list[float],
+    z: list[float],
+    geom_bond_tolerance: float,
+    atom_single_bond_covalent_radius: list[float],
+) -> list[tuple[int, int]]:
+    """
+    Optimized pure Python implementation using Spatial Sorting (Sweep and Prune).
+    Falls back to this if Cython module is unavailable.
+    Complexity: O(N log N) sorting + O(N * k) search, where k is small.
+    """
+    # 1. Предварительная фильтрация и подготовка данных
+    # Собираем список кортежей для каждого валидного атома.
+    # Это позволяет избежать обращения к спискам по индексу внутри горячего цикла.
+    # Structure: (x, y, z, radius, original_index)
+    atoms = []
+
+    # Находим глобальный максимум радиуса для вычисления limit
+    # (проходим по таблице радиусов или по атомам - по атомам надежнее, если таблица огромная)
+    max_radius = 0.0
+
+    # Итерируемся один раз для подготовки
+    # zip работает быстро и с list, и с numpy array
+    for i, (anum, xi, yi, zi) in enumerate(zip(atomic_num, x, y, z)):
+        if anum < 1:
+            continue
+
+        r = atom_single_bond_covalent_radius[anum]
+        if r > max_radius:
+            max_radius = r
+
+        atoms.append((xi, yi, zi, r, i))
+
+    # 2. Сортировка по координате X
+    # Это ключевой шаг для алгоритма Sweep-and-Prune
+    atoms.sort(key=lambda t: t[0])
+
+    # 3. Основной цикл поиска связей
+    result = []
+    tol_factor = 1.0 + geom_bond_tolerance
+    n_atoms = len(atoms)
+
+    for i in range(n_atoms):
+        xi, yi, zi, ri, orig_i = atoms[i]
+
+        # Предел поиска по оси X для текущего атома.
+        # Если сосед по X дальше этого значения, то и любой другой сосед
+        # в отсортированном списке будет дальше.
+        limit = (ri + max_radius) * tol_factor
+
+        # Внутренний цикл: смотрим только вперед
+        for j in range(i + 1, n_atoms):
+            xj, yj, zj, rj, orig_j = atoms[j]
+
+            # --- 1. Отсечение по X (Sweep Check) ---
+            dx = xj - xi
+
+            # Самая важная строка: прерываем внутренний цикл
+            if dx > limit:
+                break
+
+            # --- 2. Отсечение по Y и Z ---
+            # В Python abs() работает достаточно быстро, но ручное сравнение может быть быстрее
+            # dy = abs(yj - yi)
+            dy = yj - yi
+            if dy > limit or dy < -limit:
+                continue
+
+            dz = zj - zi
+            if dz > limit or dz < -limit:
+                continue
+
+            # --- 3. Точная проверка (Squared Distance) ---
+            cutoff = (ri + rj) * tol_factor
+            dist_sq = dx * dx + dy * dy + dz * dz
+
+            if dist_sq < cutoff * cutoff:
+                # Сохраняем результат.
+                # Обычно принято возвращать (больший_индекс, меньший_индекс) или наоборот.
+                # Сделаем сортировку пары для консистентности.
+                if orig_i > orig_j:
+                    result.append((orig_i, orig_j))
+                else:
+                    result.append((orig_j, orig_i))
+
+    return result

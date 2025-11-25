@@ -79,6 +79,11 @@ build-lib: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
+.PHONY: build-lib-pyx
+build-lib-pyx: check-venv  ## Build
+	@$(VIRTUAL_ENV)/bin/python build.py --only-pyx=true
+	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+
 .PHONY: build-app
 build-app: check-venv  ## Build the application
 	@$(VIRTUAL_ENV)/bin/briefcase create
@@ -91,8 +96,10 @@ build: resources build-lib build-app
 clean-build:  ## Clean build artifacts
 	@find mir_commander -name '*.so' -type f -delete
 	@find mir_commander -name '*.cpp' -type f -delete
+	@find mir_commander -name '*.c' -type f -delete
 	@find plugins -name '*.so' -type f -delete
 	@find plugins -name '*.cpp' -type f -delete
+	@find plugins -name '*.c' -type f -delete
 	@rm -rf build
 	@rm -rf dist
 	@echo "$(COLOUR_GREEN)Build artifacts cleaned successfully!$(END_COLOUR)"
