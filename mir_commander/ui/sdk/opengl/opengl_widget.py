@@ -77,8 +77,16 @@ class OpenGLWidget(QOpenGLWidget):
             ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.BLINN_PHONG)),
         )
         self.resource_manager.add_shader(
+            "billboard",
+            ShaderProgram(
+                VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD), FragmentShader(fragment.BLINN_PHONG)
+            ),
+        )
+        self.resource_manager.add_shader(
             "text",
-            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD), FragmentShader(fragment.TEXTURE)),
+            ShaderProgram(
+                VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD_TEXT), FragmentShader(fragment.TEXTURE)
+            ),
         )
         self.resource_manager.add_shader(
             "transparent_flat",
