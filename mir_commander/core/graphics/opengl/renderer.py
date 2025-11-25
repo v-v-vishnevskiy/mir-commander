@@ -259,7 +259,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         transformation_data: list[float] = []
         for node in nodes:
-            transformation_data.extend(node.transform.data)
+            transformation_data.extend(node.transform_matrix.data)
         transformation_array = np.array(transformation_data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, transformation_array.nbytes, transformation_array, GL_STATIC_DRAW)
 
@@ -267,7 +267,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id)
         data: list[float] = []
         for node in nodes:
-            data.extend(node._transform._position.data)
+            data.extend(node.transform.position.data)
         array = np.array(data, dtype=np.float32)
         glBufferData(GL_ARRAY_BUFFER, array.nbytes, array, GL_STATIC_DRAW)
 
@@ -292,7 +292,7 @@ class Renderer:
         data: list[float] = []
         for node in nodes:
             if node._parent is not None:
-                data.extend(node._parent._transform._position.data)
+                data.extend(node._parent.transform.position.data)
             else:
                 data.extend([0.0, 0.0, 0.0])
         array = np.array(data, dtype=np.float32)
@@ -303,7 +303,7 @@ class Renderer:
         data: list[float] = []
         for node in nodes:
             if node._parent is not None:
-                nd = node._parent.transform.data
+                nd = node._parent.transform_matrix.data
                 center = Vector3D(nd[12], nd[13], nd[14])
                 data.extend(center.data)
             else:
@@ -317,11 +317,11 @@ class Renderer:
         for node in nodes:
             if node._parent is not None:
                 if node._parent._parent is not None:
-                    nd = node._parent._parent.transform.data
+                    nd = node._parent._parent.transform_matrix.data
                     center = Vector3D(nd[12], nd[13], nd[14])
                     data.extend(center.data)
                 else:
-                    nd = node._parent.transform.data
+                    nd = node._parent.transform_matrix.data
                     center = Vector3D(nd[12], nd[13], nd[14])
                     data.extend(center.data)
             else:

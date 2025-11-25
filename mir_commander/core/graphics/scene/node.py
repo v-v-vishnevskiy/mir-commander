@@ -135,7 +135,11 @@ class Node:
         return self._transform.position
 
     @property
-    def transform(self) -> Matrix4x4:
+    def transform(self) -> Transform:
+        return self._transform
+
+    @property
+    def transform_matrix(self) -> Matrix4x4:
         if self._transform_dirty:
             self._update_transform()
             self._transform_dirty = False
@@ -192,7 +196,7 @@ class Node:
 
     def _update_transform(self):
         if self._parent:
-            self._transform_matrix = self._parent.transform * self._transform.matrix
+            self._transform_matrix = self._parent.transform_matrix * self._transform.matrix
         else:
             self._transform_matrix = self._transform.matrix
 

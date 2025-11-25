@@ -66,7 +66,7 @@ class Atom(Node):
 
     @property
     def position(self) -> Vector3D:
-        return self._transform._position
+        return self.transform.position
 
     @property
     def color(self) -> Color4f:
