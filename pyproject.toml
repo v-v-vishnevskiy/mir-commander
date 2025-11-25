@@ -3,7 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
     "numpydantic>=1.6.9",
@@ -12,7 +12,7 @@ dependencies = [
     "pydantic-extra-types>=2.10.5",
     "pyopengl>=3.1.10",
     "pyopengl-accelerate>=3.1.10",
-    "pyside6>=6.9.1",
+    "pyside6-essentials>=6.9.3",
     "pyyaml>=6.0.2",
 ]
 
@@ -24,12 +24,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-build = [
+dev = [
     "briefcase>=0.3.25",
     "cython>=3.2.1",
     "setuptools>=80.9.0",
-]
-dev = [
     "mypy>=1.17.1",
     "pre-commit>=4.3.0",
     "pre-commit-hooks>=6.0.0",
@@ -38,6 +36,12 @@ dev = [
     "ruff>=0.12.9",
     "types-pyyaml>=6.0.12.20250822",
 ]
+
+[tool.uv]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
 
 [tool.setuptools]
 py-modules = []
@@ -72,16 +76,60 @@ formal_name = "Mir Commander"
 description = "A modern GUI for structural chemistry"
 long_description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
 sources = [
-    "build/lib/mir_commander",
-    "build/lib/resources",
-    "build/lib/plugins",
+    "mir_commander",
+    "resources",
+    "plugins",
 ]
 icon = "resources/icon"
+cleanup_paths = [
+    "**/app/mir_commander/main.py",
+    "**/app/mir_commander/core/**/*.py",
+    "**/app/mir_commander/ui/**/*.py",
+    "**/app/plugins/**/src/**/*.py",
+    "**/app/**/*.cpp",
+    "**/app/**/*.png",
+    "**/app/**/*.svg",
+    "**/app/**/*.ttf",
+    "**/app/**/*.qm",
+    "**/app/**/*.ts",
+    "**/app/**/*.qss",
+    "**/app/**/*.qrc",
+    "**/app_packages/PySide6/*.app",
+    "**/app_packages/PySide6/doc",
+    "**/app_packages/PySide6/glue",
+    "**/app_packages/PySide6/Qt/translations",
+    "**/app_packages/PySide6/Qt/qml",
+    "**/app_packages/PySide6/Qt/lib/QtDesigner*",
+    "**/app_packages/PySide6/Qt/lib/QtNetwork*",
+    "**/app_packages/PySide6/Qt/lib/QtPrintSupport*",
+    "**/app_packages/PySide6/Qt/lib/QtLabs*",
+    "**/app_packages/PySide6/Qt/lib/QtUiTools*",
+    "**/app_packages/PySide6/Qt/lib/QtSvg*",
+    "**/app_packages/PySide6/Qt/lib/QtHelp*",
+    "**/app_packages/PySide6/Qt/lib/QtTest*",
+    "**/app_packages/PySide6/Qt/lib/QtSql*",
+    "**/app_packages/PySide6/Qt/lib/QtQml*",
+    "**/app_packages/PySide6/Qt/lib/QtQuick*",
+    "**/app_packages/PySide6/Qt/lib/QtXml*",
+    "**/app_packages/PySide6/Qt/metatypes",
+    "**/app_packages/PySide6/Qt/libexec",
+    "**/app_packages/PySide6/Qt/plugins/qmltooling",
+    "**/app_packages/PySide6/Qt/plugins/sqldrivers",
+    "**/app_packages/PySide6/Qt/plugins/tls",
+    "**/app_packages/PySide6/Qt/plugins/tls",
+    "**/app_packages/PySide6/include",
+    "**/app_packages/PySide6/scripts",
+    "**/app_packages/PySide6/support",
+    "**/app_packages/PySide6/typesystems",
+    "**/app_packages/PySide6/lrelease",
+    "**/app_packages/PySide6/lupdate",
+    "**/app_packages/PySide6/svgtoqml",
+    "**/app_packages/PySide6/qml*",
+]
 
 [tool.briefcase.app.mir_commander.macOS]
 universal_build = false
 min_os_version = "12.0"
-requires = []
 
 [tool.briefcase.app.mir_commander.linux]
 requires = []

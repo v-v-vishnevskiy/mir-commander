@@ -76,7 +76,7 @@ def _compile(package_dir: str, threads: int = 4, force: bool = False, skip_files
 
     setup(
         name="mir-commander",
-        script_args=["build_ext", "--inplace", "--build-lib", "build/lib"],
+        script_args=["build_ext", "--inplace"],
         ext_modules=cythonize(
             extensions,
             compiler_directives=COMPILER_DIRECTIVES,
