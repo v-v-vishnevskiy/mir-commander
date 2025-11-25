@@ -57,11 +57,14 @@ class BaseConfig(BaseModel, abc.ABC):
             logger.debug("No path has been set")
             return
 
-        if not self.path.exists():
-            self.path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            if not self.path.exists():
+                self.path.parent.mkdir(parents=True, exist_ok=True)
 
-        data = self.model_dump(mode="json", exclude_defaults=True)
-        raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
+            data = self.model_dump(mode="json", exclude_defaults=True)
+            raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
 
-        with self.path.open("w") as f:
-            f.write(raw_data)
+            with self.path.open("w") as f:
+                f.write(raw_data)
+        except Exception as e:
+            logger.error("Failed to dump config to %s: %s", self.path, e)

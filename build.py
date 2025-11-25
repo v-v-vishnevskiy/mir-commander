@@ -17,10 +17,10 @@ BUILD_DIR = PROJECT_ROOT / "build"
 COMPILER_DIRECTIVES = {
     "language_level": "3",
     "embedsignature": True,
-    "boundscheck": False,  # Disable bounds checking for performance
-    "wraparound": False,  # Disable negative indexing
-    "cdivision": True,  # Use C division
-    "profile": False,  # Disable profiling
+    "boundscheck": True,
+    "wraparound": True,
+    "cdivision": True,
+    "profile": False,
 }
 
 
