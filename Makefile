@@ -77,12 +77,16 @@ init: venv install scripts resources  ## Initialize the project
 .PHONY: build-lib
 build-lib: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py
+	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+
+.PHONY: build-copy-files
+build-copy-files:
+	@mkdir -p build/lib/mir_commander
 	@cp mir_commander/__init__.py build/lib/mir_commander/__init__.py
 	@cp mir_commander/__main__.py build/lib/mir_commander/__main__.py
-	@mkdir -p build/lib/resources && cp resources/resources.rcc build/lib/resources/resources.rcc
 	@cp -r mir_commander/api build/lib/mir_commander/api
-	@cp -r plugins build/lib/plugins
-	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+	@find plugins -name 'loader.py' -type f -exec sh -c 'mkdir -p build/lib/$$(dirname {}) && cp {} build/lib/{}' \;
+	@find plugins resources -name '*.rcc' -type f -exec sh -c 'mkdir -p build/lib/$$(dirname {}) && cp {} build/lib/{}' \;
 
 .PHONY: build-app
 build-app: check-venv  ## Build the application
@@ -90,13 +94,15 @@ build-app: check-venv  ## Build the application
 	@$(VIRTUAL_ENV)/bin/briefcase build
 
 .PHONY: build
-build: build-lib build-app
+build: resources build-lib build-copy-files build-app
 
 .PHONY: clean-build
 clean-build:  ## Clean build artifacts
 	@find mir_commander -name '*.so' -type f -delete
 	@find mir_commander -name '*.cpp' -type f -delete
-	@rm -rf build/
+	@find plugins -name '*.so' -type f -delete
+	@find plugins -name '*.cpp' -type f -delete
+	@rm -rf ./build
 	@echo "$(COLOUR_GREEN)Build artifacts cleaned successfully!$(END_COLOUR)"
 
 .PHONY: clean

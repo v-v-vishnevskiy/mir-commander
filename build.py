@@ -24,7 +24,7 @@ COMPILER_DIRECTIVES = {
 }
 
 
-def _find_python_files(package_dir: str) -> list[str]:
+def _find_python_files(package_dir: str, skip_files: list[str]) -> list[str]:
     """Find all .py and .pyx files in a package directory."""
     package_path = PROJECT_ROOT / package_dir
 
@@ -39,6 +39,9 @@ def _find_python_files(package_dir: str) -> list[str]:
     for py_file in package_path.rglob("*.py"):
         # Skip __init__.py files (they need special handling)
         if py_file.name == "__init__.py":
+            continue
+
+        if py_file.name in skip_files:
             continue
 
         # Skip .py files if there's a corresponding .pyx file
@@ -57,10 +60,10 @@ def _find_python_files(package_dir: str) -> list[str]:
     return python_files
 
 
-def _compile(package_dir: str, threads: int = 4, force: bool = False):
+def _compile(package_dir: str, threads: int = 4, force: bool = False, skip_files: None | list[str] = None):
     extensions: list[Extension] = []
 
-    for py_file in _find_python_files(package_dir):
+    for py_file in _find_python_files(package_dir, skip_files or []):
         module_name = str(Path(py_file).with_suffix("")).replace(os.sep, ".")
         extensions.append(
             Extension(
@@ -94,6 +97,7 @@ def main():
     _compile(package_dir="mir_commander/core", threads=args.threads, force=args.force)
     _compile(package_dir="mir_commander/ui", threads=args.threads, force=args.force)
     _compile(package_dir="mir_commander/main.py", threads=args.threads, force=args.force)
+    _compile(package_dir="plugins", threads=args.threads, force=args.force, skip_files=["loader.py"])
 
 
 if __name__ == "__main__":
