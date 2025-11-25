@@ -9,14 +9,8 @@ cimport numpy as cnp
 from libcpp.vector cimport vector
 from cpython.exc cimport PyErr_SetString
 
-# --- Constants ---
-# Исправление: просто присваиваем значение.
-# Cython сделает это доступным как float атрибут модуля.
 BOHR2ANGSTROM = 0.529177210903  # 2018 CODATA
 
-# --- Data Definitions ---
-
-# Исходные данные
 cdef list _raw_symbols = [
     (-1, "X", 0.0),
     (-2, "Q", 0.0),
@@ -140,27 +134,21 @@ cdef list _raw_symbols = [
     (118, "Og", 0.0),
 ]
 
-# --- Internal Storage Strategy ---
 cdef int MIN_ATOMIC_NUM = -2
 cdef int MAX_ATOMIC_NUM = 118
 cdef int OFFSET = 2
 cdef int ARRAY_SIZE = MAX_ATOMIC_NUM + OFFSET + 1
 
-# Статический C-массив для радиусов (очень быстро)
 cdef double[125] _radii_array
 
-# Словарь для обратного поиска (str -> int)
 cdef dict _symbol_to_number_map = {}
 
-# Список символов по индексу (смещенному)
 cdef list _symbol_by_index = [None] * ARRAY_SIZE
 
-# Списки для кэшированных значений
 cdef list _cached_radii_list_val = []
 cdef list _cached_all_symbols_val = []
 
 
-# --- Initialization Logic ---
 def _initialize():
     global _cached_radii_list_val, _cached_all_symbols_val
 
@@ -169,11 +157,9 @@ def _initialize():
     cdef double radius
     cdef int idx
 
-    # Инициализация массива значениями по умолчанию (на всякий случай)
     for i in range(ARRAY_SIZE):
         _radii_array[i] = 0.0
 
-    # 1. Заполняем структуры
     for atomic_num, symbol, radius in _raw_symbols:
         idx = atomic_num + OFFSET
         if 0 <= idx < ARRAY_SIZE:
@@ -181,16 +167,11 @@ def _initialize():
             _symbol_by_index[idx] = symbol
             _symbol_to_number_map[symbol.lower()] = atomic_num
 
-    # 2. Создаем готовые списки (аналог @cache)
-    # Оригинал: [item[2] for item in _symbols[1:]] (пропускает первый элемент, который -1 'X')
     _cached_radii_list_val = [item[2] for item in _raw_symbols[1:]]
     _cached_all_symbols_val = [item[1] for item in _raw_symbols]
 
-# Запускаем инициализацию при импорте
 _initialize()
 
-
-# --- Public API Functions ---
 
 cpdef str atomic_number_to_symbol(int atomic_number):
     cdef int idx = atomic_number + OFFSET
@@ -211,8 +192,6 @@ cpdef int symbol_to_atomic_number(str symbol):
 cpdef double atom_single_bond_covalent_radius(int atomic_number):
     cdef int idx = atomic_number + OFFSET
 
-    # Проверка валидности.
-    # Если символ None, значит атомный номер не был инициализирован.
     if idx < 0 or idx >= ARRAY_SIZE or _symbol_by_index[idx] is None:
         raise ValueError(f"Invalid atomic number {atomic_number}.")
 
@@ -237,8 +216,8 @@ def build_bonds(
     double geom_bond_tolerance,
     object atom_single_bond_covalent_radius,
 ):
-    # --- 1. Подготовка данных ---
-    # Нам нужны Numpy массивы для сортировки
+    # --- 1. Data preparation ---
+    # We need NumPy arrays for sorting
     cdef cnp.ndarray[cnp.int32_t, ndim=1] raw_atomic = np.asarray(atomic_num, dtype=np.int32)
     cdef cnp.ndarray[cnp.float64_t, ndim=1] raw_x = np.asarray(x, dtype=np.float64)
     cdef cnp.ndarray[cnp.float64_t, ndim=1] raw_y = np.asarray(y, dtype=np.float64)
@@ -247,56 +226,56 @@ def build_bonds(
 
     cdef int n_atoms = raw_atomic.shape[0]
 
-    # --- 2. Сортировка по координате X (Spatial Sorting) ---
-    # Это ключевой момент. Сортировка позволяет прерывать внутренний цикл рано.
-    # argsort возвращает индексы: order[0] - индекс самого левого атома
+    # --- 2. Sort by X coordinate (Spatial Sorting) ---
+    # This is a key point. Sorting allows early termination of the inner loop.
+    # argsort returns indices: order[0] - index of the leftmost atom
     cdef cnp.ndarray[cnp.int64_t, ndim=1] order = np.argsort(raw_x).astype(np.int64)
 
-    # Создаем отсортированные временные массивы (C-contiguous)
-    # Прямой доступ к памяти (sequential access) быстрее, чем прыжки по индексам
+    # Create sorted temporary arrays (C-contiguous)
+    # Sequential memory access is faster than jumping by indices
     cdef cnp.ndarray[cnp.int32_t, ndim=1, mode="c"] s_atomic = raw_atomic[order]
     cdef cnp.ndarray[cnp.float64_t, ndim=1, mode="c"] s_x = raw_x[order]
     cdef cnp.ndarray[cnp.float64_t, ndim=1, mode="c"] s_y = raw_y[order]
     cdef cnp.ndarray[cnp.float64_t, ndim=1, mode="c"] s_z = raw_z[order]
 
-    # Для радиусов нам нужно отображение, так как atomic_num - это индексы в таблице радиусов,
-    # но нам удобнее сразу иметь массив радиусов для каждого атома
+    # For radii we need mapping, since atomic_num are indices in the radius table,
+    # but it's more convenient to have an array of radii for each atom
     cdef cnp.ndarray[cnp.float64_t, ndim=1, mode="c"] atom_radii_per_atom = \
         np.take(raw_radii, s_atomic).astype(np.float64)
 
-    # Указатели на отсортированные данные
+    # Pointers to sorted data
     cdef int* atomic_ptr = <int*> s_atomic.data
     cdef double* x_ptr = <double*> s_x.data
     cdef double* y_ptr = <double*> s_y.data
     cdef double* z_ptr = <double*> s_z.data
     cdef double* r_ptr = <double*> atom_radii_per_atom.data
 
-    # Указатель на массив индексов для восстановления оригинальных номеров
+    # Pointer to index array for restoring original indices
     cdef cnp.int64_t* order_ptr = <cnp.int64_t*> order.data
 
-    # --- 3. Поиск глобального максимума радиуса ---
+    # --- 3. Find global maximum radius ---
     cdef double global_max_radius = 0.0
     cdef int k
-    # Ищем максимум в таблице радиусов (она маленькая)
+    # Find maximum in the radius table (it's small)
     cdef double* raw_r_table_ptr = <double*> raw_radii.data
     for k in range(raw_radii.shape[0]):
         if raw_r_table_ptr[k] > global_max_radius:
             global_max_radius = raw_r_table_ptr[k]
 
-    # Константы
+    # Constants
     cdef double tol = 1.0 + geom_bond_tolerance
     cdef vector[int] bonds
     bonds.reserve(n_atoms * 6)
 
-    # Переменные цикла
+    # Loop variables
     cdef int i, j
     cdef double xi, yi, zi, ri
     cdef double limit_x, dx, dy, dz, dist_sq, max_dist_sq
 
-    # Оригинальные индексы
+    # Original indices
     cdef int orig_i, orig_j
 
-    # --- 4. Быстрый цикл (Sweep and Prune) ---
+    # --- 4. Fast loop (Sweep and Prune) ---
     with nogil:
         for i in range(n_atoms):
             if atomic_ptr[i] < 1: continue
@@ -306,51 +285,51 @@ def build_bonds(
             zi = z_ptr[i]
             ri = r_ptr[i]
 
-            # Предел поиска по X:
-            # (Радиус текущего + Максимально возможный радиус соседа) * допуск
+            # Search limit along X:
+            # (Current radius + Maximum possible neighbor radius) * tolerance
             limit_x = (ri + global_max_radius) * tol
 
-            # Ищем только "вперед" по списку.
-            # Так как список отсортирован по X, x[j] >= x[i].
+            # Only search "forward" in the list.
+            # Since the list is sorted by X, x[j] >= x[i].
             for j in range(i + 1, n_atoms):
 
-                # 1. ПРОВЕРКА ПО X (САМАЯ ВАЖНАЯ)
+                # 1. X CHECK (MOST IMPORTANT)
                 dx = x_ptr[j] - xi
 
-                # Если разница по X уже слишком велика, то все последующие атомы (j+1, j+2...)
-                # ТЕМ БОЛЕЕ будут слишком далеко, так как они отсортированы.
-                # МЫ ПРЕРЫВАЕМ ВНУТРЕННИЙ ЦИКЛ.
+                # If the X difference is already too large, then all subsequent atoms (j+1, j+2...)
+                # will be EVEN FARTHER, since they are sorted.
+                # WE BREAK THE INNER LOOP.
                 if dx > limit_x:
                     break
 
                 if atomic_ptr[j] < 1: continue
 
-                # 2. Проверка Y (обычное отсечение)
+                # 2. Y check (regular culling)
                 dy = y_ptr[j] - yi
                 if dy > limit_x or dy < -limit_x: continue
 
-                # 3. Проверка Z
+                # 3. Z check
                 dz = z_ptr[j] - zi
                 if dz > limit_x or dz < -limit_x: continue
 
-                # 4. Точная дистанция
+                # 4. Exact distance
                 dist_sq = dx*dx + dy*dy + dz*dz
 
                 max_dist_sq = (ri + r_ptr[j]) * tol
                 max_dist_sq = max_dist_sq * max_dist_sq
 
                 if dist_sq < max_dist_sq:
-                    # Нашли связь! Но i и j - это индексы в ОТСОРТИРОВАННОМ массиве.
-                    # Нам нужно сохранить ОРИГИНАЛЬНЫЕ индексы.
+                    # Found a bond! But i and j are indices in the SORTED array.
+                    # We need to save the ORIGINAL indices.
                     orig_i = order_ptr[i]
                     orig_j = order_ptr[j]
 
-                    # Сохраняем всегда пару, чтобы соблюсти порядок вызова
-                    # В оригинале (i, j) где j < i, но мы перебираем j > i.
-                    # Чтобы не путать пользователя, вернем как нашли, или отсортируем.
-                    # Оригинальный код возвращает (max, min) так как j in range(i).
-                    # Мы добавим просто пару, порядок в tuple не критичен для большинства,
-                    # но если критичен:
+                    # Always save a pair to maintain call order
+                    # In the original (i, j) where j < i, but we iterate j > i.
+                    # To avoid confusing the user, return as found, or sort.
+                    # Original code returns (max, min) since j in range(i).
+                    # We'll just add a pair, order in tuple is not critical for most,
+                    # but if critical:
                     if orig_i > orig_j:
                         bonds.push_back(orig_i)
                         bonds.push_back(orig_j)
@@ -358,7 +337,7 @@ def build_bonds(
                         bonds.push_back(orig_j)
                         bonds.push_back(orig_i)
 
-    # --- 5. Вывод ---
+    # --- 5. Output ---
     cdef list result = []
     cdef int n_bonds = bonds.size() // 2
     for k in range(0, bonds.size(), 2):

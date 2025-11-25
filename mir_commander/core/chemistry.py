@@ -171,21 +171,20 @@ def build_bonds(
 ) -> list[tuple[int, int]]:
     """
     Optimized pure Python implementation using Spatial Sorting (Sweep and Prune).
-    Falls back to this if Cython module is unavailable.
     Complexity: O(N log N) sorting + O(N * k) search, where k is small.
     """
-    # 1. Предварительная фильтрация и подготовка данных
-    # Собираем список кортежей для каждого валидного атома.
-    # Это позволяет избежать обращения к спискам по индексу внутри горячего цикла.
+    # 1. Pre-filtering and data preparation
+    # Collect a list of tuples for each valid atom.
+    # This avoids accessing lists by index inside the hot loop.
     # Structure: (x, y, z, radius, original_index)
     atoms = []
 
-    # Находим глобальный максимум радиуса для вычисления limit
-    # (проходим по таблице радиусов или по атомам - по атомам надежнее, если таблица огромная)
+    # Find the global maximum radius for computing limit
+    # (iterate through radius table or atoms - atoms are more reliable if table is huge)
     max_radius = 0.0
 
-    # Итерируемся один раз для подготовки
-    # zip работает быстро и с list, и с numpy array
+    # Iterate once for preparation
+    # zip works fast with both list and numpy array
     for i, (anum, xi, yi, zi) in enumerate(zip(atomic_num, x, y, z)):
         if anum < 1:
             continue
@@ -196,11 +195,11 @@ def build_bonds(
 
         atoms.append((xi, yi, zi, r, i))
 
-    # 2. Сортировка по координате X
-    # Это ключевой шаг для алгоритма Sweep-and-Prune
+    # 2. Sort by X coordinate
+    # This is a key step for the Sweep-and-Prune algorithm
     atoms.sort(key=lambda t: t[0])
 
-    # 3. Основной цикл поиска связей
+    # 3. Main bond search loop
     result = []
     tol_factor = 1.0 + geom_bond_tolerance
     n_atoms = len(atoms)
@@ -208,24 +207,24 @@ def build_bonds(
     for i in range(n_atoms):
         xi, yi, zi, ri, orig_i = atoms[i]
 
-        # Предел поиска по оси X для текущего атома.
-        # Если сосед по X дальше этого значения, то и любой другой сосед
-        # в отсортированном списке будет дальше.
+        # Search limit along X axis for the current atom.
+        # If a neighbor along X is farther than this value, then any other neighbor
+        # in the sorted list will be farther.
         limit = (ri + max_radius) * tol_factor
 
-        # Внутренний цикл: смотрим только вперед
+        # Inner loop: only look forward
         for j in range(i + 1, n_atoms):
             xj, yj, zj, rj, orig_j = atoms[j]
 
-            # --- 1. Отсечение по X (Sweep Check) ---
+            # --- 1. X-axis culling (Sweep Check) ---
             dx = xj - xi
 
-            # Самая важная строка: прерываем внутренний цикл
+            # Most important line: break the inner loop
             if dx > limit:
                 break
 
-            # --- 2. Отсечение по Y и Z ---
-            # В Python abs() работает достаточно быстро, но ручное сравнение может быть быстрее
+            # --- 2. Y and Z axis culling ---
+            # In Python abs() is fast enough, but manual comparison may be faster
             # dy = abs(yj - yi)
             dy = yj - yi
             if dy > limit or dy < -limit:
@@ -235,14 +234,14 @@ def build_bonds(
             if dz > limit or dz < -limit:
                 continue
 
-            # --- 3. Точная проверка (Squared Distance) ---
+            # --- 3. Exact check (Squared Distance) ---
             cutoff = (ri + rj) * tol_factor
             dist_sq = dx * dx + dy * dy + dz * dz
 
             if dist_sq < cutoff * cutoff:
-                # Сохраняем результат.
-                # Обычно принято возвращать (больший_индекс, меньший_индекс) или наоборот.
-                # Сделаем сортировку пары для консистентности.
+                # Save the result.
+                # Usually it's conventional to return (larger_index, smaller_index) or vice versa.
+                # Sort the pair for consistency.
                 if orig_i > orig_j:
                     result.append((orig_i, orig_j))
                 else:
