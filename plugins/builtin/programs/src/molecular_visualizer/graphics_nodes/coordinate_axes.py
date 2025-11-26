@@ -5,7 +5,7 @@ from mir_commander.core.graphics.utils import Color4f
 
 from .cone import Cone
 from .cylinder import Cylinder
-from .sphere import Cube
+from .sphere import Sphere
 
 
 class AxisLabel(TextNode):
@@ -46,19 +46,14 @@ class Axis(Node):
 
         self._cylinder = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
         self._cylinder.set_color(color)
-        self._cylinder.set_shader_param("lighting_model", 1)
 
         self._cone = Cone(direction, parent=self, node_type=NodeType.OPAQUE)
         self._cone.set_color(color)
-        self._cone.set_shader_param("lighting_model", 1)
 
         self._axis_label = AxisLabel(color, text, 16, parent=self)
 
-        self._cube = Cube(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
+        self._cube = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
         self._cube.set_color(color)
-        self._cube.set_shader_param("lighting_model", 1)
-        self._cube.set_shader_param("render_mode", 3)
-        self._cube.set_shader_param("ray_casting_object", 1)
 
         self._update()
 
@@ -153,11 +148,8 @@ class CoordinateAxes(Node):
         self._x = Axis(Vector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
         self._y = Axis(Vector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
         self._z = Axis(Vector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
-        self._cube = Cube(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
+        self._cube = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
         self._cube.set_color((0.0, 0.0, 0.0, 1.0))
-        self._cube.set_shader_param("lighting_model", 1)
-        self._cube.set_shader_param("render_mode", 3)
-        self._cube.set_shader_param("ray_casting_object", 1)
 
     @property
     def x(self) -> Axis:

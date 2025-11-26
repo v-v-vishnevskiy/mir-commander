@@ -1,6 +1,6 @@
 from mir_commander.core.algebra import Quaternion, Vector3D
 
-from ..consts import VAO_CYLINDER_RESOURCE_NAME
+from ..consts import VAO_CUBE_RESOURCE_NAME
 from .base import BaseGraphicsNode
 
 
@@ -10,9 +10,12 @@ class Cylinder(BaseGraphicsNode):
         self._radius = 1.0
         self._length = 1.0
         self._direction = direction.normalized
-        self.set_model(VAO_CYLINDER_RESOURCE_NAME)
+        self.set_model(VAO_CUBE_RESOURCE_NAME)
         self.set_q_rotation(Quaternion.rotation_to(Vector3D(0.0, 0.0, 1.0), self._direction))
         self.set_scale(Vector3D(self._radius, self._radius, self._length))
+        self.set_shader_param("render_mode", 3)
+        self.set_shader_param("ray_casting_object", 2)
+        self.set_shader_param("lighting_model", 1)
 
     def set_radius(self, radius: float):
         self._radius = radius

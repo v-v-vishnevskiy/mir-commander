@@ -10,7 +10,7 @@ from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel
 from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import symbol_to_atomic_number
-from mir_commander.core.graphics.mesh import cone, cube, cylinder
+from mir_commander.core.graphics.mesh import cone, cube
 from mir_commander.core.graphics.opengl.errors import RendererError
 from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
@@ -28,7 +28,7 @@ from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
 
 from .build_bonds_dialog import BuildBondsDialog
 from .config import Config
-from .consts import VAO_CONE_RESOURCE_NAME, VAO_CUBE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME
+from .consts import VAO_CONE_RESOURCE_NAME, VAO_CUBE_RESOURCE_NAME
 from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError, EmptyScalarFieldError
@@ -88,7 +88,6 @@ class Visualizer(OpenGLWidget):
         # Add VAOs to resource manager
         self.resource_manager.add_vertex_array_object(VAO_CUBE_RESOURCE_NAME, self._get_cube_vao())
         self.resource_manager.add_vertex_array_object(VAO_CONE_RESOURCE_NAME, self._get_cone_vao())
-        self.resource_manager.add_vertex_array_object(VAO_CYLINDER_RESOURCE_NAME, self._get_cylinder_vao())
 
         max_radius = self._molecules.get_max_molecule_radius()
         if max_radius > 0.0:
@@ -325,21 +324,6 @@ class Visualizer(OpenGLWidget):
         slices = int(cone.min_slices * (mesh_quality * 2))
         tmp_vertices = cone.get_vertices(stacks=1, slices=slices, radius=1.0, length=1.0, cap=True)
         faces = cone.get_faces(stacks=1, slices=slices, cap=True)
-        vertices = unwind_vertices(tmp_vertices, faces)
-        if self._config.quality.smooth:
-            normals = compute_smooth_normals(vertices)
-        else:
-            normals = compute_face_normals(vertices)
-
-        return VertexArrayObject(vertices, normals)
-
-    def _get_cylinder_vao(self) -> VertexArrayObject:
-        logger.debug("Initializing cylinder mesh data")
-
-        mesh_quality = self._config.quality.mesh
-        slices = int(cylinder.min_slices * (mesh_quality * 2))
-        tmp_vertices = cylinder.get_vertices(slices=slices, radius=1.0, length=1.0, caps=False)
-        faces = cylinder.get_faces(slices=slices, caps=False)
         vertices = unwind_vertices(tmp_vertices, faces)
         if self._config.quality.smooth:
             normals = compute_smooth_normals(vertices)

@@ -73,6 +73,7 @@ const int RENDER_MODE_BILLBOARD = 1;
 const int RENDER_MODE_BILLBOARD_TEXT = 2;
 const int RENDER_MODE_RAY_CASTING = 3;
 const int RAY_CASTING_OBJECT_SPHERE = 1;
+const int RAY_CASTING_OBJECT_CYLINDER = 2;
 """
 
 
@@ -107,6 +108,8 @@ flat out int frag_ray_casting_object;
 out vec3 sphere_center_view;
 out vec3 vertex_pos_view;
 out float sphere_radius;
+out float cylinder_half_height;
+out mat3 normal_matrix_view;
 
 vec3 get_scale(mat4 matrix) {
     vec3 result;
@@ -170,14 +173,17 @@ void billboard_text_position() {
     gl_Position = projection_matrix * view_position;
 }
 
-void ray_casting_sphere_position() {
+void ray_casting_position() {
     gl_Position = transform_matrix * instance_model_matrix * vec4(position, 1.0);
 
-    // Extract sphere radius from model matrix (assumes uniform scale)
-    float m_radius = length(vec3(instance_model_matrix[0][0], instance_model_matrix[0][1], instance_model_matrix[0][2]));
-    float s_radius = length(vec3(scene_matrix[0][0], scene_matrix[0][1], scene_matrix[0][2]));
+    // Extract scale components from model and scene matrices
+    vec3 model_scale = get_scale(instance_model_matrix);
+    vec3 scene_scale = get_scale(scene_matrix);
 
-    sphere_radius = m_radius * s_radius;
+    // For sphere: use X scale as radius
+    // For cylinder: use X/Y scale as radius, Z scale as half-height
+    sphere_radius = model_scale.x * scene_scale.x;
+    cylinder_half_height = model_scale.z * scene_scale.z;
 
     // Transform sphere center to view space
     vec3 sphere_center_world = (scene_matrix * instance_model_matrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -186,6 +192,10 @@ void ray_casting_sphere_position() {
     // Transform vertex position to view space
     vec3 vertex_world = (scene_matrix * instance_model_matrix * vec4(position, 1.0)).xyz;
     vertex_pos_view = (view_matrix * vec4(vertex_world, 1.0)).xyz;
+
+    // Calculate normal matrix for transforming normals from object space to view space
+    mat4 model_view_matrix = view_matrix * scene_matrix * instance_model_matrix;
+    normal_matrix_view = mat3(transpose(inverse(model_view_matrix)));
 }
 
 void normal_position() {
@@ -203,12 +213,7 @@ void main() {
         billboard_text_position();
     }
     else if (render_mode == RENDER_MODE_RAY_CASTING) {
-        if (ray_casting_object == RAY_CASTING_OBJECT_SPHERE) {
-            ray_casting_sphere_position();
-        }
-        else {
-            normal_position();
-        }
+        ray_casting_position();
     }
     else {
         normal_position();
@@ -243,6 +248,8 @@ flat in int frag_ray_casting_object;
 in vec3 sphere_center_view;
 in vec3 vertex_pos_view;
 in float sphere_radius;
+in float cylinder_half_height;
+in mat3 normal_matrix_view;
 
 uniform bool is_picking = false;
 uniform bool is_transparent = false;
@@ -283,6 +290,94 @@ vec3 ray_casting_sphere() {
 
     // Calculate intersection point in view space
     return ray_origin + ray_dir * t;
+}
+
+vec3 ray_casting_cylinder(out vec3 intersection_point, out vec3 cyl_normal) {
+    // Ray in view space: from camera (0,0,0) to fragment position
+    vec3 ray_origin = vec3(0.0, 0.0, 0.0);
+    vec3 ray_dir = normalize(vertex_pos_view);
+
+    // Cylinder parameters in view space
+    float cyl_radius = sphere_radius;
+    float cyl_half_height = cylinder_half_height;
+    vec3 cyl_center = sphere_center_view;
+
+    // Get cylinder axis in view space (Z-axis in local space transformed to view)
+    // The third column of normal_matrix_view is the transformed Z-axis
+    vec3 cyl_axis = normalize(normal_matrix_view * vec3(0.0, 0.0, 1.0));
+
+    // Vector from ray origin to cylinder center
+    vec3 oc = ray_origin - cyl_center;
+
+    // Project vectors onto plane perpendicular to cylinder axis
+    vec3 oc_perp = oc - dot(oc, cyl_axis) * cyl_axis;
+    vec3 rd_perp = ray_dir - dot(ray_dir, cyl_axis) * cyl_axis;
+
+    float t_final = -1.0;
+    vec3 final_normal = vec3(0.0);
+
+    // --- 1. Check cylinder side ---
+    float a = dot(rd_perp, rd_perp);
+    float b = 2.0 * dot(oc_perp, rd_perp);
+    float c = dot(oc_perp, oc_perp) - cyl_radius * cyl_radius;
+
+    float delta = b * b - 4.0 * a * c;
+
+    if (delta >= 0.0 && abs(a) > 0.0001) {
+        float t = (-b - sqrt(delta)) / (2.0 * a);
+        if (t > 0.0) {
+            vec3 hit_point = ray_origin + t * ray_dir;
+            float height = dot(hit_point - cyl_center, cyl_axis);
+
+            // Check if within cylinder height
+            if (abs(height) <= cyl_half_height) {
+                t_final = t;
+                // Normal is perpendicular to axis, pointing outward
+                vec3 point_on_axis = cyl_center + height * cyl_axis;
+                final_normal = normalize(hit_point - point_on_axis);
+            }
+        }
+    }
+
+    // --- 2. Check caps ---
+    float denom = dot(ray_dir, cyl_axis);
+    if (abs(denom) > 0.0001) {
+        // Top cap
+        float t_top = dot(cyl_center + cyl_half_height * cyl_axis - ray_origin, cyl_axis) / denom;
+        if (t_top > 0.0) {
+            vec3 p = ray_origin + t_top * ray_dir;
+            vec3 v = p - (cyl_center + cyl_half_height * cyl_axis);
+            if (dot(v, v) <= cyl_radius * cyl_radius) {
+                if (t_final < 0.0 || t_top < t_final) {
+                    t_final = t_top;
+                    final_normal = cyl_axis;
+                }
+            }
+        }
+
+        // Bottom cap
+        float t_bot = dot(cyl_center - cyl_half_height * cyl_axis - ray_origin, cyl_axis) / denom;
+        if (t_bot > 0.0) {
+            vec3 p = ray_origin + t_bot * ray_dir;
+            vec3 v = p - (cyl_center - cyl_half_height * cyl_axis);
+            if (dot(v, v) <= cyl_radius * cyl_radius) {
+                if (t_final < 0.0 || t_bot < t_final) {
+                    t_final = t_bot;
+                    final_normal = -cyl_axis;
+                }
+            }
+        }
+    }
+
+    // --- 3. Result ---
+    if (t_final < 0.0) {
+        discard;
+    }
+
+    intersection_point = ray_origin + ray_dir * t_final;
+    cyl_normal = final_normal;
+
+    return intersection_point;
 }
 
 vec4 blinn_phong(vec3 norm, float shininess) {
@@ -330,11 +425,22 @@ vec4 get_color(vec3 norm, float shininess) {
 
 void main() {
     vec3 norm = vec3(0.0, 0.0, 0.0);
+    vec3 intersection_point = vec3(0.0, 0.0, 0.0);
 
     // Handle ray casting sphere with correct depth
     if (frag_render_mode == RENDER_MODE_RAY_CASTING && frag_ray_casting_object == RAY_CASTING_OBJECT_SPHERE) {
-        vec3 intersection_point = ray_casting_sphere();
+        intersection_point = ray_casting_sphere();
         norm = normalize(intersection_point - sphere_center_view);
+
+        // Calculate correct depth for the intersection point
+        vec4 clip_space_pos = projection_matrix * vec4(intersection_point, 1.0);
+        float ndc_depth = clip_space_pos.z / clip_space_pos.w;
+        gl_FragDepth = (ndc_depth + 1.0) / 2.0;
+    }
+    else if (frag_render_mode == RENDER_MODE_RAY_CASTING && frag_ray_casting_object == RAY_CASTING_OBJECT_CYLINDER) {
+        vec3 cyl_normal;
+        intersection_point = ray_casting_cylinder(intersection_point, cyl_normal);
+        norm = cyl_normal;
 
         // Calculate correct depth for the intersection point
         vec4 clip_space_pos = projection_matrix * vec4(intersection_point, 1.0);

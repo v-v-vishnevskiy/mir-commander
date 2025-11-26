@@ -12,6 +12,7 @@ class Cone(BaseGraphicsNode):
         self.set_model(VAO_CONE_RESOURCE_NAME)
         self.set_q_rotation(Quaternion.rotation_to(Vector3D(0.0, 0.0, 1.0), direction))
         self.set_scale(Vector3D(self._radius, self._radius, self._length))
+        self.set_shader_param("lighting_model", 1)
 
     def set_size(self, radius: float, length: float):
         self._radius = radius
