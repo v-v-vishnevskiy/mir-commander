@@ -247,6 +247,7 @@ in float sphere_radius;
 uniform bool is_picking = false;
 uniform bool is_transparent = false;
 uniform int ray_casting_object = 0;
+uniform mat4 projection_matrix;
 uniform sampler2D tex_1;
 
 vec3 ray_casting_sphere() {
@@ -329,16 +330,21 @@ vec4 get_color(vec3 norm, float shininess) {
 
 void main() {
     vec3 norm = vec3(0.0, 0.0, 0.0);
-    if (frag_render_mode == RENDER_MODE_RAY_CASTING) {
-        if (frag_ray_casting_object == RAY_CASTING_OBJECT_SPHERE) {
-            norm = normalize(ray_casting_sphere() - sphere_center_view);
-        }
-        else {
-            norm = normalize(normal);
-        }
+
+    // Handle ray casting sphere with correct depth
+    if (frag_render_mode == RENDER_MODE_RAY_CASTING && frag_ray_casting_object == RAY_CASTING_OBJECT_SPHERE) {
+        vec3 intersection_point = ray_casting_sphere();
+        norm = normalize(intersection_point - sphere_center_view);
+
+        // Calculate correct depth for the intersection point
+        vec4 clip_space_pos = projection_matrix * vec4(intersection_point, 1.0);
+        float ndc_depth = clip_space_pos.z / clip_space_pos.w;
+        gl_FragDepth = (ndc_depth + 1.0) / 2.0;
     }
     else {
+        // For all other cases, use the normal and default depth
         norm = normalize(normal);
+        gl_FragDepth = gl_FragCoord.z;
     }
 
     if (is_picking) {

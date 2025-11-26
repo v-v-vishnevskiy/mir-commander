@@ -5,7 +5,7 @@ from mir_commander.core.graphics.utils import Color4f
 
 from .cone import Cone
 from .cylinder import Cylinder
-from .sphere import Sphere
+from .sphere import Cube
 
 
 class AxisLabel(TextNode):
@@ -54,9 +54,11 @@ class Axis(Node):
 
         self._axis_label = AxisLabel(color, text, 16, parent=self)
 
-        self._sphere = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
-        self._sphere.set_color(color)
-        self._sphere.set_shader_param("lighting_model", 1)
+        self._cube = Cube(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
+        self._cube.set_color(color)
+        self._cube.set_shader_param("lighting_model", 1)
+        self._cube.set_shader_param("render_mode", 3)
+        self._cube.set_shader_param("ray_casting_object", 1)
 
         self._update()
 
@@ -95,7 +97,7 @@ class Axis(Node):
     def set_color(self, color: Color4f):
         self._cylinder.set_color(color)
         self._cone.set_color(color)
-        self._sphere.set_color(color)
+        self._cube.set_color(color)
 
     def set_thickness(self, value: float):
         self._thickness = max(value, 0.03)
@@ -110,17 +112,17 @@ class Axis(Node):
         if self._both_directions:
             self._cylinder.set_length(self._length * 2)
             self._cylinder.set_position(-self._direction * self._length)
-            self._sphere.set_visible(True)
+            self._cube.set_visible(True)
         else:
             self._cylinder.set_length(self._length)
             self._cylinder.set_position(Vector3D(0.0, 0.0, 0.0))
-            self._sphere.set_visible(False)
+            self._cube.set_visible(False)
 
         self._cone.set_size(self._thickness * self._cone_radius_factor, self._thickness * self._cone_length_factor)
         self._cone.set_position(self._direction * self._length)
 
-        self._sphere.set_radius(self._thickness)
-        self._sphere.set_position(-self._direction * self._length)
+        self._cube.set_radius(self._thickness)
+        self._cube.set_position(-self._direction * self._length)
         self._axis_label.set_position(
             self._direction * self._length + self._direction * (self._thickness * self._cone_length_factor * 2)
         )
@@ -151,9 +153,11 @@ class CoordinateAxes(Node):
         self._x = Axis(Vector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
         self._y = Axis(Vector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
         self._z = Axis(Vector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
-        self._sphere = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
-        self._sphere.set_color((0.0, 0.0, 0.0, 1.0))
-        self._sphere.set_shader_param("lighting_model", 1)
+        self._cube = Cube(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
+        self._cube.set_color((0.0, 0.0, 0.0, 1.0))
+        self._cube.set_shader_param("lighting_model", 1)
+        self._cube.set_shader_param("render_mode", 3)
+        self._cube.set_shader_param("ray_casting_object", 1)
 
     @property
     def x(self) -> Axis:
@@ -210,7 +214,7 @@ class CoordinateAxes(Node):
         self._x.set_thickness(value)
         self._y.set_thickness(value)
         self._z.set_thickness(value)
-        self._sphere.set_radius(value)
+        self._cube.set_radius(value)
 
     def set_font_size(self, value: int):
         self._x.set_font_size(value)

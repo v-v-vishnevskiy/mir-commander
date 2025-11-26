@@ -10,7 +10,7 @@ from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
 from mir_commander.api.program import MessageChannel
 from mir_commander.core.algebra import Vector3D
 from mir_commander.core.chemistry import symbol_to_atomic_number
-from mir_commander.core.graphics.mesh import cone, cylinder, sphere
+from mir_commander.core.graphics.mesh import cone, cube, cylinder
 from mir_commander.core.graphics.opengl.errors import RendererError
 from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
@@ -28,7 +28,7 @@ from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
 
 from .build_bonds_dialog import BuildBondsDialog
 from .config import Config
-from .consts import VAO_CONE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME, VAO_SPHERE_RESOURCE_NAME
+from .consts import VAO_CONE_RESOURCE_NAME, VAO_CUBE_RESOURCE_NAME, VAO_CYLINDER_RESOURCE_NAME
 from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
 from .errors import CalcError, EmptyScalarFieldError
@@ -86,7 +86,7 @@ class Visualizer(OpenGLWidget):
         self.set_background_color(normalize_color(self._style.current.background.color))
 
         # Add VAOs to resource manager
-        self.resource_manager.add_vertex_array_object(VAO_SPHERE_RESOURCE_NAME, self._get_sphere_vao())
+        self.resource_manager.add_vertex_array_object(VAO_CUBE_RESOURCE_NAME, self._get_cube_vao())
         self.resource_manager.add_vertex_array_object(VAO_CONE_RESOURCE_NAME, self._get_cone_vao())
         self.resource_manager.add_vertex_array_object(VAO_CYLINDER_RESOURCE_NAME, self._get_cylinder_vao())
 
@@ -308,18 +308,13 @@ class Visualizer(OpenGLWidget):
     def new_cursor_position(self, x: int, y: int):
         self._handle_node_under_cursor(x, y)
 
-    def _get_sphere_vao(self) -> VertexArrayObject:
-        logger.debug("Initializing sphere mesh data")
+    def _get_cube_vao(self) -> VertexArrayObject:
+        logger.debug("Initializing cube mesh data")
 
-        mesh_quality = self._config.quality.mesh
-        stacks, slices = int(sphere.min_stacks * mesh_quality), int(sphere.min_slices * mesh_quality)
-        tmp_vertices = sphere.get_vertices(stacks=stacks, slices=slices)
-        faces = sphere.get_faces(stacks=stacks, slices=slices)
+        tmp_vertices = cube.get_vertices()
+        faces = cube.get_faces()
         vertices = unwind_vertices(tmp_vertices, faces)
-        if self._config.quality.smooth:
-            normals = compute_smooth_normals(vertices)
-        else:
-            normals = compute_face_normals(vertices)
+        normals = compute_face_normals(vertices)
 
         return VertexArrayObject(vertices, normals)
 
