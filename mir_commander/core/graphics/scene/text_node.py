@@ -22,7 +22,6 @@ class TextNode(Node):
         self._text = ""
         self._font_atlas_name = font_atlas_name
         self._align = align
-        self.set_shader("text")
 
     @property
     def text(self) -> str:
@@ -48,6 +47,8 @@ class TextNode(Node):
             char_node.set_texture(f"font_atlas_{self.font_atlas_name}")
             char_node.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
             char_node.set_color(self._color)
+            char_node.set_shader_param("render_mode", 2)
+            char_node.set_shader_param("lighting_model", 2)
             char_node.metadata["char"] = char
             char_node.metadata["idx"] = i
 

@@ -69,7 +69,7 @@ class Bond(Node):
             c.set_color(color)
             c.set_position(position)
             c.set_size(self._radius, length)
-            c.set_shader("default")
+            c.set_shader_param("lighting_model", 1)
 
     def set_radius(self, radius: float):
         self._radius = radius

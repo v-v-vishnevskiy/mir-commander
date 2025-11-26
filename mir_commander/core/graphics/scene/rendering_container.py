@@ -71,6 +71,10 @@ class RenderingContainer(Generic[T]):
         for group_id, batches in self.batches:
             _batches.append(f"group_id={group_id}:")
             for node in batches:
-                _batches.append(f"  {node}")
+                _batches.append(f"    {node}")
 
-        return f"{self.__class__.__name__}(name={self.name}, batches={'\n'.join(_batches)})"
+        return f"""{self.__class__.__name__}(
+  name={self.name},
+  dirty={self._dirty},
+  batches={"\n  ".join(_batches)}
+ )"""

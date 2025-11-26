@@ -45,18 +45,18 @@ class Axis(Node):
         self._both_directions = False
 
         self._cylinder = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
-        self._cylinder.set_shader("default")
         self._cylinder.set_color(color)
+        self._cylinder.set_shader_param("lighting_model", 1)
 
         self._cone = Cone(direction, parent=self, node_type=NodeType.OPAQUE)
-        self._cone.set_shader("default")
         self._cone.set_color(color)
+        self._cone.set_shader_param("lighting_model", 1)
 
         self._axis_label = AxisLabel(color, text, 16, parent=self)
 
         self._sphere = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
-        self._sphere.set_shader("default")
         self._sphere.set_color(color)
+        self._sphere.set_shader_param("lighting_model", 1)
 
         self._update()
 
@@ -152,8 +152,8 @@ class CoordinateAxes(Node):
         self._y = Axis(Vector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
         self._z = Axis(Vector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
         self._sphere = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
-        self._sphere.set_shader("default")
         self._sphere.set_color((0.0, 0.0, 0.0, 1.0))
+        self._sphere.set_shader_param("lighting_model", 1)
 
     @property
     def x(self) -> Axis:

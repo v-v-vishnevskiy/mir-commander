@@ -10,8 +10,6 @@ from mir_commander.core.graphics.camera import Camera
 from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
 from mir_commander.core.graphics.mesh import rect
 from mir_commander.core.graphics.opengl.renderer import PaintMode, Renderer
-from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
-from mir_commander.core.graphics.opengl.shaders import fragment, vertex
 from mir_commander.core.graphics.opengl.texture2d import Texture2D
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
 from mir_commander.core.graphics.projection import ProjectionManager, ProjectionMode
@@ -72,35 +70,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.release()
 
     def init_shaders(self):
-        self.resource_manager.add_shader(
-            "default",
-            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.BLINN_PHONG)),
-        )
-        self.resource_manager.add_shader(
-            "billboard",
-            ShaderProgram(
-                VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD), FragmentShader(fragment.BLINN_PHONG)
-            ),
-        )
-        self.resource_manager.add_shader(
-            "text",
-            ShaderProgram(
-                VertexShader(vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD_TEXT), FragmentShader(fragment.TEXTURE)
-            ),
-        )
-        self.resource_manager.add_shader(
-            "transparent_flat",
-            ShaderProgram(
-                VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.WBOIT_TRANSPARENT_FLAT)
-            ),
-        )
-        self.resource_manager.add_shader(
-            "transparent",
-            ShaderProgram(VertexShader(vertex.COMPUTE_POSITION_INSTANCED), FragmentShader(fragment.WBOIT_TRANSPARENT)),
-        )
-        self.resource_manager.add_shader(
-            "picking", ShaderProgram(VertexShader(vertex.PICKING), FragmentShader(fragment.PICKING))
-        )
+        pass
 
     def add_font_atlas(self, font_data: bytes, font_atlas_name: str):
         atlas_size = 4096

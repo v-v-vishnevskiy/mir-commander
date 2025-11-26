@@ -86,6 +86,7 @@ cleanup_paths = [
     "**/app/mir_commander/core/**/*.py",
     "**/app/mir_commander/ui/**/*.py",
     "**/app/plugins/**/src/**/*.py",
+    "**/app/**/*.pyc",
     "**/app/**/*.cpp",
     "**/app/**/*.c",
     "**/app/**/*.png",

@@ -25,7 +25,7 @@ class Isosurface(BaseGraphicsNode):
         self._resource_manager = resource_manager
 
         self.set_color(color)
-        self.set_shader("transparent" if color[3] < 1.0 else "default")
+        self.set_shader_param("lighting_model", 1)
 
     @property
     def inverted(self) -> bool:
@@ -38,7 +38,6 @@ class Isosurface(BaseGraphicsNode):
     def set_color(self, color: Color4f):
         super().set_color(color)
         self.set_node_type(NodeType.TRANSPARENT if color[3] < 1.0 else NodeType.OPAQUE)
-        self.set_shader("transparent" if color[3] < 1.0 else "default")
 
     def remove(self):
         parent = self.parent

@@ -19,7 +19,7 @@ class Sphere(BaseGraphicsNode):
         self.set_scale(Vector3D(radius, radius, radius))
         self.set_color(color)
         self.set_model(VAO_SPHERE_RESOURCE_NAME)
-        self.set_shader("default")
+        self.set_shader_param("lighting_model", 1)
 
         self._radius = radius
 

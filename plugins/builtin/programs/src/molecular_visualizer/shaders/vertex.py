@@ -4,10 +4,10 @@ ATOM_LABEL = """
 layout (location = 0) in vec3 position;  // world vertex position
 layout (location = 2) in vec2 in_texcoord;
 layout (location = 3) in vec4 instance_color;
-layout (location = 4) in mat4 instance_model_matrix;
-layout (location = 8) in vec3 instance_char_local_position;
-layout (location = 10) in vec3 instance_text_world_position;
-layout (location = 11) in vec3 instance_atom_world_position;
+layout (location = 7) in mat4 instance_model_matrix;
+layout (location = 11) in vec3 instance_char_local_position;
+layout (location = 13) in vec3 instance_text_world_position;
+layout (location = 14) in vec3 instance_atom_world_position;
 
 uniform mat4 scene_matrix;
 uniform mat4 view_matrix;

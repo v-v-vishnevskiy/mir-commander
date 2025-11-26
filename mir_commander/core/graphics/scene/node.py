@@ -42,6 +42,7 @@ class Node:
         "_texture_name",
         "_model_name",
         "_color",
+        "_shader_params",
         "_children",
         "metadata",
     )
@@ -89,6 +90,8 @@ class Node:
         self._texture_name: str = ""
         self._model_name: str = ""
         self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
+
+        self._shader_params: dict[str, Any] = {}
 
         self._children: set[Self] = set()
         self.metadata: dict[str, Any] = {}
@@ -160,6 +163,10 @@ class Node:
     @property
     def color(self) -> Color4f:
         return self._color
+
+    @property
+    def shader_params(self) -> dict[str, Any]:
+        return self._shader_params
 
     @property
     def group_id(self) -> Hashable:
@@ -312,6 +319,10 @@ class Node:
         self._color = color
         self._root_node.notify_set_dirty(self)
 
+    def set_shader_param(self, name: str, value: Any):
+        self._shader_params[name] = value
+        # self._root_node.notify_set_dirty(self)
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Node):
             return False
@@ -321,4 +332,4 @@ class Node:
         return self._id
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self._id}, visible={self.visible})"
+        return f"{self.__class__.__name__}(id={self._id}, node_type={self._node_type}, visible={self.visible})"
