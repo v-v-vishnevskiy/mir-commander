@@ -10,16 +10,16 @@ from .sphere import Sphere
 
 class AxisLabel(TextNode):
     def __init__(self, color: Color4f, text: str, size: int, *args, **kwargs):
-        kwargs["visible"] = True
-        kwargs["align"] = "center"
-        super().__init__(*args, **kwargs)
-
         self._size = size
 
         s = size / 100.0
-        self.set_scale(Vector3D(s, s, s))
-        self.set_color(color)
-        self.set_text(text)
+
+        kwargs["visible"] = True
+        kwargs["align"] = "center"
+        kwargs["text"] = text
+        kwargs["color"] = color
+        kwargs["scale"] = Vector3D(s, s, s)
+        super().__init__(*args, **kwargs)
 
     @property
     def size(self) -> int:

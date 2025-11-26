@@ -19,7 +19,6 @@ class TextNode(Node):
         **kwargs,
     ):
         kwargs["node_type"] = NodeType.TEXT
-        kwargs["color"] = (0.0, 0.0, 0.0, 1.0)
         super().__init__(*args, **kwargs)
 
         self._modify_children = True

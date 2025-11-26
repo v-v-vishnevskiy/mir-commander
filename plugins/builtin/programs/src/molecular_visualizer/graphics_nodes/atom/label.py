@@ -13,7 +13,6 @@ class Label(TextNode):
         self._symbol = symbol
         self._number = number
 
-        kwargs["text"] = self._get_text()
         kwargs["shader_name"] = "atom_label"
         kwargs["color"] = color_to_color4f(config.color)
         kwargs["scale"] = Vector3D(self._size, self._size, self._size)
@@ -37,6 +36,11 @@ class Label(TextNode):
         s = config.size / 100.0
         self.set_scale(Vector3D(s, s, s))
         self.set_font_atlas_name(config.font)
+
+    def set_visible(self, value: bool, *args, **kwargs):
+        if value and not self.children:
+            self._update_text()
+        super().set_visible(value, *args, **kwargs)
 
     def set_symbol(self, symbol: str):
         if symbol == self._symbol:

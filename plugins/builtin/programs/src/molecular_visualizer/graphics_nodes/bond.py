@@ -22,7 +22,6 @@ class Bond(Node):
         self._radius = radius
         self._atom_1 = atom_1
         self._atom_2 = atom_2
-        self._smooth = True
         self._atoms_color = atoms_color
         self._color = color
 
