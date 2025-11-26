@@ -492,6 +492,20 @@ class Renderer:
         self._height = 1
         self._samples = 4
 
+        # Create dummy 1x1 white texture to avoid OpenGL warnings when no texture is bound
+        self._dummy_texture = self._create_dummy_texture()
+
+    def _create_dummy_texture(self) -> int:
+        """Create a 1x1 white texture to use when no texture is needed"""
+        texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, texture)
+        white_pixel = np.array([255, 255, 255, 255], dtype=np.uint8)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white_pixel)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glBindTexture(GL_TEXTURE_2D, 0)
+        return texture
+
     @property
     def background_color(self) -> Color4f:
         return self._bg_color
@@ -550,6 +564,10 @@ class Renderer:
     def _paint_picking(self, rc: RenderingContainer[Node]):
         prev_model_name = ""
 
+        # Bind dummy texture to avoid OpenGL warnings
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self._dummy_texture)
+
         self._setup_shader("", "default", False, True)
 
         for group_id, nodes in rc.batches:
@@ -566,6 +584,10 @@ class Renderer:
         prev_shader_name = ""
         prev_texture_name = ""
         prev_model_name = ""
+
+        # Bind dummy texture initially to avoid OpenGL warnings
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self._dummy_texture)
 
         for group_id, nodes in rc.batches:
             shader_name, texture_name, model_name = cast(tuple[str, str, str], group_id)
@@ -601,10 +623,10 @@ class Renderer:
             glActiveTexture(GL_TEXTURE0)
             texture.bind()
             return texture_name
-        # Unbind texture if needed
+        # Bind dummy texture when no texture is needed
         elif texture_name == "" and prev_texture_name != "":
-            texture = self._resource_manager.get_texture(prev_texture_name)
-            texture.unbind()
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, self._dummy_texture)
             return texture_name
         return prev_texture_name
 
@@ -865,3 +887,4 @@ class Renderer:
         self._wboit_picking.release()
         for buffers in self._buffers.values():
             glDeleteBuffers(1, list(buffers))
+        glDeleteTextures([self._dummy_texture])
