@@ -20,7 +20,6 @@ class Atom(Node):
         self,
         index_number: int,
         atomic_number: int,
-        position: Vector3D,
         radius: float,
         color: Color4f,
         selected_atom_config: SelectedAtom,
@@ -30,8 +29,6 @@ class Atom(Node):
     ):
         super().__init__(*args, **kwargs | dict(node_type=NodeType.CONTAINER))
 
-        self.set_position(position)
-
         self._index = index_number
         self.atomic_num = atomic_number
         self._related_bonds: set["Bond"] = set()
@@ -39,12 +36,16 @@ class Atom(Node):
         self._selected = False
         self._selected_atom_config = selected_atom_config
         self._label_config = label_config
-        self._sphere = Sphere(radius, color, parent=self)
+        self._sphere = Sphere(radius, parent=self, color=color)
         self._bounding_sphere: None | BoundingSphere = None
-        self._label = Label(self._label_config, self.element_symbol, self._index + 1, parent=self)
+        self._label = Label(
+            self._label_config,
+            self.element_symbol,
+            self._index + 1,
+            parent=self,
+            position=Vector3D(0.0, 0.0, radius + self._label_config.offset),
+        )
         self._selection_update = 0.0
-
-        self.update_label_position()
 
     def add_related_bond(self, bond: "Bond"):
         self._related_bonds.add(bond)

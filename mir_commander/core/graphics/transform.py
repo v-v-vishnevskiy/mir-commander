@@ -21,11 +21,16 @@ def normalize_angle(angle: float) -> float:
 class Transform:
     __slots__ = ("_matrix", "_scale", "_rotation", "_position", "_dirty", "_pitch", "_yaw", "_roll")
 
-    def __init__(self):
+    def __init__(
+        self,
+        position: Vector3D = Vector3D(0.0, 0.0, 0.0),
+        scale: Vector3D = Vector3D(1.0, 1.0, 1.0),
+        rotation: Quaternion = Quaternion(),
+    ):
         self._matrix = Matrix4x4()
-        self._scale = Vector3D(1.0, 1.0, 1.0)
-        self._rotation = Quaternion()
-        self._position = Vector3D(0.0, 0.0, 0.0)
+        self._scale = scale
+        self._rotation = rotation
+        self._position = position
         self._pitch = 0.0
         self._yaw = 0.0
         self._roll = 0.0

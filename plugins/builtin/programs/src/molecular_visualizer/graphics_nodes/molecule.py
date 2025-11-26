@@ -90,6 +90,16 @@ class Molecule(Node):
                 return False
         return True
 
+    def _get_bonds_color(self) -> tuple[bool, Color4f]:
+        if type(self._style.bond.color) is Color:
+            color = normalize_color(self._style.bond.color)
+            atoms_color = False
+        else:
+            color = (0.5, 0.5, 0.5, 1.0)
+            atoms_color = True
+
+        return atoms_color, color
+
     def _get_atom(self, atom_index: int) -> Atom:
         try:
             return self.atom_items[atom_index]
@@ -305,40 +315,35 @@ class Molecule(Node):
             self._geom_bond_tolerance,
             covalent_radius,
         )
+
+        atoms_color, color = self._get_bonds_color()
         for i, j in bonds:
-            self.add_bond(self.atom(i), self.atom(j))
+            # TODO: passing atoms_color and color is not efficient. It take too much time to build bonds.
+            self.add_bond(self.atom(i), self.atom(j), atoms_color, color)
 
     def add_atom(self, index: int) -> Atom:
         atomic_num = self._atomic_coordinates.atomic_num[index]
         radius, color = self._get_atom_radius_and_color(atomic_num)
-        position = Vector3D(
-            self._atomic_coordinates.x[index], self._atomic_coordinates.y[index], self._atomic_coordinates.z[index]
-        )
 
         item = Atom(
             index,
             atomic_num,
-            position,
             radius,
             color,
             selected_atom_config=self._style.selected_atom,
             label_config=self._atom_label_config,
             parent=self,
+            position=Vector3D(
+                self._atomic_coordinates.x[index], self._atomic_coordinates.y[index], self._atomic_coordinates.z[index]
+            ),
         )
         self.atom_items.append(item)
 
         return item
 
-    def add_bond(self, atom_1: Atom, atom_2: Atom):
+    def add_bond(self, atom_1: Atom, atom_2: Atom, atoms_color: bool, color: Color4f):
         if atom_1 == atom_2:
             raise ValueError(f"The same atom {atom_1.index} cannot be bonded to itself")
-
-        if type(self._style.bond.color) is Color:
-            color = normalize_color(self._style.bond.color)
-            atoms_color = False
-        else:
-            color = (0.5, 0.5, 0.5, 1.0)
-            atoms_color = True
 
         Bond(
             atom_1,
@@ -648,11 +653,12 @@ class Molecule(Node):
         """
 
         selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
+        atoms_color, color = self._get_bonds_color()
         for atom1, atom2 in combinations(selected_atoms, 2):
             try:
                 self.get_bond(atom1, atom2).remove()
             except ValueError:
-                self.add_bond(atom1, atom2)
+                self.add_bond(atom1, atom2, atoms_color, color)
 
     def add_bonds_for_selected_atoms(self):
         """
@@ -660,11 +666,12 @@ class Molecule(Node):
         """
 
         selected_atoms = list(filter(lambda x: x.selected, self.atom_items))
+        atoms_color, color = self._get_bonds_color()
         for atom1, atom2 in combinations(selected_atoms, 2):
             try:
                 self.get_bond(atom1, atom2)
             except ValueError:
-                self.add_bond(atom1, atom2)
+                self.add_bond(atom1, atom2, atoms_color, color)
 
     def remove_bonds_for_selected_atoms(self):
         """

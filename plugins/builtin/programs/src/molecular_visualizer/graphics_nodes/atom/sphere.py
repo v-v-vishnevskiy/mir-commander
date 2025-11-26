@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from mir_commander.core.algebra import Vector3D
 from mir_commander.core.graphics.scene.node import NodeType
-from mir_commander.core.graphics.utils import Color4f
 
 from ...consts import VAO_CUBE_RESOURCE_NAME
 from ..base import BaseGraphicsNode
@@ -14,14 +13,11 @@ if TYPE_CHECKING:
 class Sphere(BaseGraphicsNode):
     parent: "Atom"
 
-    def __init__(self, radius: float, color: Color4f, *args, **kwargs):
+    def __init__(self, radius: float, *args, **kwargs):
+        kwargs["model_name"] = VAO_CUBE_RESOURCE_NAME
+        kwargs["shader_params"] = {"lighting_model": 1, "render_mode": 3, "ray_casting_object": 1}
+        kwargs["scale"] = Vector3D(radius, radius, radius)
         super().__init__(*args, **kwargs | dict(node_type=NodeType.OPAQUE, picking_visible=True))
-        self.set_scale(Vector3D(radius, radius, radius))
-        self.set_color(color)
-        self.set_model(VAO_CUBE_RESOURCE_NAME)
-        self.set_shader_param("lighting_model", 1)
-        self.set_shader_param("render_mode", 3)
-        self.set_shader_param("ray_casting_object", 1)
 
         self._radius = radius
 

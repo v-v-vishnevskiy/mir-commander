@@ -54,6 +54,15 @@ class Node:
         root_node: Optional["RootNode"] = None,
         visible: bool = True,
         picking_visible: bool = False,
+        position: Vector3D = Vector3D(0.0, 0.0, 0.0),
+        scale: Vector3D = Vector3D(1.0, 1.0, 1.0),
+        rotation: Quaternion = Quaternion(),
+        shader_name: str = "",
+        texture_name: str = "",
+        model_name: str = "",
+        color: Color4f = (1.0, 1.0, 1.0, 1.0),
+        shader_params: None | dict[str, Any] = None,
+        metadata: None | dict[str, Any] = None,
     ):
         Node._id_counter += 1
         self._id = Node._id_counter
@@ -74,7 +83,7 @@ class Node:
 
         # True - transform has been changed, False - transform is up to date
         self._transform_dirty = True
-        self._transform = Transform()
+        self._transform = Transform(position, scale, rotation)
         self._transform_matrix = Matrix4x4()
 
         self._modify_children: bool = False
@@ -86,15 +95,15 @@ class Node:
 
         self._picking_color = id_to_color(self._picking_id)
 
-        self._shader_name: str = ""
-        self._texture_name: str = ""
-        self._model_name: str = ""
-        self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
+        self._shader_name: str = shader_name
+        self._texture_name: str = texture_name
+        self._model_name: str = model_name
+        self._color: Color4f = color
 
-        self._shader_params: dict[str, Any] = {}
+        self._shader_params: dict[str, Any] = shader_params or {}
 
         self._children: set[Self] = set()
-        self.metadata: dict[str, Any] = {}
+        self.metadata: dict[str, Any] = metadata or {}
         self._root_node.notify_add_node(self)
 
     @property
@@ -321,7 +330,7 @@ class Node:
 
     def set_shader_param(self, name: str, value: Any):
         self._shader_params[name] = value
-        # self._root_node.notify_set_dirty(self)
+        self._root_node.notify_set_dirty(self)
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Node):

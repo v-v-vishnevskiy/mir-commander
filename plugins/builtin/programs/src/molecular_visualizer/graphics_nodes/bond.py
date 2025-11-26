@@ -62,10 +62,9 @@ class Bond(Node):
         self.clear()
         bonds = self._build_bonds()
         for position, direction, length, color in bonds:
-            c = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
-            c.set_color(color)
-            c.set_size(self._radius, length)
-            c.set_position(position)
+            Cylinder(
+                direction, length, self._radius, parent=self, node_type=NodeType.OPAQUE, color=color, position=position
+            )
 
     def set_radius(self, radius: float):
         self._radius = radius

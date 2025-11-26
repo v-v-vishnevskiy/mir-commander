@@ -44,16 +44,12 @@ class Axis(Node):
         self._cone_length_factor = 6.0
         self._both_directions = False
 
-        self._cylinder = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
-        self._cylinder.set_color(color)
-
-        self._cone = Cone(direction, parent=self, node_type=NodeType.OPAQUE)
-        self._cone.set_color(color)
-
+        self._cylinder = Cylinder(
+            direction, self._length, self._thickness, parent=self, node_type=NodeType.OPAQUE, color=color
+        )
+        self._cone = Cone(direction, parent=self, node_type=NodeType.OPAQUE, color=color)
         self._axis_label = AxisLabel(color, text, 16, parent=self)
-
-        self._cube = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False)
-        self._cube.set_color(color)
+        self._cube = Sphere(self._thickness, parent=self, node_type=NodeType.OPAQUE, visible=False, color=color)
 
         self._update()
 
@@ -148,8 +144,7 @@ class CoordinateAxes(Node):
         self._x = Axis(Vector3D(1.0, 0.0, 0.0), (1.0, 0.4, 0.4, 1.0), "x", parent=self)
         self._y = Axis(Vector3D(0.0, 1.0, 0.0), (0.4, 1.0, 0.4, 1.0), "y", parent=self)
         self._z = Axis(Vector3D(0.0, 0.0, 1.0), (0.4, 0.4, 1.0, 1.0), "z", parent=self)
-        self._cube = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE)
-        self._cube.set_color((0.0, 0.0, 0.0, 1.0))
+        self._cube = Sphere(self._x.thickness, parent=self, node_type=NodeType.OPAQUE, color=(0.0, 0.0, 0.0, 1.0))
 
     @property
     def x(self) -> Axis:
