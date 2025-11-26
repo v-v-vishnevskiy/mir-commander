@@ -6,7 +6,7 @@ min_stacks = 1
 min_slices = 3
 
 
-def get_vertices(stacks: int, slices: int, radius: float = 1.0, length: float = 1.0, caps: bool = True) -> np.ndarray:
+def get_vertices(slices: int, radius: float = 1.0, length: float = 2.0, caps: bool = True) -> np.ndarray:
     vertices = []
 
     x_list = []
@@ -16,12 +16,7 @@ def get_vertices(stacks: int, slices: int, radius: float = 1.0, length: float = 
         x_list.append(cos(f * i) * radius)
         y_list.append(sin(f * i) * radius)
 
-    fraction = length / stacks
-    start = 0.0
-    z_list = [start]
-    for _ in range(stacks):
-        start += fraction
-        z_list.append(start)
+    z_list = [-length, length]
 
     if caps:
         vertices.extend([0.0, 0.0, z_list[0]])
@@ -36,8 +31,10 @@ def get_vertices(stacks: int, slices: int, radius: float = 1.0, length: float = 
     return np.array(vertices, dtype=np.float32)
 
 
-def get_faces(stacks: int, slices: int, caps: bool = True) -> np.ndarray:
+def get_faces(slices: int, caps: bool = True) -> np.ndarray:
     faces = []
+
+    stacks = 1
 
     # the top cap
     if caps:

@@ -40,35 +40,32 @@ class Bond(Node):
         self._atom_2.remove_bond(self)
         super().remove()
 
-    def _build_bonds(self) -> list[tuple[Vector3D, float, Color4f]]:
-        result = []
-
+    def _build_bonds(self) -> list[tuple[Vector3D, Vector3D, float, Color4f]]:
+        direction = (self._atom_2.position - self._atom_1.position).normalized
         length = (self._atom_1.position - self._atom_2.position).length
         if self._atoms_color and self._atom_1.atomic_num != self._atom_2.atomic_num:
-            mid_length = length - self._atom_1.radius - self._atom_2.radius
+            mid_length = (length - self._atom_1.radius - self._atom_2.radius) / 2
             if mid_length > 0:
-                length_1 = self._atom_1.radius + mid_length / 2
-                length_2 = self._atom_2.radius + mid_length / 2
-                mid = self._atom_2.position - self._atom_1.position
-                mid.normalize()
-                mid = (mid * length_1) + self._atom_1.position
-                result.append((self._atom_1.position, length_1, self._atom_1.color))
-                result.append((mid, length_2, self._atom_2.color))
+                length_1 = self._atom_1.radius + mid_length
+                length_2 = self._atom_2.radius + mid_length
+                return [
+                    (self._atom_1.position, direction, length_1, self._atom_1.color),
+                    (self._atom_1.position + direction * length_1, direction, length_2, self._atom_2.color),
+                ]
         else:
-            position = self._atom_1.position
-            result.append((position, length, self._atom_1.color if self._atoms_color else self._color))
-
-        return result
+            return [
+                (self._atom_1.position, direction, length, self._atom_1.color if self._atoms_color else self._color)
+            ]
+        return []
 
     def _add_bonds(self):
         self.clear()
         bonds = self._build_bonds()
-        direction = self._atom_2.position - self._atom_1.position
-        for position, length, color in bonds:
+        for position, direction, length, color in bonds:
             c = Cylinder(direction, parent=self, node_type=NodeType.OPAQUE)
             c.set_color(color)
-            c.set_position(position)
             c.set_size(self._radius, length)
+            c.set_position(position)
             c.set_shader_param("lighting_model", 1)
 
     def set_radius(self, radius: float):
