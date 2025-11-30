@@ -180,7 +180,7 @@ class Node:
     @property
     def group_id(self) -> Hashable:
         if self._node_type in (NodeType.OPAQUE, NodeType.TRANSPARENT, NodeType.CHAR):
-            return self._shader_name, self._texture_name, self._model_name
+            return self._node_type.value, self._shader_name, self._texture_name, self._model_name
         return None
 
     @property
@@ -192,11 +192,8 @@ class Node:
         if include_self:
             result.append(self)
 
-        stack = self._children.copy()
-        while stack:
-            node = stack.pop()
-            result.append(node)
-            stack.update(node._children)
+        for child in self._children:
+            result.extend(child._get_all_children(include_self=True))
 
         return result
 

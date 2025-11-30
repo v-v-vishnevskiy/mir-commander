@@ -571,12 +571,12 @@ class Renderer:
         self._setup_shader("", "default", False, True)
 
         for group_id, nodes in rc.batches:
-            _, _, model_name = cast(tuple[None, None, str], group_id)
+            _, _, _, model_name = cast(tuple[None, None, None, str], group_id)
 
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
 
-            self._setup_instanced_rendering(rc, group_id, nodes, False, True)
+            self._setup_instanced_rendering(rc, group_id, nodes, True)
 
             glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
 
@@ -590,7 +590,7 @@ class Renderer:
         glBindTexture(GL_TEXTURE_2D, self._dummy_texture)
 
         for group_id, nodes in rc.batches:
-            shader_name, texture_name, model_name = cast(tuple[str, str, str], group_id)
+            _, shader_name, texture_name, model_name = cast(tuple[str, str, str, str], group_id)
 
             shader_name = shader_name or "default"
             self._setup_shader(prev_shader_name, shader_name, is_transparent, False)
@@ -601,7 +601,7 @@ class Renderer:
             triangles_count = self._setup_vao(prev_model_name, model_name)
             prev_model_name = model_name
 
-            self._setup_instanced_rendering(rc, group_id, nodes, is_transparent, False)
+            self._setup_instanced_rendering(rc, group_id, nodes, False)
 
             # OPTIMIZATION: Single draw call for all instances
             glDrawArraysInstanced(GL_TRIANGLES, 0, triangles_count, len(nodes))
@@ -638,10 +638,10 @@ class Renderer:
         return vao.triangles_count
 
     def _setup_instanced_rendering(
-        self, rc: RenderingContainer[Node], group_id: Hashable, nodes: set[Node], is_transparent: bool, is_picking: bool
+        self, rc: RenderingContainer[Node], group_id: Hashable, nodes: set[Node], is_picking: bool
     ):
         # OPTIMIZATION: Use instanced rendering for multiple objects with same geometry
-        buffer_ids = self._get_normal_buffer((group_id, is_transparent, is_picking))
+        buffer_ids = self._get_normal_buffer((group_id, is_picking))
 
         collect_data = rc._dirty.get(group_id, False)
 

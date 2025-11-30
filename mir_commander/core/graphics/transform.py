@@ -54,7 +54,7 @@ class Transform:
 
     @property
     def position(self) -> Vector3D:
-        return Vector3D(self._position.x, self._position.y, self._position.z)
+        return self._position
 
     @property
     def dirty(self) -> int:

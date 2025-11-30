@@ -8,7 +8,7 @@ class Cylinder(BaseGraphicsNode):
     def __init__(self, direction: Vector3D, length: float, radius: float, *args, **kwargs):
         self._length = length / 2
         self._radius = radius
-        self._direction = direction.normalized
+        self._direction = direction
 
         kwargs["model_name"] = VAO_CUBE_RESOURCE_NAME
         kwargs["shader_params"] = {"lighting_model": 1, "render_mode": 3, "ray_casting_object": 2}
