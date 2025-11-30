@@ -50,6 +50,7 @@ from OpenGL.GL import (
     glUniform1i,
     glUniformMatrix4fv,
     glVertexAttribDivisor,
+    glVertexAttribIPointer,
     glVertexAttribPointer,
     glViewport,
 )
@@ -775,7 +776,11 @@ class Renderer:
                 glVertexAttribDivisor(index + i, 1)  # Updated for each instance
         else:
             glEnableVertexAttribArray(index)
-            glVertexAttribPointer(index, size, type, False, 0, None)
+            # Use glVertexAttribIPointer for integer types (required for Linux/Mesa drivers)
+            if type == GL_INT:
+                glVertexAttribIPointer(index, size, type, 0, None)
+            else:
+                glVertexAttribPointer(index, size, type, False, 0, None)
             glVertexAttribDivisor(index, 1)
 
     def _setup_uniforms(self, uniform_locations: UniformLocations, is_transparent: bool, is_picking: bool):
