@@ -2,8 +2,9 @@ import logging
 from pathlib import Path
 from typing import Any, cast
 
+from OpenGL.GL import GL_VERSION, glGetString
 from PIL import Image, ImageCms
-from PySide6.QtGui import QIcon, QSurfaceFormat
+from PySide6.QtGui import QIcon, QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 from PySide6.QtWidgets import QWidget
 
 from mir_commander.api.data_structures import AtomicCoordinates, VolumeCube
@@ -29,8 +30,7 @@ class Program(BaseProgram):
     config: Config
 
     def __init__(self, all: bool = False, *args, **kwargs):
-        if QSurfaceFormat.defaultFormat().version() < (3, 3):
-            raise ProgramError("OpenGL 3.3 or higher is required")
+        self._check_opengl_version()
 
         super().__init__(*args, **kwargs)
 
@@ -50,6 +50,44 @@ class Program(BaseProgram):
         if isinstance(self.node.project_node.data, VolumeCube):
             self._volume_cube_nodes.append(self.node)
             self.visualizer.set_volume_cube(self.node.project_node.data)
+
+    def _check_opengl_version(self):
+        """Check if OpenGL version is 3.3 or higher"""
+        surface_format = QSurfaceFormat()
+        surface_format.setVersion(3, 3)
+        surface_format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+
+        context = QOpenGLContext()
+        context.setFormat(surface_format)
+
+        if not context.create():
+            raise ProgramError("Failed to create OpenGL context")
+
+        surface = QOffscreenSurface()
+        surface.setFormat(context.format())
+        surface.create()
+
+        if not context.makeCurrent(surface):
+            raise ProgramError("Failed to make OpenGL context current")
+
+        try:
+            version_string = glGetString(GL_VERSION)
+            if version_string is None:
+                raise ProgramError("Failed to get OpenGL version")
+
+            version_str = version_string.decode("utf-8").split()[0]
+            major, minor = map(int, version_str.split(".")[:2])
+
+            if (major, minor) < (3, 3):
+                raise ProgramError(f"OpenGL 3.3 or higher is required (found {major}.{minor})")
+        except ProgramError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to check OpenGL version: {e}")
+            raise ProgramError("Failed to check OpenGL version")
+        finally:
+            context.doneCurrent()
+            surface.destroy()
 
     def _get_node(self, node_id: int) -> UINode:
         for nodes_list in [self._atomic_coordinates_nodes, self._volume_cube_nodes]:
