@@ -27,6 +27,7 @@ from OpenGL.GL import (
     GL_RED,
     GL_RGBA,
     GL_RGBA16F,
+    GL_SAMPLE_SHADING,
     GL_TEXTURE0,
     GL_TEXTURE1,
     GL_TEXTURE2,
@@ -49,6 +50,7 @@ from OpenGL.GL import (
     glDrawBuffers,
     glEnable,
     glGetUniformLocation,
+    glMinSampleShading,
     glReadBuffer,
     glUniform1i,
 )
@@ -195,8 +197,11 @@ class WBOIT:
     def setup(self):
         if self._samples > 0:
             glEnable(GL_MULTISAMPLE)
+            glEnable(GL_SAMPLE_SHADING)
+            glMinSampleShading(1.0)
         else:
             glDisable(GL_MULTISAMPLE)
+            glDisable(GL_SAMPLE_SHADING)
 
     def prepare_opaque_stage(self):
         glEnable(GL_DEPTH_TEST)
