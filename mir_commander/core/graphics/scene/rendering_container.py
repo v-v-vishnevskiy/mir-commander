@@ -38,10 +38,11 @@ class RenderingContainer(Generic[T]):
 
         try:
             self._batches[group_id].remove(node)
-            self._dirty[group_id] = True
 
             if not self._batches[group_id]:
                 del self._batches[group_id]
+
+            self._dirty[group_id] = True
         except (KeyError, ValueError):
             # Node was already removed
             pass

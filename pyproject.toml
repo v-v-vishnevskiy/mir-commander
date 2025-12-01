@@ -1,7 +1,7 @@
 [project]
 name = "mir-commander"
 version = "0.1.0"
-description = "Add your description here"
+description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -25,7 +25,6 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "briefcase>=0.3.25",
     "cython>=3.2.1",
     "setuptools>=80.9.0",
     "mypy>=1.17.1",
@@ -35,6 +34,7 @@ dev = [
     "pytest-cov>=6.2.1",
     "ruff>=0.12.9",
     "types-pyyaml>=6.0.12.20250822",
+    "cx-freeze>=8.5.0",
 ]
 
 [tool.uv]
@@ -62,124 +62,44 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-[tool.briefcase]
-project_name = "Mir Commander"
-bundle = "com.mircmd"
-version = "1.0.1"
-url = "https://mircmd.com/"
-license.file = "LICENSE"
-author = "Valery Vishnevskiy"
-author_email = "v.v.vishnevskiy@yandex.ru"
+[tool.cxfreeze]
+executables = [
+    {script = "mir_commander/__main__.py", base = "gui", target_name = "Mir Commander"}
+]
 
-[tool.briefcase.app.mir_commander]
-formal_name = "Mir Commander"
-description = "A modern GUI for structural chemistry"
-long_description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
-sources = [
+[tool.cxfreeze.build_exe]
+packages = [
     "mir_commander",
-    "resources",
-    "plugins",
+    # the following packages are required by plugins
+    "cclib",
+    "PIL",
+    "pydantic_extra_types",
+    # the following packages can't automatically be found by cxfreeze
+    "logging",
+    "OpenGL",
+    "PySide6.QtOpenGLWidgets",
+    "numpy.__init__",
+    "numpy.f2py",
+    "numpy.testing",
 ]
-icon = "resources/icon"
-cleanup_paths = [
-    "**/app/mir_commander/main.py",
-    "**/app/mir_commander/core/**/*.py",
-    "**/app/mir_commander/ui/**/*.py",
-    "**/app/plugins/**/src/**/*.py",
-    "**/app/**/*.pyc",
-    "**/app/**/*.cpp",
-    "**/app/**/*.c",
-    "**/app/**/*.png",
-    "**/app/**/*.svg",
-    "**/app/**/*.ttf",
-    "**/app/**/*.qm",
-    "**/app/**/*.ts",
-    "**/app/**/*.qss",
-    "**/app/**/*.qrc",
-    "**/app_packages/PySide6/*.app",
-    "**/app_packages/PySide6/doc",
-    "**/app_packages/PySide6/glue",
-    "**/app_packages/PySide6/Qt/translations",
-    "**/app_packages/PySide6/Qt/qml",
-    "**/app_packages/PySide6/Qt/lib/QtDesigner*",
-    "**/app_packages/PySide6/Qt/lib/QtNetwork*",
-    "**/app_packages/PySide6/Qt/lib/QtPrintSupport*",
-    "**/app_packages/PySide6/Qt/lib/QtLabs*",
-    "**/app_packages/PySide6/Qt/lib/QtUiTools*",
-    "**/app_packages/PySide6/Qt/lib/QtSvg*",
-    "**/app_packages/PySide6/Qt/lib/QtHelp*",
-    "**/app_packages/PySide6/Qt/lib/QtTest*",
-    "**/app_packages/PySide6/Qt/lib/QtSql*",
-    "**/app_packages/PySide6/Qt/lib/QtQml*",
-    "**/app_packages/PySide6/Qt/lib/QtQuick*",
-    "**/app_packages/PySide6/Qt/lib/QtXml*",
-    "**/app_packages/PySide6/Qt/metatypes",
-    "**/app_packages/PySide6/Qt/libexec",
-    "**/app_packages/PySide6/Qt/plugins/qmltooling",
-    "**/app_packages/PySide6/Qt/plugins/sqldrivers",
-    "**/app_packages/PySide6/Qt/plugins/tls",
-    "**/app_packages/PySide6/Qt/plugins/tls",
-    "**/app_packages/PySide6/include",
-    "**/app_packages/PySide6/scripts",
-    "**/app_packages/PySide6/support",
-    "**/app_packages/PySide6/typesystems",
-    "**/app_packages/PySide6/lrelease",
-    "**/app_packages/PySide6/lupdate",
-    "**/app_packages/PySide6/svgtoqml",
-    "**/app_packages/PySide6/qml*",
+excludes = [
+    "cython",
+    "pytest",
+    "setuptools",
+    "tkinter",
+]
+include_files = [
+    ["resources/resources.rcc", "resources/resources.rcc"],
+    ["build/lib/plugins", "plugins"],
+    ["plugins/builtin/file_exporters/loader.py", "plugins/builtin/file_exporters/loader.py"],
+    ["plugins/builtin/file_importers/loader.py", "plugins/builtin/file_importers/loader.py"],
+    ["plugins/builtin/programs/loader.py", "plugins/builtin/programs/loader.py"],
+    ["plugins/builtin/project_nodes/loader.py", "plugins/builtin/project_nodes/loader.py"],
+    ["plugins/builtin/resources/loader.py", "plugins/builtin/resources/loader.py"],
+    ["plugins/builtin/resources/resources.rcc", "plugins/builtin/resources/resources.rcc"],
 ]
 
-[tool.briefcase.app.mir_commander.macOS]
-universal_build = false
-min_os_version = "12.0"
-
-[tool.briefcase.app.mir_commander.linux]
-requires = []
-
-[tool.briefcase.app.mir_commander.linux.system.debian]
-system_requires = []
-
-[tool.briefcase.app.mir_commander.linux.system.rhel]
-system_requires = []
-
-system_runtime_requires = []
-
-[tool.briefcase.app.mir_commander.linux.system.suse]
-system_requires = []
-
-system_runtime_requires = []
-
-[tool.briefcase.app.mir_commander.linux.system.arch]
-system_requires = []
-
-system_runtime_requires = []
-
-[tool.briefcase.app.mir_commander.linux.appimage]
-manylinux = "manylinux_2_28"
-
-system_requires = [
-# ?? FIXME
-]
-
-linuxdeploy_plugins = [
-]
-
-[tool.briefcase.app.mir_commander.linux.flatpak]
-flatpak_runtime = "org.kde.Platform"
-flatpak_runtime_version = "6.9"
-flatpak_sdk = "org.kde.Sdk"
-
-[tool.briefcase.app.mir_commander.windows]
-requires = [
-]
-
-# Mobile deployments
-[tool.briefcase.app.mir_commander.iOS]
-supported = false
-
-[tool.briefcase.app.mir_commander.android]
-supported = false
-
-# Web deployments
-[tool.briefcase.app.mir_commander.web]
-supported = false
+[tool.cxfreeze.bdist_mac]
+bundle_name = "Mir Commander"
+iconfile = "resources/building/macos/icon.icns"
+custom_info_plist = "resources/building/macos/Info.plist"

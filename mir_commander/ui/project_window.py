@@ -175,7 +175,7 @@ class ProjectWindow(QMainWindow):
         return action
 
     def _settings_action(self) -> QAction:
-        action = QAction(self.tr("Settings..."), self)
+        action = QAction(self.tr("Preferences..."), self)
         action.setMenuRole(QAction.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
@@ -196,8 +196,8 @@ class ProjectWindow(QMainWindow):
         return action
 
     def _about_action(self) -> QAction:
-        action = QAction(self.tr("About"), self)
-        action.setMenuRole(QAction.MenuRole.AboutRole)
+        action = QAction(self.tr("About Mir Commander"), self)
+        action.setMenuRole(QAction.MenuRole.AboutQtRole)
         action.triggered.connect(About(self).show)
         return action
 

@@ -77,13 +77,13 @@ def _compile(
                 [str(py_file)],
                 language="c++",
                 include_dirs=[np.get_include()],
-                extra_compile_args=["-O3"],
+                extra_compile_args=["-g0", "-O3"],
             )
         )
 
     setup(
         name="mir-commander",
-        script_args=["build_ext", "--inplace"],
+        script_args=["build_ext", "--inplace", "--build-lib", "build/lib"],
         ext_modules=cythonize(
             extensions,
             compiler_directives=COMPILER_DIRECTIVES,

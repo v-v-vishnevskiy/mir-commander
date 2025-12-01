@@ -74,32 +74,32 @@ pre-commit-uninstall:
 init: venv install scripts resources  ## Initialize the project
 	@echo "$(COLOUR_GREEN)Project initialized. Activate the virtual environment with 'source $(VIRTUAL_ENV)/bin/activate'$(END_COLOUR)"
 
-.PHONY: build-lib
-build-lib: check-venv  ## Build
-	@$(VIRTUAL_ENV)/bin/python build.py
-	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
-
 .PHONY: build-lib-pyx
 build-lib-pyx: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py --only-pyx=true
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
-.PHONY: build-app
-build-app: check-venv  ## Build the application
-	@$(VIRTUAL_ENV)/bin/briefcase create
-	@$(VIRTUAL_ENV)/bin/briefcase build
+.PHONY: build-lib
+build-lib: check-venv  ## Build
+	@$(VIRTUAL_ENV)/bin/python build.py
+	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
-.PHONY: build
-build: resources build-lib build-app
+.PHONY: build-mac
+build-mac:
+	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
 
-.PHONY: clean-build
-clean-build:  ## Clean build artifacts
-	@find mir_commander -name '*.so' -type f -delete
+.PHONY: clean-cpp
+clean-cpp:  ## Clean C++ build artifacts
 	@find mir_commander -name '*.cpp' -type f -delete
 	@find mir_commander -name '*.c' -type f -delete
-	@find plugins -name '*.so' -type f -delete
 	@find plugins -name '*.cpp' -type f -delete
 	@find plugins -name '*.c' -type f -delete
+	@echo "$(COLOUR_GREEN)C++ build artifacts cleaned successfully!$(END_COLOUR)"
+
+.PHONY: clean-build
+clean-build: clean-cpp  ## Clean build artifacts
+	@find mir_commander -name '*.so' -type f -delete
+	@find plugins -name '*.so' -type f -delete
 	@rm -rf build
 	@rm -rf dist
 	@echo "$(COLOUR_GREEN)Build artifacts cleaned successfully!$(END_COLOUR)"
