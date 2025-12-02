@@ -38,7 +38,6 @@ mircmd: check-venv
 		echo "$(COLOUR_GREEN)Symlink created successfully!$(END_COLOUR)"; \
 	fi
 
-
 resources: check-venv
 	@./ts_to_qm.sh && ./qrc_to_rcc.sh
 	@echo "$(COLOUR_GREEN)Resources generated successfully!$(END_COLOUR)"
@@ -87,6 +86,7 @@ build-lib: check-venv  ## Build
 .PHONY: build-macos
 build-macos: resources build-lib clean-cpp
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_dmg
+	@rm -rf settings.py
 
 .PHONY: clean-cpp
 clean-cpp:  ## Clean C++ build artifacts

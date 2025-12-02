@@ -99,8 +99,19 @@ def main():
     parser.add_argument("--threads", type=int, default=cpu_count(), help="Number of threads to use for compilation")
     parser.add_argument("--force", type=bool, default=False, help="Force recompilation")
     parser.add_argument("--only-pyx", type=bool, default=False, help="Only compile .pyx files")
+    parser.add_argument("--only-plugins", type=bool, default=False, help="Only compile plugins")
 
     args = parser.parse_args()
+
+    if args.only_plugins:
+        _compile(
+            package_dir="plugins",
+            threads=args.threads,
+            force=args.force,
+            skip_files=["loader.py"],
+            only_pyx=args.only_pyx,
+        )
+        return
 
     _compile(package_dir="mir_commander/core", threads=args.threads, force=args.force, only_pyx=args.only_pyx)
     _compile(package_dir="mir_commander/ui", threads=args.threads, force=args.force, only_pyx=args.only_pyx)
