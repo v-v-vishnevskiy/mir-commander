@@ -34,3 +34,4 @@ dist_cython/
 *.cpp
 mir_commander/**/*.so
 mir_commander/**/*.pyd
+settings.py
