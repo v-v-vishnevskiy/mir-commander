@@ -94,6 +94,26 @@ class ProjectWindow(QMainWindow):
             self.docks.project.tree.expand_top_items()
             self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, True)
 
+    def _import_file(self, file_path: Path, parent: UINode | None):
+        try:
+            logs: list[str] = []
+            imported_item = self.project.import_file(
+                file_path, logs, parent.project_node if parent is not None else None
+            )
+            self.docks.project.add_node(imported_item, parent)
+
+            # Show import messages in console
+            self.append_to_console(f"Imported file: {file_path}")
+            for log in logs:
+                self.append_to_console(log)
+
+            self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
+            self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, False)
+        except ImportFileError as e:
+            logger.error("Failed to import file %s: %s", file_path, e)
+            self.append_to_console(self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e))
+            self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
+
     @property
     def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
         return self._programs_control_panels
@@ -305,31 +325,12 @@ class ProjectWindow(QMainWindow):
         """Import a file into the current project."""
 
         dialog = QFileDialog(self, self.tr("Import File"))
-        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         dialog.setNameFilter(self.tr("All files (*)"))
 
         if dialog.exec() == QFileDialog.DialogCode.Accepted:
-            file_path = Path(dialog.selectedFiles()[0])
-            try:
-                logs: list[str] = []
-                imported_item = self.project.import_file(
-                    file_path, logs, parent.project_node if parent is not None else None
-                )
-                self.docks.project.add_node(imported_item, parent)
-
-                # Show import messages in console
-                self.append_to_console(f"Imported file: {file_path}")
-                for log in logs:
-                    self.append_to_console(log)
-
-                self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
-                self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, False)
-            except ImportFileError as e:
-                logger.error("Failed to import file %s: %s", file_path, e)
-                self.append_to_console(
-                    self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e)
-                )
-                self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
+            for file_path in dialog.selectedFiles():
+                self._import_file(Path(file_path), parent)
 
     def export_file(self, node: ProjectNode):
         dialog = ExportFileDialog(node, file_manager=self._file_manager, parent=self)
