@@ -3,7 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {file = "resources/policy/LICENSE"}
 requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
