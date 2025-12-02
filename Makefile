@@ -84,9 +84,9 @@ build-lib: check-venv  ## Build
 	@$(VIRTUAL_ENV)/bin/python build.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
-.PHONY: build-mac
-build-mac:
-	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
+.PHONY: build-macos
+build-macos: resources build-lib clean-cpp
+	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_dmg
 
 .PHONY: clean-cpp
 clean-cpp:  ## Clean C++ build artifacts

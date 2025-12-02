@@ -10,14 +10,17 @@ All title, ownership rights, and intellectual property rights in and to the Soft
 3. Restrictions
 You may not:
 Sell, rent, lease, or sublicense the Software.
-Modify, decompile, disassemble, or reverse engineer the Software, except to the extent explicitly permitted by applicable law or required by the license terms of third-party components (see Section 5).
+Modify, decompile, disassemble, or reverse engineer the Software, except to the extent explicitly permitted by applicable law or required by the license terms of third-party components (see Section 6).
 
-4. Disclaimer of Warranty
+4. External Plugins
+The Software may support the loading of external plugins, extensions, or modules ("Plugins") developed by third parties or other users. The Author is not responsible for the content, functionality, safety, or stability of any such Plugins. You acknowledge and agree that the download, installation, and use of any Plugins is done entirely at your own risk. The Author shall not be liable for any damage, data loss, system instability, or security breaches resulting from the use of third-party Plugins.
+
+5. Disclaimer of Warranty
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-5. Third-Party Components (Qt6)
+6. Third-Party Components (Qt6)
 This Software uses the Qt6 library, licensed under the GNU Lesser General Public License version 3 (LGPLv3).
 The Qt6 library is dynamically linked to this Software.
 In compliance with the LGPLv3, you are permitted to reverse engineer this Software solely for the purpose of debugging your modifications to the Qt library.
-The full text of the Qt LGPLv3 is available at: https://doc.qt.io/qt-6/lgpl.html
+The full text of the LGPLv3 is available at: https://doc.qt.io/qt-6/lgpl.html
 You have the right to replace the Qt library used in this Software with your own compatible version.
