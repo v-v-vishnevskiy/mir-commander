@@ -49,6 +49,7 @@ class Application(QApplication):
         self._setup_opengl()
         self._fix_palette()
         self._set_stylesheet()
+        self._load_license()
 
     def _setup_opengl(self):
         context = QOpenGLContext()
@@ -123,6 +124,13 @@ class Application(QApplication):
         else:
             logger.error("Failed to open stylesheet file: %s", styles.errorString())
 
+    def _load_license(self):
+        license = QFile(":/core/policy/LICENSE")
+        if license.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+            self._license_text = license.readAll().data().decode("utf-8")  # type: ignore[union-attr]
+        else:
+            logger.error("Failed to open license file: %s", license.errorString())
+
     def _setup_project_window(self, project_window: ProjectWindow):
         project_window.close_project_signal.connect(self.close_project)
         project_window.quit_application_signal.connect(self.close_app)
@@ -165,6 +173,7 @@ class Application(QApplication):
             app_config=self._config,
             app_apply_callbacks=self._apply_callbacks,
             project=project,
+            license_text=self._license_text,
         )
         self._setup_project_window(project_window)
         project_window.show()
@@ -179,6 +188,7 @@ class Application(QApplication):
             app_config=self._config,
             app_apply_callbacks=self._apply_callbacks,
             project=project,
+            license_text=self._license_text,
             init_msg=[],
         )
         self._setup_project_window(project_window)
@@ -198,6 +208,7 @@ class Application(QApplication):
             app_config=self._config,
             app_apply_callbacks=self._apply_callbacks,
             project=project,
+            license_text=self._license_text,
             init_msg=messages,
         )
         self._setup_project_window(project_window)

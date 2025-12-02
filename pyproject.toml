@@ -3,6 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
@@ -89,6 +90,7 @@ excludes = [
     "tkinter",
 ]
 include_files = [
+    ["LICENSE", "LICENSE"],
     ["resources/resources.rcc", "resources/resources.rcc"],
     ["build/lib/plugins", "plugins"],
     ["plugins/builtin/file_exporters/loader.py", "plugins/builtin/file_exporters/loader.py"],

@@ -44,10 +44,13 @@ class ProjectWindow(QMainWindow):
         app_config: AppConfig,
         app_apply_callbacks: ApplyCallbacks,
         project: Project,
+        license_text: str,
         init_msg: None | list[str] = None,
     ):
         logger.debug("Initializing main window ...")
         super().__init__(None)
+
+        self._license_text = license_text
 
         self._programs_control_panels: dict[str, ProgramControlPanelDock] = {}
 
@@ -198,7 +201,7 @@ class ProjectWindow(QMainWindow):
     def _about_action(self) -> QAction:
         action = QAction(self.tr("About Mir Commander"), self)
         action.setMenuRole(QAction.MenuRole.AboutQtRole)
-        action.triggered.connect(About(self).show)
+        action.triggered.connect(About(license_text=self._license_text, parent=self).show)
         return action
 
     def _import_file_action(self) -> QAction:

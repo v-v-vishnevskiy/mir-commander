@@ -1,0 +1,18 @@
+Mir Commander
+End User License Agreement (EULA)
+1. General Provisions
+This software (the "Software") is distributed as Freeware. You are granted a non-exclusive license to use the Software for personal or commercial purposes free of charge. By installing or using the Software, you agree to be bound by the terms of this agreement.
+2. Ownership and Copyright
+All title, ownership rights, and intellectual property rights in and to the Software (including but not limited to source code, design, and algorithms) remain with Vishnevskiy Group. The Software is protected by copyright laws and international treaties. The source code of the Software is not provided.
+3. Restrictions
+You may not:
+Sell, rent, lease, or sublicense the Software.
+Modify, decompile, disassemble, or reverse engineer the Software, except to the extent explicitly permitted by applicable law or required by the license terms of third-party components (see Section 5).
+4. Disclaimer of Warranty
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+5. Third-Party Components (Qt6)
+This Software uses the Qt6 library, licensed under the GNU Lesser General Public License version 3 (LGPLv3).
+The Qt6 library is dynamically linked to this Software.
+In compliance with the LGPLv3, you are permitted to reverse engineer this Software solely for the purpose of debugging your modifications to the Qt library.
+The full text of the LGPLv3 is available at: https://www.gnu.org/licenses/lgpl-3.0.html
+You have the right to replace the Qt library used in this Software with your own compatible version.
