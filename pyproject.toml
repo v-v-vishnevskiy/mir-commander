@@ -3,7 +3,7 @@ name = "mir-commander"
 version = "0.1.0"
 description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
 readme = "README.md"
-license = {file = "resources/policy/LICENSE"}
+license-files = ["resources/policy/LICENSE"]
 requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
@@ -90,7 +90,7 @@ excludes = [
     "tkinter",
 ]
 include_files = [
-    ["LICENSE", "LICENSE"],
+    ["resources/policy/LICENSE", "LICENSE"],
     ["resources/resources.rcc", "resources/resources.rcc"],
     ["build/lib/plugins", "plugins"],
     ["plugins/builtin/file_exporters/loader.py", "plugins/builtin/file_exporters/loader.py"],
@@ -105,3 +105,11 @@ include_files = [
 bundle_name = "Mir Commander"
 iconfile = "resources/building/macos/icon.icns"
 custom_info_plist = "resources/building/macos/Info.plist"
+
+[tool.cxfreeze.bdist_dmg]
+volume_label = "MirCommander"
+applications_shortcut = true
+format = "ULFO"
+filesystem = "APFS"
+default_view = "coverflow"
+background = "builtin-arrow"

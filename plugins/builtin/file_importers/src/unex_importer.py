@@ -41,7 +41,7 @@ def _load_unex1x(path: Path, logs: list) -> Node:
     result = Node(name=path.name, type="builtin.unex")
 
     molecules: dict[str, Node] = {}
-    mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
+    mol_cart_set_number = defaultdict[str, int](int)  # name: number of sets of Cartesian coordinates
 
     with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):
@@ -92,7 +92,7 @@ def _load_unex2x(path: Path, logs: list) -> Node:
     result = Node(name=path.name, type="builtin.unex")
 
     molecules: dict[str, Node] = {}
-    mol_cart_set_number: dict[str, int] = defaultdict(int)  # name: number of sets of Cartesian coordinates
+    mol_cart_set_number = defaultdict[str, int](int)  # name: number of sets of Cartesian coordinates
 
     with path.open("r") as input_file:
         for line_number, line in enumerate(input_file):

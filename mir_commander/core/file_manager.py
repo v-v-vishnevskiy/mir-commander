@@ -64,6 +64,9 @@ class FileManager:
             except ImportFileError as e:
                 logger.error("`%s` file importer error: %s", importer.metadata.name, e)
             except Exception as e:
+                import traceback
+
+                traceback.print_exc()
                 logger.error("%s: %s", importer.__class__.__name__, e)
         raise ImportFileError("No importers can handle this file")
 
