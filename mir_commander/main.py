@@ -1,4 +1,6 @@
 import argparse
+import os
+import platform
 import sys
 from pathlib import Path
 
@@ -9,6 +11,12 @@ from .ui.application import Application
 logger = logging.getLogger("Main")
 
 
+def _setup_working_directory():
+    if getattr(sys, "frozen", False) and Path.cwd() == Path("/"):
+        if platform.system().lower() == "darwin":
+            os.chdir(Path.home())
+
+
 def main():
     if not DIR.HOME_CONFIG.exists():
         DIR.HOME_CONFIG.mkdir(parents=True, exist_ok=True)
@@ -17,6 +25,8 @@ def main():
         DIR.HOME_PLUGINS.mkdir(parents=True, exist_ok=True)
 
     logging.setup()
+
+    _setup_working_directory()
 
     logger.debug("Starting Mir Commander ...")
 
