@@ -85,8 +85,10 @@ build-lib: check-venv  ## Build
 
 .PHONY: build-macos
 build-macos: resources build-lib clean-cpp
-	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_dmg
-	@rm -rf settings.py
+	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
+	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
+	$(VIRTUAL_ENV)/bin/python build_dmg.py
+	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: clean-cpp
 clean-cpp:  ## Clean C++ build artifacts

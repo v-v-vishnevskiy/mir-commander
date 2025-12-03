@@ -105,11 +105,3 @@ include_files = [
 bundle_name = "Mir Commander"
 iconfile = "resources/building/macos/icon.icns"
 custom_info_plist = "resources/building/macos/Info.plist"
-
-[tool.cxfreeze.bdist_dmg]
-volume_label = "MirCommander"
-applications_shortcut = true
-format = "ULFO"
-filesystem = "APFS"
-default_view = "coverflow"
-background = "builtin-arrow"
