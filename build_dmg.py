@@ -6,14 +6,14 @@ from importlib.metadata import version
 from dmgbuild import build_dmg
 
 settings = dict(
-    files=["build/Mir Commander.app", "resources/policy/LICENSE"],
+    files=["build/Mir Commander.app", "resources/policy/LICENSE.txt"],
     symlinks={"Applications": "/Applications"},
-    icon="resources/building/macos/icon.icns",
+    icon="resources/building/icon.icns",
     text_size=13.0,
     icon_size=72.0,
     background="build/background.tiff",
     window_rect=((800, 600), (480, 450)),
-    icon_locations={"Mir Commander.app": (140, 90), "Applications": (340, 90), "LICENSE": (140, 250)},
+    icon_locations={"Mir Commander.app": (140, 90), "Applications": (340, 90), "LICENSE.txt": (140, 250)},
 )
 
 
