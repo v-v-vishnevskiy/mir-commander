@@ -65,7 +65,7 @@ line-ending = "auto"
 
 [tool.cxfreeze]
 executables = [
-    {script = "mir_commander/__main__.py", base = "gui", target_name = "Mir Commander"}
+    {script = "mir_commander/__main__.py", base = "gui", target_name = "Mir Commander", icon = "resources/building/icon"}
 ]
 
 [tool.cxfreeze.build_exe]
@@ -103,5 +103,9 @@ include_files = [
 
 [tool.cxfreeze.bdist_mac]
 bundle_name = "Mir Commander"
-iconfile = "resources/building/macos/icon.icns"
+iconfile = "resources/building/icon.icns"
 custom_info_plist = "resources/building/macos/Info.plist"
+
+[tool.cxfreeze.bdist_appimage]
+target_name = "MirCommander"
+dist_dir = "build"

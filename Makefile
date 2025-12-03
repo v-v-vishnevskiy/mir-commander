@@ -90,6 +90,11 @@ build-macos: resources build-lib clean-cpp
 	$(VIRTUAL_ENV)/bin/python build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
+.PHONY: build-linux
+build-linux: resources build-lib clean-cpp
+	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_appimage
+	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+
 .PHONY: clean-cpp
 clean-cpp:  ## Clean C++ build artifacts
 	@find mir_commander -name '*.cpp' -type f -delete
