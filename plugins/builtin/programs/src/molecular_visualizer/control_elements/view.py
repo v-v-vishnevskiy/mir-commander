@@ -98,7 +98,10 @@ class View(ControlBlock):
     def _rotation_double_spinbox_value_changed_handler(self, axis: str, value: float):
         self._rotation_slider[axis].setValue(int(value * 10))
 
-        data = {key: value.value() - self._axis_prev_value[key] for key, value in self._rotation_double_spinbox.items()}
+        data: dict[str, float] = {
+            key: (double_spinbox.value() - self._axis_prev_value[key])
+            for key, double_spinbox in self._rotation_double_spinbox.items()
+        }
         self._control_panel.program_action_signal.emit("view.rotate_scene", data)
         self._axis_prev_value[axis] = value
 
