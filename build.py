@@ -5,6 +5,7 @@ Build script for compiling mir_commander core and ui with Cython.
 
 import argparse
 import os
+import platform
 from multiprocessing import cpu_count
 from pathlib import Path
 
@@ -69,6 +70,11 @@ def _compile(
 ):
     extensions: list[Extension] = []
 
+    if platform.system().lower() == "windows":
+        extra_compile_args = []
+    else:
+        extra_compile_args = ["-g0", "-O3"]
+
     for py_file in _find_python_files(package_dir, skip_files or [], only_pyx):
         module_name = str(Path(py_file).with_suffix("")).replace(os.sep, ".")
         extensions.append(
@@ -77,7 +83,7 @@ def _compile(
                 [str(py_file)],
                 language="c++",
                 include_dirs=[np.get_include()],
-                extra_compile_args=["-g0", "-O3"],
+                extra_compile_args=extra_compile_args,
             )
         )
 

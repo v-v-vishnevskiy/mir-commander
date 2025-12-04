@@ -1,6 +1,6 @@
 <RCC>
   <qresource prefix="core">
-    <file>policy/LICENSE</file>
+    <file>policy/LICENSE.txt</file>
   </qresource>
   <qresource prefix="core">
     <file>fonts/DejaVuSansCondensed-Bold.ttf</file>

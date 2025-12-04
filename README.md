@@ -38,7 +38,7 @@ So the first steps are (run in `cmd` from the top level directory of the reposit
 
 ```shell
 python -m venv .venv
-.venv\Scripts\activate.bat
+.venv\Scripts\Activate.ps1
 pip install uv
 uv sync --active --all-groups
 ```

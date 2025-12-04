@@ -63,10 +63,11 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-[tool.cxfreeze]
-executables = [
-    {script = "mir_commander/__main__.py", base = "gui", target_name = "Mir Commander", icon = "resources/building/icon"}
-]
+[[tool.cxfreeze.executables]]
+script = "mir_commander/__main__.py"
+base = "gui"
+target_name = "Mir Commander"
+icon = "resources/building/icon"
 
 [tool.cxfreeze.build_exe]
 packages = [
@@ -109,3 +110,10 @@ custom_info_plist = "resources/building/macos/Info.plist"
 [tool.cxfreeze.bdist_appimage]
 target_name = "MirCommander"
 dist_dir = "build"
+
+[tool.cxfreeze.bdist_msi]
+all_users = true
+initial_target_dir = "[ProgramFiles64Folder]Mir Commander"
+install_icon = "resources/building/icon.ico"
+target_name = "Mir Commander"
+launch_on_finish = true

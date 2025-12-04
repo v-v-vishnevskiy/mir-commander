@@ -125,7 +125,7 @@ class Application(QApplication):
             logger.error("Failed to open stylesheet file: %s", styles.errorString())
 
     def _load_license(self):
-        license = QFile(":/core/policy/LICENSE")
+        license = QFile(":/core/policy/LICENSE.txt")
         if license.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
             self._license_text = license.readAll().data().decode("utf-8")  # type: ignore[union-attr]
         else:
