@@ -75,24 +75,25 @@ init: venv install scripts resources  ## Initialize the project
 
 .PHONY: build-lib-pyx
 build-lib-pyx: check-venv  ## Build only .pyx files
-	@$(VIRTUAL_ENV)/bin/python build.py --only-pyx=true
+	@$(VIRTUAL_ENV)/bin/python build_scripts/build.py --only-pyx=true
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-lib
 build-lib: check-venv  ## Build all python files
-	@$(VIRTUAL_ENV)/bin/python build.py
+	@$(VIRTUAL_ENV)/bin/python build_scripts/build.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-macos
 build-macos: resources build-lib clean-cpp  ## Build .app and .dmg files for macOS
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
 	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
-	$(VIRTUAL_ENV)/bin/python build_dmg.py
+	$(VIRTUAL_ENV)/bin/python build_scripts/build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-linux
-build-linux: resources build-lib clean-cpp  ## Build .AppImage file for Linux
-	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_appimage
+build-linux: resources build-lib  ## Build .AppImage file for Linux
+	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_exe
+	$(VIRTUAL_ENV)/bin/python build_scripts/build_appimage.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: clean-cpp
