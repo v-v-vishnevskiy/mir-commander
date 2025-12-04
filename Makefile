@@ -10,7 +10,7 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: venv
-venv:
+venv:  ## Create a virtual environment
 	@if [ -d "$(VIRTUAL_ENV)" ]; then \
 		echo "Virtual environment already exists at $(VIRTUAL_ENV)"; \
 	else \
@@ -20,7 +20,7 @@ venv:
 	fi
 
 .PHONY: check-venv
-check-venv:
+check-venv:  ## Check if the virtual environment exists
 	@if [ ! -d "$(VIRTUAL_ENV)" ]; then \
 		echo "$(COLOUR_RED)Virtual environment not found at $(VIRTUAL_ENV)$(END_COLOUR)"; \
 		echo "$(COLOUR_RED)Please run 'make venv' to create a virtual environment.$(END_COLOUR)"; \
@@ -28,17 +28,17 @@ check-venv:
 	fi
 
 .PHONY: install
-install: check-venv  ## Install dependencies
+install: check-venv  ## Install all dependencies
 	@VIRTUAL_ENV=$(VIRTUAL_ENV) $(VIRTUAL_ENV)/bin/uv sync --active --all-groups
 	@echo "$(COLOUR_GREEN)Dependencies installed successfully!$(END_COLOUR)"
 
-mircmd: check-venv
+mircmd: check-venv  ## Create a symlink to the mircmd script
 	@if [ ! -f "mircmd" ]; then \
 		ln -s $(VIRTUAL_ENV)/bin/mircmd ./mircmd; \
 		echo "$(COLOUR_GREEN)Symlink created successfully!$(END_COLOUR)"; \
 	fi
 
-resources: check-venv
+resources: check-venv  ## Generate resources
 	@./ts_to_qm.sh && ./qrc_to_rcc.sh
 	@echo "$(COLOUR_GREEN)Resources generated successfully!$(END_COLOUR)"
 
@@ -62,11 +62,11 @@ test: check-venv  ## Run tests
 	@echo "$(COLOUR_GREEN)Tests completed successfully!$(END_COLOUR)"
 
 .PHONY: pre-commit-install
-pre-commit-install:
+pre-commit-install: check-venv  ## Install pre-commit hooks
 	@$(VIRTUAL_ENV)/bin/pre-commit install
 
 .PHONY: pre-commit-uninstall
-pre-commit-uninstall:
+pre-commit-uninstall: check-venv  ## Uninstall pre-commit hooks
 	@$(VIRTUAL_ENV)/bin/pre-commit uninstall
 
 .PHONY: init
@@ -74,24 +74,24 @@ init: venv install scripts resources  ## Initialize the project
 	@echo "$(COLOUR_GREEN)Project initialized. Activate the virtual environment with 'source $(VIRTUAL_ENV)/bin/activate'$(END_COLOUR)"
 
 .PHONY: build-lib-pyx
-build-lib-pyx: check-venv  ## Build
+build-lib-pyx: check-venv  ## Build only .pyx files
 	@$(VIRTUAL_ENV)/bin/python build.py --only-pyx=true
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-lib
-build-lib: check-venv  ## Build
+build-lib: check-venv  ## Build all python files
 	@$(VIRTUAL_ENV)/bin/python build.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-macos
-build-macos: resources build-lib clean-cpp
+build-macos: resources build-lib clean-cpp  ## Build .app and .dmg files for macOS
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
 	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
 	$(VIRTUAL_ENV)/bin/python build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-linux
-build-linux: resources build-lib clean-cpp
+build-linux: resources build-lib clean-cpp  ## Build .AppImage file for Linux
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_appimage
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
