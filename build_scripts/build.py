@@ -13,7 +13,7 @@ import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, setup
 
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path.cwd()
 BUILD_DIR = PROJECT_ROOT / "build"
 COMPILER_DIRECTIVES = {
     "language_level": "3",

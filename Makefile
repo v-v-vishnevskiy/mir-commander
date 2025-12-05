@@ -92,7 +92,7 @@ build-macos: resources build-lib clean-cpp  ## Build .app and .dmg files for mac
 
 .PHONY: build-linux
 build-linux: resources build-lib  ## Build .AppImage file for Linux
-	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_exe
+	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
 	$(VIRTUAL_ENV)/bin/python build_scripts/build_appimage.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 

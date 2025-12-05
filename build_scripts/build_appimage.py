@@ -31,17 +31,17 @@ def _download_file(url: str, cache_path: Path):
 
 
 def _save_desktop_entry(app_dir: Path, name: str, comment: str, category: str, terminal: bool):
-    value = f"""\
-        [Desktop Entry]
-        Type=Application
-        Version={VERSION}
-        Name={name}
-        Exec={name} %F
-        Comment={comment}
-        Icon={name}
-        Categories={category};
-        Terminal={"true" if terminal else "false"}
-    """
+    value = f"""
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name={name}
+Exec={name} %F
+Comment={comment}
+Icon={name}
+Categories={category};
+Terminal={"true" if terminal else "false"}
+"""
 
     filename = app_dir / f"{name}.desktop"
 
@@ -52,17 +52,17 @@ def _save_desktop_entry(app_dir: Path, name: str, comment: str, category: str, t
 
 
 def _save_entrypoint(app_dir: Path, name: str):
-    value = f"""\
-        #!/bin/sh
-        # If running from an extracted image, fix APPDIR
-        if [ -z "$APPIMAGE" ]; then
-            self="$(readlink -f -- "$0")"
-            export APPDIR="${{self%/*}}"
-        fi
-        # Call the application entry point
-        # Use 'exec' to avoid a new process from being started.
-        exec "$APPDIR/{name}" "$@"
-    """
+    value = f"""
+#!/bin/sh
+# If running from an extracted image, fix APPDIR
+if [ -z "$APPIMAGE" ]; then
+    self="$(readlink -f -- "$0")"
+    export APPDIR="${{self%/*}}"
+fi
+# Call the application entry point
+# Use 'exec' to avoid a new process from being started.
+exec "$APPDIR/{name}" "$@"
+"""
 
     filename = app_dir / "AppRun"
 
@@ -72,10 +72,11 @@ def _save_entrypoint(app_dir: Path, name: str):
     os.chmod(filename, 0o0755)
 
 
-def _build_appimage(app_dir: Path, build_dir: Path):
+def _build_appimage(app_dir: Path, build_dir: Path, output: Path):
     cmd = [str(APPIMAGETOOL_CACHE_PATH)]
+    cmd += ["--appimage-extract-and-run"]
     cmd += ["--runtime-file", str(RUNTIME_CACHE_PATH)]
-    cmd += ["--no-appstream", str(app_dir), str(build_dir / f"MirCommander-{VERSION}-{ARCH}.AppImage")]
+    cmd += ["--no-appstream", str(app_dir), str(output)]
 
     _download_file(APPIMAGETOOL_DOWNLOAD_URL, APPIMAGETOOL_CACHE_PATH)
     _download_file(RUNTIME_DOWNLOAD_URL, RUNTIME_CACHE_PATH)
@@ -85,8 +86,9 @@ def _build_appimage(app_dir: Path, build_dir: Path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build AppImage for MirCommander")
-    parser.add_argument("--app-dir", type=Path, default=Path("build") / "bdist" / "AppDir")
+    parser.add_argument("--app-dir", type=Path, default=Path("build") / "AppDir")
     parser.add_argument("--build-dir", type=Path, default=Path("build") / f"exe.linux-{ARCH}-{PYTHON_VERSION}")
+    parser.add_argument("--output", type=Path, default=Path("build") / f"MirCommander-{VERSION}-{ARCH}.AppImage")
     parser.add_argument("--name", type=str, default="MirCommander")
     parser.add_argument(
         "--comment",
@@ -107,4 +109,4 @@ if __name__ == "__main__":
     shutil.move(args.app_dir / "icon.png", args.app_dir / f"{args.name}.png")
     _save_desktop_entry(args.app_dir, args.name, args.comment, args.category, args.terminal)
     _save_entrypoint(args.app_dir, args.name)
-    _build_appimage(args.app_dir, args.build_dir)
+    _build_appimage(args.app_dir, args.build_dir, args.output)
