@@ -31,7 +31,7 @@ def _download_file(url: str, cache_path: Path):
 
 
 def _save_desktop_entry(app_dir: Path, name: str, comment: str, category: str, terminal: bool):
-    value = f"""
+    value = f"""\
 [Desktop Entry]
 Type=Application
 Version=1.5
@@ -52,7 +52,7 @@ Terminal={"true" if terminal else "false"}
 
 
 def _save_entrypoint(app_dir: Path, name: str):
-    value = f"""
+    value = f"""\
 #!/bin/sh
 # If running from an extracted image, fix APPDIR
 if [ -z "$APPIMAGE" ]; then
@@ -70,6 +70,12 @@ exec "$APPDIR/{name}" "$@"
         f.write(value)
 
     os.chmod(filename, 0o0755)
+
+
+def _clean_files(app_dir: Path, pattern: str):
+    for file in app_dir.rglob(pattern):
+        if file.is_file():
+            file.unlink()
 
 
 def _build_appimage(app_dir: Path, build_dir: Path, output: Path):
@@ -100,13 +106,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    shutil.copytree(
-        args.build_dir,
-        args.app_dir,
-        dirs_exist_ok=True,
-        ignore=shutil.ignore_patterns("*.c", "*.c++"),
-    )
+    shutil.copytree(args.build_dir, args.app_dir, dirs_exist_ok=True)
+    shutil.copy(args.app_dir / "icon.png", args.app_dir / ".DirIcon")
     shutil.move(args.app_dir / "icon.png", args.app_dir / f"{args.name}.png")
     _save_desktop_entry(args.app_dir, args.name, args.comment, args.category, args.terminal)
     _save_entrypoint(args.app_dir, args.name)
+    _clean_files(args.app_dir, "*.c")
+    _clean_files(args.app_dir, "*.cpp")
     _build_appimage(args.app_dir, args.build_dir, args.output)
