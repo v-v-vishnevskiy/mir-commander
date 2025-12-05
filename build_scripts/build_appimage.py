@@ -106,6 +106,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.app_dir.exists():
+        shutil.rmtree(args.app_dir)
+
     shutil.copytree(args.build_dir, args.app_dir, dirs_exist_ok=True)
     shutil.copy(args.app_dir / "icon.png", args.app_dir / ".DirIcon")
     shutil.move(args.app_dir / "icon.png", args.app_dir / f"{args.name}.png")
