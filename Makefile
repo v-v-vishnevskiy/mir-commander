@@ -75,12 +75,12 @@ init: venv install scripts resources  ## Initialize the project
 
 .PHONY: build-lib-pyx
 build-lib-pyx: check-venv  ## Build only .pyx files
-	@$(VIRTUAL_ENV)/bin/python build_scripts/build.py --only-pyx=true
+	@$(VIRTUAL_ENV)/bin/python build_scripts/build_lib.py --only-pyx=true
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-lib
 build-lib: check-venv  ## Build all python files
-	@$(VIRTUAL_ENV)/bin/python build_scripts/build.py
+	@$(VIRTUAL_ENV)/bin/python build_scripts/build_lib.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-macos
