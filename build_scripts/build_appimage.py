@@ -111,6 +111,6 @@ if __name__ == "__main__":
     shutil.move(args.app_dir / "icon.png", args.app_dir / f"{args.name}.png")
     _save_desktop_entry(args.app_dir, args.name, args.comment, args.category, args.terminal)
     _save_entrypoint(args.app_dir, args.name)
-    _clean_files(args.app_dir, "*.c")
-    _clean_files(args.app_dir, "*.cpp")
+    _clean_files(args.app_dir / "lib" / "mir_commander", "*.cpp")
+    _clean_files(args.app_dir / "plugins", "*.cpp")
     _build_appimage(args.app_dir, args.build_dir, args.output)
