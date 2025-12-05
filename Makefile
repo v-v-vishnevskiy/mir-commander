@@ -84,8 +84,10 @@ build-lib: check-venv  ## Build all python files
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-macos
-build-macos: resources build-lib clean-cpp  ## Build .app and .dmg files for macOS
+build-macos: resources build-lib  ## Build .app and .dmg files for macOS
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
+	@find build/Mir\ Commander.app/Contents/Resources/lib/mir_commander -name '*.cpp' -type f -delete
+	@find build/Mir\ Commander.app/Contents/Resources/plugins -name '*.cpp' -type f -delete
 	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
 	$(VIRTUAL_ENV)/bin/python build_scripts/build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
