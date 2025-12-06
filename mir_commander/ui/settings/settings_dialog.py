@@ -170,7 +170,8 @@ class SettingsDialog(QDialog):
         self.app_apply_callbacks.run()
         self.mw_apply_callbacks.run()
         self.app_config.dump()
-        self.project_config.dump()
+        # TODO: uncomment this when we have a way to save project settings
+        # self.project_config.dump()
         for page in self._pages:
             page.backup_data()
         self.accept()

@@ -239,4 +239,5 @@ class Application(QApplication):
         self._quitting = True
         for value in list(self._open_projects.values()):
             value.close()
+        self._config.dump()
         self.quit()
