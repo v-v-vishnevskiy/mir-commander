@@ -4,6 +4,8 @@ VIRTUAL_ENV?=.venv
 COLOUR_GREEN=\033[0;32m
 COLOUR_RED=\033[0;31m
 END_COLOUR=\033[0m
+ARCH=$(shell uname -m)
+PYTHON_VERSION=$(shell python --version 2>&1 | awk '{print $$2}' | rev | cut -d"." -f2- | rev)
 
 .PHONY: help
 help:
@@ -94,7 +96,7 @@ build-mac: resources build-lib  ## Build .app and .dmg files for macOS
 .PHONY: build-linux
 build-linux: resources build-lib  ## Build .AppImage file for Linux
 	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
-	@find build/AppDir/lib/mir_commander -name '*.cpp' -type f -delete
+	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '*.cpp' -type f -delete
 	$(VIRTUAL_ENV)/bin/python build_scripts/build_appimage.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
