@@ -80,6 +80,7 @@ packages = [
     "logging",
     "OpenGL",
     "PySide6.QtOpenGLWidgets",
+    "numpy",
     "numpy.__init__",
     "numpy.f2py",
     "numpy.testing",

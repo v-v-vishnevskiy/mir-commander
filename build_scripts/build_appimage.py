@@ -72,12 +72,6 @@ exec "$APPDIR/{name}" "$@"
     os.chmod(filename, 0o0755)
 
 
-def _clean_files(app_dir: Path, pattern: str):
-    for file in app_dir.rglob(pattern):
-        if file.is_file():
-            file.unlink()
-
-
 def _build_appimage(app_dir: Path, build_dir: Path, output: Path):
     cmd = [str(APPIMAGETOOL_CACHE_PATH)]
     cmd += ["--appimage-extract-and-run"]
@@ -114,6 +108,4 @@ if __name__ == "__main__":
     shutil.move(args.app_dir / "icon.png", args.app_dir / f"{args.name}.png")
     _save_desktop_entry(args.app_dir, args.name, args.comment, args.category, args.terminal)
     _save_entrypoint(args.app_dir, args.name)
-    _clean_files(args.app_dir / "lib" / "mir_commander", "*.cpp")
-    _clean_files(args.app_dir / "plugins", "*.cpp")
     _build_appimage(args.app_dir, args.build_dir, args.output)
