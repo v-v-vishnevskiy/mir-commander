@@ -1,0 +1,72 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.dylib
+*.cpp
+*.c
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# macOS
+.DS_Store
+*.dmg
+*.app
+
+# Windows
+*.msi
+*.exe
+
+# Documentation
+docs/
+*.md
+
+# Cache
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+
+# Scripts
+mircmd
+dev_run.cmd
+*.cmd
+
+# Test files
+tests/
+
+# Misc
+font_atlas.png
+icons/

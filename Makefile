@@ -5,7 +5,14 @@ COLOUR_GREEN=\033[0;32m
 COLOUR_RED=\033[0;31m
 END_COLOUR=\033[0m
 ARCH=$(shell uname -m)
-PYTHON_VERSION=$(shell python --version 2>&1 | awk '{print $$2}' | rev | cut -d"." -f2- | rev)
+SYSTEM=$(shell uname -s | tr '[:upper:]' '[:lower:'])
+PYTHON_VERSION=$(shell python3 --version 2>&1 | awk '{print $$2}' | rev | cut -d"." -f2- | rev)
+DOCKER_IMAGE_NAME=mir-commander-linux-builder
+APPIMAGETOOL=$(HOME)/.local/bin/appimagetool.AppImage
+RUNTIME=$(HOME)/.cache/appimage/runtime
+APP_NAME=Mir\ Commander
+APP_EXEC=MirCommander
+
 
 .PHONY: help
 help:
@@ -41,7 +48,12 @@ mircmd: check-venv  ## Create a symlink to the mircmd script
 	fi
 
 resources: check-venv  ## Generate resources
-	@./ts_to_qm.sh && ./qrc_to_rcc.sh
+	@$(VIRTUAL_ENV)/bin/pyside6-lrelease resources/i18n/ru.ts -qm resources/i18n/ru.qm
+	@$(VIRTUAL_ENV)/bin/pyside6-lrelease resources/i18n/en.ts -qm resources/i18n/en.qm
+	@$(VIRTUAL_ENV)/bin/pyside6-lrelease plugins/builtin/resources/i18n/en.ts -qm plugins/builtin/resources/i18n/en.qm
+	@$(VIRTUAL_ENV)/bin/pyside6-lrelease plugins/builtin/resources/i18n/ru.ts -qm plugins/builtin/resources/i18n/ru.qm
+	@$(VIRTUAL_ENV)/bin/pyside6-rcc --binary resources/resources.qrc -o resources/resources.rcc
+	@$(VIRTUAL_ENV)/bin/pyside6-rcc --binary plugins/builtin/resources/resources.qrc -o plugins/builtin/resources/resources.rcc
 	@echo "$(COLOUR_GREEN)Resources generated successfully!$(END_COLOUR)"
 
 .PHONY: scripts
@@ -88,17 +100,69 @@ build-lib: check-venv  ## Build all python files
 .PHONY: build-mac
 build-mac: resources build-lib  ## Build .app and .dmg files for macOS
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
-	@find build/Mir\ Commander.app/Contents/Resources/lib/mir_commander -name '*.cpp' -type f -delete
+	@find build/$(APP_NAME).app/Contents/Resources/lib/mir_commander -name '*.cpp' -type f -delete
 	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
 	$(VIRTUAL_ENV)/bin/python build_scripts/build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
+.PHONY: download-appimagetool
+download-appimagetool:  ## Download appimagetool and runtime
+	@mkdir -p ~/.local/bin/
+	@mkdir -p ~/.cache/appimage/
+	@if [ ! -f "$(APPIMAGETOOL)" ]; then \
+		wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$(ARCH).AppImage \
+		-O $(APPIMAGETOOL); \
+		chmod +x $(APPIMAGETOOL); \
+		echo "$(COLOUR_GREEN)Appimagetool downloaded successfully!$(END_COLOUR)"; \
+	fi
+	@if [ ! -f "$(RUNTIME)" ]; then \
+		wget https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-$(ARCH) \
+		-O $(RUNTIME); \
+		chmod +x $(RUNTIME); \
+		echo "$(COLOUR_GREEN)Runtime downloaded successfully!$(END_COLOUR)"; \
+	fi
+
 .PHONY: build-linux
-build-linux: resources build-lib  ## Build .AppImage file for Linux
+build-linux: resources build-lib download-appimagetool  ## Build .AppImage file for Linux
 	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
 	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '*.cpp' -type f -delete
-	$(VIRTUAL_ENV)/bin/python build_scripts/build_appimage.py
+	@rm -rf build/AppDir
+	@mkdir -p build/AppDir
+	@cp -r build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/* build/AppDir
+	@echo "[Desktop Entry]\n\
+Type=Application\n\
+Version=1.5\n\
+Name=$(shell echo $(APP_NAME))\n\
+Exec=$(APP_EXEC) %F\n\
+Comment=A modern, powerful graphical user interface for molecular structure modeling and investigation.\n\
+Icon=$(APP_EXEC)\n\
+Categories=Science;\n\
+Terminal=false" > build/AppDir/$(APP_EXEC).desktop
+	@echo '#!/bin/sh\nexec "$$APPDIR/$(APP_EXEC)" "$$@"' > build/AppDir/AppRun
+	@chmod +x build/AppDir/AppRun
+	@cp build/AppDir/icon.png build/AppDir/.DirIcon
+	@mv build/AppDir/icon.png build/AppDir/$(APP_EXEC).png
+	$(APPIMAGETOOL) \
+	--appimage-extract-and-run \
+	--runtime-file $(RUNTIME) \
+	--no-appstream \
+	build/AppDir \
+	build/$(APP_EXEC)-0.1.0-$(ARCH).AppImage
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
+
+.PHONY: build-linux-docker-%
+build-linux-docker-%:
+	@rm -rf build/linux-$*
+	@mkdir -p build/linux-$*
+	@echo "$(COLOUR_GREEN)Building Docker image for $*...$(END_COLOUR)"
+	@docker buildx build --platform linux/$* --file Dockerfile.linux --tag $(DOCKER_IMAGE_NAME):$* --target builder --build-arg FIX_APPAIMGETOOL=$(shell [ "$(ARCH)" != "$*" ] && echo "true" || echo "false") .
+	@echo "$(COLOUR_GREEN)Building AppImage for $*...$(END_COLOUR)"
+	@docker run --platform linux/$* --rm -v $(PWD)/build/linux-$*:/build/build $(DOCKER_IMAGE_NAME):$*
+	@echo "$(COLOUR_GREEN)AppImage build ($*) completed successfully!$(END_COLOUR)"
+
+.PHONY: build-linux-docker
+build-linux-docker: build-linux-docker-amd64 build-linux-docker-arm64  ## Build .AppImage file for Linux using Docker (all architectures)
+	@echo "$(COLOUR_GREEN)Docker build completed successfully!$(END_COLOUR)"
 
 .PHONY: clean-cpp
 clean-cpp:  ## Clean C++ build artifacts
