@@ -1,7 +1,7 @@
 [project]
 name = "mir-commander"
 version = "0.1.0"
-description = "A modern, powerful graphical user interface for molecular structure modeling and investigation."
+description = "A modern, powerful graphical user interface for molecular structure modeling."
 license-files = ["resources/policy/LICENSE.txt"]
 requires-python = ">=3.13"
 dependencies = [
@@ -65,7 +65,7 @@ line-ending = "auto"
 [[tool.cxfreeze.executables]]
 script = "mir_commander/__main__.py"
 base = "gui"
-target_name = "MirCommander"
+target_name = "mircmd"
 icon = "resources/building/icon"
 
 [tool.cxfreeze.build_exe]

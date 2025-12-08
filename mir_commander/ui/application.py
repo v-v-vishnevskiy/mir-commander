@@ -30,7 +30,7 @@ class Application(QApplication):
         self._quitting = False
 
         self._apply_callbacks = ApplyCallbacks()
-        self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+        self._config: AppConfig = AppConfig.load(DIR.HOME_MIRCMD / "config.yaml")
 
         if self._config.language != "system":
             QLocale.setDefault(QLocale(self._config.language))

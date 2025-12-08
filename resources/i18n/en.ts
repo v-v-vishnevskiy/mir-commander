@@ -25,8 +25,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/about.py" line="61"/>
-        <source>A modern, powerful graphical user interface for molecular structure modeling and investigation.</source>
-        <translation>A modern, powerful graphical user interface for molecular structure modeling and investigation.</translation>
+        <source>A modern, powerful graphical user interface for molecular structure modeling.</source>
+        <translation>A modern, powerful graphical user interface for molecular structure modeling.</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/about.py" line="68"/>

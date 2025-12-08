@@ -6,12 +6,14 @@ COLOUR_RED=\033[0;31m
 END_COLOUR=\033[0m
 ARCH=$(shell uname -m)
 SYSTEM=$(shell uname -s | tr '[:upper:]' '[:lower:'])
-PYTHON_VERSION=$(shell python3 --version 2>&1 | awk '{print $$2}' | rev | cut -d"." -f2- | rev)
+PYTHON_VERSION=$(shell $(VIRTUAL_ENV)/bin/python --version 2>&1 | awk '{print $$2}' | rev | cut -d"." -f2- | rev)
 DOCKER_IMAGE_NAME=mir-commander-linux-builder
 APPIMAGETOOL=$(HOME)/.local/bin/appimagetool.AppImage
 RUNTIME=$(HOME)/.cache/appimage/runtime
+APP_VERSION=$(shell $(VIRTUAL_ENV)/bin/mircmd --version 2>&1 | awk '{print $$3}')
 APP_NAME=Mir\ Commander
-APP_EXEC=MirCommander
+APP_EXEC=mircmd
+APP_FILE=MirCommander-$(APP_VERSION)-$(ARCH)
 
 
 .PHONY: help
@@ -101,7 +103,8 @@ build-lib: check-venv  ## Build all python files
 build-mac: resources build-lib  ## Build .app and .dmg files for macOS
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
 	@find build/$(APP_NAME).app/Contents/Resources/lib/mir_commander -name '*.cpp' -type f -delete
-	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png -out build/background.tiff
+	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png \
+	-out build/background.tiff
 	$(VIRTUAL_ENV)/bin/python build_scripts/build_dmg.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
@@ -126,6 +129,7 @@ download-appimagetool:  ## Download appimagetool and runtime
 build-linux: resources build-lib download-appimagetool  ## Build .AppImage file for Linux
 	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
 	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '*.cpp' -type f -delete
+	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '.DS_Store' -type f -delete
 	@rm -rf build/AppDir
 	@mkdir -p build/AppDir
 	@cp -r build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/* build/AppDir
@@ -134,7 +138,7 @@ Type=Application\n\
 Version=1.5\n\
 Name=$(shell echo $(APP_NAME))\n\
 Exec=$(APP_EXEC) %F\n\
-Comment=A modern, powerful graphical user interface for molecular structure modeling and investigation.\n\
+Comment=A modern, powerful graphical user interface for molecular structure modeling.\n\
 Icon=$(APP_EXEC)\n\
 Categories=Science;\n\
 Terminal=false" > build/AppDir/$(APP_EXEC).desktop
@@ -147,7 +151,7 @@ Terminal=false" > build/AppDir/$(APP_EXEC).desktop
 	--runtime-file $(RUNTIME) \
 	--no-appstream \
 	build/AppDir \
-	build/$(APP_EXEC)-0.1.0-$(ARCH).AppImage
+	build/$(APP_FILE).AppImage
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-linux-docker-%
@@ -155,7 +159,7 @@ build-linux-docker-%:
 	@rm -rf build/linux-$*
 	@mkdir -p build/linux-$*
 	@echo "$(COLOUR_GREEN)Building Docker image for $*...$(END_COLOUR)"
-	@docker buildx build --platform linux/$* --file Dockerfile.linux --tag $(DOCKER_IMAGE_NAME):$* --target builder --build-arg FIX_APPAIMGETOOL=$(shell [ "$(ARCH)" != "$*" ] && echo "true" || echo "false") .
+	@docker buildx build --platform linux/$* --file Dockerfile.linux --tag $(DOCKER_IMAGE_NAME):$* --target builder --build-arg FIX_APPAIMGETOOL=$(shell [ "$(ARCH)" != "$*" ] && echo "true" || echo "false") --load .
 	@echo "$(COLOUR_GREEN)Building AppImage for $*...$(END_COLOUR)"
 	@docker run --platform linux/$* --rm -v $(PWD)/build/linux-$*:/build/build $(DOCKER_IMAGE_NAME):$*
 	@echo "$(COLOUR_GREEN)AppImage build ($*) completed successfully!$(END_COLOUR)"

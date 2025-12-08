@@ -56,9 +56,7 @@ class About(QDialog):
         layout.addStretch(1)
         layout.addWidget(
             QLabel(
-                self.tr(
-                    "A modern, powerful graphical user interface for molecular structure modeling and investigation."
-                ),
+                self.tr("A modern, powerful graphical user interface for molecular structure modeling."),
                 wordWrap=True,
                 textInteractionFlags=Qt.TextInteractionFlag.TextSelectableByMouse,
             ),

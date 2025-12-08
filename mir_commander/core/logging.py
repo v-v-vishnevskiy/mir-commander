@@ -2,7 +2,7 @@ import logging
 import logging.config
 from logging import getLogger
 
-from .consts import DIR
+from .consts import DIR, FROZEN
 
 
 def setup():
@@ -24,14 +24,14 @@ def setup():
                 "file": {
                     "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "file",
-                    "filename": DIR.HOME_CONFIG / "logs.log",
+                    "filename": DIR.MIRCMD_LOGS / "mircmd.log",
                     "mode": "w",
                     "encoding": "utf-8",
                     "backupCount": 1,
                     "maxBytes": 5 * 1024 * 1024,
                 },
             },
-            "root": {"level": "DEBUG", "handlers": ["console", "file"]},
+            "root": {"level": "INFO" if FROZEN else "DEBUG", "handlers": ["console", "file"]},
         }
     )
     logging.getLogger("cclib").setLevel(logging.CRITICAL)

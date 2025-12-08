@@ -8,14 +8,14 @@ from dmgbuild import build_dmg
 APP_NAME = "Mir Commander"
 
 settings = dict(
-    files=[f"build/{APP_NAME}.app", "resources/policy/LICENSE.txt"],
+    files=[f"build/{APP_NAME}.app"],
     symlinks={"Applications": "/Applications"},
     icon="resources/building/icon.icns",
     text_size=13.0,
     icon_size=72.0,
     background="build/background.tiff",
-    window_rect=((800, 600), (480, 450)),
-    icon_locations={f"{APP_NAME}.app": (140, 90), "Applications": (340, 90), "LICENSE.txt": (140, 250)},
+    window_rect=((800, 600), (480, 380)),
+    icon_locations={f"{APP_NAME}.app": (140, 140), "Applications": (340, 140)},
 )
 
 
