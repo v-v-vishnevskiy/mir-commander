@@ -67,6 +67,8 @@ script = "mir_commander/__main__.py"
 base = "gui"
 target_name = "mircmd"
 icon = "resources/building/icon"
+shortcut_name = "Mir Commander"
+shortcut_dir = "StartMenuFolder"
 
 [tool.cxfreeze.build_exe]
 packages = [
