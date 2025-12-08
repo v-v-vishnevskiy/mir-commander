@@ -103,9 +103,9 @@ def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Build mir_commander")
     parser.add_argument("--threads", type=int, default=cpu_count(), help="Number of threads to use for compilation")
-    parser.add_argument("--force", type=bool, default=False, help="Force recompilation")
-    parser.add_argument("--only-pyx", type=bool, default=False, help="Only compile .pyx files")
-    parser.add_argument("--only-plugins", type=bool, default=False, help="Only compile plugins")
+    parser.add_argument("--force", action="store_true", help="Force recompilation")
+    parser.add_argument("--only-pyx", action="store_true", help="Only compile .pyx files")
+    parser.add_argument("--only-plugins", action="store_true", help="Only compile plugins")
 
     args = parser.parse_args()
 

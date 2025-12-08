@@ -234,6 +234,7 @@ class Application(QApplication):
         # TODO: uncomment this when we have a way to open the recent projects dialog
         # if not self._open_projects:
         #     self._recent_projects_dialog.show()
+        self.close_app()
 
     def close_app(self):
         self._quitting = True

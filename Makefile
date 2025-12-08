@@ -10,7 +10,7 @@ PYTHON_VERSION=$(shell $(VIRTUAL_ENV)/bin/python --version 2>&1 | awk '{print $$
 DOCKER_IMAGE_NAME=mir-commander-linux-builder
 APPIMAGETOOL=$(HOME)/.local/bin/appimagetool.AppImage
 RUNTIME=$(HOME)/.cache/appimage/runtime
-APP_VERSION=$(shell $(VIRTUAL_ENV)/bin/mircmd --version 2>&1 | awk '{print $$3}')
+APP_VERSION=$(shell $(VIRTUAL_ENV)/bin/python mir_commander/__init__.py)
 APP_NAME=Mir\ Commander
 APP_EXEC=mircmd
 APP_FILE=MirCommander-$(APP_VERSION)-$(ARCH)
@@ -91,7 +91,7 @@ init: venv install scripts resources  ## Initialize the project
 
 .PHONY: build-lib-pyx
 build-lib-pyx: check-venv  ## Build only .pyx files
-	@$(VIRTUAL_ENV)/bin/python build_scripts/build_lib.py --only-pyx=true
+	@$(VIRTUAL_ENV)/bin/python build_scripts/build_lib.py --only-pyx
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: build-lib
