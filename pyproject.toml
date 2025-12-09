@@ -103,6 +103,7 @@ include_files = [
     ["plugins/builtin/resources/loader.py", "plugins/builtin/resources/loader.py"],
     ["plugins/builtin/resources/resources.rcc", "plugins/builtin/resources/resources.rcc"],
 ]
+include_msvcr = true
 
 [tool.cxfreeze.bdist_mac]
 bundle_name = "Mir Commander"
