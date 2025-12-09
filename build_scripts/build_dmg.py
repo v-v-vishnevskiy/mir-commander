@@ -54,7 +54,7 @@ def _operation_print(data: dict[str, str]):
 
 if __name__ == "__main__":
     build_dmg(
-        filename=f"build/{APP_NAME}-{version('mir-commander')}-{platform.machine()}.dmg",
+        filename=f"build/MirCommander-{version('mir-commander')}-{platform.machine()}.dmg",
         volume_name=APP_NAME,
         settings=settings,
         lookForHiDPI=True,

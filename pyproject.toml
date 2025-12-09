@@ -113,5 +113,5 @@ custom_info_plist = "resources/building/macos/Info.plist"
 all_users = true
 initial_target_dir = "[ProgramFiles64Folder]Mir Commander"
 install_icon = "resources/building/icon.ico"
-target_name = "Mir Commander"
+target_name = "MirCommander"
 launch_on_finish = true
