@@ -83,6 +83,7 @@ def _setup_desktop_integration():
     desktop_file.parent.mkdir(parents=True, exist_ok=True)
     desktop_file.unlink(missing_ok=True)
     shutil.copy(Path(os.environ["APPDIR"]) / "mircmd.desktop", desktop_file)
+    desktop_file.write_text(desktop_file.read_text().replace("Exec=mircmd %F", f"Exec={os.environ['APPIMAGE']} %F"))
 
     print("Desktop integration completed successfully!")
     print(f"Desktop file: {desktop_file}")

@@ -127,10 +127,11 @@ download-appimagetool:  ## Download appimagetool and runtime
 
 .PHONY: build-linux
 build-linux: resources build-lib download-appimagetool  ## Build .AppImage file for Linux
+	@rm -rf build/exe.linux-$(ARCH)-$(PYTHON_VERSION)
+	@rm -rf build/AppDir
 	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
 	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '*.cpp' -type f -delete
 	@find build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/lib/mir_commander -name '.DS_Store' -type f -delete
-	@rm -rf build/AppDir
 	@mkdir -p build/AppDir
 	@cp -r build/exe.linux-$(ARCH)-$(PYTHON_VERSION)/* build/AppDir
 	@echo "[Desktop Entry]\n\
