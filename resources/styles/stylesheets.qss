@@ -97,6 +97,11 @@ RecentProjectsDialog {
     min-height: 450px;
 }
 
+QMdiSubWindow {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
 QMdiSubWindowCustomTitleBar {
     max-height: 25px;
     min-height: 25px;

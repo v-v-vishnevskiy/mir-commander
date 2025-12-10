@@ -197,18 +197,18 @@ class QMdiSubWindowCustomTitleBar(QFrame):
 
         self._maximize_button = TitleBarButton()
         self._maximize_button.setIcon(QIcon(":/core/icons/square.png"))
-        self._maximize_button.setIconSize(QSize(12, 12))
+        self._maximize_button.setIconSize(QSize(9, 9))
         self._maximize_button.clicked.connect(self._toggle_maximize)
 
         self._close_button = TitleBarButton()
         self._close_button.setObjectName("close-button")
         self._close_button.setIcon(QIcon(":/core/icons/cross.png"))
-        self._close_button.setIconSize(QSize(12, 12))
+        self._close_button.setIconSize(QSize(9, 9))
         self._close_button.clicked.connect(self._close)
 
         layout.addSpacing(10)
         layout.addWidget(self._icon)
-        layout.addSpacing(10)
+        layout.addStretch()
         layout.addWidget(self._title)
         layout.addStretch()
         # layout.addWidget(self._minimize_button)

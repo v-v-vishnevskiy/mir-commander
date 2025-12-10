@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QCloseEvent, QResizeEvent
+from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent
 from PySide6.QtWidgets import (
     QMdiArea,
     QMdiSubWindow,
@@ -90,8 +90,6 @@ class _MdiProgramWindow(QMdiSubWindow):
         return self._program_id
 
     def update_title(self):
-        self.setWindowIcon(self.program.get_icon())
-        self.setWindowTitle(self.program.get_title())
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
 
@@ -121,6 +119,7 @@ class MdiArea(QMdiArea):
         super().__init__(*args, **kwargs)
         self._project_window = project_window
 
+        self.setBackground(QBrush(QColor("#bbbbbb")))
         self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
