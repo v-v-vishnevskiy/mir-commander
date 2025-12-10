@@ -55,7 +55,7 @@ from OpenGL.GL import (
     glViewport,
 )
 
-from mir_commander.core.graphics.projection import ProjectionManager
+from mir_commander.core.graphics.projection import ProjectionManager, ProjectionMode
 from mir_commander.core.graphics.resource_manager import ResourceManager
 from mir_commander.core.graphics.scene.node import Node, NodeType
 from mir_commander.core.graphics.scene.rendering_container import RenderingContainer
@@ -98,6 +98,7 @@ uniform mat4 scene_matrix;
 uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 uniform mat4 transform_matrix;
+uniform bool is_orthographic;
 
 out vec3 normal;
 out vec4 fragment_color;
@@ -254,14 +255,25 @@ in mat3 normal_matrix_view;
 
 uniform bool is_picking = false;
 uniform bool is_transparent = false;
+uniform bool is_orthographic = false;
 uniform int ray_casting_object = 0;
 uniform mat4 projection_matrix;
 uniform sampler2D tex_1;
 
 vec3 ray_casting_sphere() {
-    // Ray in view space: from camera (0,0,0) to fragment position
-    vec3 ray_origin = vec3(0.0, 0.0, 0.0);
-    vec3 ray_dir = normalize(vertex_pos_view);
+    vec3 ray_origin;
+    vec3 ray_dir;
+
+    if (is_orthographic) {
+        // For orthographic projection: parallel rays
+        // Ray origin is on the fragment's XY position in view space, far from camera
+        ray_origin = vec3(vertex_pos_view.xy, 0.0);
+        ray_dir = vec3(0.0, 0.0, -1.0);
+    } else {
+        // For perspective projection: rays from camera origin
+        ray_origin = vec3(0.0, 0.0, 0.0);
+        ray_dir = normalize(vertex_pos_view);
+    }
 
     // Sphere equation: |P - C|^2 = r^2
     // Ray equation: P = O + t*D
@@ -294,9 +306,18 @@ vec3 ray_casting_sphere() {
 }
 
 vec3 ray_casting_cylinder(out vec3 intersection_point, out vec3 cyl_normal) {
-    // Ray in view space: from camera (0,0,0) to fragment position
-    vec3 ray_origin = vec3(0.0, 0.0, 0.0);
-    vec3 ray_dir = normalize(vertex_pos_view);
+    vec3 ray_origin;
+    vec3 ray_dir;
+
+    if (is_orthographic) {
+        // For orthographic projection: parallel rays
+        ray_origin = vec3(vertex_pos_view.xy, 0.0);
+        ray_dir = vec3(0.0, 0.0, -1.0);
+    } else {
+        // For perspective projection: rays from camera origin
+        ray_origin = vec3(0.0, 0.0, 0.0);
+        ray_dir = normalize(vertex_pos_view);
+    }
 
     // Cylinder parameters in view space
     float cyl_radius = sphere_radius;
@@ -787,6 +808,7 @@ class Renderer:
         view_matrix = self._resource_manager.current_camera.matrix
         scene_matrix = self._resource_manager.current_scene.transform.matrix
         projection_matrix = self._projection_manager.active_projection.matrix
+        is_orthographic = self._projection_manager.projection_mode == ProjectionMode.Orthographic
 
         glUniformMatrix4fv(uniform_locations.view_matrix, 1, False, view_matrix.data)
         glUniformMatrix4fv(uniform_locations.scene_matrix, 1, False, scene_matrix.data)
@@ -796,6 +818,7 @@ class Renderer:
         )
         glUniform1i(uniform_locations.is_transparent, is_transparent)
         glUniform1i(uniform_locations.is_picking, is_picking)
+        glUniform1i(uniform_locations.is_orthographic, is_orthographic)
 
     def _render_to_image(self, paint_mode: PaintMode, width: int, height: int, crop_to_content: bool) -> np.ndarray:
         # Create framebuffer
