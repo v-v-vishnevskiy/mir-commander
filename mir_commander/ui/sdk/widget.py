@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, Qt, Signal
+from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QRegion, QResizeEvent
 from PySide6.QtWidgets import (
     QColorDialog,
@@ -195,11 +195,15 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         # self._minimize_button = TitleBarButton("_")
         # self._minimize_button.clicked.connect(self._minimize)
 
-        self._maximize_button = TitleBarButton("□")
+        self._maximize_button = TitleBarButton()
+        self._maximize_button.setIcon(QIcon(":/core/icons/square.png"))
+        self._maximize_button.setIconSize(QSize(12, 12))
         self._maximize_button.clicked.connect(self._toggle_maximize)
 
-        self._close_button = TitleBarButton("✕")
+        self._close_button = TitleBarButton()
         self._close_button.setObjectName("close-button")
+        self._close_button.setIcon(QIcon(":/core/icons/cross.png"))
+        self._close_button.setIconSize(QSize(12, 12))
         self._close_button.clicked.connect(self._close)
 
         layout.addSpacing(10)
@@ -228,10 +232,10 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def _toggle_maximize(self):
         if self._parent.isMaximized():
             self._parent.showNormal()
-            self._maximize_button.setText("□")
+            self._maximize_button.setIcon(QIcon(":/core/icons/square.png"))
         else:
             self._parent.showMaximized()
-            self._maximize_button.setText("■")
+            self._maximize_button.setIcon(QIcon(":/core/icons/filled-square.png"))
 
     def _close(self):
         self._parent.close()
