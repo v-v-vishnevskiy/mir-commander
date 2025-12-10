@@ -364,6 +364,7 @@ class ResizableContainer(QFrame):
         if self._resize_edge:
             self._perform_resize(event.globalPosition().toPoint())
             event.accept()
+            return
 
         edge = self._get_resize_edge(event.position().toPoint())
         self._update_cursor(edge)
