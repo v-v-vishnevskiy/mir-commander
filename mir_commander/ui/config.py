@@ -1,6 +1,6 @@
 from typing import Any, Callable, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from mir_commander.core.config import BaseConfig, BaseModel
 
@@ -32,6 +32,13 @@ class ProjectWindowConfig(BaseModel):
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
     hotkeys: HotkeysConfig = HotkeysConfig()
     widgets: Widgets = Widgets()
+
+    @field_validator("pos", "size", mode="before")
+    @classmethod
+    def pos_size(cls, value: list[int]) -> list[int]:
+        for i, item in enumerate(value):
+            value[i] = max(0, item)
+        return value
 
 
 class NodeTypeImportConfig(BaseModel):

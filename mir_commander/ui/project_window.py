@@ -268,8 +268,9 @@ class ProjectWindow(QMainWindow):
         """Save parameters of main window to settings."""
         self.app_config.project_window.state = self.saveState().toBase64().toStdString()
         self.app_config.project_window.window_state = self.windowState().value
-        self.app_config.project_window.pos = [self.pos().x(), self.pos().y()]
-        self.app_config.project_window.size = [self.size().width(), self.size().height()]
+        if self.app_config.project_window.window_state == 0:
+            self.app_config.project_window.pos = [self.pos().x(), self.pos().y()]
+            self.app_config.project_window.size = [self.size().width(), self.size().height()]
 
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
@@ -277,7 +278,8 @@ class ProjectWindow(QMainWindow):
         self.setWindowState(Qt.WindowState(self.app_config.project_window.window_state))
         pos = self.app_config.project_window.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
         size = self.app_config.project_window.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
-        self.setGeometry(pos[0], pos[1], size[0], size[1])
+        self.move(*pos)
+        self.resize(*size)
         if state := self.app_config.project_window.state:
             self.restoreState(base64.b64decode(state))
 
