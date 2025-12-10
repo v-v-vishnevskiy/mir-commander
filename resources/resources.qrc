@@ -9,13 +9,14 @@
     <file>icons/app.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-right.png</file>
-    <file>icons/cross.png</file>
+    <file>icons/close.png</file>
     <file>icons/delete.png</file>
     <file>icons/eye.png</file>
+    <file>icons/maximized.png</file>
+    <file>icons/minimized.png</file>
     <file>icons/plus.png</file>
     <file>icons/settings.png</file>
     <file>icons/square.png</file>
-    <file>icons/filled-square.png</file>
   </qresource>
   <qresource prefix="core">
     <file>i18n/en.qm</file>

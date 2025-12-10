@@ -196,14 +196,14 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         # self._minimize_button.clicked.connect(self._minimize)
 
         self._maximize_button = TitleBarButton()
-        self._maximize_button.setIcon(QIcon(":/core/icons/square.png"))
-        self._maximize_button.setIconSize(QSize(9, 9))
+        self._maximize_button.setIcon(QIcon(":/core/icons/minimized.png"))
+        self._maximize_button.setIconSize(QSize(12, 12))
         self._maximize_button.clicked.connect(self._toggle_maximize)
 
         self._close_button = TitleBarButton()
         self._close_button.setObjectName("close-button")
-        self._close_button.setIcon(QIcon(":/core/icons/cross.png"))
-        self._close_button.setIconSize(QSize(9, 9))
+        self._close_button.setIcon(QIcon(":/core/icons/close.png"))
+        self._close_button.setIconSize(QSize(12, 12))
         self._close_button.clicked.connect(self._close)
 
         layout.addSpacing(10)
@@ -214,7 +214,7 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         # layout.addWidget(self._minimize_button)
         # layout.addSpacing(2)
         layout.addWidget(self._maximize_button)
-        layout.addSpacing(2)
+        layout.addSpacing(6)
         layout.addWidget(self._close_button)
         layout.addSpacing(2)
 
@@ -232,10 +232,10 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def _toggle_maximize(self):
         if self._parent.isMaximized():
             self._parent.showNormal()
-            self._maximize_button.setIcon(QIcon(":/core/icons/square.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/minimized.png"))
         else:
             self._parent.showMaximized()
-            self._maximize_button.setIcon(QIcon(":/core/icons/filled-square.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/maximized.png"))
 
     def _close(self):
         self._parent.close()
