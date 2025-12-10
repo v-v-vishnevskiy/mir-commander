@@ -3,12 +3,19 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QWidget
+from PySide6.QtGui import QCloseEvent, QResizeEvent
+from PySide6.QtWidgets import (
+    QMdiArea,
+    QMdiSubWindow,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
-from mir_commander.core.plugins_registry import plugins_registry
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
+from mir_commander.core.plugins_registry import plugins_registry
+from mir_commander.ui.sdk.widget import QMdiSubWindowCustomBody, QMdiSubWindowCustomTitleBar, ResizableContainer
 
 from .docks.program_control_panel import ProgramControlPanelDock
 
@@ -44,10 +51,27 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.program_control_panel_dock = program_control_panel_dock
 
         super().__init__(parent=parent)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
-        self.setWidget(self.program.get_widget())
-        self.setWindowIcon(self.program.get_icon())
-        self.setWindowTitle(self.program.get_title())
+        self._custom_title_bar = QMdiSubWindowCustomTitleBar(self)
+        self._custom_title_bar.set_icon(self.program.get_icon())
+        self._custom_title_bar.set_title(self.program.get_title())
+
+        self._custom_body = QMdiSubWindowCustomBody(self)
+        program_widget = self.program.get_widget()
+        self._custom_body.set_widget(program_widget)
+
+        container = QWidget(self)
+        container.setMouseTracking(True)
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(0)
+        container_layout.addWidget(self._custom_title_bar)
+        container_layout.addWidget(self._custom_body)
+
+        self._resizable_container = ResizableContainer(parent=self)
+
+        self.setWidget(container)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
         self.resize(config.window_size.width, config.window_size.height)
@@ -68,6 +92,13 @@ class _MdiProgramWindow(QMdiSubWindow):
     def update_title(self):
         self.setWindowIcon(self.program.get_icon())
         self.setWindowTitle(self.program.get_title())
+        self._custom_title_bar.set_icon(self.program.get_icon())
+        self._custom_title_bar.set_title(self.program.get_title())
+
+    def resizeEvent(self, event: QResizeEvent):
+        self._resizable_container.resize(event.size().width(), event.size().height())
+        self._custom_body.resize(event.size().width(), event.size().height())
+        super().resizeEvent(event)
 
     def closeEvent(self, event: QCloseEvent):
         _MdiProgramWindow._opened_programs[self._program_id] -= 1

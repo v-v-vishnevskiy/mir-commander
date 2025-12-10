@@ -96,3 +96,43 @@ RecentProjectsDialog {
     min-width: 600px;
     min-height: 450px;
 }
+
+QMdiSubWindowCustomTitleBar {
+    max-height: 25px;
+    min-height: 25px;
+    background-color: #E0E0E0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border: 1px solid #B0B0B0;
+}
+
+TitleBarIcon {
+    max-width: 16px;
+    min-width: 16px;
+    max-height: 16px;
+    min-height: 16px;
+}
+
+TitleBarButton {
+    border: none;
+    border-radius: 3px;
+    max-width: 21px;
+    min-width: 21px;
+    max-height: 21px;
+    min-height: 21px;
+}
+
+TitleBarButton:hover {
+    background-color: #C0C0C0;
+}
+
+TitleBarButton:hover#close-button {
+    background-color: #D32F2F;
+}
+
+QMdiSubWindowCustomBody {
+    border-top: none;
+    border-left: 1px solid #B0B0B0;
+    border-right: 1px solid #B0B0B0;
+    border-bottom: 1px solid #B0B0B0;
+}

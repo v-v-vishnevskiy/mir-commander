@@ -1,11 +1,12 @@
-from PySide6.QtCore import QPropertyAnimation, Qt, Signal
-from PySide6.QtGui import QColor, QMouseEvent
+from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, Qt, Signal
+from PySide6.QtGui import QColor, QIcon, QMouseEvent, QRegion, QResizeEvent
 from PySide6.QtWidgets import (
     QColorDialog,
     QDockWidget,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QMdiSubWindow,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
@@ -165,3 +166,226 @@ class VerticalStackLayout(QVBoxLayout):
 
     def add_widget(self, title: str, widget: QWidget, expanded: bool = True, *args, **kwargs):
         super().addLayout(StackItemLayout(title, widget, expanded), *args, **kwargs)
+
+
+class TitleBarIcon(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setScaledContents(True)
+
+
+class TitleBarButton(QPushButton):
+    pass
+
+
+class QMdiSubWindowCustomTitleBar(QFrame):
+    def __init__(self, parent: QMdiSubWindow):
+        super().__init__(parent)
+        self._parent = parent
+        self._drag_position = QPoint()
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self._icon = TitleBarIcon()
+
+        self._title = QLabel()
+
+        # self._minimize_button = TitleBarButton("_")
+        # self._minimize_button.clicked.connect(self._minimize)
+
+        self._maximize_button = TitleBarButton("□")
+        self._maximize_button.clicked.connect(self._toggle_maximize)
+
+        self._close_button = TitleBarButton("✕")
+        self._close_button.setObjectName("close-button")
+        self._close_button.clicked.connect(self._close)
+
+        layout.addSpacing(10)
+        layout.addWidget(self._icon)
+        layout.addSpacing(10)
+        layout.addWidget(self._title)
+        layout.addStretch()
+        # layout.addWidget(self._minimize_button)
+        # layout.addSpacing(2)
+        layout.addWidget(self._maximize_button)
+        layout.addSpacing(2)
+        layout.addWidget(self._close_button)
+        layout.addSpacing(2)
+
+        self.setLayout(layout)
+
+    def set_icon(self, icon: QIcon):
+        self._icon.setPixmap(icon.pixmap(16, 16))
+
+    def set_title(self, title: str):
+        self._title.setText(title)
+
+    # def _minimize(self):
+    #     self._parent.showMinimized()
+
+    def _toggle_maximize(self):
+        if self._parent.isMaximized():
+            self._parent.showNormal()
+            self._maximize_button.setText("□")
+        else:
+            self._parent.showMaximized()
+            self._maximize_button.setText("■")
+
+    def _close(self):
+        self._parent.close()
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if self._parent.isMaximized():
+            event.ignore()
+            return
+
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_position = event.globalPosition().toPoint() - self._parent.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._parent.isMaximized():
+            event.ignore()
+            return
+
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            self._parent.move(event.globalPosition().toPoint() - self._drag_position)
+            event.accept()
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._toggle_maximize()
+            event.accept()
+
+
+class QMdiSubWindowCustomBody(QFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._layout = QHBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self.setLayout(self._layout)
+
+    def set_widget(self, widget: QWidget):
+        self._layout.addWidget(widget)
+
+
+class ResizableContainer(QFrame):
+    def __init__(self, parent: QMdiSubWindow):
+        super().__init__(parent)
+        self._parent = parent
+
+        self._resize_edge = ""
+        self._margin = 4
+
+        self.setMouseTracking(True)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
+
+    def _get_resize_edge(self, pos: QPoint) -> str:
+        rect = self.rect()
+        x, y = pos.x(), pos.y()
+        w, h = rect.width(), rect.height()
+        m = self._margin
+
+        on_left = x <= m
+        on_right = x >= w - m
+        on_top = y <= m
+        on_bottom = y >= h - m
+
+        if on_top and on_left:
+            return "top_left"
+        elif on_top and on_right:
+            return "top_right"
+        elif on_bottom and on_left:
+            return "bottom_left"
+        elif on_bottom and on_right:
+            return "bottom_right"
+        elif on_left:
+            return "left"
+        elif on_right:
+            return "right"
+        elif on_top:
+            return "top"
+        elif on_bottom:
+            return "bottom"
+        return ""
+
+    def _update_cursor(self, edge: str):
+        cursor_map = {
+            "top": Qt.CursorShape.SizeVerCursor,
+            "bottom": Qt.CursorShape.SizeVerCursor,
+            "left": Qt.CursorShape.SizeHorCursor,
+            "right": Qt.CursorShape.SizeHorCursor,
+            "top_left": Qt.CursorShape.SizeFDiagCursor,
+            "bottom_right": Qt.CursorShape.SizeFDiagCursor,
+            "top_right": Qt.CursorShape.SizeBDiagCursor,
+            "bottom_left": Qt.CursorShape.SizeBDiagCursor,
+        }
+
+        self.setCursor(cursor_map.get(edge, Qt.CursorShape.ArrowCursor))
+
+    def _perform_resize(self, global_pos: QPoint):
+        delta = global_pos - self._resize_start_mouse_pos
+        new_geometry = QRect(self._resize_start_geometry)
+
+        if "left" in self._resize_edge:
+            new_geometry.setLeft(self._resize_start_geometry.left() + delta.x())
+        if "right" in self._resize_edge:
+            new_geometry.setRight(self._resize_start_geometry.right() + delta.x())
+        if "top" in self._resize_edge:
+            new_geometry.setTop(self._resize_start_geometry.top() + delta.y())
+        if "bottom" in self._resize_edge:
+            new_geometry.setBottom(self._resize_start_geometry.bottom() + delta.y())
+
+        min_size = self._parent.minimumSize()
+        if new_geometry.width() >= min_size.width() and new_geometry.height() >= min_size.height():
+            self._parent.setGeometry(new_geometry)
+
+    def resizeEvent(self, event: QResizeEvent):
+        rect = self.rect()
+        m = self._margin
+        mask = QRegion(rect)
+        mask -= QRegion(rect.adjusted(m, m, -m, -m))
+        self.setMask(mask)
+        super().resizeEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._parent.isMaximized():
+            event.ignore()
+            return
+
+        if self._resize_edge:
+            self._perform_resize(event.globalPosition().toPoint())
+            event.accept()
+
+        edge = self._get_resize_edge(event.position().toPoint())
+        self._update_cursor(edge)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if self._parent.isMaximized():
+            event.ignore()
+            return
+
+        if event.button() == Qt.MouseButton.LeftButton:
+            pos = event.position().toPoint()
+            edge = self._get_resize_edge(pos)
+            if edge:
+                self._resize_edge = edge
+                self._resize_start_geometry = self._parent.geometry()
+                self._resize_start_mouse_pos = event.globalPosition().toPoint()
+                self.grabMouse()
+                event.accept()
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton and self._resize_edge:
+            self._resize_edge = ""
+            self.releaseMouse()
+
+            # Update cursor after releasing
+            edge = self._get_resize_edge(event.position().toPoint())
+            self._update_cursor(edge)
+
+            event.accept()
