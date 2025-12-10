@@ -275,13 +275,21 @@ class ProjectWindow(QMainWindow):
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        self.setWindowState(Qt.WindowState(self.app_config.project_window.window_state))
         pos = self.app_config.project_window.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
         size = self.app_config.project_window.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
         self.move(*pos)
         self.resize(*size)
         if state := self.app_config.project_window.state:
             self.restoreState(base64.b64decode(state))
+
+    def show(self):
+        window_state = Qt.WindowState(self.app_config.project_window.window_state)
+        if window_state == Qt.WindowState.WindowMaximized:
+            self.showMaximized()
+        elif window_state == Qt.WindowState.WindowFullScreen:
+            self.showFullScreen()
+        else:
+            self.showNormal()
 
     def closeEvent(self, event: QCloseEvent):
         logger.info("Closing %s project ...", self.project.name)
