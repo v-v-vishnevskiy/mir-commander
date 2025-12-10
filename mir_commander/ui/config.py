@@ -27,6 +27,7 @@ class HotkeysConfig(BaseModel):
 
 class ProjectWindowConfig(BaseModel):
     state: None | str = None
+    window_state: int = 0
     pos: None | list[int] = Field(default=None, min_length=2, max_length=2, description="x, y coordinates")
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
     hotkeys: HotkeysConfig = HotkeysConfig()
