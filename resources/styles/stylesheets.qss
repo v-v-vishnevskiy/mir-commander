@@ -98,33 +98,33 @@ RecentProjectsDialog {
 }
 
 QMdiSubWindow {
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 QMdiSubWindowCustomTitleBar {
-    max-height: 25px;
-    min-height: 25px;
+    max-height: 28px;
+    min-height: 28px;
     background-color: #E0E0E0;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border: 1px solid #B0B0B0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #B0B0B0;
 }
 
 TitleBarIcon {
-    max-width: 16px;
-    min-width: 16px;
-    max-height: 16px;
-    min-height: 16px;
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
 }
 
 TitleBarButton {
     border: none;
-    border-radius: 3px;
-    max-width: 21px;
-    min-width: 21px;
-    max-height: 21px;
-    min-height: 21px;
+    border-radius: 5px;
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
 }
 
 TitleBarButton:hover {
@@ -137,7 +137,11 @@ TitleBarButton:hover#close-button {
 
 QMdiSubWindowCustomBody {
     border-top: none;
-    border-left: 1px solid #B0B0B0;
-    border-right: 1px solid #B0B0B0;
-    border-bottom: 1px solid #B0B0B0;
+}
+
+ResizableContainer {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid #B0B0B0;
+    background: transparent;
 }

@@ -192,8 +192,8 @@ class QMdiSubWindowCustomTitleBar(QFrame):
 
         self._title = QLabel()
 
-        # self._minimize_button = TitleBarButton("_")
-        # self._minimize_button.clicked.connect(self._minimize)
+        self._minimize_button = TitleBarButton("_")
+        self._minimize_button.clicked.connect(self._minimize)
 
         self._maximize_button = TitleBarButton()
         self._maximize_button.setIcon(QIcon(":/core/icons/minimized.png"))
@@ -207,16 +207,17 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         self._close_button.clicked.connect(self._close)
 
         layout.addSpacing(10)
-        layout.addWidget(self._icon)
+        layout.addWidget(self._icon, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addSpacing(4)
         layout.addStretch()
-        layout.addWidget(self._title)
+        layout.addWidget(self._title, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addStretch()
-        # layout.addWidget(self._minimize_button)
-        # layout.addSpacing(2)
-        layout.addWidget(self._maximize_button)
+        layout.addWidget(self._minimize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addSpacing(6)
-        layout.addWidget(self._close_button)
-        layout.addSpacing(2)
+        layout.addWidget(self._maximize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addSpacing(6)
+        layout.addWidget(self._close_button, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addSpacing(4)
 
         self.setLayout(layout)
 
@@ -226,8 +227,8 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def set_title(self, title: str):
         self._title.setText(title)
 
-    # def _minimize(self):
-    #     self._parent.showMinimized()
+    def _minimize(self):
+        self._parent.showMinimized()
 
     def _toggle_maximize(self):
         if self._parent.isMaximized():
@@ -285,8 +286,6 @@ class ResizableContainer(QFrame):
         self._margin = 4
 
         self.setMouseTracking(True)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
 
     def _get_resize_edge(self, pos: QPoint) -> str:
         rect = self.rect()

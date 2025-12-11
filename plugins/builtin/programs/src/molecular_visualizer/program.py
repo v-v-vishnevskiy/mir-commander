@@ -184,6 +184,8 @@ class Program(BaseProgram):
         return self._node_full_name
 
     def get_icon(self) -> QIcon:
+        if isinstance(self.node.project_node.data, VolumeCube):
+            return self.node.icon()
         return self._draw_node.icon()
 
     def action_event(self, action: str, data: dict[str, Any], instance_index: int):

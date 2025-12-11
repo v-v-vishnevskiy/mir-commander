@@ -26,6 +26,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger("UI.MdiArea")
 
 
+class CustomMdiSubWindow(QWidget):
+    pass
+
+
 class _MdiProgramWindow(QMdiSubWindow):
     _id_counter = 0
 
@@ -61,7 +65,7 @@ class _MdiProgramWindow(QMdiSubWindow):
         program_widget = self.program.get_widget()
         self._custom_body.set_widget(program_widget)
 
-        container = QWidget(self)
+        container = CustomMdiSubWindow(self)
         container.setMouseTracking(True)
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(0, 0, 0, 0)
