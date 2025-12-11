@@ -9,14 +9,16 @@
     <file>icons/app.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-right.png</file>
-    <file>icons/close.png</file>
     <file>icons/delete.png</file>
     <file>icons/eye.png</file>
-    <file>icons/maximized.png</file>
-    <file>icons/minimized.png</file>
     <file>icons/plus.png</file>
     <file>icons/settings.png</file>
     <file>icons/square.png</file>
+    <file>icons/window_close.png</file>
+    <file>icons/window_maximized.png</file>
+    <file>icons/window_minimize.png</file>
+    <file>icons/window_normal.png</file>
+    <file>icons/window_restore.png</file>
   </qresource>
   <qresource prefix="core">
     <file>i18n/en.qm</file>

@@ -2,8 +2,8 @@ import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Protocol
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent
+from PySide6.QtCore import QEvent, QSize, Qt, Signal
+from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent, QWindowStateChangeEvent
 from PySide6.QtWidgets import (
     QMdiArea,
     QMdiSubWindow,
@@ -24,10 +24,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger("UI.MdiArea")
-
-
-class CustomMdiSubWindow(QWidget):
-    pass
 
 
 class _MdiProgramWindow(QMdiSubWindow):
@@ -57,6 +53,8 @@ class _MdiProgramWindow(QMdiSubWindow):
         super().__init__(parent=parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
+        self._last_normal_size = QSize(0, 0)
+
         self._custom_title_bar = QMdiSubWindowCustomTitleBar(self)
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
@@ -65,9 +63,9 @@ class _MdiProgramWindow(QMdiSubWindow):
         program_widget = self.program.get_widget()
         self._custom_body.set_widget(program_widget)
 
-        container = CustomMdiSubWindow(self)
-        container.setMouseTracking(True)
-        container_layout = QVBoxLayout(container)
+        self._container = QWidget(self)
+        self._container.setMouseTracking(True)
+        container_layout = QVBoxLayout(self._container)
         container_layout.setContentsMargins(0, 0, 0, 0)
         container_layout.setSpacing(0)
         container_layout.addWidget(self._custom_title_bar)
@@ -75,7 +73,7 @@ class _MdiProgramWindow(QMdiSubWindow):
 
         self._resizable_container = ResizableContainer(parent=self)
 
-        self.setWidget(container)
+        self.setWidget(self._container)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
         self.resize(config.window_size.width, config.window_size.height)
@@ -97,6 +95,20 @@ class _MdiProgramWindow(QMdiSubWindow):
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
 
+    def changeEvent(self, event: QEvent):
+        super().changeEvent(event)
+        if isinstance(event, QWindowStateChangeEvent):
+            if self.isMinimized():
+                self.setMinimumSize(0, 0)
+                self.resize(230, self._custom_title_bar.size().height())
+                self._custom_body.setVisible(False)
+            elif event.oldState() & Qt.WindowState.WindowMinimized:
+                self._custom_body.setVisible(True)
+                self.setMinimumSize(
+                    self.program.config.window_size.min_width, self.program.config.window_size.min_height
+                )
+                self.resize(self._last_normal_size)
+
     def resizeEvent(self, event: QResizeEvent):
         self._resizable_container.resize(event.size().width(), event.size().height())
         self._custom_body.resize(event.size().width(), event.size().height())
@@ -108,6 +120,16 @@ class _MdiProgramWindow(QMdiSubWindow):
             self.program_control_panel_dock.hide()
             self.program_control_panel_dock.toggleViewAction().setVisible(False)
         super().closeEvent(event)
+
+    def showMinimized(self):
+        if not self.isMaximized():
+            self._last_normal_size = self.size()
+        super().showMinimized()
+
+    def showMaximized(self):
+        if not self.isMinimized():
+            self._last_normal_size = self.size()
+        super().showMaximized()
 
 
 class SubWindowListFn(Protocol):

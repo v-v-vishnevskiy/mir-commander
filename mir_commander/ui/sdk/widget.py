@@ -192,17 +192,19 @@ class QMdiSubWindowCustomTitleBar(QFrame):
 
         self._title = QLabel()
 
-        self._minimize_button = TitleBarButton("_")
-        self._minimize_button.clicked.connect(self._minimize)
+        self._minimize_button = TitleBarButton()
+        self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
+        self._minimize_button.setIconSize(QSize(14, 14))
+        self._minimize_button.clicked.connect(self._toggle_minimize)
 
         self._maximize_button = TitleBarButton()
-        self._maximize_button.setIcon(QIcon(":/core/icons/minimized.png"))
+        self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
         self._maximize_button.setIconSize(QSize(12, 12))
         self._maximize_button.clicked.connect(self._toggle_maximize)
 
         self._close_button = TitleBarButton()
         self._close_button.setObjectName("close-button")
-        self._close_button.setIcon(QIcon(":/core/icons/close.png"))
+        self._close_button.setIcon(QIcon(":/core/icons/window_close.png"))
         self._close_button.setIconSize(QSize(12, 12))
         self._close_button.clicked.connect(self._close)
 
@@ -212,6 +214,7 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         layout.addStretch()
         layout.addWidget(self._title, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addStretch()
+        layout.addSpacing(4)
         layout.addWidget(self._minimize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addSpacing(6)
         layout.addWidget(self._maximize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -227,22 +230,35 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def set_title(self, title: str):
         self._title.setText(title)
 
-    def _minimize(self):
-        self._parent.showMinimized()
+    def _toggle_minimize(self):
+        if self._parent.isMinimized():
+            self._parent.showNormal()
+            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
+        else:
+            if self._parent.isMaximized():
+                self._parent.showNormal()
+            self._parent.showMinimized()
+            self._minimize_button.setIcon(QIcon(":/core/icons/window_restore.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
 
     def _toggle_maximize(self):
         if self._parent.isMaximized():
             self._parent.showNormal()
-            self._maximize_button.setIcon(QIcon(":/core/icons/minimized.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
+            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
         else:
+            if self._parent.isMinimized():
+                self._parent.showNormal()
             self._parent.showMaximized()
-            self._maximize_button.setIcon(QIcon(":/core/icons/maximized.png"))
+            self._maximize_button.setIcon(QIcon(":/core/icons/window_maximized.png"))
+            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
 
     def _close(self):
         self._parent.close()
 
     def mousePressEvent(self, event: QMouseEvent):
-        if self._parent.isMaximized():
+        if self._parent.isMaximized() or self._parent.isMinimized():
             event.ignore()
             return
 
@@ -251,7 +267,7 @@ class QMdiSubWindowCustomTitleBar(QFrame):
             event.accept()
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        if self._parent.isMaximized():
+        if self._parent.isMaximized() or self._parent.isMinimized():
             event.ignore()
             return
 
@@ -356,7 +372,7 @@ class ResizableContainer(QFrame):
         super().resizeEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        if self._parent.isMaximized():
+        if self._parent.isMaximized() or self._parent.isMinimized():
             event.ignore()
             return
 
@@ -369,7 +385,7 @@ class ResizableContainer(QFrame):
         self._update_cursor(edge)
 
     def mousePressEvent(self, event: QMouseEvent):
-        if self._parent.isMaximized():
+        if self._parent.isMaximized() or self._parent.isMinimized():
             event.ignore()
             return
 
