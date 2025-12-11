@@ -74,14 +74,34 @@ class _MdiProgramWindow(QMdiSubWindow):
         self._resizable_container = ResizableContainer(parent=self)
 
         self.setWidget(self._container)
+        self.setWindowTitle(self.program.get_title())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
         self.resize(config.window_size.width, config.window_size.height)
+
+        self.windowStateChanged.connect(self._window_state_changed_handler)
 
         _MdiProgramWindow._opened_programs[self._program_id] += 1
         if _MdiProgramWindow._opened_programs[self._program_id] == 1 and program_control_panel_dock is not None:
             program_control_panel_dock.restore_visibility()
             program_control_panel_dock.toggleViewAction().setVisible(True)
+
+    def _window_state_changed_handler(self, old_state: Qt.WindowState, new_state: Qt.WindowState):
+        if new_state == Qt.WindowState.WindowActive:
+            self._custom_title_bar.set_active(True)
+        elif new_state == Qt.WindowState.WindowNoState:
+            self._custom_title_bar.set_active(False)
+
+        if new_state & Qt.WindowState.WindowMinimized:
+            self.resize(230, self._custom_title_bar.size().height())
+            self._custom_body.setVisible(False)
+        elif old_state & Qt.WindowState.WindowMinimized:
+            self._custom_body.setVisible(True)
+            self.setMinimumSize(self.program.config.window_size.min_width, self.program.config.window_size.min_height)
+            self.resize(self._last_normal_size)
+
+        if self.program_control_panel_dock is not None:
+            self.program_control_panel_dock.control_panel.update_event(self.program)
 
     @property
     def id(self) -> int:
@@ -92,6 +112,7 @@ class _MdiProgramWindow(QMdiSubWindow):
         return self._program_id
 
     def update_title(self):
+        self.setWindowTitle(self.program.get_title())
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
 
@@ -99,15 +120,9 @@ class _MdiProgramWindow(QMdiSubWindow):
         super().changeEvent(event)
         if isinstance(event, QWindowStateChangeEvent):
             if self.isMinimized():
+                # NOTE: to prevent
+                # "QWidget::setMinimumSize: (/_MdiProgramWindow) Negative sizes (-1,-1) are not possible" error
                 self.setMinimumSize(0, 0)
-                self.resize(230, self._custom_title_bar.size().height())
-                self._custom_body.setVisible(False)
-            elif event.oldState() & Qt.WindowState.WindowMinimized:
-                self._custom_body.setVisible(True)
-                self.setMinimumSize(
-                    self.program.config.window_size.min_width, self.program.config.window_size.min_height
-                )
-                self.resize(self._last_normal_size)
 
     def resizeEvent(self, event: QResizeEvent):
         self._resizable_container.resize(event.size().width(), event.size().height())
@@ -149,15 +164,6 @@ class MdiArea(QMdiArea):
         self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-
-        self.subWindowActivated.connect(self._sub_window_activated_handler)
-
-    def _sub_window_activated_handler(self, window: None | _MdiProgramWindow):
-        if window is None:
-            return
-
-        if window.program_control_panel_dock is not None:
-            window.program_control_panel_dock.control_panel.update_event(window.program)
 
     def _node_changed_handler(self, node_id: int, window_id: int, action: NodeChangedAction):
         for window in self.subWindowList():

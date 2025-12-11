@@ -224,12 +224,6 @@ class QMdiSubWindowCustomTitleBar(QFrame):
 
         self.setLayout(layout)
 
-    def set_icon(self, icon: QIcon):
-        self._icon.setPixmap(icon.pixmap(16, 16))
-
-    def set_title(self, title: str):
-        self._title.setText(title)
-
     def _toggle_minimize(self):
         if self._parent.isMinimized():
             self._parent.showNormal()
@@ -256,6 +250,16 @@ class QMdiSubWindowCustomTitleBar(QFrame):
 
     def _close(self):
         self._parent.close()
+
+    def set_icon(self, icon: QIcon):
+        self._icon.setPixmap(icon.pixmap(64, 64))
+
+    def set_title(self, title: str):
+        self._title.setText(title)
+
+    def set_active(self, active: bool):
+        self._title.setEnabled(active)
+        self._icon.setEnabled(active)
 
     def mousePressEvent(self, event: QMouseEvent):
         if self._parent.isMaximized() or self._parent.isMinimized():
