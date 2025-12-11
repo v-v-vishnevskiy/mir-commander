@@ -208,7 +208,7 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         self._close_button.setIconSize(QSize(12, 12))
         self._close_button.clicked.connect(self._close)
 
-        layout.addSpacing(10)
+        layout.addSpacing(6)
         layout.addWidget(self._icon, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addSpacing(4)
         layout.addStretch()
