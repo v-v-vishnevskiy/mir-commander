@@ -37,8 +37,7 @@ class Plugins(BasePage):
             self.tr("Name"),
             self.tr("Type"),
             self.tr("Version"),
-            self.tr("Author"),
-            self.tr("Contacts"),
+            self.tr("Publisher"),
             self.tr("Enabled"),
         ]
         self._model.setHorizontalHeaderLabels([h for h in headers])
@@ -75,15 +74,12 @@ class Plugins(BasePage):
             version_item = QStandardItem(version)
             version_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-            author_item = QStandardItem(metadata.author)
-            author_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
-            contacts_item = QStandardItem(metadata.contacts)
-            contacts_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            publisher_item = QStandardItem(metadata.publisher)
+            publisher_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
             enabled_item = QStandardItem(self.tr("Yes") if item.enabled else self.tr("No"))
             enabled_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-            self._model.appendRow([name_item, type_item, version_item, author_item, contacts_item, enabled_item])
+            self._model.appendRow([name_item, type_item, version_item, publisher_item, enabled_item])
 
         self._table.resizeColumnsToContents()

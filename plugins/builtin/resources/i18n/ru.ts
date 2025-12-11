@@ -763,7 +763,7 @@
 <context>
     <name>builtin.file_exporter_xyz</name>
     <message>
-        <location filename="../../file_exporters/loader.py" line="27"/>
+        <location filename="../../file_exporters/loader.py" line="25"/>
         <source>Title</source>
         <translation>Заголовок</translation>
     </message>
@@ -771,7 +771,7 @@
 <context>
     <name>builtin.molecular_visualizer</name>
     <message>
-        <location filename="../../programs/loader.py" line="37"/>
+        <location filename="../../programs/loader.py" line="35"/>
         <source>Molecular visualizer</source>
         <translation>Визуализатор молекул</translation>
     </message>

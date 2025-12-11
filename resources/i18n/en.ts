@@ -24,27 +24,27 @@
         <translation>License</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="61"/>
+        <location filename="../../mir_commander/ui/about.py" line="59"/>
         <source>A modern, powerful graphical user interface for molecular structure modeling.</source>
         <translation>A modern, powerful graphical user interface for molecular structure modeling.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="68"/>
+        <location filename="../../mir_commander/ui/about.py" line="66"/>
         <source>Home Page:</source>
         <translation>Home Page:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="70"/>
+        <location filename="../../mir_commander/ui/about.py" line="68"/>
         <source>Telegram News:</source>
         <translation>Telegram News:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="82"/>
+        <location filename="../../mir_commander/ui/about.py" line="80"/>
         <source>Yury V. Vishnevskiy</source>
         <translation>Yury V. Vishnevskiy</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/about.py" line="84"/>
+        <location filename="../../mir_commander/ui/about.py" line="82"/>
         <source>Valery V. Vishnevskiy</source>
         <translation>Valery V. Vishnevskiy</translation>
     </message>
@@ -137,51 +137,46 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/settings/plugins_page.py" line="40"/>
-        <source>Author</source>
-        <translation>Author</translation>
+        <source>Publisher</source>
+        <translation>Publisher</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/settings/plugins_page.py" line="41"/>
-        <source>Contacts</source>
-        <translation>Contacts</translation>
-    </message>
-    <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="42"/>
         <source>Enabled</source>
         <translation>Enabled</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="49"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="48"/>
         <source>File Importer</source>
         <translation>File Importer</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="52"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="51"/>
         <source>File Exporter</source>
         <translation>File Exporter</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="55"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="54"/>
         <source>Program</source>
         <translation>Program</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="58"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="57"/>
         <source>Project Node</source>
         <translation>Project Node</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="61"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="60"/>
         <source>Resources</source>
         <translation>Resources</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="84"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="80"/>
         <source>Yes</source>
         <translation>Yes</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="84"/>
+        <location filename="../../mir_commander/ui/settings/plugins_page.py" line="80"/>
         <source>No</source>
         <translation>No</translation>
     </message>
@@ -223,147 +218,147 @@
         <translation>Ready</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="149"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="169"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="158"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="178"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="171"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="191"/>
         <source>Help</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="176"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="196"/>
         <source>Close Project</source>
         <translation>Close Project</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="195"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="215"/>
         <source>Quit</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="208"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="228"/>
         <source>Import File...</source>
         <translation>Import File...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="214"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="234"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="218"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="238"/>
         <source>Close All</source>
         <translation>Close All</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="222"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="242"/>
         <source>Tile</source>
         <translation>Tile</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="225"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="245"/>
         <source>Cascade</source>
         <translation>Cascade</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="229"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="249"/>
         <source>Next</source>
         <translation>Next</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="237"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="257"/>
         <source>Previous</source>
         <translation>Previous</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="214"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="234"/>
         <source>Close the active window</source>
         <translation>Close the active window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="165"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="185"/>
         <source>Window</source>
         <translation>Window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="181"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="201"/>
         <source>Preferences...</source>
         <translation>Preferences...</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="202"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="222"/>
         <source>About Mir Commander</source>
         <translation>About Mir Commander</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="219"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="239"/>
         <source>Close all the windows</source>
         <translation>Close all the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="222"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="242"/>
         <source>Tile the windows</source>
         <translation>Tile the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="225"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="245"/>
         <source>Cascade the windows</source>
         <translation>Cascade the windows</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="232"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="252"/>
         <source>Move the focus to the next window</source>
         <translation>Move the focus to the next window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="240"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="260"/>
         <source>Move the focus to the previous window</source>
         <translation>Move the focus to the previous window</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="307"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="339"/>
         <source>Import File</source>
         <translation>Import File</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="309"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="341"/>
         <source>All files (*)</source>
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="325"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="110"/>
         <source>File imported successfully</source>
         <translation>File imported successfully</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="330"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="114"/>
         <source>Error importing file {file_path}: {e}</source>
         <translation>Error importing file {file_path}: {e}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="332"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="115"/>
         <source>Failed to import file</source>
         <translation>Failed to import file</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="343"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="356"/>
         <source>File exported successfully</source>
         <translation>File exported successfully</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="346"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="359"/>
         <source>Failed to export file: {}</source>
         <translation>Failed to export file: {}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/project_window.py" line="347"/>
+        <location filename="../../mir_commander/ui/project_window.py" line="360"/>
         <source>Failed to export file</source>
         <translation>Failed to export file</translation>
     </message>

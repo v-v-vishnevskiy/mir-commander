@@ -14,9 +14,7 @@ def register_plugins() -> list[Plugin]:
                 name="XYZ",
                 version=(1, 0, 0),
                 description="XYZ file exporter",
-                author="Mir Commander",
-                contacts="https://mircmd.com",
-                license="MirCommander",
+                publisher="mircmd.com",
             ),
             details=FileExporterDetails(
                 supported_node_types=["builtin.atomic_coordinates"],

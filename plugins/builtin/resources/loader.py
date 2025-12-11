@@ -12,9 +12,7 @@ def register_plugins() -> list[Plugin]:
                 name="Core resources",
                 version=(1, 0, 0),
                 description="Resources of the builtin plugins",
-                author="Mir Commander",
-                contacts="https://mircmd.com",
-                license="MirCommander",
+                publisher="mircmd.com",
             ),
             details=ResourcesDetails(),
             resources=[
