@@ -378,6 +378,7 @@ class ResizableContainer(QFrame):
     def mouseMoveEvent(self, event: QMouseEvent):
         if self._parent.isMaximized() or self._parent.isMinimized():
             event.ignore()
+            self.setCursor(Qt.CursorShape.ArrowCursor)
             return
 
         if self._resize_edge:
