@@ -94,6 +94,8 @@ class _MdiProgramWindow(QMdiSubWindow):
             self.setMinimumSize(self.program.config.window_size.min_width, self.program.config.window_size.min_height)
             self.resize(self._last_normal_size)
 
+        self._custom_title_bar.update_state(new_state)
+
         if self.program_control_panel_dock is not None:
             self.program_control_panel_dock.control_panel.update_event(self.program)
 

@@ -219,48 +219,20 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def _toggle_minimize(self):
         if self._parent.isMinimized():
             self._parent.showNormal()
-            self._minimize_button.setProperty("active", False)
-            self._minimize_button.style().polish(self._minimize_button)
-            self._minimize_button.update()
-
-            self._maximize_button.setProperty("active", False)
-            self._maximize_button.style().polish(self._maximize_button)
-            self._maximize_button.update()
         else:
             if self._parent.isMaximized():
                 # PATCH: to really minimize the window, we need to show it normal first
                 self._parent.showNormal()
             self._parent.showMinimized()
-            self._minimize_button.setProperty("active", True)
-            self._minimize_button.style().polish(self._minimize_button)
-            self._minimize_button.update()
-
-            self._maximize_button.setProperty("active", False)
-            self._maximize_button.style().polish(self._maximize_button)
-            self._maximize_button.update()
 
     def _toggle_maximize(self):
         if self._parent.isMaximized():
             self._parent.showNormal()
-            self._minimize_button.setProperty("active", False)
-            self._minimize_button.style().polish(self._minimize_button)
-            self._minimize_button.update()
-
-            self._maximize_button.setProperty("active", False)
-            self._maximize_button.style().polish(self._maximize_button)
-            self._maximize_button.update()
         else:
             if self._parent.isMinimized():
                 # PATCH: to really maximize the window, we need to show it normal first
                 self._parent.showNormal()
             self._parent.showMaximized()
-            self._minimize_button.setProperty("active", False)
-            self._minimize_button.style().polish(self._minimize_button)
-            self._minimize_button.update()
-
-            self._maximize_button.setProperty("active", True)
-            self._maximize_button.style().polish(self._maximize_button)
-            self._maximize_button.update()
 
     def _close(self):
         self._parent.close()
@@ -274,6 +246,20 @@ class QMdiSubWindowCustomTitleBar(QFrame):
     def set_active(self, active: bool):
         self._title.setEnabled(active)
         self._icon.setEnabled(active)
+
+    def update_state(self, state: Qt.WindowState):
+        self._minimize_button.setProperty("active", False)
+        self._maximize_button.setProperty("active", False)
+        if state & Qt.WindowState.WindowMinimized:
+            self._minimize_button.setProperty("active", True)
+        elif state & Qt.WindowState.WindowMaximized:
+            self._maximize_button.setProperty("active", True)
+
+        self._minimize_button.style().polish(self._minimize_button)
+        self._minimize_button.update()
+
+        self._maximize_button.style().polish(self._maximize_button)
+        self._maximize_button.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         if self._parent.isMaximized() or self._parent.isMinimized():
