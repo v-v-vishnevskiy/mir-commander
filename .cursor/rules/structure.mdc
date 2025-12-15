@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+
+
+The project has the following structure:
+
+- build_scripts – Scripts for building the application for macOS, Linux, and Windows operating systems.
+- mir_commander/api – Public API.
+- mir_commander/core – Core libraries, algorithms, and logic.
+- mir_commander/ui – All components for rendering the user interface.
+- plugins – Contains built-in plugins based on the Public API.
+- tests – Contains tests for mir_commander/core and mir_commander/ui.
+- resources – Contains raw resources (`.qrc` files) and compiled resources (`.rcc` files). The application uses ONLY `.rcc` files at runtime.
