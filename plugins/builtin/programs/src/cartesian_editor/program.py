@@ -180,7 +180,16 @@ class AtomicCoordinatesTableView(QTableView):
         self._plus_button = QPushButton(QIcon(":/core/icons/plus.png"), "")
         self._plus_button.setIconSize(QSize(16, 16))
         self._plus_button.setEnabled(False)
-        self.setStyleSheet("QPushButton { border: none; }")
+        self.setStyleSheet(
+            """
+            QTableView {
+                background-color: palette(base);
+            }
+            QPushButton {
+                border: none;
+            }
+            """
+        )
         self._plus_button.clicked.connect(self._add_new_atom_button_clicked_handler)
 
     def _reset_new_atom_row(self):
