@@ -4,13 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import QEvent, QSize, Qt, Signal
 from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent, QWindowStateChangeEvent
-from PySide6.QtWidgets import (
-    QMdiArea,
-    QMdiSubWindow,
-    QMessageBox,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QVBoxLayout, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError

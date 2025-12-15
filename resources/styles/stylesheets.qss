@@ -116,6 +116,8 @@ TitleBarIcon {
     min-width: 20px;
     max-height: 20px;
     min-height: 20px;
+    margin-left: 6px;
+    margin-right: 4px;
 }
 
 TitleBarButton {
@@ -125,13 +127,39 @@ TitleBarButton {
     min-width: 20px;
     max-height: 20px;
     min-height: 20px;
+    icon-size: 8px;
+    margin-right: 4px;
 }
 
 TitleBarButton:hover {
     background-color: #C0C0C0;
 }
 
-TitleBarButton:hover#close-button {
+TitleBarButton#minimize {
+    margin-left: 4px;
+}
+
+TitleBarButton#minimize[active="false"] {
+    icon: url(:/core/icons/window_minimize.png);
+}
+
+TitleBarButton#minimize[active="true"] {
+    icon: url(:/core/icons/window_restore.png);
+}
+
+TitleBarButton#maximize[active="false"] {
+    icon: url(:/core/icons/window_normal.png);
+}
+
+TitleBarButton#maximize[active="true"] {
+    icon: url(:/core/icons/window_maximized.png);
+}
+
+TitleBarButton#close {
+    icon: url(:/core/icons/window_close.png);
+}
+
+TitleBarButton:hover#close {
     background-color: #D32F2F;
 }
 

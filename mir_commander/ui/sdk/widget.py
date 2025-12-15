@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QRegion, QResizeEvent
 from PySide6.QtWidgets import (
     QColorDialog,
@@ -193,60 +193,74 @@ class QMdiSubWindowCustomTitleBar(QFrame):
         self._title = QLabel()
 
         self._minimize_button = TitleBarButton()
-        self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
-        self._minimize_button.setIconSize(QSize(14, 14))
+        self._minimize_button.setObjectName("minimize")
+        self._minimize_button.setProperty("active", False)
         self._minimize_button.clicked.connect(self._toggle_minimize)
 
         self._maximize_button = TitleBarButton()
-        self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
-        self._maximize_button.setIconSize(QSize(12, 12))
+        self._maximize_button.setObjectName("maximize")
+        self._maximize_button.setProperty("active", False)
         self._maximize_button.clicked.connect(self._toggle_maximize)
 
         self._close_button = TitleBarButton()
-        self._close_button.setObjectName("close-button")
-        self._close_button.setIcon(QIcon(":/core/icons/window_close.png"))
-        self._close_button.setIconSize(QSize(12, 12))
+        self._close_button.setObjectName("close")
         self._close_button.clicked.connect(self._close)
 
-        layout.addSpacing(6)
         layout.addWidget(self._icon, alignment=Qt.AlignmentFlag.AlignVCenter)
-        layout.addSpacing(4)
         layout.addStretch()
         layout.addWidget(self._title, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addStretch()
-        layout.addSpacing(4)
         layout.addWidget(self._minimize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
-        layout.addSpacing(6)
         layout.addWidget(self._maximize_button, alignment=Qt.AlignmentFlag.AlignVCenter)
-        layout.addSpacing(6)
         layout.addWidget(self._close_button, alignment=Qt.AlignmentFlag.AlignVCenter)
-        layout.addSpacing(4)
 
         self.setLayout(layout)
 
     def _toggle_minimize(self):
         if self._parent.isMinimized():
             self._parent.showNormal()
-            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
-            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
+            self._minimize_button.setProperty("active", False)
+            self._minimize_button.style().polish(self._minimize_button)
+            self._minimize_button.update()
+
+            self._maximize_button.setProperty("active", False)
+            self._maximize_button.style().polish(self._maximize_button)
+            self._maximize_button.update()
         else:
             if self._parent.isMaximized():
+                # PATCH: to really minimize the window, we need to show it normal first
                 self._parent.showNormal()
             self._parent.showMinimized()
-            self._minimize_button.setIcon(QIcon(":/core/icons/window_restore.png"))
-            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
+            self._minimize_button.setProperty("active", True)
+            self._minimize_button.style().polish(self._minimize_button)
+            self._minimize_button.update()
+
+            self._maximize_button.setProperty("active", False)
+            self._maximize_button.style().polish(self._maximize_button)
+            self._maximize_button.update()
 
     def _toggle_maximize(self):
         if self._parent.isMaximized():
             self._parent.showNormal()
-            self._maximize_button.setIcon(QIcon(":/core/icons/window_normal.png"))
-            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
+            self._minimize_button.setProperty("active", False)
+            self._minimize_button.style().polish(self._minimize_button)
+            self._minimize_button.update()
+
+            self._maximize_button.setProperty("active", False)
+            self._maximize_button.style().polish(self._maximize_button)
+            self._maximize_button.update()
         else:
             if self._parent.isMinimized():
+                # PATCH: to really maximize the window, we need to show it normal first
                 self._parent.showNormal()
             self._parent.showMaximized()
-            self._maximize_button.setIcon(QIcon(":/core/icons/window_maximized.png"))
-            self._minimize_button.setIcon(QIcon(":/core/icons/window_minimize.png"))
+            self._minimize_button.setProperty("active", False)
+            self._minimize_button.style().polish(self._minimize_button)
+            self._minimize_button.update()
+
+            self._maximize_button.setProperty("active", True)
+            self._maximize_button.style().polish(self._maximize_button)
+            self._maximize_button.update()
 
     def _close(self):
         self._parent.close()
@@ -303,7 +317,7 @@ class ResizableContainer(QFrame):
         self._parent = parent
 
         self._resize_edge = ""
-        self._margin = 4
+        self._margin = 6
 
         self.setMouseTracking(True)
 
