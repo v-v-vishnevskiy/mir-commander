@@ -126,6 +126,9 @@ class _MdiProgramWindow(QMdiSubWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event: QCloseEvent):
+        if self.isMaximized():
+            self.showNormal()
+
         _MdiProgramWindow._opened_programs[self._program_id] -= 1
         if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._program_id] == 0:
             self.program_control_panel_dock.hide()
