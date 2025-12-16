@@ -86,6 +86,7 @@ class About(QDialog):
 
     def _license_page(self, license_text: str) -> QPlainTextEdit:
         widget = QPlainTextEdit(license_text)
+        widget.setObjectName("mircmd-about-license-text")
         widget.setReadOnly(True)
         return widget
 

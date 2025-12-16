@@ -80,6 +80,10 @@ QLabel#mircmd-about-version-label {
     font-size: 11px;
 }
 
+QPlainTextEdit#mircmd-about-license-text {
+    border: none;
+}
+
 ProjectDock {
     min-width: 200px;
 }
@@ -174,73 +178,67 @@ ResizableContainer {
     background: transparent;
 }
 
+QDialog {
+    background: #ECECEC;
+}
+
 QTabWidget::pane {
-    background: #E1E1E1;
-    border: none;
+    background: #E8E8E8;
+    border-top: 1px solid #DADADA;
 }
 
 QTabWidget::tab-bar {
-    left: 0px;
     border: none;
     background: none;
 }
 
 QTabBar::tab {
-    background: #C1C1C1;
+    background: #FFFFFF;
     border: none;
     margin: 0px;
 }
 
+QTabBar::tab:pressed {
+    background: #F0F0F0;
+}
+
 QTabBar::tab:top, QTabBar::tab:bottom {
     min-width: 8ex;
-    height: 24px;
+    height: 18px;
     padding-left: 6px;
     padding-right: 6px;
     padding-top: 2px;
     padding-bottom: 2px;
+    border-right: 1px solid #DADADA;
 }
 
 QTabBar::tab:left, QTabBar::tab:right {
     min-height: 8ex;
-    width: 24px;
+    width: 18px;
     padding-left: 2px;
     padding-right: 2px;
     padding-top: 6px;
     padding-bottom: 6px;
-}
-
-QTabBar::tab:hover {
-    background: #E1E1E1;
+    border-bottom: 1px solid #DADADA;
 }
 
 QTabBar::tab:selected {
-    background: #E1E1E1;
+    color: #FFFFFF;
+    background: #498FF7;
 }
 
-QTabBar::tab:top:selected, QTabBar::tab:bottom:selected {
-    height: 18px;
+QTabBar::tab:top:last, QTabBar::tab:top:selected, QTabBar::tab:top:next-selected {
+    border-right: 1px solid transparent;
 }
 
-QTabBar::tab:top:selected {
-    border-top: 3px solid rgb(0, 170, 255);
-    padding-bottom: 5px;
+QTabBar::tab:bottom:last, QTabBar::tab:bottom:selected, QTabBar::tab:bottom:next-selected {
+    border-right: 1px solid transparent;
 }
 
-QTabBar::tab:bottom:selected {
-    border-bottom: 3px solid rgb(0, 170, 255);
-    padding-top: 5px;
+QTabBar::tab:left:last, QTabBar::tab:left:selected, QTabBar::tab:left:next-selected {
+    border-bottom: 1px solid transparent;
 }
 
-QTabBar::tab:left:selected, QTabBar::tab:right:selected {
-    width: 18px;
-}
-
-QTabBar::tab:right:selected {
-    border-right: 3px solid rgb(0, 170, 255);
-    padding-left: 5px;
-}
-
-QTabBar::tab:left:selected {
-    border-left: 3px solid rgb(0, 170, 255);
-    padding-right: 5px;
+QTabBar::tab:right:last, QTabBar::tab:right:selected, QTabBar::tab:right:next-selected {
+    border-bottom: 1px solid transparent;
 }
