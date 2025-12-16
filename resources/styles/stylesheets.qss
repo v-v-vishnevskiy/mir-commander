@@ -1,3 +1,15 @@
+QDialog {
+    background: #ECECEC;
+}
+
+QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QStatusBar, QDoubleSpinBox, QComboBox, QPlainTextEdit, QHeaderView::section, QTabBar::tab {
+    font-size: 13px;
+}
+
+QGroupBox {
+    font-size: 11px;
+}
+
 ColorButton {
     margin: 1px;
     max-width: 14px;
@@ -180,14 +192,6 @@ ResizableContainer {
     border-top-right-radius: 8px;
     border: 1px solid #B0B0B0;
     background: transparent;
-}
-
-QTreeView, QTableView, QListView {
-    font-size: 13px
-}
-
-QDialog {
-    background: #ECECEC;
 }
 
 QTabWidget::pane {
