@@ -82,6 +82,10 @@ QLabel#mircmd-about-version-label {
 
 QPlainTextEdit#mircmd-about-license-text {
     border: none;
+    background: #FFFFFF;
+    border-left: 1px solid #DADADA;
+    border-right: 1px solid #DADADA;
+    border-bottom: 1px solid #DADADA;
 }
 
 ProjectDock {
