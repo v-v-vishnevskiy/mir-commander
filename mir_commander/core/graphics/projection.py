@@ -35,12 +35,39 @@ class PerspectiveProjection(AbstractProjection):
         self._near_plane = near_plane
         self._far_plane = far_plane
         self._aspect = 1.0
+        self._left = 0.0
+        self._right = 0.0
+        self._bottom = 0.0
+        self._top = 0.0
 
     def setup_projection(self, width: int, height: int):
-        """Setup perspective projection matrix."""
+        """Setup perspective projection matrix with proper aspect ratio handling."""
         self._aspect = width / height
+
+        # Calculate effective FOV and frustum planes based on orientation
+        half_fov_rad = math.radians(self._fov / 2.0)
+        tan_half_fov = math.tan(half_fov_rad)
+
+        if width <= height:
+            # Portrait or square viewport: FOV applies to horizontal axis (narrower)
+            # Calculate vertical FOV from horizontal FOV to maintain proper scaling
+            effective_fov = math.degrees(2.0 * math.atan(tan_half_fov / self._aspect))
+
+            self._right = self._near_plane * tan_half_fov
+            self._left = -self._right
+            self._top = self._right / self._aspect
+            self._bottom = -self._top
+        else:
+            # Landscape viewport: FOV applies to vertical axis (standard behavior)
+            effective_fov = self._fov
+
+            self._top = self._near_plane * tan_half_fov
+            self._bottom = -self._top
+            self._right = self._top * self._aspect
+            self._left = -self._right
+
         self.matrix.set_to_identity()
-        self.matrix.perspective(self._fov, self._aspect, self._near_plane, self._far_plane)
+        self.matrix.perspective(effective_fov, self._aspect, self._near_plane, self._far_plane)
 
     def get_fov(self):
         return self._fov
@@ -56,13 +83,7 @@ class PerspectiveProjection(AbstractProjection):
 
     @property
     def frustum_planes(self) -> tuple[float, float, float, float, float, float]:
-        half_fov_rad = math.radians(self._fov / 2.0)
-        tan_half_fov = math.tan(half_fov_rad)
-        top = self._near_plane * tan_half_fov
-        bottom = -top
-        right = top * self._aspect
-        left = -right
-        return left, right, bottom, top, self._near_plane, self._far_plane
+        return self._left, self._right, self._bottom, self._top, self._near_plane, self._far_plane
 
 
 class OrthographicProjection(AbstractProjection):
