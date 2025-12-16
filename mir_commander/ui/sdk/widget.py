@@ -178,7 +178,7 @@ class TitleBarButton(QPushButton):
     pass
 
 
-class QMdiSubWindowCustomTitleBar(QFrame):
+class MdiSubWindowTitleBar(QFrame):
     def __init__(self, parent: QMdiSubWindow):
         super().__init__(parent)
         self._parent = parent
@@ -285,7 +285,7 @@ class QMdiSubWindowCustomTitleBar(QFrame):
             event.accept()
 
 
-class QMdiSubWindowCustomBody(QFrame):
+class MdiSubWindowBody(QFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._layout = QHBoxLayout()

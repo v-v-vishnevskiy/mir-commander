@@ -102,7 +102,7 @@ QMdiSubWindow {
     border-top-right-radius: 8px;
 }
 
-QMdiSubWindowCustomTitleBar {
+MdiSubWindowTitleBar {
     max-height: 28px;
     min-height: 28px;
     background-color: #E0E0E0;
@@ -163,7 +163,7 @@ TitleBarButton:hover#close {
     background-color: #D32F2F;
 }
 
-QMdiSubWindowCustomBody {
+MdiSubWindowBody {
     border-top: none;
 }
 
@@ -172,4 +172,75 @@ ResizableContainer {
     border-top-right-radius: 8px;
     border: 1px solid #B0B0B0;
     background: transparent;
+}
+
+QTabWidget::pane {
+    background: #E1E1E1;
+    border: none;
+}
+
+QTabWidget::tab-bar {
+    left: 0px;
+    border: none;
+    background: none;
+}
+
+QTabBar::tab {
+    background: #C1C1C1;
+    border: none;
+    margin: 0px;
+}
+
+QTabBar::tab:top, QTabBar::tab:bottom {
+    min-width: 8ex;
+    height: 24px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+QTabBar::tab:left, QTabBar::tab:right {
+    min-height: 8ex;
+    width: 24px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+QTabBar::tab:hover {
+    background: #E1E1E1;
+}
+
+QTabBar::tab:selected {
+    background: #E1E1E1;
+}
+
+QTabBar::tab:top:selected, QTabBar::tab:bottom:selected {
+    height: 18px;
+}
+
+QTabBar::tab:top:selected {
+    border-top: 3px solid rgb(0, 170, 255);
+    padding-bottom: 5px;
+}
+
+QTabBar::tab:bottom:selected {
+    border-bottom: 3px solid rgb(0, 170, 255);
+    padding-top: 5px;
+}
+
+QTabBar::tab:left:selected, QTabBar::tab:right:selected {
+    width: 18px;
+}
+
+QTabBar::tab:right:selected {
+    border-right: 3px solid rgb(0, 170, 255);
+    padding-left: 5px;
+}
+
+QTabBar::tab:left:selected {
+    border-left: 3px solid rgb(0, 170, 255);
+    padding-right: 5px;
 }

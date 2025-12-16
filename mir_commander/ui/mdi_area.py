@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QVBoxLayout,
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
 from mir_commander.core.plugins_registry import plugins_registry
-from mir_commander.ui.sdk.widget import QMdiSubWindowCustomBody, QMdiSubWindowCustomTitleBar, ResizableContainer
+from mir_commander.ui.sdk.widget import MdiSubWindowBody, MdiSubWindowTitleBar, ResizableContainer
 
 from .docks.program_control_panel import ProgramControlPanelDock
 
@@ -49,11 +49,11 @@ class _MdiProgramWindow(QMdiSubWindow):
 
         self._last_normal_size = QSize(0, 0)
 
-        self._custom_title_bar = QMdiSubWindowCustomTitleBar(self)
+        self._custom_title_bar = MdiSubWindowTitleBar(self)
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
 
-        self._custom_body = QMdiSubWindowCustomBody(self)
+        self._custom_body = MdiSubWindowBody(self)
         program_widget = self.program.get_widget()
         self._custom_body.set_widget(program_widget)
 
