@@ -182,6 +182,10 @@ ResizableContainer {
     background: transparent;
 }
 
+QTreeView, QTableView, QListView {
+    font-size: 13px
+}
+
 QDialog {
     background: #ECECEC;
 }
