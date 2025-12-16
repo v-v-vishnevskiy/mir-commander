@@ -58,7 +58,7 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.init_shaders()
 
-        font = QFile(":/core/fonts/DejaVuSansCondensed-Bold.ttf")
+        font = QFile(":/core/fonts/Inter-Bold.ttf")
         if font.open(QFile.OpenModeFlag.ReadOnly):
             self.add_font_atlas(font_data=font.readAll().data(), font_atlas_name="default")
         else:

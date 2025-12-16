@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QFile, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QOpenGLContext, QPalette, QSurfaceFormat
+from PySide6.QtGui import QColor, QFont, QFontDatabase, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.api.plugin import Translation
@@ -48,6 +48,7 @@ class Application(QApplication):
 
         self._setup_opengl()
         self._fix_palette()
+        self._load_fonts()
         self._set_stylesheet()
         self._load_license()
 
@@ -115,6 +116,18 @@ class Application(QApplication):
                 logger.error("Failed to install translator for language %s", locale.name())
         else:
             logger.error("Failed to load translator for language %s", locale.name())
+
+    def _load_fonts(self):
+        font_id = QFontDatabase.addApplicationFont(":/core/fonts/Inter-Regular.ttf")
+        if font_id != -1:
+            font_families = QFontDatabase.applicationFontFamilies(font_id)
+            if font_families:
+                font_family = font_families[0]
+                font = QFont(font_family)
+                font.setPixelSize(13)
+                self.setFont(font)
+        else:
+            logger.error("Failed to open font file: %s", ":/core/fonts/Inter-Regular.ttf")
 
     def _set_stylesheet(self):
         styles = QFile(":/core/styles/stylesheets.qss")
