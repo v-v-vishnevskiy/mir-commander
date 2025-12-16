@@ -4,7 +4,6 @@
   </qresource>
   <qresource prefix="/core">
     <file>fonts/Inter-Bold.ttf</file>
-    <file>fonts/Inter-Medium.ttf</file>
     <file>fonts/Inter-Regular.ttf</file>
   </qresource>
   <qresource prefix="/core">
