@@ -10,7 +10,7 @@ def register_plugins() -> list[Plugin]:
                 name="Atomic Coordinates",
                 version=(1, 0, 0),
                 description="Core project node",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProjectNodeDetails(
                 type="atomic_coordinates", icon_path=":/builtin/resources/icons/atomic_coordinates.png"
@@ -22,7 +22,7 @@ def register_plugins() -> list[Plugin]:
                 name="Atomic Coordinates Group",
                 version=(1, 0, 0),
                 description="Core project node",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProjectNodeDetails(
                 type="atomic_coordinates_group", icon_path=":/builtin/resources/icons/atomic_coordinates_group.png"
@@ -34,7 +34,7 @@ def register_plugins() -> list[Plugin]:
                 name="Molecule",
                 version=(1, 0, 0),
                 description="Core project node",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProjectNodeDetails(type="molecule", icon_path=":/builtin/resources/icons/molecule.png"),
         ),
@@ -44,7 +44,7 @@ def register_plugins() -> list[Plugin]:
                 name="UNEX",
                 version=(1, 0, 0),
                 description="Core project node",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProjectNodeDetails(type="unex", icon_path=":/builtin/resources/icons/unex.png"),
         ),
@@ -54,7 +54,7 @@ def register_plugins() -> list[Plugin]:
                 name="Volume Cube",
                 version=(1, 0, 0),
                 description="Core project node",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProjectNodeDetails(type="volume_cube", icon_path=":/builtin/resources/icons/volume_cube.png"),
         ),

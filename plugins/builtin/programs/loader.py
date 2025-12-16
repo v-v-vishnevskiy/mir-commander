@@ -19,7 +19,7 @@ def register_plugins() -> list[Plugin]:
                 name=QCoreApplication.translate("builtin.cartesian_editor", "Cartesian editor"),
                 version=(1, 0, 0),
                 description="Editor for atomic coordinates.",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProgramDetails(
                 config_class=CartesianEditorConfig,
@@ -35,7 +35,7 @@ def register_plugins() -> list[Plugin]:
                 name=QCoreApplication.translate("builtin.molecular_visualizer", "Molecular visualizer"),
                 version=(1, 0, 0),
                 description="Can visualize atomic coordinates and volume cubes.",
-                publisher="mircmd.com",
+                publisher="mircmd",
             ),
             details=ProgramDetails(
                 config_class=MolecularVisualizerConfig,
