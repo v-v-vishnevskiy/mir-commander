@@ -53,9 +53,7 @@ class _MdiProgramWindow(QMdiSubWindow):
         self._custom_title_bar.set_icon(self.program.get_icon())
         self._custom_title_bar.set_title(self.program.get_title())
 
-        self._custom_body = MdiSubWindowBody(self)
-        program_widget = self.program.get_widget()
-        self._custom_body.set_widget(program_widget)
+        self._custom_body = MdiSubWindowBody(widget=self.program.get_widget(), parent=self)
 
         self._container = QWidget(self)
         self._container.setMouseTracking(True)
@@ -70,8 +68,10 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.setWidget(self._container)
         self.setWindowTitle(self.program.get_title())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
-        self.resize(config.window_size.width, config.window_size.height)
+        self.setMinimumSize(
+            config.window_size.min_width, config.window_size.min_height + self._custom_title_bar.size().height()
+        )
+        self.resize(config.window_size.width, config.window_size.height + self._custom_title_bar.size().height())
 
         self.windowStateChanged.connect(self._window_state_changed_handler)
 
@@ -122,7 +122,7 @@ class _MdiProgramWindow(QMdiSubWindow):
 
     def resizeEvent(self, event: QResizeEvent):
         self._resizable_container.resize(event.size().width(), event.size().height())
-        self._custom_body.resize(event.size().width(), event.size().height())
+        self._custom_body.resize(event.size().width(), event.size().height() - self._custom_title_bar.size().height())
         super().resizeEvent(event)
 
     def closeEvent(self, event: QCloseEvent):

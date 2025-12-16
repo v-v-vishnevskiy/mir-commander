@@ -286,15 +286,14 @@ class MdiSubWindowTitleBar(QFrame):
 
 
 class MdiSubWindowBody(QFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, widget: QWidget, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._widget = widget
         self._layout = QHBoxLayout()
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self.setLayout(self._layout)
-
-    def set_widget(self, widget: QWidget):
         self._layout.addWidget(widget)
+        self.setLayout(self._layout)
 
 
 class ResizableContainer(QFrame):
