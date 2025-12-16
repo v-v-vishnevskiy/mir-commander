@@ -5,11 +5,15 @@
 ### UI Changes
 
 - Changed button icon sizes (minimize, maximize, close) for program windows
+- Unified TabBar widget styling
+- Unified scrollbar styling
 
 ### Bug Fixes
 
 - Fixed transparent area in program window for CartesianEditor plugin on Windows
 - Fixed maximized window state not being cleared when closing a maximized program window (other windows would incorrectly become maximized)
+- Fixed molecule jittering in molecule visualizer on first window resize
+- Fixed molecule size in molecule visualizer in perspective projection when window is narrow
 
 ## v0.1 – Initial release with molecular visualization, coordinate editing, and multi-platform support
 
