@@ -188,7 +188,7 @@ QTabWidget::pane {
 }
 
 QTabWidget::tab-bar {
-    subcontrol-position: center:
+    subcontrol-position: center;
     border: none;
     background: none;
 }
