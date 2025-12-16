@@ -125,6 +125,8 @@ class Application(QApplication):
                 font_family = font_families[0]
                 font = QFont(font_family)
                 font.setPixelSize(13)
+                font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+                font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
                 self.setFont(font)
         else:
             logger.error("Failed to open font file: %s", ":/core/fonts/Inter-Regular.ttf")
