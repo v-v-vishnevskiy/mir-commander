@@ -118,23 +118,65 @@ class Application(QApplication):
             logger.error("Failed to load translator for language %s", locale.name())
 
     def _load_fonts(self):
-        font_id = QFontDatabase.addApplicationFont(":/core/fonts/Inter-Regular.ttf")
-        if font_id != -1:
-            font_families = QFontDatabase.applicationFontFamilies(font_id)
-            if font_families:
-                font_family = font_families[0]
-                font = QFont(font_family)
-                font.setPixelSize(13)
-                font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
-                font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
-                self.setFont(font)
+        font_family_map = {
+            "Inter-Regular": ":/core/fonts/Inter-Regular.ttf",
+            "Inter-Bold": ":/core/fonts/Inter-Bold.ttf",
+        }
+
+        if self._config.font.family == "system":
+            return
+
+        if self._config.font.family in font_family_map:
+            font_id = QFontDatabase.addApplicationFont(font_family_map[self._config.font.family])
+            if font_id != -1:
+                font_families = QFontDatabase.applicationFontFamilies(font_id)
+                if font_families:
+                    font_family = font_families[0]
+                    font = QFont(font_family)
+                    font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+                    font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
+                    self.setFont(font)
+            else:
+                logger.error("Failed to open font file: %s", font_family_map[self._config.font.family])
         else:
-            logger.error("Failed to open font file: %s", ":/core/fonts/Inter-Regular.ttf")
+            logger.warning("Font family '%s' not found, using system font", self._config.font.family)
 
     def _set_stylesheet(self):
+        if self._config.font.system_size:
+            font = self.font()
+            size = font.pointSize() if font.pointSize() != -1 else font.pixelSize()
+        else:
+            size = self._config.font.size
+
+        font_stylesheet = f"""
+            QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QDoubleSpinBox, QComboBox, QHeaderView::section, QTabBar::tab {{
+                font-size: {size}px;
+            }}
+
+            QStatusBar, QPlainTextEdit {{
+                font-size: {size - 1}px;
+            }}
+
+            QGroupBox {{
+                font-size: {size - 2}px;
+            }}
+        """
+
+        about_stylesheet = f"""
+            QLabel#mircmd-about-title-label {{
+                font-size: {size + 3}px;
+            }}
+
+            QLabel#mircmd-about-version-label {{
+                font-size: {size - 2}px;
+            }}
+        """
         styles = QFile(":/core/styles/stylesheets.qss")
         if styles.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
-            self.setStyleSheet(styles.readAll().data().decode("utf-8"))  # type: ignore[union-attr]
+            stylesheet = styles.readAll().data().decode("utf-8")  # type: ignore[union-attr]
+            self.setStyleSheet(
+                stylesheet + about_stylesheet + ("" if self._config.font.system_size else font_stylesheet)
+            )
             styles.close()
         else:
             logger.error("Failed to open stylesheet file: %s", styles.errorString())

@@ -8,6 +8,12 @@ from .docks.config import DocksConfig
 from .settings.config import SettingsConfig
 
 
+class FontConfig(BaseModel):
+    family: Literal["system", "Inter-Regular", "Inter-Bold"] = Field(default="Inter-Regular", description="Font family")
+    size: int = Field(default=13, ge=8, le=72, description="Font size in pixels")
+    system_size: bool = Field(default=False, description="Use system font size")
+
+
 class Toolbars(BaseModel):
     icon_size: int = Field(default=20, ge=16, le=32, description="Icon size in pixels")
 
@@ -79,6 +85,7 @@ class ImportFileRulesConfig(NodeTypeImportConfig):
 
 
 class AppConfig(BaseConfig):
+    font: FontConfig = FontConfig()
     language: Literal["system", "en", "ru"] = "system"
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()

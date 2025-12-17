@@ -2,12 +2,9 @@ QDialog {
     background: #ECECEC;
 }
 
-QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QStatusBar, QDoubleSpinBox, QComboBox, QPlainTextEdit, QHeaderView::section, QTabBar::tab {
-    font-size: 13px;
-}
-
-QGroupBox {
-    font-size: 11px;
+QLabel#mircmd-warning {
+    color: #FF6B00;
+    font-style: italic;
 }
 
 ColorButton {
@@ -84,12 +81,7 @@ About {
 }
 
 QLabel#mircmd-about-title-label {
-    font-size: 16px;
     font-weight: bold;
-}
-
-QLabel#mircmd-about-version-label {
-    font-size: 11px;
 }
 
 QPlainTextEdit#mircmd-about-license-text {

@@ -103,19 +103,40 @@
 <context>
     <name>General</name>
     <message>
-        <location filename="../../mir_commander/ui/settings/general_page.py" line="47"/>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="68"/>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="104"/>
         <source>System</source>
         <translation>System</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/general_page.py" line="52"/>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="73"/>
         <source>Language:</source>
         <translation>Language:</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/settings/general_page.py" line="54"/>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="75"/>
         <source>Language will be changed after restarting the program</source>
         <translation>Language will be changed after restarting the program</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="99"/>
+        <source>Font</source>
+        <translation>Font</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="112"/>
+        <source>Family:</source>
+        <translation>Family:</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="114"/>
+        <source>Use system font size</source>
+        <translation>Use system font size</translation>
+    </message>
+    <message>
+        <location filename="../../mir_commander/ui/settings/general_page.py" line="117"/>
+        <source>Font will be changed after restarting the program</source>
+        <translation>Font will be changed after restarting the program</translation>
     </message>
 </context>
 <context>
