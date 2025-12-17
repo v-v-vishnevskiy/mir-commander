@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QLabel, QSpinBox, QVBoxLayout
+from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QLabel, QSpinBox, QVBoxLayout, QListView
 
 from mir_commander.ui.config import AppConfig
 
@@ -66,6 +66,7 @@ class General(BasePage):
 
         self._languages = [(self.tr("System"), "system"), ("English", "en"), ("Русский", "ru")]
         self.cb_language = QComboBox()
+        self.cb_language.setView(QListView())
         for item in self._languages:
             self.cb_language.addItem(*item)
 
@@ -104,6 +105,7 @@ class General(BasePage):
             ("Inter", "inter"),
         ]
         self.cb_font_family = QComboBox()
+        self.cb_font_family.setView(QListView())
         for item in self._font_families:
             self.cb_font_family.addItem(*item)
 

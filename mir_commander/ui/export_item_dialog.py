@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListView,
     QPushButton,
     QSpinBox,
     QVBoxLayout,
@@ -54,6 +55,7 @@ class ExportFileDialog(QDialog):
 
         format_path_layout.addWidget(QLabel(self.tr("Format:")), 0, 0)
         self._format_combo_box = QComboBox()
+        self._format_combo_box.setView(QListView())
         exporters = sorted(self._file_manager.get_exporters(node.type), key=lambda x: x.plugin.metadata.name)
         for exporter in exporters:
             self._format_combo_box.addItem(exporter.plugin.metadata.name, userData=exporter)
@@ -155,6 +157,7 @@ class ExportFileDialog(QDialog):
 
     def _create_list_widget(self, default_value: Any, config: ListParam) -> QComboBox:
         widget = QComboBox()
+        widget.setView(QListView())
         for item in config.items:
             widget.addItem(item)
         if default_value is not None:
