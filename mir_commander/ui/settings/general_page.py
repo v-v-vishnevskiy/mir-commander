@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QLabel, QVBoxLayout
+from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QLabel, QSpinBox, QVBoxLayout
 
 from mir_commander.ui.config import AppConfig
 
@@ -24,13 +24,13 @@ class General(BasePage):
     def backup_data(self):
         self._backup["language"] = self.app_config.language
         self._backup["font_family"] = self.app_config.font.family
-        self._backup["font_system_size"] = self.app_config.font.system_size
+        self._backup["font_size"] = self.app_config.font.size
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
         self.l_language_warning.setVisible(False)
         self.app_config.font.family = self._backup["font_family"]
-        self.app_config.font.system_size = self._backup["font_system_size"]
+        self.app_config.font.size = self._backup["font_size"]
         self.l_font_warning.setVisible(False)
 
     def restore_defaults(self):
@@ -41,14 +41,13 @@ class General(BasePage):
         self.app_config.language = default_language
 
         default_font_family = default_config.font.family
-        default_font_system_size = default_config.font.system_size
+        default_font_size = default_config.font.size
         font_changed = (
-            default_font_family != self._backup["font_family"]
-            or default_font_system_size != self._backup["font_system_size"]
+            default_font_family != self._backup["font_family"] or default_font_size != self._backup["font_size"]
         )
         self.l_font_warning.setVisible(font_changed)
         self.app_config.font.family = default_font_family
-        self.app_config.font.system_size = default_font_system_size
+        self.app_config.font.size = default_font_size
 
         self.setup_data()
 
@@ -59,7 +58,7 @@ class General(BasePage):
     def post_init(self):
         self.cb_language.currentIndexChanged.connect(self._language_changed)
         self.cb_font_family.currentIndexChanged.connect(self._font_changed)
-        self.chk_system_size.stateChanged.connect(self._font_changed)
+        self.sb_font_size.valueChanged.connect(self._font_changed)
 
     @property
     def _language_ui(self) -> QHBoxLayout:
@@ -102,8 +101,7 @@ class General(BasePage):
         # Font family
         self._font_families = [
             (self.tr("System"), "system"),
-            ("Inter Regular", "Inter-Regular"),
-            ("Inter Bold", "Inter-Bold"),
+            ("Inter", "inter"),
         ]
         self.cb_font_family = QComboBox()
         for item in self._font_families:
@@ -111,7 +109,13 @@ class General(BasePage):
 
         self.l_font_family = QLabel(self.tr("Family:"))
 
-        self.chk_system_size = QCheckBox(self.tr("Use system font size"))
+        # Font size
+        self.sb_font_size = QSpinBox()
+        self.sb_font_size.setMinimum(8)
+        self.sb_font_size.setMaximum(72)
+        self.sb_font_size.setSuffix(" px")
+
+        self.l_font_size = QLabel(self.tr("Size:"))
 
         # Warning label
         self.l_font_warning = QLabel(self.tr("Font will be changed after restarting the program"))
@@ -120,7 +124,8 @@ class General(BasePage):
 
         layout.addWidget(self.l_font_family, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.cb_font_family, 0, Qt.AlignmentFlag.AlignLeft)
-        layout.addWidget(self.chk_system_size, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.l_font_size, 0, Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.sb_font_size, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.l_font_warning, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addStretch(1)
 
@@ -130,25 +135,36 @@ class General(BasePage):
     def _setup_font_data(self):
         # Block signals to avoid triggering _font_changed during setup
         self.cb_font_family.blockSignals(True)
-        self.chk_system_size.blockSignals(True)
+        self.sb_font_size.blockSignals(True)
 
         index = self.cb_font_family.findData(self.app_config.font.family)
         self.cb_font_family.setCurrentIndex(index)
-        self.chk_system_size.setChecked(self.app_config.font.system_size)
+        self.sb_font_size.setValue(self.app_config.font.size)
+
+        # Update UI state based on current settings
+        self._update_font_ui_state()
 
         # Unblock signals
         self.cb_font_family.blockSignals(False)
-        self.chk_system_size.blockSignals(False)
+        self.sb_font_size.blockSignals(False)
+
+    def _update_font_ui_state(self):
+        """Update enabled/disabled state of font UI elements based on current settings."""
+        is_system_font = self.app_config.font.family == "system"
+        # Size spinbox is disabled when system font is selected
+        self.sb_font_size.setEnabled(not is_system_font)
+        self.l_font_size.setEnabled(not is_system_font)
 
     @Slot()
     def _font_changed(self):
         new_font_family = self._font_families[self.cb_font_family.currentIndex()][1]
-        new_system_size = self.chk_system_size.isChecked()
+        new_font_size = self.sb_font_size.value()
 
-        font_changed = (
-            new_font_family != self._backup["font_family"] or new_system_size != self._backup["font_system_size"]
-        )
+        font_changed = new_font_family != self._backup["font_family"] or new_font_size != self._backup["font_size"]
         self.l_font_warning.setVisible(font_changed)
 
         self.app_config.font.family = new_font_family  # type: ignore[assignment]
-        self.app_config.font.system_size = new_system_size
+        self.app_config.font.size = new_font_size
+
+        # Update UI state
+        self._update_font_ui_state()

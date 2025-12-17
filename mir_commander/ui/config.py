@@ -9,9 +9,8 @@ from .settings.config import SettingsConfig
 
 
 class FontConfig(BaseModel):
-    family: Literal["system", "Inter-Regular", "Inter-Bold"] = Field(default="Inter-Regular", description="Font family")
-    size: int = Field(default=13, ge=8, le=72, description="Font size in pixels")
-    system_size: bool = Field(default=False, description="Use system font size")
+    family: Literal["system", "inter"] = Field(default="inter", description="Font family")
+    size: int = Field(default=13, ge=8, le=72, description="Font size in pixels to use for internal font")
 
 
 class Toolbars(BaseModel):
