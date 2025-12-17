@@ -145,7 +145,7 @@ class Application(QApplication):
 
     def _set_stylesheet(self):
         font_stylesheet = f"""
-            QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QDoubleSpinBox, QComboBox, QHeaderView::section, QTabBar::tab {{
+            QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QMenuBar, QDoubleSpinBox, QComboBox, QDockWidget, QHeaderView::section, QTabBar::tab {{
                 font-size: {self._config.font.size}px;
             }}
 
