@@ -46,6 +46,8 @@ class Application(QApplication):
         self._error = QMessageBox()
         self._error.setIcon(QMessageBox.Icon.Critical)
 
+        self.setStyle("Fusion")
+
         self._setup_opengl()
         self._fix_palette()
         self._load_fonts()
