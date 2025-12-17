@@ -118,7 +118,7 @@ class Application(QApplication):
             logger.error("Failed to load translator for language %s", locale.name())
 
     def _load_fonts(self):
-        font_family_map = {"inter": ":/core/fonts/Inter-Regular.ttf"}
+        font_family_map = {"inter": ":/core/fonts/Inter.ttf"}
 
         if self._config.font.family == "system":
             return
