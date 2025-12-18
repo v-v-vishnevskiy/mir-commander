@@ -7,6 +7,8 @@
 - Changed button icon sizes (minimize, maximize, close) for program windows
 - Unified TabBar widget styling
 - Unified scrollbar styling
+- Added ability to select built-in font and size
+- Set "Fusion" theme from Qt
 
 ### Bug Fixes
 
