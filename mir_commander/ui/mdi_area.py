@@ -2,13 +2,14 @@ import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Callable, Protocol
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QWidget
+from PySide6.QtCore import QEvent, QSize, Qt, Signal
+from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent, QWindowStateChangeEvent
+from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QVBoxLayout, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
-from mir_commander.core import plugins_registry
 from mir_commander.core.errors import PluginDisabledError, PluginNotFoundError
+from mir_commander.core.plugins_registry import plugins_registry
+from mir_commander.ui.sdk.widget import MdiSubWindowBody, MdiSubWindowTitleBar, ResizableContainer
 
 from .docks.program_control_panel import ProgramControlPanelDock
 
@@ -44,18 +45,59 @@ class _MdiProgramWindow(QMdiSubWindow):
         self.program_control_panel_dock = program_control_panel_dock
 
         super().__init__(parent=parent)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
-        self.setWidget(self.program.get_widget())
-        self.setWindowIcon(self.program.get_icon())
+        self._last_normal_size = QSize(0, 0)
+
+        self._custom_title_bar = MdiSubWindowTitleBar(self)
+        self._custom_title_bar.set_icon(self.program.get_icon())
+        self._custom_title_bar.set_title(self.program.get_title())
+
+        self._custom_body = MdiSubWindowBody(widget=self.program.get_widget(), parent=self)
+
+        self._container = QWidget(self)
+        self._container.setMouseTracking(True)
+        container_layout = QVBoxLayout(self._container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(0)
+        container_layout.addWidget(self._custom_title_bar)
+        container_layout.addWidget(self._custom_body)
+
+        self._resizable_container = ResizableContainer(parent=self)
+
+        self.setWidget(self._container)
         self.setWindowTitle(self.program.get_title())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self.setMinimumSize(config.window_size.min_width, config.window_size.min_height)
-        self.resize(config.window_size.width, config.window_size.height)
+        self.setMinimumSize(
+            config.window_size.min_width, config.window_size.min_height + self._custom_title_bar.size().height()
+        )
+        self.resize(config.window_size.width, config.window_size.height + self._custom_title_bar.size().height())
+
+        self.windowStateChanged.connect(self._window_state_changed_handler)
 
         _MdiProgramWindow._opened_programs[self._program_id] += 1
         if _MdiProgramWindow._opened_programs[self._program_id] == 1 and program_control_panel_dock is not None:
             program_control_panel_dock.restore_visibility()
             program_control_panel_dock.toggleViewAction().setVisible(True)
+
+    def _window_state_changed_handler(self, old_state: Qt.WindowState, new_state: Qt.WindowState):
+        if new_state == Qt.WindowState.WindowActive:
+            self._custom_title_bar.set_active(True)
+        elif new_state == Qt.WindowState.WindowNoState:
+            self._custom_title_bar.set_active(False)
+
+        if new_state & Qt.WindowState.WindowMinimized:
+            self.resize(230, self._custom_title_bar.size().height())
+            self._custom_body.setVisible(False)
+        elif old_state & Qt.WindowState.WindowMinimized:
+            self._custom_body.setVisible(True)
+            self.setMinimumSize(self.program.config.window_size.min_width, self.program.config.window_size.min_height)
+            self.resize(self._last_normal_size)
+
+        self._custom_title_bar.update_state(new_state)
+
+        if self.program_control_panel_dock is not None:
+            self.program_control_panel_dock.control_panel.update_event(self.program)
 
     @property
     def id(self) -> int:
@@ -66,15 +108,42 @@ class _MdiProgramWindow(QMdiSubWindow):
         return self._program_id
 
     def update_title(self):
-        self.setWindowIcon(self.program.get_icon())
         self.setWindowTitle(self.program.get_title())
+        self._custom_title_bar.set_icon(self.program.get_icon())
+        self._custom_title_bar.set_title(self.program.get_title())
+
+    def changeEvent(self, event: QEvent):
+        super().changeEvent(event)
+        if isinstance(event, QWindowStateChangeEvent):
+            if self.isMinimized():
+                # NOTE: to prevent
+                # "QWidget::setMinimumSize: (/_MdiProgramWindow) Negative sizes (-1,-1) are not possible" error
+                self.setMinimumSize(0, 0)
+
+    def resizeEvent(self, event: QResizeEvent):
+        self._resizable_container.resize(event.size().width(), event.size().height())
+        self._custom_body.resize(event.size().width(), event.size().height() - self._custom_title_bar.size().height())
+        super().resizeEvent(event)
 
     def closeEvent(self, event: QCloseEvent):
+        if self.isMaximized():
+            self.showNormal()
+
         _MdiProgramWindow._opened_programs[self._program_id] -= 1
         if self.program_control_panel_dock is not None and _MdiProgramWindow._opened_programs[self._program_id] == 0:
             self.program_control_panel_dock.hide()
             self.program_control_panel_dock.toggleViewAction().setVisible(False)
         super().closeEvent(event)
+
+    def showMinimized(self):
+        if not self.isMaximized():
+            self._last_normal_size = self.size()
+        super().showMinimized()
+
+    def showMaximized(self):
+        if not self.isMinimized():
+            self._last_normal_size = self.size()
+        super().showMaximized()
 
 
 class SubWindowListFn(Protocol):
@@ -90,18 +159,10 @@ class MdiArea(QMdiArea):
         super().__init__(*args, **kwargs)
         self._project_window = project_window
 
+        self.setBackground(QBrush(QColor("#bbbbbb")))
         self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-
-        self.subWindowActivated.connect(self._sub_window_activated_handler)
-
-    def _sub_window_activated_handler(self, window: None | _MdiProgramWindow):
-        if window is None:
-            return
-
-        if window.program_control_panel_dock is not None:
-            window.program_control_panel_dock.control_panel.update_event(window.program)
 
     def _node_changed_handler(self, node_id: int, window_id: int, action: NodeChangedAction):
         for window in self.subWindowList():

@@ -305,6 +305,7 @@ class Quaternion:
 
 class Matrix4x4:
     __slots__ = ("_data",)
+    _identity_matrix = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 
     def __init__(self):
         # Store as column-major order (OpenGL convention)
@@ -437,15 +438,67 @@ class Matrix4x4:
 
     def __mul__(self, other: "Matrix4x4") -> "Matrix4x4":
         """Matrix multiplication for column-major matrices."""
+
+        if self._data == Matrix4x4._identity_matrix:
+            return other
+        if other._data == Matrix4x4._identity_matrix:
+            return self
+
         result = Matrix4x4()
 
-        # Column-major: data[col * 4 + row]
-        for col in range(4):
-            for row in range(4):
-                sum_val = 0.0
-                for k in range(4):
-                    sum_val += self._data[k * 4 + row] * other._data[col * 4 + k]
-                result._data[col * 4 + row] = sum_val
+        # Create local references for faster access (remove self. and other.)
+        A = self._data
+        B = other._data
+        R = result._data
+
+        # --- Column 0 of result (indices 0-3) ---
+        # Cache column 0 of matrix B (it's used for all rows of this column)
+        b0 = B[0]
+        b1 = B[1]
+        b2 = B[2]
+        b3 = B[3]
+
+        # R[0] (Row 0) = Row 0 of A * Col 0 of B
+        R[0] = A[0] * b0 + A[4] * b1 + A[8] * b2 + A[12] * b3
+        # R[1] (Row 1) = Row 1 of A * Col 0 of B
+        R[1] = A[1] * b0 + A[5] * b1 + A[9] * b2 + A[13] * b3
+        # R[2] (Row 2) = Row 2 of A * Col 0 of B
+        R[2] = A[2] * b0 + A[6] * b1 + A[10] * b2 + A[14] * b3
+        # R[3] (Row 3) = Row 3 of A * Col 0 of B
+        R[3] = A[3] * b0 + A[7] * b1 + A[11] * b2 + A[15] * b3
+
+        # --- Column 1 of result (indices 4-7) ---
+        b4 = B[4]
+        b5 = B[5]
+        b6 = B[6]
+        b7 = B[7]
+
+        R[4] = A[0] * b4 + A[4] * b5 + A[8] * b6 + A[12] * b7
+        R[5] = A[1] * b4 + A[5] * b5 + A[9] * b6 + A[13] * b7
+        R[6] = A[2] * b4 + A[6] * b5 + A[10] * b6 + A[14] * b7
+        R[7] = A[3] * b4 + A[7] * b5 + A[11] * b6 + A[15] * b7
+
+        # --- Column 2 of result (indices 8-11) ---
+        b8 = B[8]
+        b9 = B[9]
+        b10 = B[10]
+        b11 = B[11]
+
+        R[8] = A[0] * b8 + A[4] * b9 + A[8] * b10 + A[12] * b11
+        R[9] = A[1] * b8 + A[5] * b9 + A[9] * b10 + A[13] * b11
+        R[10] = A[2] * b8 + A[6] * b9 + A[10] * b10 + A[14] * b11
+        R[11] = A[3] * b8 + A[7] * b9 + A[11] * b10 + A[15] * b11
+
+        # --- Column 3 of result (indices 12-15) ---
+        b12 = B[12]
+        b13 = B[13]
+        b14 = B[14]
+        b15 = B[15]
+
+        R[12] = A[0] * b12 + A[4] * b13 + A[8] * b14 + A[12] * b15
+        R[13] = A[1] * b12 + A[5] * b13 + A[9] * b14 + A[13] * b15
+        R[14] = A[2] * b12 + A[6] * b13 + A[10] * b14 + A[14] * b15
+        R[15] = A[3] * b12 + A[7] * b13 + A[11] * b14 + A[15] * b15
 
         return result
 

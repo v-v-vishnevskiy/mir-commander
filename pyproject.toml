@@ -1,9 +1,9 @@
 [project]
 name = "mir-commander"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
+version = "0.1.1"
+description = "A modern, powerful graphical user interface for molecular structure modeling."
+license-files = ["resources/policy/LICENSE.txt"]
+requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
     "numpydantic>=1.6.9",
@@ -12,12 +12,12 @@ dependencies = [
     "pydantic-extra-types>=2.10.5",
     "pyopengl>=3.1.10",
     "pyopengl-accelerate>=3.1.10",
-    "pyside6>=6.9.1",
+    "pyside6-essentials>=6.9.3",
     "pyyaml>=6.0.2",
 ]
 
 [project.scripts]
-mircmd = "mir_commander.__main__:run"
+mircmd = "mir_commander.__main__:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -25,6 +25,8 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "cython>=3.2.1",
+    "setuptools>=80.9.0",
     "mypy>=1.17.1",
     "pre-commit>=4.3.0",
     "pre-commit-hooks>=6.0.0",
@@ -32,11 +34,22 @@ dev = [
     "pytest-cov>=6.2.1",
     "ruff>=0.12.9",
     "types-pyyaml>=6.0.12.20250822",
+    "cx-freeze>=8.5.0",
 ]
+
+[tool.uv]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
+[tool.setuptools]
+py-modules = []
 
 [tool.mypy]
 ignore_missing_imports = true
 check_untyped_defs = true
+explicit_package_bases = true
 
 [tool.ruff]
 line-length = 120
@@ -48,3 +61,58 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[[tool.cxfreeze.executables]]
+script = "mir_commander/__main__.py"
+base = "gui"
+target_name = "mircmd"
+icon = "resources/building/icon"
+shortcut_name = "Mir Commander"
+shortcut_dir = "StartMenuFolder"
+
+[tool.cxfreeze.build_exe]
+packages = [
+    "mir_commander",
+    # the following packages are required by plugins
+    "cclib",
+    "PIL",
+    "pydantic_extra_types",
+    # the following packages can't automatically be found by cxfreeze
+    "logging",
+    "OpenGL",
+    "PySide6.QtOpenGLWidgets",
+    "numpy",
+    "numpy.__init__",
+    "numpy.f2py",
+    "numpy.testing",
+]
+excludes = [
+    "cython",
+    "pytest",
+    "setuptools",
+    "tkinter",
+]
+include_files = [
+    ["resources/policy/LICENSE.txt", "LICENSE.txt"],
+    ["resources/resources.rcc", "resources/resources.rcc"],
+    ["build/lib/plugins", "plugins"],
+    ["plugins/builtin/file_exporters/loader.py", "plugins/builtin/file_exporters/loader.py"],
+    ["plugins/builtin/file_importers/loader.py", "plugins/builtin/file_importers/loader.py"],
+    ["plugins/builtin/programs/loader.py", "plugins/builtin/programs/loader.py"],
+    ["plugins/builtin/project_nodes/loader.py", "plugins/builtin/project_nodes/loader.py"],
+    ["plugins/builtin/resources/loader.py", "plugins/builtin/resources/loader.py"],
+    ["plugins/builtin/resources/resources.rcc", "plugins/builtin/resources/resources.rcc"],
+]
+include_msvcr = true
+
+[tool.cxfreeze.bdist_mac]
+bundle_name = "Mir Commander"
+iconfile = "resources/building/icon.icns"
+custom_info_plist = "resources/building/macos/Info.plist"
+
+[tool.cxfreeze.bdist_msi]
+all_users = true
+initial_target_dir = "[ProgramFiles64Folder]Mir Commander"
+install_icon = "resources/building/icon.ico"
+target_name = "MirCommander"
+launch_on_finish = true

@@ -1,23 +1,21 @@
 import logging
 
 import numpy as np
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QFile, QPoint, Qt
 from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from mir_commander.core.algebra import Vector3D
-from mir_commander.core.consts import DIR
 from mir_commander.core.graphics.camera import Camera
 from mir_commander.core.graphics.font_atlas import FontAtlas, create_font_atlas
 from mir_commander.core.graphics.mesh import rect
-from mir_commander.core.graphics.opengl import shaders
 from mir_commander.core.graphics.opengl.renderer import PaintMode, Renderer
-from mir_commander.core.graphics.opengl.shader import FragmentShader, ShaderProgram, VertexShader
 from mir_commander.core.graphics.opengl.texture2d import Texture2D
 from mir_commander.core.graphics.opengl.vertex_array_object import VertexArrayObject
 from mir_commander.core.graphics.projection import ProjectionManager, ProjectionMode
 from mir_commander.core.graphics.resource_manager import ResourceManager
-from mir_commander.core.graphics.scene import Node, Scene
+from mir_commander.core.graphics.scene.node import Node
+from mir_commander.core.graphics.scene.scene import Scene
 from mir_commander.core.graphics.utils import Color4f, color_to_id
 
 from .action_handler import ActionHandler
@@ -59,7 +57,12 @@ class OpenGLWidget(QOpenGLWidget):
         self.renderer = Renderer(self.projection_manager, self.resource_manager)
         self.renderer.resize(self.size().width(), self.size().height(), self.devicePixelRatio())
         self.init_shaders()
-        self.add_font_atlas(font_path=str(DIR.FONTS / "DejaVuSansCondensed-Bold.ttf"), font_atlas_name="default")
+
+        font = QFile(":/core/fonts/Inter-Bold.ttf")
+        if font.open(QFile.OpenModeFlag.ReadOnly):
+            self.add_font_atlas(font_data=font.readAll().data(), font_atlas_name="default")
+        else:
+            logger.error("Failed to open font file: %s", font.errorString())
 
     def release_opengl(self):
         self.makeCurrent()
@@ -67,43 +70,13 @@ class OpenGLWidget(QOpenGLWidget):
         self.resource_manager.release()
 
     def init_shaders(self):
-        self.resource_manager.add_shader(
-            "default",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.BLINN_PHONG),
-            ),
-        )
-        self.resource_manager.add_shader(
-            "text",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED_BILLBOARD),
-                FragmentShader(shaders.fragment.TEXTURE),
-            ),
-        )
-        self.resource_manager.add_shader(
-            "transparent_flat",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT_FLAT),
-            ),
-        )
-        self.resource_manager.add_shader(
-            "transparent",
-            ShaderProgram(
-                VertexShader(shaders.vertex.COMPUTE_POSITION_INSTANCED),
-                FragmentShader(shaders.fragment.WBOIT_TRANSPARENT),
-            ),
-        )
-        self.resource_manager.add_shader(
-            "picking", ShaderProgram(VertexShader(shaders.vertex.PICKING), FragmentShader(shaders.fragment.PICKING))
-        )
+        pass
 
-    def add_font_atlas(self, font_path: str, font_atlas_name: str):
+    def add_font_atlas(self, font_data: bytes, font_atlas_name: str):
         atlas_size = 4096
         font_size = 470
         data, font_atlas = create_font_atlas(
-            font_path, font_size=font_size, atlas_size=atlas_size, padding=3, debug=False
+            font_data, font_size=font_size, atlas_size=atlas_size, padding=3, debug=False
         )
         texture = Texture2D()
         texture.init(width=atlas_size, height=atlas_size, data=data, use_mipmaps=True)

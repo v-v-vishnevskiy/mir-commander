@@ -3,7 +3,7 @@ from typing import Callable, Self
 from PySide6.QtGui import QIcon
 
 from mir_commander.api.program import UINode
-from mir_commander.core import plugins_registry
+from mir_commander.core.plugins_registry import plugins_registry
 from mir_commander.core.project_node import ProjectNode
 
 

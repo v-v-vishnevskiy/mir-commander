@@ -2,7 +2,7 @@ from typing import Any
 
 from PySide6.QtWidgets import QWidget
 
-from mir_commander.core import ProjectConfig
+from mir_commander.core.project import ProjectConfig
 from mir_commander.ui.config import AppConfig
 
 

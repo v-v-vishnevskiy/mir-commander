@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from PySide6.QtCore import QModelIndex, Slot
+from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QIcon, QMoveEvent, QResizeEvent, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractButton,
@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mir_commander.core import ProjectConfig
+from mir_commander.core.project import ProjectConfig
 from mir_commander.ui.config import AppConfig, ApplyCallbacks
 
 from .base import BasePage
@@ -142,28 +142,23 @@ class SettingsDialog(QDialog):
         self.pb_cancel.clicked.connect(self.cancel_clicked)
         self.pb_ok.clicked.connect(self.ok_clicked)
 
-    @Slot()
     def page_changed(self, index: QModelIndex):
         item = self._pages_model.itemFromIndex(index)
         self.area.setCurrentIndex(item.data()["position"])
         self._config.current_page = item.data()["position"]
         self._config.current_tab = cast(QTabWidget, self.area.currentWidget()).currentIndex()
 
-    @Slot()
     def tab_changed(self, index: int):
         self._config.current_tab = index
 
-    @Slot()
     def restore_defaults_clicked(self, _: QAbstractButton):
         for page in self._pages:
             page.restore_defaults()
 
-    @Slot()
     def apply_clicked(self, _: QAbstractButton):
         self.app_apply_callbacks.run()
         self.mw_apply_callbacks.run()
 
-    @Slot()
     def cancel_clicked(self, _: QAbstractButton):
         for page in self._pages:
             page.cancel()
@@ -171,12 +166,12 @@ class SettingsDialog(QDialog):
         self.mw_apply_callbacks.run()
         self.reject()
 
-    @Slot()
     def ok_clicked(self, _: QAbstractButton):
         self.app_apply_callbacks.run()
         self.mw_apply_callbacks.run()
         self.app_config.dump()
-        self.project_config.dump()
+        # TODO: uncomment this when we have a way to save project settings
+        # self.project_config.dump()
         for page in self._pages:
             page.backup_data()
         self.accept()

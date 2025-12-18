@@ -45,7 +45,7 @@ class RecentProjectsDialog(QDialog):
 
     def __init__(self):
         super().__init__(None)
-        self._config: RecentProjectsConfig = RecentProjectsConfig.load(DIR.HOME_CONFIG / "recent_projects.yaml")
+        self._config: RecentProjectsConfig = RecentProjectsConfig.load(DIR.HOME_MIRCMD / "recent_projects.yaml")
         self.add_opened = self._config.add_opened
         self.add_recent = self._config.add_recent
         self.remove_opened = self._config.remove_opened

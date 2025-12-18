@@ -12,8 +12,9 @@ from mir_commander import __version__
 from mir_commander.api.file_exporter import ExportFileError
 from mir_commander.api.file_importer import ImportFileError
 from mir_commander.api.program import MessageChannel, UINode
-from mir_commander.core import Project, plugins_registry
 from mir_commander.core.file_manager import FileManager
+from mir_commander.core.plugins_registry import plugins_registry
+from mir_commander.core.project import Project
 from mir_commander.core.project_node import ProjectNode
 
 from .about import About
@@ -43,10 +44,13 @@ class ProjectWindow(QMainWindow):
         app_config: AppConfig,
         app_apply_callbacks: ApplyCallbacks,
         project: Project,
+        license_text: str,
         init_msg: None | list[str] = None,
     ):
         logger.debug("Initializing main window ...")
         super().__init__(None)
+
+        self._license_text = license_text
 
         self._programs_control_panels: dict[str, ProgramControlPanelDock] = {}
 
@@ -89,6 +93,26 @@ class ProjectWindow(QMainWindow):
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
             self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, True)
+
+    def _import_file(self, file_path: Path, parent: UINode | None):
+        try:
+            logs: list[str] = []
+            imported_item = self.project.import_file(
+                file_path, logs, parent.project_node if parent is not None else None
+            )
+            self.docks.project.add_node(imported_item, parent)
+
+            # Show import messages in console
+            self.append_to_console(f"Imported file: {file_path}")
+            for log in logs:
+                self.append_to_console(log)
+
+            self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
+            self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, False)
+        except ImportFileError as e:
+            logger.error("Failed to import file %s: %s", file_path, e)
+            self.append_to_console(self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e))
+            self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
 
     @property
     def programs_control_panels(self) -> dict[str, ProgramControlPanelDock]:
@@ -174,7 +198,7 @@ class ProjectWindow(QMainWindow):
         return action
 
     def _settings_action(self) -> QAction:
-        action = QAction(self.tr("Settings..."), self)
+        action = QAction(self.tr("Preferences..."), self)
         action.setMenuRole(QAction.MenuRole.PreferencesRole)
         # Settings dialog is actually created here.
         settings_dialog = SettingsDialog(
@@ -195,9 +219,9 @@ class ProjectWindow(QMainWindow):
         return action
 
     def _about_action(self) -> QAction:
-        action = QAction(self.tr("About"), self)
-        action.setMenuRole(QAction.MenuRole.AboutRole)
-        action.triggered.connect(About(self).show)
+        action = QAction(self.tr("About Mir Commander"), self)
+        action.setMenuRole(QAction.MenuRole.AboutQtRole)
+        action.triggered.connect(About(license_text=self._license_text, parent=self).show)
         return action
 
     def _import_file_action(self) -> QAction:
@@ -242,18 +266,30 @@ class ProjectWindow(QMainWindow):
 
     def _save_settings(self):
         """Save parameters of main window to settings."""
-        self.config.state = self.saveState().toBase64().toStdString()
-        self.config.pos = [self.pos().x(), self.pos().y()]
-        self.config.size = [self.size().width(), self.size().height()]
+        self.app_config.project_window.state = self.saveState().toBase64().toStdString()
+        self.app_config.project_window.window_state = self.windowState().value
+        if self.app_config.project_window.window_state == 0:
+            self.app_config.project_window.pos = [self.pos().x(), self.pos().y()]
+            self.app_config.project_window.size = [self.size().width(), self.size().height()]
 
     def _restore_settings(self):
         """Read parameters of main window from settings and apply them."""
         geometry = self.screen().availableGeometry()
-        pos = self.config.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
-        size = self.config.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
-        self.setGeometry(pos[0], pos[1], size[0], size[1])
-        if state := self.config.state:
+        pos = self.app_config.project_window.pos or [int(geometry.width() * 0.125), int(geometry.height() * 0.125)]
+        size = self.app_config.project_window.size or [int(geometry.width() * 0.75), int(geometry.height() * 0.75)]
+        self.move(*pos)
+        self.resize(*size)
+        if state := self.app_config.project_window.state:
             self.restoreState(base64.b64decode(state))
+
+    def show(self):
+        window_state = Qt.WindowState(self.app_config.project_window.window_state)
+        if window_state == Qt.WindowState.WindowMaximized:
+            self.showMaximized()
+        elif window_state == Qt.WindowState.WindowFullScreen:
+            self.showFullScreen()
+        else:
+            self.showNormal()
 
     def closeEvent(self, event: QCloseEvent):
         logger.info("Closing %s project ...", self.project.name)
@@ -301,31 +337,12 @@ class ProjectWindow(QMainWindow):
         """Import a file into the current project."""
 
         dialog = QFileDialog(self, self.tr("Import File"))
-        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         dialog.setNameFilter(self.tr("All files (*)"))
 
         if dialog.exec() == QFileDialog.DialogCode.Accepted:
-            file_path = Path(dialog.selectedFiles()[0])
-            try:
-                logs: list[str] = []
-                imported_item = self.project.import_file(
-                    file_path, logs, parent.project_node if parent is not None else None
-                )
-                self.docks.project.add_node(imported_item, parent)
-
-                # Show import messages in console
-                self.append_to_console(f"Imported file: {file_path}")
-                for log in logs:
-                    self.append_to_console(log)
-
-                self.status_bar.showMessage(self.tr("File imported successfully"), 3000)
-                self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, False)
-            except ImportFileError as e:
-                logger.error("Failed to import file %s: %s", file_path, e)
-                self.append_to_console(
-                    self.tr("Error importing file {file_path}: {e}").format(file_path=file_path, e=e)
-                )
-                self.status_bar.showMessage(self.tr("Failed to import file"), 5000)
+            for file_path in dialog.selectedFiles():
+                self._import_file(Path(file_path), parent)
 
     def export_file(self, node: ProjectNode):
         dialog = ExportFileDialog(node, file_manager=self._file_manager, parent=self)

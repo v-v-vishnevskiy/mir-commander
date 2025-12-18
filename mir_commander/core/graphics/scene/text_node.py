@@ -11,18 +11,23 @@ class TextNode(Node):
     __slots__ = ("_text", "_font_atlas_name", "_align")
 
     def __init__(
-        self, font_atlas_name: str = "default", align: Literal["left", "center", "right"] = "center", *args, **kwargs
+        self,
+        text: str = "",
+        font_atlas_name: str = "default",
+        align: Literal["left", "center", "right"] = "center",
+        *args,
+        **kwargs,
     ):
         kwargs["node_type"] = NodeType.TEXT
         super().__init__(*args, **kwargs)
 
-        self.set_color((0.0, 0.0, 0.0, 1.0))
         self._modify_children = True
 
-        self._text = ""
+        self._text = text
         self._font_atlas_name = font_atlas_name
         self._align = align
-        self.set_shader("text")
+
+        self._build(text)
 
     @property
     def text(self) -> str:
@@ -38,18 +43,18 @@ class TextNode(Node):
 
     def _build(self, text: str):
         for i, char in enumerate(text):
-            char_node = Node(
+            Node(
                 parent=self,
                 node_type=NodeType.CHAR,
                 visible=True,
                 picking_visible=self.picking_visible,
+                shader_name=self.shader_name,
+                texture_name=f"font_atlas_{self.font_atlas_name}",
+                model_name=f"font_atlas_{self.font_atlas_name}_{char}",
+                color=self._color,
+                shader_params={"render_mode": 2, "lighting_model": 2},
+                metadata={"char": char, "idx": i},
             )
-            char_node.set_shader(self.shader_name)
-            char_node.set_texture(f"font_atlas_{self.font_atlas_name}")
-            char_node.set_model(f"font_atlas_{self.font_atlas_name}_{char}")
-            char_node.set_color(self._color)
-            char_node.metadata["char"] = char
-            char_node.metadata["idx"] = i
 
     def set_text(self, text: str):
         self._text = text

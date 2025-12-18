@@ -18,13 +18,24 @@ from .errors import OpenGLError
 
 
 class UniformLocations:
-    __slots__ = ("scene_matrix", "view_matrix", "projection_matrix", "transform_matrix")
+    __slots__ = (
+        "scene_matrix",
+        "view_matrix",
+        "projection_matrix",
+        "transform_matrix",
+        "is_transparent",
+        "is_picking",
+        "is_orthographic",
+    )
 
     def __init__(self):
         self.scene_matrix: GLuint | None = None
         self.view_matrix: GLuint | None = None
         self.projection_matrix: GLuint | None = None
         self.transform_matrix: GLuint | None = None
+        self.is_transparent: GLuint | None = None
+        self.is_picking: GLuint | None = None
+        self.is_orthographic: GLuint | None = None
 
 
 class _Shader:
@@ -85,6 +96,9 @@ class ShaderProgram:
         self.uniform_locations.view_matrix = glGetUniformLocation(self._program, "view_matrix")
         self.uniform_locations.projection_matrix = glGetUniformLocation(self._program, "projection_matrix")
         self.uniform_locations.transform_matrix = glGetUniformLocation(self._program, "transform_matrix")
+        self.uniform_locations.is_transparent = glGetUniformLocation(self._program, "is_transparent")
+        self.uniform_locations.is_picking = glGetUniformLocation(self._program, "is_picking")
+        self.uniform_locations.is_orthographic = glGetUniformLocation(self._program, "is_orthographic")
 
         glUseProgram(0)
 

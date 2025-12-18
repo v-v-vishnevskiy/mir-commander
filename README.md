@@ -1,24 +1,23 @@
 # Mir Commander
 
-The primary goal of this project is the creation of a graphical user interface (GUI) for scientific modelling
-using [Mir](https://mir.vishnevskiy.group) language and [UNEX](https://unex.vishnevskiy.group) program.
-UNEX is a well established software for molecular structure refinement.
-Accordingly, Mir Commander will be able to visualize molecular structures as well as other types of numerical data.
+The primary goal of this project is the creation of a graphical user interface (GUI) for scientific modeling
+using the [Mir](https://mir.vishnevskiy.group) language and [UNEX](https://unex.vishnevskiy.group) program.
+UNEX is well-established software for molecular structure refinement.
+Accordingly, Mir Commander is able to visualize molecular structures as well as other types of numerical data.
 
-Currently we are focused on the very basic functionality, allowing visualizing molecules from files in the standard XYZ format.
+Currently, we are focused on the very basic functionality that allows visualizing molecules from files in the standard XYZ format.
 
 ## Development
 
 ### Linux/Mac
 
-As a prerequisite you have to create a virtual environment and install the required packages (in the command line):
+As a prerequisite, you have to create a virtual environment and install the required packages (in the command line):
 
 ```shell
 make init
 ```
 
-In case of problems with finding the default expected version of python you may want to indicate your version explicitly as,
-for example
+In case of problems with finding the default expected version of Python, you may want to indicate your version explicitly, for example:
 
 ```shell
 PYTHON=python3.13 make init
@@ -32,49 +31,53 @@ The development version of Mir Commander can now be started as
 
 ### Windows
 
-In Windows you may need first to install Python3 and Git.
-Then in a similar manner as for Linux, it is best to work in a virtual environment.
-So the first steps are (run in `cmd` from the top level directory of the repository)
+In Windows, you may need to first install Python3 and Git.
+Then, in a similar manner as for Linux, it is best to work in a virtual environment.
+The first steps are (run in `cmd` from the top-level directory of the repository):
 
 ```shell
 python -m venv .venv
-.venv\Scripts\activate.bat
+.venv\Scripts\Activate.ps1
 pip install uv
 uv sync --active --all-groups
 ```
 
-Mir Commander can now be started from command line in the virtual environment as
+Mir Commander can now be started from the command line in the virtual environment as:
 
 ```shell
 .venv\Scripts\mircmd"
 ```
 
-To exit from the virtual environment run
+To exit from the virtual environment, run:
 
 ```shell
 .venv\Scripts\deactivate
 ```
 
-When all the required packages are installed it is possible to start Mir Commander by running the batch script `dev_run.cmd`.
-
 ### Translation
 
-For generation of translation ts-file(s) run `generate_i18n.sh` (in Linux/macOS).
-If at least one of ts-files was updated, you need to generate binary translation qm-files using `ts_to_qm.sh` (in Linux/macOS) or `ts_to_qm.cmd` (in Windows).
+To generate translation ts-file(s), run `generate_i18n.sh` (in Linux/macOS).
+If at least one ts-file is updated, you need to generate binary translation qm-files using `ts_to_qm.sh` (in Linux/macOS).
 
 ### Resources
 
-We use external resource files and load them in runtime with the `QResource.registerResource` function as described in the
+We use external resource files and load them at runtime with the `QResource.registerResource` function as described in the
 [Qt documentation](https://doc.qt.io/qt-6/resources.html#external-resource-files).
-The generation of required binary resource files is done for example as
+The generation of required binary resource files is done, for example, as `make resources` (macOS/Linux) or `.\resources.cmd` (Windows).
 
-```shell
-make resources
-```
+This is opposite to the commonly used scheme in PySide, where Python modules are created from `qrc` files by the `pyside6-rcc` program.
+We avoid this because of two issues: (a) resources are loaded together with module loading, and
+(b) the data are duplicated in Python and in the Qt library.
 
-This is opposite to the commonly used scheme in PySide, when python modules are created from `qrc` files by the `pyside6-rcc` program.
-We avoid this because of two issues: (a) resources are loaded together with module loading and
-(b) the data are duplicated in python and in Qt library.
+### Build dist
+
+Before building, make sure that you clean old build files. If you do not do this, the dist may be corrupted.
+
+- `make build-mac` – Build for macOS. Host is macOS
+- `make build-linux` - Build for Linux. Host is Linux
+- `make build-linux-docker-amd64` - Build for Linux. Host is any OS that support Docker
+- `make build-linux-docker-arm64` - Build for Linux. Host is any OS that support Docker
+- `.\build_msi.cmd` – Build for Windows. Host is Windows
 
 #### Icon conversion
 
@@ -87,19 +90,19 @@ rsvg-convert -d 300 -p 300 -w 256 -h 256 resources/icons/app.svg -o resources/ic
 ### GUI Design
 
 The creation and adjustment of all GUI elements is coded manually.
-We do not use Qt Designer and `ui` files bacause of several reasons:
+We do not use Qt Designer and `ui` files because of several reasons:
 
-- this way is not flexible enough and Qt Designer does not allow full manipulation with GUI elements,
-- the autogenerated by the `uic` utility python code is usually excessive,
-- import commands in the generated python code do not take into account paths to resource modules.
+- this way is not flexible enough and Qt Designer does not allow full manipulation of GUI elements,
+- the Python code autogenerated by the `uic` utility is usually excessive,
+- import commands in the generated Python code do not take into account paths to resource modules.
 
 ### Code style
 
 In the source code we stick to the principles similar to those described in [PEP 8 – Style Guide for Python Code](https://peps.python.org/pep-0008/):
 
-- For class names the [Camel case](https://en.wikipedia.org/wiki/Camel_case) style is used, like `VerySpecificClass`.
-- For variables, methods, functions and modules we use [Snake case](https://en.wikipedia.org/wiki/Snake_case) style, for example `my_method()`.
-- Note, private literals must be started with the underscore (_) character, e.g. `_private_variable` or `_private_method()`.
+- For class names, the [Camel case](https://en.wikipedia.org/wiki/Camel_case) style is used, like `VerySpecificClass`.
+- For variables, methods, functions, and modules, we use [Snake case](https://en.wikipedia.org/wiki/Snake_case) style, for example `my_method()`.
+- Note that private literals must start with the underscore (_) character, e.g., `_private_variable` or `_private_method()`.
 - Public interfaces must use [Type Hints](https://peps.python.org/pep-0484/).
 
 Other principles:
@@ -107,4 +110,4 @@ Other principles:
 - Prefer string interpolation `f"parameter={par}"` over string `format()` method.
 - Instead of `print()` you should obtain a `logger` by calling `logging.getLogger(__name__)` in the beginning of the module and then use the loggers methods `info()`, `debug()`, `warning()`, `error()` and `exception()`.
 - Use `pathlib.Path` instead of `os.path`.
-- Do not leave commented out code as an idea, information or a work for future. This just leads to littering of the project.
+- Do not leave commented-out code as an idea, information, or work for the future. This just leads to littering of the project.

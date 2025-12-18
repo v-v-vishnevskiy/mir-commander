@@ -4,11 +4,25 @@ from pathlib import Path
 from typing import Self
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field
 
 from .errors import ConfigError
 
 logger = logging.getLogger("Utils.Config")
+
+
+class _CyFunctionDetectorMeta(type):
+    def __instancecheck__(self, instance):
+        return instance.__class__.__name__ == "cython_function_or_method"
+
+
+class CyFunctionDetector(metaclass=_CyFunctionDetectorMeta):
+    pass
+
+
+class BaseModel(PydanticBaseModel):
+    model_config = {"ignored_types": (CyFunctionDetector,)}
 
 
 class BaseConfig(BaseModel, abc.ABC):
@@ -43,11 +57,14 @@ class BaseConfig(BaseModel, abc.ABC):
             logger.debug("No path has been set")
             return
 
-        if not self.path.exists():
-            self.path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            if not self.path.exists():
+                self.path.parent.mkdir(parents=True, exist_ok=True)
 
-        data = self.model_dump(mode="json", exclude_defaults=True)
-        raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
+            data = self.model_dump(mode="json", exclude_defaults=True)
+            raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
 
-        with self.path.open("w") as f:
-            f.write(raw_data)
+            with self.path.open("w") as f:
+                f.write(raw_data)
+        except Exception as e:
+            logger.error("Failed to dump config to %s: %s", self.path, e)

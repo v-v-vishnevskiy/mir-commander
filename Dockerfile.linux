@@ -1,0 +1,54 @@
+# Dockerfile for building MirCommander on Linux
+# Supports: amd64, aarch64
+# Python: 3.13
+
+FROM python:3.13-slim AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    g++ \
+    libglib2.0-0 \
+    make \
+    patchelf \
+    file \
+    wget
+
+RUN mkdir -p /root/.local/bin/
+RUN wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$(uname -m).AppImage \
+    -O /root/.local/bin/appimagetool.AppImage
+RUN chmod +x /root/.local/bin/appimagetool.AppImage
+
+RUN mkdir -p /root/.cache/appimage/
+RUN wget https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-$(uname -m) \
+    -O /root/.cache/appimage/runtime
+RUN chmod +x /root/.cache/appimage/runtime
+
+FROM base AS dependencies
+
+WORKDIR /build
+
+RUN pip install --no-cache-dir uv
+
+RUN mkdir -p mir_commander
+COPY pyproject.toml uv.lock ./
+COPY mir_commander/__init__.py ./mir_commander/__init__.py
+
+
+RUN python3 -m venv .venv && \
+    .venv/bin/python -m pip install --no-cache-dir uv && \
+    VIRTUAL_ENV=.venv .venv/bin/uv sync --active --all-groups
+
+FROM dependencies AS builder
+
+COPY mir_commander ./mir_commander
+COPY plugins ./plugins
+COPY resources ./resources
+COPY build_scripts ./build_scripts
+COPY Makefile ./
+
+ARG FIX_APPAIMGETOOL
+RUN if [ "$FIX_APPAIMGETOOL" = "true" ]; then \
+    sed -i 's|AI\x02|\x00\x00\x00|' /root/.local/bin/appimagetool.AppImage; \
+fi
+
+CMD ["make", "build-linux"]

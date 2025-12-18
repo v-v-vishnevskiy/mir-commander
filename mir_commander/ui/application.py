@@ -2,14 +2,14 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QFile, QLocale, QResource, Qt, QTranslator
-from PySide6.QtGui import QColor, QIcon, QOpenGLContext, QPalette, QSurfaceFormat
+from PySide6.QtGui import QColor, QFont, QFontDatabase, QOpenGLContext, QPalette, QSurfaceFormat
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from mir_commander.api.plugin import Translation
-from mir_commander.core import Project
 from mir_commander.core.consts import DIR
 from mir_commander.core.errors import LoadProjectError
 from mir_commander.core.models import PluginResource
+from mir_commander.core.project import Project
 
 from .config import AppConfig, ApplyCallbacks
 from .project_window import ProjectWindow
@@ -30,13 +30,12 @@ class Application(QApplication):
         self._quitting = False
 
         self._apply_callbacks = ApplyCallbacks()
-        self._config: AppConfig = AppConfig.load(DIR.HOME_CONFIG / "app_config.yaml")
+        self._config: AppConfig = AppConfig.load(DIR.HOME_MIRCMD / "config.yaml")
 
         if self._config.language != "system":
             QLocale.setDefault(QLocale(self._config.language))
 
         self._register_resources()
-        self.setWindowIcon(QIcon(":/core/icons/app.png"))
 
         self._open_projects: dict[int, ProjectWindow] = {}
         self._recent_projects_dialog = RecentProjectsDialog()
@@ -47,9 +46,13 @@ class Application(QApplication):
         self._error = QMessageBox()
         self._error.setIcon(QMessageBox.Icon.Critical)
 
+        self.setStyle("Fusion")
+
         self._setup_opengl()
         self._fix_palette()
+        self._load_fonts()
         self._set_stylesheet()
+        self._load_license()
 
     def _setup_opengl(self):
         context = QOpenGLContext()
@@ -116,13 +119,72 @@ class Application(QApplication):
         else:
             logger.error("Failed to load translator for language %s", locale.name())
 
+    def _load_fonts(self):
+        font_family_map = {"inter": ":/core/fonts/Inter.ttf"}
+
+        if self._config.font.family == "system":
+            return
+
+        if self._config.font.family in font_family_map:
+            font_id = QFontDatabase.addApplicationFont(font_family_map[self._config.font.family])
+            if font_id != -1:
+                font_families = QFontDatabase.applicationFontFamilies(font_id)
+                if font_families:
+                    font_family = font_families[0]
+                    font = QFont(font_family)
+                    font.setPixelSize(self._config.font.size)
+                    font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+                    font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
+                    self.setFont(font)
+                else:
+                    logger.error(
+                        "Failed to get font family from font file: %s", font_family_map[self._config.font.family]
+                    )
+            else:
+                logger.error("Failed to open font file: %s", font_family_map[self._config.font.family])
+        else:
+            logger.warning("Font family '%s' not found, using system font", self._config.font.family)
+
     def _set_stylesheet(self):
+        font_stylesheet = f"""
+            QLabel, QTreeView, QTableView, QListView, QCheckBox, QPushButton, QLineEdit, QSpinBox, QMenu, QMenuBar, QDoubleSpinBox, QComboBox, QDockWidget, QHeaderView::section, QTabBar::tab {{
+                font-size: {self._config.font.size}px;
+            }}
+
+            QStatusBar, QPlainTextEdit {{
+                font-size: {self._config.font.size - 1}px;
+            }}
+
+            QGroupBox {{
+                font-size: {self._config.font.size - 2}px;
+            }}
+        """
+
+        about_stylesheet = f"""
+            QLabel#mircmd-about-title-label {{
+                font-size: {self._config.font.size + 3}px;
+            }}
+
+            QLabel#mircmd-about-version-label {{
+                font-size: {self._config.font.size - 2}px;
+            }}
+        """
         styles = QFile(":/core/styles/stylesheets.qss")
         if styles.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
-            self.setStyleSheet(styles.readAll().data().decode("utf-8"))  # type: ignore[union-attr]
+            stylesheet = styles.readAll().data().decode("utf-8")  # type: ignore[union-attr]
+            self.setStyleSheet(
+                stylesheet + about_stylesheet + ("" if self._config.font.family == "system" else font_stylesheet)
+            )
             styles.close()
         else:
             logger.error("Failed to open stylesheet file: %s", styles.errorString())
+
+    def _load_license(self):
+        license = QFile(":/core/policy/LICENSE.txt")
+        if license.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+            self._license_text = license.readAll().data().decode("utf-8")  # type: ignore[union-attr]
+        else:
+            logger.error("Failed to open license file: %s", license.errorString())
 
     def _setup_project_window(self, project_window: ProjectWindow):
         project_window.close_project_signal.connect(self.close_project)
@@ -166,9 +228,28 @@ class Application(QApplication):
             app_config=self._config,
             app_apply_callbacks=self._apply_callbacks,
             project=project,
+            license_text=self._license_text,
         )
         self._setup_project_window(project_window)
         project_window.show()
+        return self.exec()
+
+    def open_empty_project(self) -> int:
+        logger.info("Creating temporary empty project ...")
+
+        project = Project(path=Path(), temporary=True)
+
+        project_window = ProjectWindow(
+            app_config=self._config,
+            app_apply_callbacks=self._apply_callbacks,
+            project=project,
+            license_text=self._license_text,
+            init_msg=[],
+        )
+        self._setup_project_window(project_window)
+
+        project_window.show()
+
         return self.exec()
 
     def open_temporary_project(self, files: list[Path]) -> int:
@@ -182,6 +263,7 @@ class Application(QApplication):
             app_config=self._config,
             app_apply_callbacks=self._apply_callbacks,
             project=project,
+            license_text=self._license_text,
             init_msg=messages,
         )
         self._setup_project_window(project_window)
@@ -204,11 +286,14 @@ class Application(QApplication):
             if not self._quitting:
                 self._recent_projects_dialog.remove_opened(project_window.project)
 
-        if not self._open_projects:
-            self._recent_projects_dialog.show()
+        # TODO: uncomment this when we have a way to open the recent projects dialog
+        # if not self._open_projects:
+        #     self._recent_projects_dialog.show()
+        self.close_app()
 
     def close_app(self):
         self._quitting = True
         for value in list(self._open_projects.values()):
             value.close()
+        self._config.dump()
         self.quit()

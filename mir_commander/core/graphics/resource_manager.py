@@ -3,7 +3,7 @@ from .font_atlas import FontAtlas
 from .opengl.shader import ShaderProgram
 from .opengl.texture2d import Texture2D
 from .opengl.vertex_array_object import VertexArrayObject
-from .scene import Scene
+from .scene.scene import Scene
 
 
 class ResourceManager:

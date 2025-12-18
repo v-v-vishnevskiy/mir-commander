@@ -1,11 +1,16 @@
 from typing import Any, Callable, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field, field_validator
 
-from mir_commander.core.config import BaseConfig
+from mir_commander.core.config import BaseConfig, BaseModel
 
 from .docks.config import DocksConfig
 from .settings.config import SettingsConfig
+
+
+class FontConfig(BaseModel):
+    family: Literal["system", "inter"] = Field(default="inter", description="Font family")
+    size: int = Field(default=13, ge=8, le=72, description="Font size in pixels to use for internal font")
 
 
 class Toolbars(BaseModel):
@@ -27,10 +32,18 @@ class HotkeysConfig(BaseModel):
 
 class ProjectWindowConfig(BaseModel):
     state: None | str = None
+    window_state: int = 0
     pos: None | list[int] = Field(default=None, min_length=2, max_length=2, description="x, y coordinates")
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
     hotkeys: HotkeysConfig = HotkeysConfig()
     widgets: Widgets = Widgets()
+
+    @field_validator("pos", "size", mode="before")
+    @classmethod
+    def pos_size(cls, value: list[int]) -> list[int]:
+        for i, item in enumerate(value):
+            value[i] = max(0, item)
+        return value
 
 
 class NodeTypeImportConfig(BaseModel):
@@ -71,6 +84,7 @@ class ImportFileRulesConfig(NodeTypeImportConfig):
 
 
 class AppConfig(BaseConfig):
+    font: FontConfig = FontConfig()
     language: Literal["system", "en", "ru"] = "system"
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()

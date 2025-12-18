@@ -17,9 +17,9 @@ def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []) -> list
     Load plugins from a directory.
 
     Scans author directories and plugin subdirectories within them.
-    Each plugin's __init__.py should have a register_plugins(registry) function.
+    Each plugin's loader.py should have a register_plugins(registry) function.
 
-    Structure: plugins_dir -> author -> plugin_name -> __init__.py
+    Structure: plugins_dir -> author -> plugin_name -> loader.py
 
     Args:
         plugins_dir: Path to directory containing author subdirectories
@@ -60,16 +60,16 @@ def load_from_directory(plugins_dir: Path, skip_authors: list[str] = []) -> list
                 if plugin_dir.name.startswith("_") or plugin_dir.name.startswith("."):
                     continue
 
-                init_file = plugin_dir / "__init__.py"
-                if not init_file.exists():
-                    logger.debug("Skipping directory without __init__.py: %s/%s", author_dir.name, plugin_dir.name)
+                loader_file = plugin_dir / "loader.py"
+                if not loader_file.exists():
+                    logger.debug("Skipping directory without loader.py: %s/%s", author_dir.name, plugin_dir.name)
                     continue
 
                 try:
-                    module_name = f"{author_dir.name}.{plugin_dir.name}"
+                    module_name = f"{author_dir.name}.{plugin_dir.name}.loader"
 
                     # Import the module
-                    spec = importlib.util.spec_from_file_location(module_name, init_file)
+                    spec = importlib.util.spec_from_file_location(module_name, loader_file)
                     if spec is None or spec.loader is None:
                         logger.error("Failed to load spec for plugin: %s", module_name)
                         continue

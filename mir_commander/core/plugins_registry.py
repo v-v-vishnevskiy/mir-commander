@@ -65,7 +65,7 @@ class _PluginsRepository(Generic[T]):
 
 class PluginsRegistry:
     def __init__(self):
-        self._plugins: dict[type[Plugin], _PluginsRepository] = defaultdict(lambda: _PluginsRepository())
+        self._plugins: defaultdict[type[Plugin], _PluginsRepository] = defaultdict(lambda: _PluginsRepository())
 
     @property
     def file_importer(self) -> _PluginsRepository[FileImporterPlugin]:

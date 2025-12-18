@@ -12,14 +12,14 @@ def get_vertices(stacks: int, slices: int) -> np.ndarray:
     vertices: list[float] = []
     a = pi / stacks
     b = (pi * 2) / slices
-    vertices.extend([0.0, radius, 0.0])
+    vertices.extend([0.0, 0.0, radius])
     for i in range(1, stacks):
-        y = cos(a * i)
+        z = cos(a * i)
         for j in range(slices):
-            x = sin(a * i) * cos(b * j)
-            z = sin(a * i) * sin(b * j)
+            y = sin(a * i) * cos(b * j)
+            x = sin(a * i) * sin(b * j)
             vertices.extend([x * radius, y * radius, z * radius])
-    vertices.extend([0.0, -radius, 0.0])
+    vertices.extend([0.0, 0.0, -radius])
     return np.array(vertices, dtype=np.float32)
 
 

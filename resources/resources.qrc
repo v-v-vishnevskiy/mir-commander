@@ -1,8 +1,12 @@
 <RCC>
-  <qresource prefix="core">
-    <file>fonts/DejaVuSansCondensed-Bold.ttf</file>
+  <qresource prefix="/core">
+    <file>policy/LICENSE.txt</file>
   </qresource>
-  <qresource prefix="core">
+  <qresource prefix="/core">
+    <file>fonts/Inter-Bold.ttf</file>
+    <file>fonts/Inter.ttf</file>
+  </qresource>
+  <qresource prefix="/core">
     <file>icons/app.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-right.png</file>
@@ -11,12 +15,17 @@
     <file>icons/plus.png</file>
     <file>icons/settings.png</file>
     <file>icons/square.png</file>
+    <file>icons/window_close.png</file>
+    <file>icons/window_maximized.png</file>
+    <file>icons/window_minimize.png</file>
+    <file>icons/window_normal.png</file>
+    <file>icons/window_restore.png</file>
   </qresource>
-  <qresource prefix="core">
+  <qresource prefix="/core">
     <file>i18n/en.qm</file>
     <file>i18n/ru.qm</file>
   </qresource>
-  <qresource prefix="core">
+  <qresource prefix="/core">
     <file>styles/stylesheets.qss</file>
   </qresource>
 </RCC>

@@ -38,10 +38,11 @@ class RenderingContainer(Generic[T]):
 
         try:
             self._batches[group_id].remove(node)
-            self._dirty[group_id] = True
 
             if not self._batches[group_id]:
                 del self._batches[group_id]
+
+            self._dirty[group_id] = True
         except (KeyError, ValueError):
             # Node was already removed
             pass
@@ -71,6 +72,10 @@ class RenderingContainer(Generic[T]):
         for group_id, batches in self.batches:
             _batches.append(f"group_id={group_id}:")
             for node in batches:
-                _batches.append(f"  {node}")
+                _batches.append(f"    {node}")
 
-        return f"{self.__class__.__name__}(name={self.name}, batches={'\n'.join(_batches)})"
+        return f"""{self.__class__.__name__}(
+  name={self.name},
+  dirty={self._dirty},
+  batches={"\n  ".join(_batches)}
+ )"""

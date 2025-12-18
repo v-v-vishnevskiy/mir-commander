@@ -42,6 +42,7 @@ class Node:
         "_texture_name",
         "_model_name",
         "_color",
+        "_shader_params",
         "_children",
         "metadata",
     )
@@ -53,6 +54,15 @@ class Node:
         root_node: Optional["RootNode"] = None,
         visible: bool = True,
         picking_visible: bool = False,
+        position: Vector3D = Vector3D(0.0, 0.0, 0.0),
+        scale: Vector3D = Vector3D(1.0, 1.0, 1.0),
+        rotation: Quaternion = Quaternion(),
+        shader_name: str = "",
+        texture_name: str = "",
+        model_name: str = "",
+        color: Color4f = (1.0, 1.0, 1.0, 1.0),
+        shader_params: None | dict[str, Any] = None,
+        metadata: None | dict[str, Any] = None,
     ):
         Node._id_counter += 1
         self._id = Node._id_counter
@@ -73,7 +83,7 @@ class Node:
 
         # True - transform has been changed, False - transform is up to date
         self._transform_dirty = True
-        self._transform = Transform()
+        self._transform = Transform(position, scale, rotation)
         self._transform_matrix = Matrix4x4()
 
         self._modify_children: bool = False
@@ -85,13 +95,15 @@ class Node:
 
         self._picking_color = id_to_color(self._picking_id)
 
-        self._shader_name: str = ""
-        self._texture_name: str = ""
-        self._model_name: str = ""
-        self._color: Color4f = (1.0, 1.0, 1.0, 1.0)
+        self._shader_name: str = shader_name
+        self._texture_name: str = texture_name
+        self._model_name: str = model_name
+        self._color: Color4f = color
+
+        self._shader_params: dict[str, Any] = shader_params or {}
 
         self._children: set[Self] = set()
-        self.metadata: dict[str, Any] = {}
+        self.metadata: dict[str, Any] = metadata or {}
         self._root_node.notify_add_node(self)
 
     @property
@@ -135,7 +147,11 @@ class Node:
         return self._transform.position
 
     @property
-    def transform(self) -> Matrix4x4:
+    def transform(self) -> Transform:
+        return self._transform
+
+    @property
+    def transform_matrix(self) -> Matrix4x4:
         if self._transform_dirty:
             self._update_transform()
             self._transform_dirty = False
@@ -158,9 +174,13 @@ class Node:
         return self._color
 
     @property
+    def shader_params(self) -> dict[str, Any]:
+        return self._shader_params
+
+    @property
     def group_id(self) -> Hashable:
         if self._node_type in (NodeType.OPAQUE, NodeType.TRANSPARENT, NodeType.CHAR):
-            return self._shader_name, self._texture_name, self._model_name
+            return self._node_type.value, self._shader_name, self._texture_name, self._model_name
         return None
 
     @property
@@ -172,11 +192,8 @@ class Node:
         if include_self:
             result.append(self)
 
-        stack = self._children.copy()
-        while stack:
-            node = stack.pop()
-            result.append(node)
-            stack.update(node._children)
+        for child in self._children:
+            result.extend(child._get_all_children(include_self=True))
 
         return result
 
@@ -192,7 +209,7 @@ class Node:
 
     def _update_transform(self):
         if self._parent:
-            self._transform_matrix = self._parent.transform * self._transform.matrix
+            self._transform_matrix = self._parent.transform_matrix * self._transform.matrix
         else:
             self._transform_matrix = self._transform.matrix
 
@@ -308,6 +325,10 @@ class Node:
         self._color = color
         self._root_node.notify_set_dirty(self)
 
+    def set_shader_param(self, name: str, value: Any):
+        self._shader_params[name] = value
+        self._root_node.notify_set_dirty(self)
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Node):
             return False
@@ -317,4 +338,4 @@ class Node:
         return self._id
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self._id}, visible={self.visible})"
+        return f"{self.__class__.__name__}(id={self._id}, node_type={self._node_type}, visible={self.visible})"

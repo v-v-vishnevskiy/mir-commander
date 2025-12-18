@@ -114,6 +114,17 @@ def unwind_vertices(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return vertices_reshaped[faces].reshape(-1).astype(np.float32)
 
 
+def reverse_winding_order(vertices: np.ndarray) -> np.ndarray:
+    """
+    Reverse the winding order of triangles by swapping vertex positions.
+    This changes triangle orientation from clockwise to counter-clockwise or vice versa.
+    """
+    vertices_reshaped = vertices.reshape(-1, 9)
+    # Swap second and third vertex of each triangle
+    vertices_reshaped[:, [3, 4, 5, 6, 7, 8]] = vertices_reshaped[:, [6, 7, 8, 3, 4, 5]]
+    return vertices_reshaped.reshape(-1).astype(np.float32)
+
+
 def crop_image_to_content(image: np.ndarray, bg_color: tuple[float, ...]) -> np.ndarray:
     xmin = ymin = xmax = ymax = -1
     color = [round(c * 255) for c in bg_color]

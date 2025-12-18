@@ -1,3 +1,12 @@
+QDialog {
+    background: #ECECEC;
+}
+
+QLabel#mircmd-warning {
+    color: #FF6B00;
+    font-style: italic;
+}
+
 ColorButton {
     margin: 1px;
     max-width: 14px;
@@ -65,15 +74,22 @@ QCheckBox#mircmd-apply-for-all-checkbox::unchecked {
 }
 
 About {
-    min-width: 300px;
-    max-width: 300px;
-    min-height: 230px;
-    max-height: 230px;
+    min-width: 500px;
+    max-width: 500px;
+    min-height: 400px;
+    max-height: 400px;
 }
 
 QLabel#mircmd-about-title-label {
-    font-size: 16px;
     font-weight: bold;
+}
+
+QPlainTextEdit#mircmd-about-license-text {
+    border: none;
+    background: #FFFFFF;
+    border-left: 1px solid #DADADA;
+    border-right: 1px solid #DADADA;
+    border-bottom: 1px solid #DADADA;
 }
 
 ProjectDock {
@@ -91,4 +107,228 @@ ProgramControlPanelDock {
 RecentProjectsDialog {
     min-width: 600px;
     min-height: 450px;
+}
+
+QMdiSubWindow {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+MdiSubWindowTitleBar {
+    max-height: 28px;
+    min-height: 28px;
+    background-color: #E0E0E0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #B0B0B0;
+}
+
+TitleBarIcon {
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    margin-left: 6px;
+    margin-right: 4px;
+}
+
+TitleBarButton {
+    border: none;
+    border-radius: 5px;
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    icon-size: 8px;
+    margin-right: 4px;
+}
+
+TitleBarButton:hover {
+    background-color: #C0C0C0;
+}
+
+TitleBarButton#minimize {
+    margin-left: 4px;
+}
+
+TitleBarButton#minimize[active="false"] {
+    icon: url(:/core/icons/window_minimize.png);
+}
+
+TitleBarButton#minimize[active="true"] {
+    icon: url(:/core/icons/window_restore.png);
+}
+
+TitleBarButton#maximize[active="false"] {
+    icon: url(:/core/icons/window_normal.png);
+}
+
+TitleBarButton#maximize[active="true"] {
+    icon: url(:/core/icons/window_maximized.png);
+}
+
+TitleBarButton#close {
+    icon: url(:/core/icons/window_close.png);
+}
+
+TitleBarButton:hover#close {
+    background-color: #D32F2F;
+}
+
+MdiSubWindowBody {
+    border-top: none;
+}
+
+ResizableContainer {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid #B0B0B0;
+    background: transparent;
+}
+
+QTabWidget::pane {
+    background: #E8E8E8;
+    border-top: 1px solid #DADADA;
+}
+
+QTabWidget::tab-bar {
+    subcontrol-position: center;
+    border: none;
+    background: none;
+}
+
+QTabBar::tab {
+    background: #FFFFFF;
+    border: none;
+    margin: 0px;
+}
+
+QTabBar::tab:pressed {
+    background: #F0F0F0;
+}
+
+QTabBar::tab:top, QTabBar::tab:bottom {
+    min-width: 8ex;
+    height: 18px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-right: 1px solid #DADADA;
+}
+
+QTabBar::tab:left, QTabBar::tab:right {
+    min-height: 8ex;
+    width: 18px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #DADADA;
+}
+
+QTabBar::tab:selected {
+    color: #FFFFFF;
+    background: #498FF7;
+}
+
+QTabBar::tab:top:last, QTabBar::tab:top:selected, QTabBar::tab:top:next-selected {
+    border-right: 1px solid transparent;
+}
+
+QTabBar::tab:bottom:last, QTabBar::tab:bottom:selected, QTabBar::tab:bottom:next-selected {
+    border-right: 1px solid transparent;
+}
+
+QTabBar::tab:left:last, QTabBar::tab:left:selected, QTabBar::tab:left:next-selected {
+    border-bottom: 1px solid transparent;
+}
+
+QTabBar::tab:right:last, QTabBar::tab:right:selected, QTabBar::tab:right:next-selected {
+    border-bottom: 1px solid transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #f0f0f0;
+    width: 14px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #c1c1c1;
+    min-height: 30px;
+    border-radius: 4px;
+    margin: 2px 3px 2px 3px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #a8a8a8;
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: #7d7d7d;
+}
+
+QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #f0f0f0;
+    height: 14px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #c1c1c1;
+    min-width: 30px;
+    border-radius: 4px;
+    margin: 3px 2px 3px 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #a8a8a8;
+}
+
+QScrollBar::handle:horizontal:pressed {
+    background: #7d7d7d;
+}
+
+QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+    width: 0px;
+}
+
+QScrollBar::add-line:horizontal {
+    border: none;
+    background: none;
+    width: 0px;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+QAbstractScrollArea::corner {
+    background: transparent;
+    border: none;
 }
