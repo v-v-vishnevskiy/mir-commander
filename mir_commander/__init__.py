@@ -1,9 +1,4 @@
-from importlib.metadata import version
-
-try:
-    __version__ = version("mir-commander")
-except Exception:
-    __version__ = "unknown"
+__version__ = "0.1.2-dev"
 
 if __name__ == "__main__":
     print(__version__)

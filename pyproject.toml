@@ -1,11 +1,11 @@
 [project]
 name = "mir-commander"
-version = "0.1.1"
 description = "A modern, powerful graphical user interface for molecular structure modeling."
 license-files = ["resources/policy/LICENSE.txt"]
 requires-python = ">=3.13"
 dependencies = [
     "cclib>=1.8.1",
+    "httpx>=0.28.1",
     "numpydantic>=1.6.9",
     "pillow>=11.3.0",
     "pydantic>=2.11.4",
@@ -15,6 +15,7 @@ dependencies = [
     "pyside6-essentials>=6.9.3",
     "pyyaml>=6.0.2",
 ]
+dynamic = ["version"]
 
 [project.scripts]
 mircmd = "mir_commander.__main__:main"
@@ -43,8 +44,14 @@ dev = [
 url = "https://pypi.org/simple"
 default = true
 
+[tool.hatch.version]
+path = "mir_commander/__init__.py"
+
 [tool.setuptools]
 py-modules = []
+
+[tool.setuptools.dynamic]
+version = {attr = "mir_commander.__version__"}
 
 [tool.mypy]
 ignore_missing_imports = true
