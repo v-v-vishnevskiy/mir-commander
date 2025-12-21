@@ -4,7 +4,6 @@ QDialog {
 
 QLabel#mircmd-warning {
     color: #FF6B00;
-    font-style: italic;
 }
 
 ColorButton {
