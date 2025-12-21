@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Any, Callable, Literal
 
 from pydantic import Field, field_validator
@@ -83,12 +84,27 @@ class ImportFileRulesConfig(NodeTypeImportConfig):
         return self.programs_ids
 
 
+class UpdatesConfig(BaseModel):
+    check_in_background: bool = Field(default=True, description="Check for updates in the background")
+    skip_version: str = Field(default="", description="Version to skip")
+    interval: int = Field(
+        default=4, ge=1, le=24, description="Interval in hours to check for updates in the background"
+    )
+    last_check: datetime = Field(default=datetime.now() - timedelta(hours=4), description="Last check for updates")
+
+    @field_validator("last_check", mode="before")
+    @classmethod
+    def last_check_parser(cls, value: str) -> datetime:
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+
+
 class AppConfig(BaseConfig):
     font: FontConfig = FontConfig()
     language: Literal["system", "en", "ru"] = "system"
     project_window: ProjectWindowConfig = ProjectWindowConfig()
     settings: SettingsConfig = SettingsConfig()
     import_file_rules: ImportFileRulesConfig = ImportFileRulesConfig()
+    updates: UpdatesConfig = UpdatesConfig()
 
 
 class ApplyCallbacks(BaseModel):

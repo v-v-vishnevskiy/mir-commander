@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.0
+
+### New
+
+- Checking for updates function
+
 ## v0.1.1 – UI improvements and bug fixes
 
 ### UI Changes

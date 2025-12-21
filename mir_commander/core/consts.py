@@ -4,6 +4,9 @@ from pathlib import Path
 FROZEN = getattr(sys, "frozen", False)
 
 
+BASE_URL = "https://mircmd.com"
+
+
 class DIR:
     APP = Path(sys.executable).parent if FROZEN else Path(__file__).parent.parent.parent
     HOME_MIRCMD = Path.home() / ".config" / "mircmd"

@@ -82,6 +82,7 @@ packages = [
     "mir_commander",
     # the following packages are required by plugins
     "cclib",
+    "httpx",
     "PIL",
     "pydantic_extra_types",
     # the following packages can't automatically be found by cxfreeze
