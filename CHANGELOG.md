@@ -10,6 +10,10 @@
 
 - Polish style for context menus
 
+### Improvements
+
+- Set left mouse button click for StackItemHeader
+
 ## v0.1.1 – UI improvements and bug fixes
 
 ### UI Changes
