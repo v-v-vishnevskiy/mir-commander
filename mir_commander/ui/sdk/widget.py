@@ -120,8 +120,9 @@ class StackItemHeader(QFrame):
         self._icon.update()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        self._parent.toggle_expand()
-        self._apply_style()
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._parent.toggle_expand()
+            self._apply_style()
         event.accept()
 
 
