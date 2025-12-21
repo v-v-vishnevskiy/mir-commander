@@ -106,8 +106,8 @@ class SettingsDialog(QDialog):
         """Generation of particular pages (as tab widgets) with controls for settings."""
 
         page_items: list[dict[str, Any]] = [
-            {"title": self.tr("Project"), "tabs": [(Project, "")]},
             {"title": self.tr("General"), "tabs": [(General, "")]},
+            {"title": self.tr("Project"), "tabs": [(Project, "")]},
             {"title": self.tr("Plugins"), "tabs": [(Plugins, "")]},
         ]
 

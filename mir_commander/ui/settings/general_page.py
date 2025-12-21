@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QLabel, QSpinBox, QVBoxLayout, QListView
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QLabel, QListView, QSpinBox, QVBoxLayout
 
 from mir_commander.ui.config import AppConfig
 
@@ -17,6 +17,7 @@ class General(BasePage):
         layout = QVBoxLayout()
         layout.addLayout(self._language_ui)
         layout.addWidget(self._font_ui)
+        layout.addWidget(self._updates_ui)
         layout.addStretch(1)
 
         return layout
@@ -25,6 +26,7 @@ class General(BasePage):
         self._backup["language"] = self.app_config.language
         self._backup["font_family"] = self.app_config.font.family
         self._backup["font_size"] = self.app_config.font.size
+        self._backup["check_updates_in_background"] = self.app_config.updates.check_in_background
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
@@ -32,6 +34,7 @@ class General(BasePage):
         self.app_config.font.family = self._backup["font_family"]
         self.app_config.font.size = self._backup["font_size"]
         self.l_font_warning.setVisible(False)
+        self.app_config.updates.check_in_background = self._backup["check_updates_in_background"]
 
     def restore_defaults(self):
         default_config = AppConfig()
@@ -49,16 +52,20 @@ class General(BasePage):
         self.app_config.font.family = default_font_family
         self.app_config.font.size = default_font_size
 
+        self.app_config.updates.check_in_background = default_config.updates.check_in_background
+
         self.setup_data()
 
     def setup_data(self):
         self._setup_language_data()
         self._setup_font_data()
+        self._setup_updates_data()
 
     def post_init(self):
         self.cb_language.currentIndexChanged.connect(self._language_changed)
         self.cb_font_family.currentIndexChanged.connect(self._font_changed)
         self.sb_font_size.valueChanged.connect(self._font_changed)
+        self.chk_check_updates.stateChanged.connect(self._updates_changed)
 
     @property
     def _language_ui(self) -> QHBoxLayout:
@@ -87,7 +94,6 @@ class General(BasePage):
         index = self.cb_language.findData(self.app_config.language)
         self.cb_language.setCurrentIndex(index)
 
-    @Slot()
     def _language_changed(self, index: int):
         new_language = self._languages[index][1]
         language_changed = new_language != self._backup["language"]
@@ -157,7 +163,6 @@ class General(BasePage):
         self.sb_font_size.setEnabled(not is_system_font)
         self.l_font_size.setEnabled(not is_system_font)
 
-    @Slot()
     def _font_changed(self):
         new_font_family = self._font_families[self.cb_font_family.currentIndex()][1]
         new_font_size = self.sb_font_size.value()
@@ -170,3 +175,15 @@ class General(BasePage):
 
         # Update UI state
         self._update_font_ui_state()
+
+    @property
+    def _updates_ui(self) -> QCheckBox:
+        self.chk_check_updates = QCheckBox(self.tr("Check for updates"))
+
+        return self.chk_check_updates
+
+    def _setup_updates_data(self):
+        self.chk_check_updates.setChecked(self.app_config.updates.check_in_background)
+
+    def _updates_changed(self):
+        self.app_config.updates.check_in_background = self.chk_check_updates.isChecked()
