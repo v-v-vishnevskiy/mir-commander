@@ -1,18 +1,18 @@
 # Changelog
 
-## v0.2.0
+## v0.2.0 – Enhanced UI and update notifications
 
-### New
+### New Features
 
-- Checking for updates function
+- Added automatic update checking to notify users of new releases
 
 ### UI Changes
 
-- Polish style for context menus
+- Refined context menu styling for improved visual consistency
 
 ### Improvements
 
-- Set left mouse button click for StackItemHeader
+- Enabled left mouse button click interaction for StackItemHeader widgets
 
 ## v0.1.1 – UI improvements and bug fixes
 
