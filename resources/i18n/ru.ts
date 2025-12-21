@@ -114,7 +114,7 @@
     <message>
         <location filename="../../mir_commander/ui/updates.py" line="154"/>
         <source>Failed to check for updates. Check your logs for more information.</source>
-        <translation>Ошибка проверки обновления. Подробности в логах.</translation>
+        <translation>Проверить обновления не удалось. Подробности в логах.</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/updates.py" line="160"/>
