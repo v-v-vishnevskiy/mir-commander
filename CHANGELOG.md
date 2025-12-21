@@ -6,6 +6,10 @@
 
 - Checking for updates function
 
+### UI Changes
+
+- Polish style for context menus
+
 ## v0.1.1 – UI improvements and bug fixes
 
 ### UI Changes
