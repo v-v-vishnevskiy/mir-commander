@@ -72,7 +72,7 @@ class CheckForUpdates(AsyncWorker):
 
 class ApplicationUpdateDialog(QDialog):
     def __init__(self, app_config: AppConfig, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs | dict(modal=True))
 
         self._app_config = app_config
         self._check_for_updates = CheckForUpdates()

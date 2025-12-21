@@ -38,7 +38,7 @@ class SettingsDialog(QDialog):
         app_config: AppConfig,
         project_config: ProjectConfig,
     ):
-        super().__init__(parent)
+        super().__init__(parent, modal=True)
 
         self.app_apply_callbacks = app_apply_callbacks
         self.mw_apply_callbacks = mw_apply_callbacks
