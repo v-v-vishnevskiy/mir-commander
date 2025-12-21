@@ -108,8 +108,8 @@
     </message>
     <message>
         <location filename="../../mir_commander/ui/updates.py" line="153"/>
-        <source>Update check failed</source>
-        <translation>Update check failed</translation>
+        <source>Update check failed.</source>
+        <translation>Update check failed.</translation>
     </message>
     <message>
         <location filename="../../mir_commander/ui/updates.py" line="154"/>

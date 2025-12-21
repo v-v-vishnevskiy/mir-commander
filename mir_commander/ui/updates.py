@@ -32,7 +32,7 @@ class NewVersionNotification(Notification):
             **kwargs
             | dict(
                 text=self._text,
-                actions=[self._download_link, self._release_notes_link],
+                actions=[self._release_notes_link, self._download_link],
                 options=options_menu,
             ),
         )
@@ -150,7 +150,7 @@ class ApplicationUpdateDialog(QDialog):
             self._buttons_layout.addWidget(self._ok_button)
 
     def _check_for_updates_error(self):
-        self._status_label.setText(self.tr("Update check failed"))
+        self._status_label.setText(self.tr("Update check failed."))
         self._info_label.setText(self.tr("Failed to check for updates. Check your logs for more information."))
         self._buttons_layout.removeWidget(self._cancel_button)
         self._buttons_layout.addWidget(self._ok_button)
