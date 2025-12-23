@@ -28,3 +28,7 @@ class LoadProjectError(CoreError):
 
 class ProjectNodeNotFoundError(CoreError):
     pass
+
+
+class NetworkError(CoreError):
+    pass

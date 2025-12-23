@@ -6,7 +6,15 @@ from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import QDialog, QFileDialog, QMainWindow, QMdiSubWindow, QMenu, QStatusBar, QTabWidget
+from PySide6.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QMainWindow,
+    QMdiSubWindow,
+    QMenu,
+    QStatusBar,
+    QTabWidget,
+)
 
 from mir_commander import __version__
 from mir_commander.api.file_exporter import ExportFileError
@@ -25,6 +33,7 @@ from .docks.project_dock.project_dock import ProjectDock
 from .export_item_dialog import ExportFileDialog
 from .mdi_area import MdiArea
 from .settings.settings_dialog import SettingsDialog
+from .updates import ApplicationUpdateDialog, CheckForUpdatesBackgroundWorker, NewVersionNotification
 
 logger = logging.getLogger("UI.ProjectWindow")
 
@@ -83,7 +92,7 @@ class ProjectWindow(QMainWindow):
 
         self.update_menus(None)
 
-        self.append_to_console(self.tr("Started {name} {version}").format(name="Mir Commander", version=__version__))
+        self.append_to_console(f"Mir Commander v{__version__}")
         if init_msg:
             for msg in init_msg:
                 self.append_to_console(msg)
@@ -93,6 +102,12 @@ class ProjectWindow(QMainWindow):
         if project.is_temporary:
             self.docks.project.tree.expand_top_items()
             self.docks.project.tree.open_auto_open_nodes(self.app_config.import_file_rules, True)
+
+        self._new_version_notification = NewVersionNotification(app_config=self.app_config, parent=self)
+
+        self._check_for_updates_worker = CheckForUpdatesBackgroundWorker(app_config=self.app_config, parent=self)
+        self._check_for_updates_worker.start()
+        self._check_for_updates_worker.new_version_signal.connect(self._new_version_notification.show_message)
 
     def _import_file(self, file_path: Path, parent: UINode | None):
         try:
@@ -190,6 +205,7 @@ class ProjectWindow(QMainWindow):
     def _setup_menubar_help(self) -> QMenu:
         menu = QMenu(self.tr("Help"), self)
         menu.addAction(self._about_action())
+        menu.addAction(self._check_for_updates_action())
         return menu
 
     def _close_project_action(self, checked: bool = False) -> QAction:
@@ -222,6 +238,12 @@ class ProjectWindow(QMainWindow):
         action = QAction(self.tr("About Mir Commander"), self)
         action.setMenuRole(QAction.MenuRole.AboutQtRole)
         action.triggered.connect(About(license_text=self._license_text, parent=self).show)
+        return action
+
+    def _check_for_updates_action(self) -> QAction:
+        action = QAction(self.tr("Check for Updates"), self)
+        action.setMenuRole(QAction.MenuRole.ApplicationSpecificRole)
+        action.triggered.connect(ApplicationUpdateDialog(app_config=self.app_config, parent=self).show)
         return action
 
     def _import_file_action(self) -> QAction:
@@ -291,8 +313,13 @@ class ProjectWindow(QMainWindow):
         else:
             self.showNormal()
 
+    def resizeEvent(self, event):
+        self._new_version_notification.update_position()
+        super().resizeEvent(event)
+
     def closeEvent(self, event: QCloseEvent):
         logger.info("Closing %s project ...", self.project.name)
+        self._check_for_updates_worker.stop()
         self._save_settings()
         self.close_project_signal.emit(self)
         event.accept()

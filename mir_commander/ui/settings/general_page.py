@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QLabel, QSpinBox, QVBoxLayout, QListView
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QLabel, QListView, QSpinBox, QVBoxLayout
 
 from mir_commander.ui.config import AppConfig
 
@@ -15,8 +15,20 @@ class General(BasePage):
 
     def setup_ui(self):
         layout = QVBoxLayout()
-        layout.addLayout(self._language_ui)
-        layout.addWidget(self._font_ui)
+
+        interface_group_box = QGroupBox(self.tr("Interface"))
+        interface_layout = QVBoxLayout()
+        interface_layout.addLayout(self._language_ui)
+        interface_layout.addWidget(self._font_ui)
+        interface_group_box.setLayout(interface_layout)
+        layout.addWidget(interface_group_box)
+
+        updates_group_box = QGroupBox(self.tr("Updates"))
+        updates_layout = QVBoxLayout()
+        updates_layout.addLayout(self._updates_ui)
+        updates_group_box.setLayout(updates_layout)
+        layout.addWidget(updates_group_box)
+
         layout.addStretch(1)
 
         return layout
@@ -25,6 +37,8 @@ class General(BasePage):
         self._backup["language"] = self.app_config.language
         self._backup["font_family"] = self.app_config.font.family
         self._backup["font_size"] = self.app_config.font.size
+        self._backup["check_updates_in_background"] = self.app_config.updates.check_in_background
+        self._backup["updates_interval"] = self.app_config.updates.interval
 
     def restore_backup_data(self):
         self.app_config.language = self._backup["language"]
@@ -32,6 +46,8 @@ class General(BasePage):
         self.app_config.font.family = self._backup["font_family"]
         self.app_config.font.size = self._backup["font_size"]
         self.l_font_warning.setVisible(False)
+        self.app_config.updates.check_in_background = self._backup["check_updates_in_background"]
+        self.app_config.updates.interval = self._backup["updates_interval"]
 
     def restore_defaults(self):
         default_config = AppConfig()
@@ -49,16 +65,22 @@ class General(BasePage):
         self.app_config.font.family = default_font_family
         self.app_config.font.size = default_font_size
 
+        self.app_config.updates.check_in_background = default_config.updates.check_in_background
+        self.app_config.updates.interval = default_config.updates.interval
+
         self.setup_data()
 
     def setup_data(self):
         self._setup_language_data()
         self._setup_font_data()
+        self._setup_updates_data()
 
     def post_init(self):
         self.cb_language.currentIndexChanged.connect(self._language_changed)
         self.cb_font_family.currentIndexChanged.connect(self._font_changed)
         self.sb_font_size.valueChanged.connect(self._font_changed)
+        self.chk_check_updates.stateChanged.connect(self._updates_changed)
+        self.sb_updates_interval.valueChanged.connect(self._updates_interval_changed)
 
     @property
     def _language_ui(self) -> QHBoxLayout:
@@ -87,7 +109,6 @@ class General(BasePage):
         index = self.cb_language.findData(self.app_config.language)
         self.cb_language.setCurrentIndex(index)
 
-    @Slot()
     def _language_changed(self, index: int):
         new_language = self._languages[index][1]
         language_changed = new_language != self._backup["language"]
@@ -157,7 +178,6 @@ class General(BasePage):
         self.sb_font_size.setEnabled(not is_system_font)
         self.l_font_size.setEnabled(not is_system_font)
 
-    @Slot()
     def _font_changed(self):
         new_font_family = self._font_families[self.cb_font_family.currentIndex()][1]
         new_font_size = self.sb_font_size.value()
@@ -170,3 +190,53 @@ class General(BasePage):
 
         # Update UI state
         self._update_font_ui_state()
+
+    @property
+    def _updates_ui(self) -> QVBoxLayout:
+        layout = QVBoxLayout()
+
+        self.chk_check_updates = QCheckBox(self.tr("Check for updates"))
+        layout.addWidget(self.chk_check_updates)
+
+        # Interval setting
+        interval_layout = QHBoxLayout()
+        self.l_updates_interval = QLabel(self.tr("Check interval:"))
+        self.sb_updates_interval = QSpinBox()
+        self.sb_updates_interval.setMinimum(1)
+        self.sb_updates_interval.setMaximum(24)
+        self.sb_updates_interval.setSuffix(self.tr(" %n hour(s)", "", 1))
+
+        interval_layout.addWidget(self.l_updates_interval)
+        interval_layout.addWidget(self.sb_updates_interval)
+        interval_layout.addStretch(1)
+
+        layout.addLayout(interval_layout)
+
+        return layout
+
+    def _setup_updates_data(self):
+        self.chk_check_updates.blockSignals(True)
+        self.sb_updates_interval.blockSignals(True)
+
+        self.chk_check_updates.setChecked(self.app_config.updates.check_in_background)
+        self.sb_updates_interval.setValue(self.app_config.updates.interval)
+        self.sb_updates_interval.setSuffix(self.tr(" %n hour(s)", "", self.app_config.updates.interval))
+
+        self._update_updates_ui_state()
+
+        self.chk_check_updates.blockSignals(False)
+        self.sb_updates_interval.blockSignals(False)
+
+    def _update_updates_ui_state(self):
+        """Update enabled/disabled state of updates UI elements based on current settings."""
+        is_enabled = self.app_config.updates.check_in_background
+        self.sb_updates_interval.setEnabled(is_enabled)
+        self.l_updates_interval.setEnabled(is_enabled)
+
+    def _updates_changed(self):
+        self.app_config.updates.check_in_background = self.chk_check_updates.isChecked()
+        self._update_updates_ui_state()
+
+    def _updates_interval_changed(self):
+        self.app_config.updates.interval = self.sb_updates_interval.value()
+        self.sb_updates_interval.setSuffix(self.tr(" %n hour(s)", "", self.sb_updates_interval.value()))

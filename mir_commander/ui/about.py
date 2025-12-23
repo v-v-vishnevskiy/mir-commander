@@ -12,6 +12,8 @@ from PySide6.QtWidgets import (
 
 from mir_commander import __version__
 
+from .sdk.widget import Link
+
 
 class About(QDialog):
     """Dialog with information about the program."""
@@ -64,9 +66,9 @@ class About(QDialog):
         layout.addSpacing(20)
         grid_layout = QGridLayout()
         grid_layout.addWidget(QLabel(self.tr("Home Page:")), 0, 0)
-        grid_layout.addWidget(self._create_link_label("https://mircmd.com/"), 0, 1)
-        grid_layout.addWidget(QLabel(self.tr("Telegram News:")), 1, 0)
-        grid_layout.addWidget(self._create_link_label("https://t.me/mir_commander"), 1, 1)
+        grid_layout.addWidget(Link("https://mircmd.com/", "https://mircmd.com/"), 0, 1)
+        grid_layout.addWidget(QLabel("Telegram:"), 1, 0)
+        grid_layout.addWidget(Link("https://t.me/mir_commander", "https://t.me/mir_commander"), 1, 1)
         grid_layout.setColumnStretch(1, 1)
         layout.addLayout(grid_layout)
         layout.addStretch(1)
@@ -93,16 +95,5 @@ class About(QDialog):
     def _create_author(self, name: str, email: str) -> QVBoxLayout:
         layout = QVBoxLayout()
         layout.addWidget(QLabel(name), alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self._create_link_label(email, is_email=True), alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(Link(email, f"mailto:{email}"), alignment=Qt.AlignmentFlag.AlignCenter)
         return layout
-
-    def _create_link_label(self, url: str, is_email: bool = False) -> QLabel:
-        mail = "mailto:" if is_email else ""
-        label = QLabel()
-        label.setTextFormat(Qt.TextFormat.RichText)
-        label.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextBrowserInteraction | Qt.TextInteractionFlag.TextSelectableByMouse
-        )
-        label.setText(f"<a href='{mail}{url}'>{url}</a>")
-        label.setOpenExternalLinks(True)
-        return label

@@ -4,14 +4,39 @@ from PySide6.QtWidgets import (
     QColorDialog,
     QDockWidget,
     QFrame,
+    QGraphicsDropShadowEffect,
     QHBoxLayout,
     QLabel,
     QMdiSubWindow,
+    QMenu,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
     QWidget,
 )
+
+
+class Link(QLabel):
+    def __init__(self, text: str, url: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._text = text
+        self._url = url
+
+        self.setTextFormat(Qt.TextFormat.RichText)
+        self.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction | Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.setText(f"<a href='{url}'>{text}</a>")
+        self.setOpenExternalLinks(True)
+
+    def update_url(self, url: str):
+        self._url = url
+        self.setText(f"<a href='{url}'>{self._text}</a>")
+
+    def update_text(self, text: str):
+        self._text = text
+        self.setText(f"<a href='{self._url}'>{text}</a>")
 
 
 class DockWidget(QDockWidget):
@@ -95,8 +120,9 @@ class StackItemHeader(QFrame):
         self._icon.update()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        self._parent.toggle_expand()
-        self._apply_style()
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._parent.toggle_expand()
+            self._apply_style()
         event.accept()
 
 
@@ -413,3 +439,78 @@ class ResizableContainer(QFrame):
             self._update_cursor(edge)
 
             event.accept()
+
+
+class NotificationButton(QPushButton):
+    pass
+
+
+class Notification(QWidget):
+    def __init__(self, text: QLabel, actions: list[QWidget], options: QMenu | None = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SubWindow)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+
+        self._close_button = NotificationButton()
+        self._close_button.setObjectName("close")
+        self._close_button.clicked.connect(self.hide)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(15, 10, 15, 10)
+        self.setLayout(layout)
+
+        header_layout = QHBoxLayout()
+        # header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.addWidget(text)
+
+        self._options = options
+        if options:
+            self._options_button = NotificationButton()
+            self._options_button.setObjectName("options")
+            self._options_button.clicked.connect(self._show_options_menu)
+            header_layout.addWidget(self._options_button)
+        header_layout.addWidget(self._close_button)
+
+        layout.addLayout(header_layout)
+
+        actions_layout = QHBoxLayout()
+        # actions_layout.setContentsMargins(0, 0, 0, 0)
+        actions_layout.addStretch(1)
+        for action in actions:
+            actions_layout.addSpacing(10)
+            actions_layout.addWidget(action)
+
+        layout.addLayout(actions_layout)
+
+        self._shadow_effect = QGraphicsDropShadowEffect(self)
+        self._shadow_effect.setBlurRadius(30)
+        self._shadow_effect.setColor(QColor(0, 0, 0, 100))
+        self._shadow_effect.setOffset(0, 0)
+        self.setGraphicsEffect(self._shadow_effect)
+
+        self.adjustSize()
+
+        self.hide()
+
+    def _show_options_menu(self):
+        if self._options:
+            self._options.exec(self.mapToGlobal(self._options_button.pos()))
+
+    def show(self):
+        self.raise_()
+        self.adjustSize()
+        super().show()
+
+    def update_position(self):
+        if widget := self.parentWidget():
+            parent_rect = widget.rect()
+            my_height = self.height()
+
+            margin_x = 20
+            margin_y = 40
+
+            y = parent_rect.height() - my_height - margin_y
+
+            self.move(margin_x, y)

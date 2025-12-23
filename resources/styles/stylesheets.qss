@@ -1,10 +1,33 @@
 QDialog {
-    background: #ECECEC;
+    background-color: #ECECEC;
+}
+
+QMenu {
+    background-color: #ECECEC;
+    /* border: 1px solid #B0B0B0;
+    border-radius: 8px; */
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 4px 15px;
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+QMenu::item:selected {
+    background-color: #498FF7;
+    color: white;
+}
+
+QMenu::separator {
+    height: 1px;
+    background:rgb(205, 205, 205);
+    margin: 5px 5px;
 }
 
 QLabel#mircmd-warning {
     color: #FF6B00;
-    font-style: italic;
 }
 
 ColorButton {
@@ -31,10 +54,10 @@ StackItemHeader {
 }
 
 QFrame#mircmd-stack-item-header-icon {
-    max-width: 12px;
-    min-width: 12px;
-    max-height: 12px;
-    min-height: 12px;
+    max-width: 8px;
+    min-width: 8px;
+    max-height: 8px;
+    min-height: 8px;
 }
 
 QFrame#mircmd-stack-item-header-icon[expanded="false"] {
@@ -71,6 +94,17 @@ QCheckBox#mircmd-apply-for-all-checkbox::unchecked {
     border-radius: 4px;
     padding: 6px 12px;
     background-color: transparent;
+}
+
+ApplicationUpdateDialog {
+    min-width: 400px;
+    max-width: 400px;
+    min-height: 150px;
+    max-height: 150px;
+}
+
+QLabel#mircmd-updates-status {
+    font-weight: bold;
 }
 
 About {
@@ -331,4 +365,33 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
 QAbstractScrollArea::corner {
     background: transparent;
     border: none;
+}
+
+NotificationButton {
+    border: none;
+    border-radius: 5px;
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    icon-size: 8px;
+}
+
+NotificationButton:hover {
+    background-color: #C0C0C0;
+}
+
+NotificationButton#options {
+    icon: url(:/core/icons/more.png);
+}
+
+NotificationButton#close {
+    icon: url(:/core/icons/cross.png);
+}
+
+Notification {
+    background: #ECECEC;
+    border-radius: 8px;
+    border: 1px solid #DADADA;
+    min-width: 300px;
 }

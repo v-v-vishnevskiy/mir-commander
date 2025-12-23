@@ -1,11 +1,12 @@
 import abc
 import logging
+import threading
 from pathlib import Path
 from typing import Self
 
 import yaml
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from .errors import ConfigError
 
@@ -27,6 +28,7 @@ class BaseModel(PydanticBaseModel):
 
 class BaseConfig(BaseModel, abc.ABC):
     path: None | Path = Field(default=None, exclude=True)
+    _lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
 
     @classmethod
     def load(cls, path: Path) -> Self:
@@ -57,14 +59,15 @@ class BaseConfig(BaseModel, abc.ABC):
             logger.debug("No path has been set")
             return
 
-        try:
-            if not self.path.exists():
-                self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self._lock:
+            try:
+                if not self.path.exists():
+                    self.path.parent.mkdir(parents=True, exist_ok=True)
 
-            data = self.model_dump(mode="json", exclude_defaults=True)
-            raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
+                data = self.model_dump(mode="json", exclude_defaults=True)
+                raw_data = yaml.dump(data, Dumper=yaml.CDumper, allow_unicode=True)
 
-            with self.path.open("w") as f:
-                f.write(raw_data)
-        except Exception as e:
-            logger.error("Failed to dump config to %s: %s", self.path, e)
+                with self.path.open("w") as f:
+                    f.write(raw_data)
+            except Exception as e:
+                logger.error("Failed to dump config to %s: %s", self.path, e)

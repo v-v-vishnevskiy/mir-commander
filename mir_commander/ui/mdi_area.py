@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, Protocol
 
 from PySide6.QtCore import QEvent, QSize, Qt, Signal
 from PySide6.QtGui import QBrush, QCloseEvent, QColor, QResizeEvent, QWindowStateChangeEvent
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMdiArea, QMdiSubWindow, QMessageBox, QVBoxLayout, QWidget
 
 from mir_commander.api.program import MessageChannel, NodeChangedAction, ProgramConfig, ProgramError, UINode
@@ -159,6 +160,7 @@ class MdiArea(QMdiArea):
         super().__init__(*args, **kwargs)
         self._project_window = project_window
 
+        self.setViewport(QOpenGLWidget())
         self.setBackground(QBrush(QColor("#bbbbbb")))
         self.setActivationOrder(QMdiArea.WindowOrder.ActivationHistoryOrder)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
