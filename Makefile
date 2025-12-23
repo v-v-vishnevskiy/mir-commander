@@ -99,8 +99,8 @@ build-lib: check-venv  ## Build all python files
 	@$(VIRTUAL_ENV)/bin/python build_scripts/build_lib.py
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
-.PHONY: build-mac
-build-mac: resources build-lib  ## Build .app and .dmg files for macOS
+.PHONY: dist-mac
+dist-mac: resources build-lib  ## Build .app and .dmg files for macOS. Should be run on macOS host.
 	@$(VIRTUAL_ENV)/bin/cxfreeze bdist_mac
 	@find build/$(APP_NAME).app/Contents/Resources/lib/mir_commander -name '*.cpp' -type f -delete
 	@tiffutil -cathidpicheck resources/building/macos/background.png resources/building/macos/background-2x.png \
@@ -109,7 +109,7 @@ build-mac: resources build-lib  ## Build .app and .dmg files for macOS
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
 .PHONY: download-appimagetool
-download-appimagetool:  ## Download appimagetool and runtime
+download-appimagetool:  ## Download appimagetool and runtime. Only for Linux.
 	@mkdir -p ~/.local/bin/
 	@mkdir -p ~/.cache/appimage/
 	@if [ ! -f "$(APPIMAGETOOL)" ]; then \
@@ -125,8 +125,8 @@ download-appimagetool:  ## Download appimagetool and runtime
 		echo "$(COLOUR_GREEN)Runtime downloaded successfully!$(END_COLOUR)"; \
 	fi
 
-.PHONY: build-linux
-build-linux: resources build-lib download-appimagetool  ## Build .AppImage file for Linux
+.PHONY: dist-linux
+dist-linux: resources build-lib download-appimagetool  ## Build .AppImage file for Linux. Should be run on Linux host.
 	@rm -rf build/exe.linux-$(ARCH)-$(PYTHON_VERSION)
 	@rm -rf build/AppDir
 	@$(VIRTUAL_ENV)/bin/cxfreeze build_exe
@@ -155,8 +155,8 @@ Terminal=false" > build/AppDir/$(APP_EXEC).desktop
 	build/$(APP_FILE).AppImage
 	@echo "$(COLOUR_GREEN)Building completed successfully!$(END_COLOUR)"
 
-.PHONY: build-linux-docker-%
-build-linux-docker-%:
+.PHONY: dist-linux-docker-%
+dist-linux-docker-%:  ## Build .AppImage file for Linux using Docker for a specific architecture. Can be run on any OS that supports Docker.
 	@rm -rf build/linux-$*
 	@mkdir -p build/linux-$*
 	@echo "$(COLOUR_GREEN)Building Docker image for $*...$(END_COLOUR)"
@@ -165,8 +165,8 @@ build-linux-docker-%:
 	@docker run --platform linux/$* --rm -v $(PWD)/build/linux-$*:/build/build $(DOCKER_IMAGE_NAME):$*
 	@echo "$(COLOUR_GREEN)AppImage build ($*) completed successfully!$(END_COLOUR)"
 
-.PHONY: build-linux-docker
-build-linux-docker: build-linux-docker-amd64 build-linux-docker-arm64  ## Build .AppImage file for Linux using Docker (all architectures)
+.PHONY: dist-linux-docker
+dist-linux-docker: dist-linux-docker-amd64 dist-linux-docker-arm64  ## Build .AppImage file for Linux using Docker (all architectures). Can be run on any OS that supports Docker.
 	@echo "$(COLOUR_GREEN)Docker build completed successfully!$(END_COLOUR)"
 
 .PHONY: clean-cpp
