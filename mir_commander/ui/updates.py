@@ -59,12 +59,15 @@ class NewVersionNotification(Notification):
 class CheckForUpdates(AsyncWorker):
     latest_version_signal = Signal(str)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, app_config: AppConfig, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._app_config = app_config
 
     async def task(self):
         try:
             self.latest_version_signal.emit(await get_latest_version())
+            self._app_config.updates.last_check = datetime.now()
+            self._app_config.dump()
         except NetworkError as e:
             logger.error("Failed to check for updates: %s", e)
             self.failed_signal.emit()
@@ -75,7 +78,7 @@ class ApplicationUpdateDialog(QDialog):
         super().__init__(*args, **kwargs | dict(modal=True))
 
         self._app_config = app_config
-        self._check_for_updates = CheckForUpdates()
+        self._check_for_updates = CheckForUpdates(app_config)
         self._check_for_updates.latest_version_signal.connect(self._check_for_updates_finished)
         self._check_for_updates.failed_signal.connect(self._check_for_updates_error)
 
@@ -184,8 +187,12 @@ class CheckForUpdatesBackgroundWorker(AsyncWorker):
         self._app_config = app_config
 
     async def task(self):
+        interval = self._app_config.updates.interval * 3600
         while True:
-            await asyncio.sleep(self._app_config.updates.interval * 3600)
+            last_check_seconds = (datetime.now() - self._app_config.updates.last_check).total_seconds()
+            if interval > last_check_seconds:
+                await asyncio.sleep(600)
+                continue
 
             if self._app_config.updates.check_in_background is False:
                 continue

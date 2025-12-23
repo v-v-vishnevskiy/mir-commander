@@ -451,6 +451,7 @@ class Notification(QWidget):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SubWindow)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.setCursor(Qt.CursorShape.ArrowCursor)
 
         self._close_button = NotificationButton()
         self._close_button.setObjectName("close")
