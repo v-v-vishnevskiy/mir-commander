@@ -33,7 +33,7 @@ def register_plugins() -> list[Plugin]:
             id="molecular_visualizer",
             metadata=Metadata(
                 name=QCoreApplication.translate("builtin.molecular_visualizer", "Molecular visualizer"),
-                version=(1, 0, 0),
+                version=(1, 1, 0),
                 description="Can visualize atomic coordinates and volume cubes.",
                 publisher="mircmd",
             ),
