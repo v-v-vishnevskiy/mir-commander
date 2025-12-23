@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from PySide6.QtCore import Slot
-from PySide6.QtGui import QImageWriter
+from PySide6.QtGui import QColor, QImageWriter
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -18,6 +18,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from mir_commander.core.graphics.utils import qcolor_to_color4f
+from mir_commander.ui.sdk.widget import ColorButton
+
 
 class SaveImageDialog(QDialog):
     file_name_sanitize_re = re.compile(r"[^\w _\-]|(\s)(?=\1+)")
@@ -28,7 +31,6 @@ class SaveImageDialog(QDialog):
         self.img_width = 0
         self.img_height = 0
         self.img_file_path = Path()
-        self.transparent_bg = True
         self.crop_to_content = True
         self.img_file_name_init = self.sanitize_file_name(filename)
         self.img_width_init = img_width
@@ -63,9 +65,12 @@ class SaveImageDialog(QDialog):
 
         options_group_box_layout.addLayout(options_size_layout)
 
-        self.transparent_bg_checkbox = QCheckBox(self.tr("Transparent background"), options_group_box)
-        self.transparent_bg_checkbox.setChecked(self.transparent_bg)
-        options_group_box_layout.addWidget(self.transparent_bg_checkbox)
+        self._bg_color_button = ColorButton(QColor(255, 255, 255, a=0))
+        background_layout = QHBoxLayout()
+        background_layout.addWidget(QLabel(self.tr("Background color:"), self))
+        background_layout.addWidget(self._bg_color_button)
+        background_layout.addStretch(1)
+        options_group_box_layout.addLayout(background_layout)
 
         self.crop_to_content_checkbox = QCheckBox(self.tr("Crop to content"), options_group_box)
         self.crop_to_content_checkbox.setChecked(self.crop_to_content)
@@ -145,6 +150,6 @@ class SaveImageDialog(QDialog):
         self.img_width = self.width_spinbox.value()
         self.img_height = self.height_spinbox.value()
         self.img_file_path = Path(self.file_path_editbox.text())
-        self.transparent_bg = self.transparent_bg_checkbox.isChecked()
+        self.bg_color = qcolor_to_color4f(self._bg_color_button.color)
         self.crop_to_content = self.crop_to_content_checkbox.isChecked()
         self.accept()
