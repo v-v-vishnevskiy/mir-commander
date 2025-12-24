@@ -19,6 +19,7 @@
 #### Molecular visualizer
 
 - Added "background color" option to Save Image dialog
+- Added Appearance control block with "background color" option
 
 ## v0.1.1 – UI improvements and bug fixes
 
