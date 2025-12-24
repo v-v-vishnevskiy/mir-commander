@@ -8,6 +8,11 @@
         <source>Background color:</source>
         <translation>Background color:</translation>
     </message>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_elements/appearance.py" line="33"/>
+        <source>Style:</source>
+        <translation>Style:</translation>
+    </message>
 </context>
 <context>
     <name>AtomLabels</name>
@@ -655,99 +660,99 @@
 <context>
     <name>Visualizer</name>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="378"/>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="419"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="383"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="424"/>
         <source>Save image</source>
         <translation>Save image</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="380"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="385"/>
         <source>The file already exists:</source>
         <translation>The file already exists:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="381"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="386"/>
         <source>Do you want to overwrite it?</source>
         <translation>Do you want to overwrite it?</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="394"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="399"/>
         <source>Error image rendering</source>
         <translation>Error image rendering</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="395"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="400"/>
         <source>Cannot create image.</source>
         <translation>Cannot create image.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="420"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="425"/>
         <source>Could not save image:</source>
         <translation>Could not save image:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="412"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="417"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>The path does not exist or is write-protected.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="414"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="419"/>
         <source>The output format could not be determined.</source>
         <translation>The output format could not be determined.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="417"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="422"/>
         <source>Error saving image</source>
         <translation>Error saving image</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="487"/>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="495"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="501"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="509"/>
         <source>Cloak atoms by type</source>
         <translation>Cloak atoms by type</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="487"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="501"/>
         <source>Enter element symbol:</source>
         <translation>Enter element symbol:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="496"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="510"/>
         <source>Invalid element symbol!</source>
         <translation>Invalid element symbol!</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="505"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="519"/>
         <source>Auto geometrical parameter</source>
         <translation>Auto geometrical parameter</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="514"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="528"/>
         <source>Interatomic distance</source>
         <translation>Interatomic distance</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="520"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="534"/>
         <source>Angle</source>
         <translation>Angle</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="528"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="542"/>
         <source>Torsion angle</source>
         <translation>Torsion angle</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="534"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="548"/>
         <source>Out-of-plane angle</source>
         <translation>Out-of-plane angle</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="542"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="556"/>
         <source>All parameters</source>
         <translation>All parameters</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="407"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="412"/>
         <source>Image saved</source>
         <translation>Image saved</translation>
     </message>

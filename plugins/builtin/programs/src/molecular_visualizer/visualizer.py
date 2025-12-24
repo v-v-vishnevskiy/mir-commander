@@ -28,6 +28,7 @@ from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
 
 from .build_bonds_dialog import BuildBondsDialog
 from .config import Config
+from .config import Style as ConfigStyle
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CUBE_RESOURCE_NAME
 from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
@@ -107,6 +108,10 @@ class Visualizer(OpenGLWidget):
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self._context_menu.exec(event.globalPos())
+
+    @property
+    def current_style(self) -> ConfigStyle:
+        return self._style.current
 
     @property
     def coordinate_axes(self) -> CoordinateAxes:
@@ -420,16 +425,25 @@ class Visualizer(OpenGLWidget):
                             self.tr("Could not save image:") + f"\n{dlg.img_file_path}\n" + message,
                         )
 
+    def set_style(self, name: str):
+        self._style.set_style(name)
+        self._molecules.set_style(self._style.current)
+        self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+        self._program.update_control_panel_signal.emit()
+        self.update()
+
     def set_next_style(self):
         if self._style.set_next_style():
             self._molecules.set_style(self._style.current)
             self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+            self._program.update_control_panel_signal.emit()
             self.update()
 
     def set_prev_style(self):
         if self._style.set_prev_style():
             self._molecules.set_style(self._style.current)
             self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+            self._program.update_control_panel_signal.emit()
             self.update()
 
     def select_all_atoms(self):
