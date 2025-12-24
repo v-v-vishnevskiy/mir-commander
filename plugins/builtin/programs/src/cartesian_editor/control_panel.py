@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from mir_commander.api.program import ControlBlock as ControlBlockApi
 from mir_commander.api.program import ControlPanel as ControlPanelApi
@@ -22,7 +22,7 @@ class ControlPanel(ControlPanelApi):
     def get_blocks(self) -> list[ControlBlockApi]:
         return self._blocks
 
-    def update_event(self, program: "Program"):
+    def update_event(self, program: "Program", data: dict[Any, Any]):
         for item in self._blocks:
             item.widget.update_values(program)
 

@@ -98,7 +98,7 @@ class _MdiProgramWindow(QMdiSubWindow):
         self._custom_title_bar.update_state(new_state)
 
         if self.program_control_panel_dock is not None:
-            self.program_control_panel_dock.control_panel.update_event(self.program)
+            self.program_control_panel_dock.control_panel.update_event(self.program, {})
 
     @property
     def id(self) -> int:
@@ -171,10 +171,10 @@ class MdiArea(QMdiArea):
             if window.id != window_id:
                 window.program.node_changed_event(node_id, action)
 
-    def _update_control_panel_handler(self, window: _MdiProgramWindow):
+    def _update_control_panel_handler(self, window: _MdiProgramWindow, data: dict[Any, Any]):
         w = self.currentSubWindow()
         if window.program_control_panel_dock is not None and w is not None and w.id == window.id:
-            window.program_control_panel_dock.control_panel.update_event(window.program)
+            window.program_control_panel_dock.control_panel.update_event(window.program, data)
 
     def _update_window_title_handler(self, title: str):
         w = self.currentSubWindow()
@@ -209,7 +209,9 @@ class MdiArea(QMdiArea):
                 lambda node_id, action: self._node_changed_handler(node_id, window.id, action)
             )
             window.program.send_message_signal.connect(self.program_send_message_signal.emit)
-            window.program.update_control_panel_signal.connect(lambda: self._update_control_panel_handler(window))
+            window.program.update_control_panel_signal.connect(
+                lambda data: self._update_control_panel_handler(window, data)
+            )
             window.program.update_window_title_signal.connect(self._update_window_title_handler)
             window.show()
         except ProgramError as e:
