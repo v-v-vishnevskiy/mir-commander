@@ -12,7 +12,7 @@
 
 ### Improvements
 
-- Enabled left mouse button click interaction for StackItemHeader widgets
+- Enabled left mouse button click interaction for the header control block
 
 ### Plugins
 
