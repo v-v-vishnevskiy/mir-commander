@@ -52,72 +52,72 @@
 <context>
     <name>ApplicationUpdateDialog</name>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="87"/>
+        <location filename="../../mir_commander/ui/updates.py" line="90"/>
         <source>Ok</source>
         <translation>Ок</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="89"/>
+        <location filename="../../mir_commander/ui/updates.py" line="92"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="91"/>
+        <location filename="../../mir_commander/ui/updates.py" line="94"/>
         <source>Skip this version</source>
         <translation>Пропустить эту версию</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="93"/>
+        <location filename="../../mir_commander/ui/updates.py" line="96"/>
         <source>Remind me later</source>
         <translation>Напомнить позже</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="95"/>
+        <location filename="../../mir_commander/ui/updates.py" line="98"/>
         <source>Release Notes</source>
         <translation>Список изменений</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="96"/>
+        <location filename="../../mir_commander/ui/updates.py" line="99"/>
         <source>Download</source>
         <translation>Загрузить</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="119"/>
+        <location filename="../../mir_commander/ui/updates.py" line="122"/>
         <source>Mir Commander Update</source>
         <translation>Обновления Mir Commander</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="140"/>
+        <location filename="../../mir_commander/ui/updates.py" line="143"/>
         <source>A new version is available!</source>
         <translation>Доступна новая версия!</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="141"/>
+        <location filename="../../mir_commander/ui/updates.py" line="144"/>
         <source>Version {} is now available (You: v{})</source>
         <translation>Версия {} уже доступна (текущая: v{})</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="148"/>
+        <location filename="../../mir_commander/ui/updates.py" line="151"/>
         <source>You are using the latest version.</source>
         <translation>Вы используете последнюю версию.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="149"/>
+        <location filename="../../mir_commander/ui/updates.py" line="152"/>
         <source>Current version: {}</source>
         <translation>Текущая версия: {}</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="153"/>
+        <location filename="../../mir_commander/ui/updates.py" line="156"/>
         <source>Update check failed.</source>
         <translation>Ошибка проверки обновления.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="154"/>
+        <location filename="../../mir_commander/ui/updates.py" line="157"/>
         <source>Failed to check for updates. Check your logs for more information.</source>
         <translation>Проверить обновления не удалось. Подробности в логах.</translation>
     </message>
     <message>
-        <location filename="../../mir_commander/ui/updates.py" line="160"/>
+        <location filename="../../mir_commander/ui/updates.py" line="163"/>
         <source>Checking for updates...</source>
         <translation>Проверка обновлений...</translation>
     </message>

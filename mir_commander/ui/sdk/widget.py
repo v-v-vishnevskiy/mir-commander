@@ -1,3 +1,5 @@
+from typing import Any
+
 from PySide6.QtCore import QPoint, QPropertyAnimation, QRect, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QRegion, QResizeEvent
 from PySide6.QtWidgets import (
@@ -58,11 +60,14 @@ class DockWidget(QDockWidget):
 class ColorButton(QPushButton):
     color_changed = Signal(QColor)
 
-    def __init__(self, color: QColor = QColor(255, 255, 255, a=255), *args, **kwargs):
+    def __init__(self, color: QColor = QColor(255, 255, 255, a=255), alpha: bool = True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._color = color
         self._set_style_sheet(color)
         self.clicked.connect(self.clicked_handler)
+        self._color_dialog_kwargs: dict[str, Any] = (
+            {"options": QColorDialog.ColorDialogOption.ShowAlphaChannel} if alpha else {}
+        )
 
     @property
     def color(self) -> QColor:
@@ -81,9 +86,7 @@ class ColorButton(QPushButton):
         self._set_style_sheet(color)
 
     def clicked_handler(self):
-        color = QColorDialog.getColor(
-            initial=self._color, parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel
-        )
+        color = QColorDialog.getColor(initial=self._color, parent=self, **self._color_dialog_kwargs)
         if color.isValid():
             self._color = color
             self._set_style_sheet(color)

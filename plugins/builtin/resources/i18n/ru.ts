@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru_RU">
 <context>
+    <name>Appearance</name>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_elements/appearance.py" line="25"/>
+        <source>Background color:</source>
+        <translation>Цвет фона:</translation>
+    </message>
+</context>
+<context>
     <name>AtomLabels</name>
     <message>
         <location filename="../../programs/src/molecular_visualizer/control_elements/atom_labels.py" line="21"/>
@@ -367,29 +375,34 @@
         <translation>Основные</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="22"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="23"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="23"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="24"/>
         <source>Atom labels</source>
         <translation>Подписи атомов</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="24"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="25"/>
         <source>Cubes and surfaces</source>
         <translation>Кубы и поверхности</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="25"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="26"/>
         <source>Image</source>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="26"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="27"/>
         <source>Coordinate axes</source>
         <translation>Координатные оси</translation>
+    </message>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="28"/>
+        <source>Appearance</source>
+        <translation>Внешний вид</translation>
     </message>
 </context>
 <context>

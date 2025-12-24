@@ -241,6 +241,8 @@ class Program(BaseProgram):
             self.visualizer.set_coordinate_axis_text(**data)
         elif action == "coordinate_axes.adjust_length":
             self.visualizer.coordinate_axes_adjust_length(**data)
+        elif action == "appearance.set_bg_color":
+            self.visualizer.set_background_color(**data)
         else:
             logger.error("Unknown key: %s", action)
 
