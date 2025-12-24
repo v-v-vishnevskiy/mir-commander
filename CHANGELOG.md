@@ -14,6 +14,12 @@
 
 - Enabled left mouse button click interaction for StackItemHeader widgets
 
+### Plugins
+
+#### Molecular visualizer
+
+- Added "background color" option to Save Image dialog
+
 ## v0.1.1 – UI improvements and bug fixes
 
 ### UI Changes
