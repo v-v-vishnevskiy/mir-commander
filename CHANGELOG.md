@@ -14,6 +14,10 @@
 
 - Enabled left mouse button click interaction for the header control block
 
+### Bug Fixes
+
+- Fixed inactive program windows incorrectly applying settings from the newly activated window
+
 ### Plugins
 
 #### Molecular visualizer
