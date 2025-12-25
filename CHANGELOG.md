@@ -8,7 +8,7 @@
 
 ### UI Changes
 
-- Refined context menu styling for improved visual consistency
+- Refined styling for improved visual consistency
 
 ### Improvements
 

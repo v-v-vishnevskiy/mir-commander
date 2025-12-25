@@ -42,6 +42,16 @@ QComboBox QAbstractItemView {
     selection-background-color: #317ae7;
 }
 
+QComboBox::drop-down {
+    background: transparent;
+}
+
+QComboBox::down-arrow {
+    image: url(:/core/icons/arrow-down-bold.png);
+    width: 8px;
+    height: 8px;
+}
+
 QListView::item:selected:active, QTreeView::item:selected:active {
     background-color: #317ae7;
 }
