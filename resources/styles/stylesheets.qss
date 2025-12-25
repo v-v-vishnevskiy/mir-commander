@@ -16,14 +16,43 @@ QMenu::item {
 }
 
 QMenu::item:selected {
-    background-color: #498FF7;
+    background-color: #317ae7;
     color: white;
 }
 
 QMenu::separator {
     height: 1px;
-    background:rgb(205, 205, 205);
+    background: #cdcdcd;
     margin: 5px 5px;
+}
+
+QMenu::right-arrow {
+    image: url(:/core/icons/arrow-right-bold.png);
+    width: 8px;
+    height: 8px;
+    right: 5px;
+}
+
+QMenu::right-arrow:selected {
+    image: url(:/core/icons/arrow-right-white-bold.png);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #B0B0B0;
+    selection-background-color: #317ae7;
+}
+
+QListView::item:selected:active, QTreeView::item:selected:active {
+    background-color: #317ae7;
+}
+
+QTableView {
+    selection-background-color: #317ae7;
+}
+
+QPlainTextEdit {
+    selection-color: white;
+    selection-background-color: #317ae7;
 }
 
 QLabel#mircmd-warning {
@@ -263,7 +292,7 @@ QTabBar::tab:left, QTabBar::tab:right {
 
 QTabBar::tab:selected {
     color: #FFFFFF;
-    background: #498FF7;
+    background: #317ae7;
 }
 
 QTabBar::tab:top:last, QTabBar::tab:top:selected, QTabBar::tab:top:next-selected {
