@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Iterable, TypeVar
 
 from pydantic import BaseModel, Field
 from PySide6.QtCore import QObject, Signal
@@ -46,7 +46,7 @@ class MessageChannel(Enum):
 class Program(QObject):
     send_message_signal = Signal(MessageChannel, str)
     node_changed_signal = Signal(int, NodeChangedAction)
-    update_control_panel_signal = Signal()
+    update_control_panel_signal = Signal(dict)
     update_window_title_signal = Signal(str)
 
     def __init__(self, node: UINode, config: ProgramConfig):
@@ -89,10 +89,10 @@ class ControlPanel(Generic[T_PROGRAM], QObject):
     def allows_apply_for_all(self) -> bool:
         raise NotImplementedError
 
-    def get_blocks(self) -> list[ControlBlock]:
+    def get_blocks(self) -> Iterable[ControlBlock]:
         raise NotImplementedError
 
-    def update_event(self, program: T_PROGRAM):
+    def update_event(self, program: T_PROGRAM, data: dict[Any, Any]):
         raise NotImplementedError
 
 

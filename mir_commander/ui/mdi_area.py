@@ -97,8 +97,8 @@ class _MdiProgramWindow(QMdiSubWindow):
 
         self._custom_title_bar.update_state(new_state)
 
-        if self.program_control_panel_dock is not None:
-            self.program_control_panel_dock.control_panel.update_event(self.program)
+        if self.program_control_panel_dock is not None and new_state == Qt.WindowState.WindowActive:
+            self.program_control_panel_dock.control_panel.update_event(self.program, {})
 
     @property
     def id(self) -> int:
@@ -146,6 +146,9 @@ class _MdiProgramWindow(QMdiSubWindow):
             self._last_normal_size = self.size()
         super().showMaximized()
 
+    def __repr__(self) -> str:
+        return f"MdiProgramWindow(id={self._id}, program_id={self._program_id}, title={self.windowTitle()})"
+
 
 class SubWindowListFn(Protocol):
     def __call__(self, /, order: QMdiArea.WindowOrder = ...) -> list[_MdiProgramWindow]: ...
@@ -171,10 +174,11 @@ class MdiArea(QMdiArea):
             if window.id != window_id:
                 window.program.node_changed_event(node_id, action)
 
-    def _update_control_panel_handler(self, window: _MdiProgramWindow):
+    def _update_control_panel_handler(self, window: _MdiProgramWindow, data: dict[Any, Any]):
         w = self.currentSubWindow()
+        # TODO: why do we need to check if w is not None and w.id == window.id?
         if window.program_control_panel_dock is not None and w is not None and w.id == window.id:
-            window.program_control_panel_dock.control_panel.update_event(window.program)
+            window.program_control_panel_dock.control_panel.update_event(window.program, data)
 
     def _update_window_title_handler(self, title: str):
         w = self.currentSubWindow()
@@ -209,7 +213,9 @@ class MdiArea(QMdiArea):
                 lambda node_id, action: self._node_changed_handler(node_id, window.id, action)
             )
             window.program.send_message_signal.connect(self.program_send_message_signal.emit)
-            window.program.update_control_panel_signal.connect(lambda: self._update_control_panel_handler(window))
+            window.program.update_control_panel_signal.connect(
+                lambda data: self._update_control_panel_handler(window, data)
+            )
             window.program.update_window_title_signal.connect(self._update_window_title_handler)
             window.show()
         except ProgramError as e:
@@ -238,10 +244,11 @@ class MdiArea(QMdiArea):
             error_dialog.show()
 
     def update_program_event(self, program_id: str, apply_for_all: bool, key: str, data: dict[str, Any]):
-        i = 0
-        for window in reversed(self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder)):
-            if window.program_id == program_id:
-                window.program.action_event(key, data, i)
-                i += 1
-                if apply_for_all is False:
-                    break
+        if apply_for_all is False:
+            # NOTE: at this point subWindowList has unsorted windows, so use currentSubWindow() to get the active window
+            if (w := self.currentSubWindow()) is not None and w.program_id == program_id:
+                w.program.action_event(key, data, 0)
+        else:
+            for i, window in enumerate(reversed(self.subWindowList(QMdiArea.WindowOrder.ActivationHistoryOrder))):
+                if window.program_id == program_id:
+                    window.program.action_event(key, data, i)

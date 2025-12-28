@@ -2,6 +2,19 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru_RU">
 <context>
+    <name>Appearance</name>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_elements/appearance.py" line="25"/>
+        <source>Background color:</source>
+        <translation>Цвет фона:</translation>
+    </message>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_elements/appearance.py" line="33"/>
+        <source>Style:</source>
+        <translation>Стиль:</translation>
+    </message>
+</context>
+<context>
     <name>AtomLabels</name>
     <message>
         <location filename="../../programs/src/molecular_visualizer/control_elements/atom_labels.py" line="21"/>
@@ -367,29 +380,34 @@
         <translation>Основные</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="22"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="23"/>
         <source>View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="23"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="24"/>
         <source>Atom labels</source>
         <translation>Подписи атомов</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="24"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="25"/>
         <source>Cubes and surfaces</source>
         <translation>Кубы и поверхности</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="25"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="26"/>
         <source>Image</source>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="26"/>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="27"/>
         <source>Coordinate axes</source>
         <translation>Координатные оси</translation>
+    </message>
+    <message>
+        <location filename="../../programs/src/molecular_visualizer/control_panel.py" line="28"/>
+        <source>Appearance</source>
+        <translation>Внешний вид</translation>
     </message>
 </context>
 <context>
@@ -642,99 +660,99 @@
 <context>
     <name>Visualizer</name>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="378"/>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="419"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="383"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="424"/>
         <source>Save image</source>
         <translation>Сохранение изображения</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="380"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="385"/>
         <source>The file already exists:</source>
         <translation>Файл уже существует:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="381"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="386"/>
         <source>Do you want to overwrite it?</source>
         <translation>Вы хотите его перезаписать?</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="394"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="399"/>
         <source>Error image rendering</source>
         <translation>Ошибка создания изображения</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="395"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="400"/>
         <source>Cannot create image.</source>
         <translation>Невозможно создать изображение.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="420"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="425"/>
         <source>Could not save image:</source>
         <translation>Изображение не было сохранено:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="412"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="417"/>
         <source>The path does not exist or is write-protected.</source>
         <translation>Путь к файлу не существует или защищен от записи.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="414"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="419"/>
         <source>The output format could not be determined.</source>
         <translation>Не удалось определить выходной формат.</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="417"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="422"/>
         <source>Error saving image</source>
         <translation>Ошибка сохранения изображения</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="487"/>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="495"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="501"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="509"/>
         <source>Cloak atoms by type</source>
         <translation>Скрыть атомы по типу</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="487"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="501"/>
         <source>Enter element symbol:</source>
         <translation>Введите символ элемента:</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="496"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="510"/>
         <source>Invalid element symbol!</source>
         <translation>Некорректный символ элемента!</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="505"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="519"/>
         <source>Auto geometrical parameter</source>
         <translation>Автоматический геометрический параметр</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="514"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="528"/>
         <source>Interatomic distance</source>
         <translation>Межатомное расстояние</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="520"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="534"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="528"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="542"/>
         <source>Torsion angle</source>
         <translation>Торсионный угол</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="534"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="548"/>
         <source>Out-of-plane angle</source>
         <translation>Угол выхода из плоскости</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="542"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="556"/>
         <source>All parameters</source>
         <translation>Все параметры</translation>
     </message>
     <message>
-        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="407"/>
+        <location filename="../../programs/src/molecular_visualizer/visualizer.py" line="412"/>
         <source>Image saved</source>
         <translation>Изображение сохранено</translation>
     </message>

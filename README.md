@@ -73,11 +73,11 @@ We avoid this because of two issues: (a) resources are loaded together with modu
 
 Before building, make sure that you clean old build files. If you do not do this, the dist may be corrupted.
 
-- `make build-mac` – Build for macOS. Host is macOS
-- `make build-linux` - Build for Linux. Host is Linux
-- `make build-linux-docker-amd64` - Build for Linux. Host is any OS that support Docker
-- `make build-linux-docker-arm64` - Build for Linux. Host is any OS that support Docker
-- `.\build_msi.cmd` – Build for Windows. Host is Windows
+- `make dist-mac` – Build for macOS. Host is macOS
+- `make dist-linux` - Build for Linux. Host is Linux
+- `make dist-linux-docker-amd64` - Build for Linux. Host is any OS that support Docker
+- `make dist-linux-docker-arm64` - Build for Linux. Host is any OS that support Docker
+- `.\dist_msi.cmd` – Build for Windows. Host is Windows
 
 #### Icon conversion
 

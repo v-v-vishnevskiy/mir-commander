@@ -8,11 +8,22 @@
 
 ### UI Changes
 
-- Refined context menu styling for improved visual consistency
+- Refined styling for improved visual consistency
 
 ### Improvements
 
-- Enabled left mouse button click interaction for StackItemHeader widgets
+- Enabled left mouse button click interaction for the header control block
+
+### Bug Fixes
+
+- Fixed inactive program windows incorrectly applying settings from the newly activated window
+
+### Plugins
+
+#### Molecular visualizer
+
+- Added "background color" option to Save Image dialog
+- Added Appearance control block with "background color" option and style
 
 ## v0.1.1 – UI improvements and bug fixes
 

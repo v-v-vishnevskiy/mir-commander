@@ -28,6 +28,7 @@ from mir_commander.ui.sdk.opengl.text_overlay import TextOverlay
 
 from .build_bonds_dialog import BuildBondsDialog
 from .config import Config
+from .config import Style as ConfigStyle
 from .consts import VAO_CONE_RESOURCE_NAME, VAO_CUBE_RESOURCE_NAME
 from .context_menu import ContextMenu
 from .entities import VolumeCubeIsosurfaceGroup
@@ -109,6 +110,10 @@ class Visualizer(OpenGLWidget):
         self._context_menu.exec(event.globalPos())
 
     @property
+    def current_style(self) -> ConfigStyle:
+        return self._style.current
+
+    @property
     def coordinate_axes(self) -> CoordinateAxes:
         return self._coordinate_axes
 
@@ -119,11 +124,11 @@ class Visualizer(OpenGLWidget):
 
     def scale_scene(self, factor: float):
         super().scale_scene(factor)
-        self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit({"update_blocks": ["view"]})
 
     def rotate_scene(self, pitch: float, yaw: float, roll: float):
         super().rotate_scene(pitch, yaw, roll)
-        self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit({"update_blocks": ["view"]})
 
     def coordinate_axes_adjust_length(self):
         self._coordinate_axes.set_length(self._molecules.max_coordinate + 1.0)
@@ -263,7 +268,7 @@ class Visualizer(OpenGLWidget):
         try:
             self.makeCurrent()
             self._volume_cube.add_isosurface(value, color_1, color_2, inverse, unique_id)
-            self._program.update_control_panel_signal.emit()
+            self._program.update_control_panel_signal.emit({"update_blocks": ["cubes_and_surfaces"]})
             self.update()
         except EmptyScalarFieldError:
             logger.error("Failed to add volume cube isosurface: empty scalar field")
@@ -274,19 +279,19 @@ class Visualizer(OpenGLWidget):
     def set_volume_cube_isosurface_visible(self, id: int, visible: bool, **kwargs):
         self.makeCurrent()
         self._volume_cube.set_isosurface_visible(id, visible, **kwargs)
-        self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit({"update_blocks": ["cubes_and_surfaces"]})
         self.update()
 
     def set_volume_cube_isosurface_color(self, id: int, color: Color4f):
         self.makeCurrent()
         self._volume_cube.set_isosurface_color(id, color)
-        self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit({"update_blocks": ["cubes_and_surfaces"]})
         self.update()
 
     def remove_volume_cube_isosurface(self, id: int):
         self.makeCurrent()
         self._volume_cube.remove_isosurface(id)
-        self._program.update_control_panel_signal.emit()
+        self._program.update_control_panel_signal.emit({"update_blocks": ["cubes_and_surfaces"]})
         self.update()
 
     def is_empty_volume_cube_scalar_field(self) -> bool:
@@ -420,16 +425,25 @@ class Visualizer(OpenGLWidget):
                             self.tr("Could not save image:") + f"\n{dlg.img_file_path}\n" + message,
                         )
 
+    def set_style(self, name: str):
+        self._style.set_style(name)
+        self._molecules.set_style(self._style.current)
+        self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+        self._program.update_control_panel_signal.emit({"update_blocks": ["appearance"]})
+        self.update()
+
     def set_next_style(self):
         if self._style.set_next_style():
             self._molecules.set_style(self._style.current)
             self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+            self._program.update_control_panel_signal.emit({"update_blocks": ["appearance"]})
             self.update()
 
     def set_prev_style(self):
         if self._style.set_prev_style():
             self._molecules.set_style(self._style.current)
             self._under_cursor_overlay.set_config(self._style.current.under_cursor_text_overlay, skip_position=True)
+            self._program.update_control_panel_signal.emit({"update_blocks": ["appearance"]})
             self.update()
 
     def select_all_atoms(self):

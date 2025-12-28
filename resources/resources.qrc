@@ -8,7 +8,10 @@
   </qresource>
   <qresource prefix="/core">
     <file>icons/app.png</file>
+    <file>icons/arrow-down-bold.png</file>
     <file>icons/arrow-down.png</file>
+    <file>icons/arrow-right-white-bold.png</file>
+    <file>icons/arrow-right-bold.png</file>
     <file>icons/arrow-right.png</file>
     <file>icons/cross.png</file>
     <file>icons/delete.png</file>
