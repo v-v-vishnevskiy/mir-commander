@@ -194,6 +194,9 @@ class CheckForUpdatesBackgroundWorker(AsyncWorker):
                 await asyncio.sleep(600)
                 continue
 
+            self._app_config.updates.last_check = datetime.now()
+            self._app_config.dump()
+
             if self._app_config.updates.check_in_background is False:
                 continue
 
@@ -202,9 +205,6 @@ class CheckForUpdatesBackgroundWorker(AsyncWorker):
             except NetworkError as e:
                 logger.error("Failed to check for updates: %s", e)
                 continue
-
-            self._app_config.updates.last_check = datetime.now()
-            self._app_config.dump()
 
             if self._app_config.updates.skip_version == version:
                 continue
