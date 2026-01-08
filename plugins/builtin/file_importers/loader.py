@@ -27,7 +27,7 @@ def register_plugins() -> list[Plugin]:
             id="cclib",
             metadata=Metadata(
                 name="CCLib",
-                version=(1, 0, 0),
+                version=(1, 0, 1),
                 description="CCLib file importer",
                 publisher="mircmd",
             ),
@@ -51,7 +51,7 @@ def register_plugins() -> list[Plugin]:
                 description="Gaussian Cube file importer",
                 publisher="mircmd",
             ),
-            details=FileImporterDetails(extensions=["cube"], read_function=gaussian_cube_importer.read),
+            details=FileImporterDetails(extensions=["cube", "cub"], read_function=gaussian_cube_importer.read),
         ),
         FileImporterPlugin(
             id="mdlmol2000",

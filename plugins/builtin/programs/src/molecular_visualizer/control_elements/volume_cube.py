@@ -67,6 +67,8 @@ class IsosurfacesTreeView(QTreeView):
         self.setIndentation(20)
         self.setRootIsDecorated(False)
         self.setUniformRowHeights(True)
+        self.setMinimumHeight(125)
+        self.setMaximumHeight(125)
         self.setStyleSheet(
             "QTreeView::item:hover { background: #DDDDDD; } QTreeView::item { height: 20px; padding: 0px; margin: 0px; }"
         )

@@ -19,6 +19,7 @@ class FileManager:
     def _get_importers_by_extension(self, extension: str) -> list[FileImporterPlugin]:
         specific = []
         universal = []
+        all_importers = []
         for item in self._plugins_registry.file_importer.get_all():
             if item.enabled is False:
                 continue
@@ -27,7 +28,8 @@ class FileManager:
                 specific.append(plugin)
             elif "*" in plugin.details.extensions:
                 universal.append(plugin)
-        return specific + universal
+            all_importers.append(plugin)
+        return specific + universal + all_importers
 
     def get_exporters(self, node_type: str = "") -> list[PluginItem[FileExporterPlugin]]:
         if node_type == "":
@@ -44,6 +46,9 @@ class FileManager:
             return result
 
     def import_file(self, path: Path, logs: list[str], importer_name: str = "") -> ProjectNodeSchema:
+        if not path.exists():
+            raise ImportFileError("File does not exist")
+
         if importer_name != "":
             try:
                 return self._plugins_registry.file_importer.get(importer_name).details.read_function(path, logs)
