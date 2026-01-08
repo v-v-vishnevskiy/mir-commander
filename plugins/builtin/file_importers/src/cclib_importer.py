@@ -7,7 +7,7 @@ from cclib.io import ccread
 
 from mir_commander.api.data_structures.atomic_coordinates import AtomicCoordinates
 from mir_commander.api.data_structures.molecule import Molecule
-from mir_commander.api.file_importer import ImportFileError
+from mir_commander.api.file_importer import InvalidFormatError
 from mir_commander.api.project_node_schema import ActionType
 from mir_commander.api.project_node_schema import ProjectNodeSchema as Node
 
@@ -27,12 +27,13 @@ def read(path: Path, logs: list[str]) -> Node:
     # lists of data from ccread.
     # So currently we just fill in our project tree as is, but in the future
     # we will split project to independent jobs.
-    logs.append(f"cclib {cclib.__version__}")
 
     kwargs = {"future": True}
     data = ccread(str(path), **kwargs)
     if data is None:
-        raise ImportFileError(f"cclib cannot determine the format of file: {path}")
+        raise InvalidFormatError()
+
+    logs.append(f"cclib {cclib.__version__}")
 
     if hasattr(data, "metadata"):
         logs.append(pprint.pformat(data.metadata, compact=True))

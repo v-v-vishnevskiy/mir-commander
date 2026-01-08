@@ -1,7 +1,8 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSignalBlocker, Qt
 from PySide6.QtWidgets import QCheckBox, QFrame, QScrollArea
 
 from mir_commander.api.program import ControlPanel
+from mir_commander.ui.config import AppConfig, ControlPanelState
 from mir_commander.ui.sdk.widget import DockWidget, VerticalStackLayout
 
 
@@ -12,15 +13,26 @@ class ProgramControlPanelDock(DockWidget):
     A single instance of this class is used for showing widgets with settings for the program.
     """
 
-    def __init__(self, program_id: str, control_panel: ControlPanel, *args, **kwargs):
+    def __init__(self, app_config: AppConfig, program_id: str, control_panel: ControlPanel, *args, **kwargs):
         self._program_id = program_id
 
         super().__init__(*args, **kwargs)
 
+        self._app_config = app_config
         self.control_panel = control_panel
 
         self._apply_for_all = False
-        self._visible = True
+
+        if program_id not in self._app_config.project_window.control_panels:
+            self._app_config.project_window.control_panels[program_id] = ControlPanelState()
+
+        self._visible = self._app_config.project_window.control_panels[program_id].visible
+        if self._visible:
+            # self.show()
+            self.setVisible(True)
+        else:
+            # self.hide()
+            self.setVisible(False)
 
         scroll_area = QScrollArea()
         scroll_area.setObjectName("mircmd-program-control-panel-scroll-area")
@@ -64,14 +76,17 @@ class ProgramControlPanelDock(DockWidget):
 
     def hide(self):
         visible = self._visible
-        super().hide()
+        with QSignalBlocker(self):
+            super().hide()
         self._visible = visible
 
     def restore_visibility(self):
-        if self._visible:
-            self.show()
-        else:
-            self.hide()
+        with QSignalBlocker(self):
+            if self._visible:
+                self.show()
+            else:
+                self.hide()
 
     def _visibility_changed_handler(self, visible: bool):
         self._visible = visible
+        self._app_config.project_window.control_panels[self._program_id].visible = visible

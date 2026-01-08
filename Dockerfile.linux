@@ -51,4 +51,4 @@ RUN if [ "$FIX_APPAIMGETOOL" = "true" ]; then \
     sed -i 's|AI\x02|\x00\x00\x00|' /root/.local/bin/appimagetool.AppImage; \
 fi
 
-CMD ["make", "build-linux"]
+CMD ["make", "dist-linux"]

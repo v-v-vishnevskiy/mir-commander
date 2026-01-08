@@ -31,6 +31,10 @@ class HotkeysConfig(BaseModel):
     menu_file: MenuFileHotkeys = MenuFileHotkeys()
 
 
+class ControlPanelState(BaseModel):
+    visible: bool = True
+
+
 class ProjectWindowConfig(BaseModel):
     state: None | str = None
     window_state: int = 0
@@ -38,6 +42,7 @@ class ProjectWindowConfig(BaseModel):
     size: None | list[int] = Field(default=None, min_length=2, max_length=2, description="width, height")
     hotkeys: HotkeysConfig = HotkeysConfig()
     widgets: Widgets = Widgets()
+    control_panels: dict[str, ControlPanelState] = Field(default_factory=dict, description="Control panel states")
 
     @field_validator("pos", "size", mode="before")
     @classmethod

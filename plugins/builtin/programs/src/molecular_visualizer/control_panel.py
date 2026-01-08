@@ -21,7 +21,7 @@ class ControlPanel(ControlPanelApi["Program"]):
 
         self._blocks = {
             "view": ControlBlockApi[ControlBlock](self.tr("View"), View(self), True),
-            "atom_labels": ControlBlockApi[ControlBlock](self.tr("Atom labels"), AtomLabels(self), True),
+            "atom_labels": ControlBlockApi[ControlBlock](self.tr("Atom labels"), AtomLabels(self), False),
             "cubes_and_surfaces": ControlBlockApi[ControlBlock](self.tr("Cubes and surfaces"), VolumeCube(self), False),
             "image": ControlBlockApi[ControlBlock](self.tr("Image"), Image(self), False),
             "coordinate_axes": ControlBlockApi[ControlBlock](self.tr("Coordinate axes"), CoordinateAxes(self), False),

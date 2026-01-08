@@ -8,11 +8,13 @@
 
 ### UI Changes
 
+- Enabled left mouse button click interaction for the header control block
 - Refined styling for improved visual consistency
 
 ### Improvements
 
-- Enabled left mouse button click interaction for the header control block
+- Control panels now save their visibility state when closing the program and restore it when reopening
+- Flexible file import regardless of file extension – importers are tried by extension match first, then universal ones, then all others sequentially
 
 ### Bug Fixes
 
@@ -24,6 +26,7 @@
 
 - Added "background color" option to Save Image dialog
 - Added Appearance control block with "background color" option and style
+- All control blocks are now hidden by default except View
 
 ## v0.1.1 – UI improvements and bug fixes
 

@@ -319,6 +319,8 @@ class ProjectWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent):
         logger.info("Closing %s project ...", self.project.name)
+        for control_panel in self._programs_control_panels.values():
+            control_panel.visibilityChanged.disconnect()
         self._check_for_updates_worker.stop()
         self._save_settings()
         self.close_project_signal.emit(self)
@@ -347,7 +349,7 @@ class ProjectWindow(QMainWindow):
                 return None
             control_panel = control_panel_cls()
             program_control_panel_dock = ProgramControlPanelDock(
-                program_id=program_id, control_panel=control_panel, parent=self
+                app_config=self.app_config, program_id=program_id, control_panel=control_panel, parent=self
             )
             program_control_panel_dock.setWindowTitle(QCoreApplication.translate(program_id, program.metadata.name))
             control_panel.program_action_signal.connect(
