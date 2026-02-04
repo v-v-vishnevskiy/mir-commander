@@ -2,8 +2,8 @@
 
 Since the project demonstrated its necessity, a strategic decision was made to further develop the product using a new technology stack based on various technical considerations. No new changes will be made here. We have opened several new repositories for further development:
 
-- [Mir Commander](https://github.com/v-v-vishnevskiy/mircmd-app)
-- [Mir Commander Chemistry Plugins](https://github.com/v-v-vishnevskiy/mircmd-chemistry-plugins)
+- [Mir Commander](https://github.com/mircmd/mircmd-app)
+- [Mir Commander Chemistry Plugins](https://github.com/mircmd/mircmd-chemistry-plugins)
 
 # Mir Commander
 
